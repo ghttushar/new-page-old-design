@@ -30,7 +30,7 @@ export interface SignalsState {
 
 const initialState: SignalsState = {
   decisions: MOCK_DECISIONS,
-  liveMode: true,
+  liveMode: false,
   selectedDecisionId: null,
   selectedMeetingId: null,
   activeTab: 'all',
