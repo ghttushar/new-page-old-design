@@ -1,0 +1,21 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/variables/common-new-ui/common-new-ui.module.scss';
+
+.infoContainer {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+
+  .nameFieldContainer {
+    width: 100%;
+  }
+
+  .error {
+    @include errorStyles();
+    width: 100%;
+  }
+}

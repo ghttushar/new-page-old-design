@@ -1,0 +1,87 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.Container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 1.5rem 1.5rem 1rem;
+  background-color: $foreground-color;
+  border: 1px solid $stoke-color-1;
+
+  .performanceSkeletonContainer {
+    width: 100%;
+  }
+}
+
+.headerContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 0;
+  margin-bottom: 1.2rem;
+
+  .headerLeft {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .content {
+    display: flex;
+    margin-left: 1rem;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 1rem;
+
+    .contentTitles {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
+      h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .graphHeaderButton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: auto;
+    gap: 1rem;
+
+    .hideChartButton {
+      text-transform: none;
+      color: $primary-color;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0;
+
+      &:hover {
+        background-color: $foreground-color;
+      }
+    }
+  }
+}
+
+.performanceGraphContainer {
+  background-color: $foreground-color;
+  height: 100%;
+
+  .lineGraph {
+    width: 100%;
+    flex-basis: 0;
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex: 1 1 auto;
+  }
+}

@@ -1,0 +1,134 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+  position: relative;
+  padding-bottom: 6.4rem;
+
+  .controlsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 2rem;
+    margin-top: -1rem;
+  }
+
+  .pageStepTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $sub-text-1;
+  }
+
+  .uploadContainer {
+    margin-top: 1.5rem;
+    width: 100%;
+
+    .uploadFormCard {
+      background: $foreground-color;
+      border: 0.5px solid $border-color-3;
+      border-radius: 0.8rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+
+      .uploadLabel {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: $sub-text-1;
+      }
+
+      .dropZoneWrapper {
+        width: 100%;
+
+        .dropZone {
+          border: 1px dashed $border-color-4;
+          border-radius: 0.8rem;
+          height: 18rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          background: $foreground-color;
+
+          &:hover {
+            border-color: $primary-color;
+            background: $primary-color-tint-1;
+          }
+
+          .dropZoneContent {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 0.8rem;
+
+            .dropZoneText {
+              font-size: 1.2rem;
+              color: $border-color-2;
+              font-weight: 400;
+
+              .highlightText {
+                color: $link-color-1;
+                text-decoration: underline;
+              }
+            }
+
+            .dropZoneSubtext {
+              font-size: 1rem;
+              color: $border-color-2;
+              opacity: 0.8;
+            }
+          }
+        }
+      }
+
+      .footerSection {
+        margin-top: 0.4rem;
+
+        .bulkUploadText {
+          font-size: 1rem;
+          color: $border-color-2;
+
+          .downloadLink {
+            color: $link-color-1 !important;
+            text-decoration: underline !important;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 0.2rem;
+
+            &:hover {
+              color: $link-color-2 !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .bottomControls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .footerBar {
+    position: fixed;
+    left: 6.2rem;
+    right: 1rem;
+    bottom: 0rem;
+    padding: 1rem 1.6rem;
+    background: $foreground-color;
+    box-shadow: 0px -1px 4px 0px $shadow-color-1;
+    z-index: 1000;
+  }
+}

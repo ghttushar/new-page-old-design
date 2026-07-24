@@ -1,0 +1,10 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  margin-top: -1rem;
+}

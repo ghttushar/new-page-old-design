@@ -1,0 +1,19 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.confirmationContainer {
+  .confirmationTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: -0.36px;
+    padding: 0;
+  }
+
+  .confirmationDescription {
+    color: #969696;
+    font-size: 1.3rem;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+  }
+}

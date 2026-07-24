@@ -1,0 +1,33 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.modeToggle {
+  display: inline-flex;
+  align-items: center;
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 2rem;
+  padding: $spacing-2;
+  gap: $spacing-2;
+
+  .option {
+    padding: $spacing-4 $spacing-12;
+    border-radius: 2rem;
+    font-size: $font-size-10;
+    font-weight: $font-weight-500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    color: $sub-text-3;
+    white-space: nowrap;
+
+    &:hover {
+      color: $main-text;
+    }
+
+    &.active {
+      background: $primary-color;
+      color: $foreground-color;
+    }
+  }
+}

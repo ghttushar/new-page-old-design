@@ -1,0 +1,4 @@
+@import '../../../../../../assets/styles/variables/custom-table.scss';
+.customTableLoader {
+  @include custom-table-overlay();
+}

@@ -1,0 +1,37 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.buttonFilterContainer {
+  position: relative;
+
+  .optionFilterButton {
+    width: auto;
+    height: 2.5rem;
+    padding: 0.4rem 0.8rem;
+    background-color: $foreground-color;
+    border: 0.1rem solid $stoke-color-1;
+    color: #464646;
+    font-weight: 600;
+    font-size: 1.2rem;
+    box-shadow: none;
+    border-radius: 0;
+    text-transform: none;
+    border-radius: 0.4rem;
+
+    &:hover {
+      background-color: $foreground-color;
+      border-color: #b8b8b8;
+      color: $main-text;
+      box-shadow: none;
+    }
+  }
+
+  .optionFilter {
+    position: absolute;
+    top: 0;
+    right: -1rem;
+    width: 21rem;
+    display: flex;
+    justify-content: flex-end;
+    z-index: 10;
+  }
+}

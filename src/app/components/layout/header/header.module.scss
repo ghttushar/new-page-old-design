@@ -1,0 +1,47 @@
+@import 'src/assets/styles/variables/variables.scss';
+.Avatar {
+  font-weight: 500;
+  color: white;
+  font-size: 1.6rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  .avatarLogo {
+    border-radius: 0.8rem;
+    height: 3.2rem;
+    width: 3.2rem;
+  }
+}
+
+.profileSection {
+  width: 100%;
+  margin: 0;
+
+  .avatarSection {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0rem 0.8rem;
+  }
+}
+
+.tooltipTitle {
+  display: flex;
+  flex-direction: column;
+  justify-self: center;
+  align-items: flex-start;
+  color: #b0b0b0;
+  line-height: 0.9rem;
+  gap: 0.8rem;
+
+  .accountType {
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  .accountEmail {
+    font-size: 1rem;
+    font-weight: 300;
+  }
+}

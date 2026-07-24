@@ -1,0 +1,105 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.expandToggle {
+  cursor: pointer;
+}
+
+.expandPlaceholder {
+  min-width: 2rem;
+}
+
+.orderContainer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+
+  .orderSection {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    .flagImage {
+      width: auto;
+      height: 1.4rem;
+      margin-left: 1rem;
+    }
+
+    .orderInfo {
+      white-space: pre;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: $primary-color;
+
+      .orderId {
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .orderMeta {
+        color: $table-group-subHeader-color;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .productSection {
+    display: flex;
+    align-items: center;
+    margin-left: 2rem;
+
+    .productImage {
+      width: auto;
+      height: 4rem;
+      margin-right: 0.8rem;
+    }
+
+    .productDetails {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+
+      .productName {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 35rem;
+        overflow: hidden;
+      }
+
+      .divider {
+        height: 1px;
+        background: $stoke-color-1;
+        width: 100%;
+      }
+
+      .productMeta {
+        display: flex;
+        align-items: center;
+
+        .metaText {
+          color: $table-group-subHeader-color;
+          font-weight: 400;
+
+          b {
+            font-weight: bold;
+          }
+        }
+
+        .metaValue {
+          color: $table-group-subHeader-color;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+.vl {
+  margin: 0 0.7rem;
+  border-left: 1px solid $disable-color;
+  height: 1.4rem;
+  display: inline-block;
+}

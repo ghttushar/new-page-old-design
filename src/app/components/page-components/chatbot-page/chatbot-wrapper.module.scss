@@ -1,0 +1,30 @@
+.chatbotButtonContainer {
+  min-width: 3.2rem;
+  &:active,
+  &:focus {
+    scale: 0.95;
+  }
+
+  .chatbotButtonIcon {
+    height: 3.2rem;
+    width: 3.2rem;
+    border-radius: 0.4rem;
+    background-color: white;
+    padding: 0.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .inactive {
+    border: 1px solid #dadeeb;
+
+    &:hover {
+      content: url('https://cdn.anarix.ai/anarix-ui/assets/images/icons/jiva-active-logo.svg');
+      border: 1px solid #77469b;
+    }
+  }
+
+  .active {
+    border: 1px solid #77469b;
+  }
+}

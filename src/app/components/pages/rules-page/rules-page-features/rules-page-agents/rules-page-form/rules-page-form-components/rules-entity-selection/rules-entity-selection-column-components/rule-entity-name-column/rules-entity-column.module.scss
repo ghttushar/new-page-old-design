@@ -1,0 +1,40 @@
+@import 'src/assets/styles/variables/variables.scss';
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0.8rem;
+
+  .textContainer {
+    font-weight: 600;
+    padding: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .textTitle {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 28rem;
+    }
+  }
+
+  .asinContainer {
+    display: flex;
+    align-items: center;
+
+    .productImage {
+      margin: 0.5rem;
+    }
+
+    .linkText {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 28rem;
+    }
+  }
+  .entityID {
+    color: $border-color-1;
+  }
+}

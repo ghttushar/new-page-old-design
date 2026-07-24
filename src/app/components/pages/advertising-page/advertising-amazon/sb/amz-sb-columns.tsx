@@ -1,0 +1,150 @@
+import { ColumnNameEnum } from '@/enums/advertising.enums';
+import {
+  ISBAdGroup,
+  ISBAutomationRules,
+  ISBCampaign,
+  ISBKeywordTargeting,
+  ISBNegativeTargetingKeyword,
+  ISBNegativeTargetingProduct,
+  ISBProductAds,
+  ISBProductTargeting,
+  ISBSearchTermKeyword,
+} from '@/interfaces/advertising/amazon/sb-advertising.interface';
+import { ColumnDef } from '@tanstack/react-table';
+import {
+  ADGROUP_NAME_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  AMAZON_BID_COLUMN,
+  AMAZON_KEYWORD_STATUS_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  AMAZON_METRICS_COLUMNS,
+  AMAZON_NEG_TARGETING_CREATION_DATE_COLUMN,
+  AMAZON_NEG_TARGETING_MATCH_TYPE_COLUMN,
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_SB_CREATIVE_ASIN_COLUMN,
+  AMAZON_SB_ITEM_NAME_COLUMN,
+  AMAZON_SB_LANDING_PAGE_TYPE_COLUMN,
+  AMAZON_SB_SERVING_STATUS_COLUMN,
+  AMAZON_SEARCH_TERM_COLUMN,
+  CAMPAIGN_BUDGET_COLUMN,
+  CAMPAIGN_NAME_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  END_DATE_COLUMN,
+  KEYWORD_TEXT_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  RULE_ENTITY_LINK_STATUS_COLUMN,
+  RULE_NAME_COLUMN,
+  RULE_NEXT_EXECUTION_COLUMN,
+  RULE_TYPE_COLUMN,
+  START_DATE_COLUMN,
+  STATUS_COLUMN,
+} from 'src/constants/table-columns/new-column-names.constants';
+
+export const amazonSbCampaignColumns: Array<ColumnDef<ISBCampaign>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.CAMPAIGN),
+  CAMPAIGN_NAME_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  START_DATE_COLUMN,
+  END_DATE_COLUMN,
+  CAMPAIGN_BUDGET_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISBCampaign>>;
+
+export const amazonSbAdGroupsColumns: Array<ColumnDef<ISBAdGroup>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.ADGROUP),
+  ADGROUP_NAME_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISBAdGroup>>;
+
+export const amazonSbProductAdsColumns: Array<ColumnDef<ISBProductAds>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.PRODUCT_AD),
+  AMAZON_SB_ITEM_NAME_COLUMN,
+  AMAZON_SB_CREATIVE_ASIN_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  AMAZON_SB_LANDING_PAGE_TYPE_COLUMN,
+  AMAZON_SB_SERVING_STATUS_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISBProductAds>>;
+
+export const amazonSbKeywordTargetingColumns: Array<
+  ColumnDef<ISBKeywordTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.KEYWORD),
+  KEYWORD_TEXT_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISBKeywordTargeting>>;
+
+export const amazonSbProductTargetingColumns: Array<
+  ColumnDef<ISBProductTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.TARGETING),
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISBProductTargeting>>;
+
+export const amazonSbSearchTermKeywordColumns: Array<
+  ColumnDef<ISBSearchTermKeyword>
+> = [
+  AMAZON_KEYWORD_STATUS_COLUMN,
+  AMAZON_SEARCH_TERM_COLUMN,
+  KEYWORD_TEXT_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISBSearchTermKeyword>>;
+
+export const amazonSbNegativeKeywordTargetingColumns: Array<
+  ColumnDef<ISBNegativeTargetingKeyword>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.KEYWORD),
+  KEYWORD_TEXT_COLUMN,
+  AMAZON_NEG_TARGETING_MATCH_TYPE_COLUMN,
+  AMAZON_NEG_TARGETING_CREATION_DATE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+] as Array<ColumnDef<ISBNegativeTargetingKeyword>>;
+
+export const amazonSbNegativeProductTargetingColumns: Array<
+  ColumnDef<ISBNegativeTargetingProduct>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.TARGETING),
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_NEG_TARGETING_CREATION_DATE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+] as Array<ColumnDef<ISBNegativeTargetingProduct>>;
+
+export const amazonSbAutomationRulesColumns = (
+  campaignSubHeaderData?: ISBCampaign | null
+): Array<ColumnDef<ISBAutomationRules>> =>
+  [
+    RULE_ENTITY_LINK_STATUS_COLUMN(campaignSubHeaderData),
+    RULE_NAME_COLUMN,
+    RULE_TYPE_COLUMN,
+    RULE_NEXT_EXECUTION_COLUMN,
+  ] as Array<ColumnDef<ISBAutomationRules>>;

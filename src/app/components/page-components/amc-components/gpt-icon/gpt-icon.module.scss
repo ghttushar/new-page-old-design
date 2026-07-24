@@ -1,0 +1,12 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.gptContainer {
+  z-index: 500;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

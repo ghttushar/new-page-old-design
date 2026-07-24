@@ -1,0 +1,113 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.reportContainer {
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.MuiDataGridColumnHeaderTitle {
+  font-weight: bold !important;
+}
+
+.noDataView {
+  font-size: 1.2rem;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
+
+.header {
+  width: 100%;
+  font-weight: 600 !important;
+  color: $black-text !important;
+  font-size: 1.1rem !important;
+}
+
+.compareBtn {
+  border: none;
+  background-color: transparent;
+  color: $primary-color;
+  border-radius: 0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: 0.3s font-weight;
+  width: auto;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+    transition: 0.1s width, 0.1s height;
+  }
+
+  &:hover {
+    font-weight: 700;
+
+    svg {
+      width: 2.2rem;
+      height: 2.2rem;
+    }
+  }
+}
+
+.compareBtnDisabled {
+  color: $disable-text;
+  cursor: not-allowed;
+
+  &:hover {
+    font-weight: 500;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+}
+
+.brandText {
+  transform: translate(50%, 50%);
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.asinLink {
+  display: block;
+  width: 100%;
+  color: #000000;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: wrap;
+  color: $primary-color;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  .asinText {
+    width: 100%;
+    font-size: 1.2rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.nameCell {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .nameText {
+    width: 100%;
+    font-size: 1.2rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

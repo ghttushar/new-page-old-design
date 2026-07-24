@@ -1,0 +1,14 @@
+@import '../../../../../../../assets/styles/variables/custom-table.scss';
+
+.td {
+  @include cell-style();
+
+  .tdDiv {
+    min-height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    white-space: pre-wrap;
+  }
+}

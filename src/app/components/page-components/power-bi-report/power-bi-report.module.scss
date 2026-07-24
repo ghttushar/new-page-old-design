@@ -1,0 +1,6 @@
+@import '../../../../assets/styles/variables/variables.scss';
+
+.report {
+  width: 100%;
+  height: calc(100vh - $header-height);
+}

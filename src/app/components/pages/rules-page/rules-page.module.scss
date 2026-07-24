@@ -1,0 +1,27 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+
+  .agentsSubContainer {
+    width: 100%;
+    padding-top: 6rem;
+    padding-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8rem;
+
+    .promptContainer {
+      width: 100%;
+      padding: 0 15rem;
+    }
+
+    .ruleTypeContainer {
+      width: 100%;
+    }
+  }
+}

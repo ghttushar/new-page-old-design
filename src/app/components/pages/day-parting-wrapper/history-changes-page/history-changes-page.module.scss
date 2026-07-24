@@ -1,0 +1,51 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.historyChangesPageContainer {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+
+  .historyChangesContainer {
+    margin: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    .tableContainer {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      .tableHeader {
+        display: flex;
+        width: 100%;
+        justify-content: end;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+    }
+
+    .tableDiv {
+      width: 100%;
+      height: auto;
+      display: flex;
+    }
+
+    .tabValueText {
+      text-transform: capitalize;
+    }
+  }
+
+  .header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+  }
+
+  .cell {
+    width: 100%;
+    font-size: 1.2rem;
+  }
+}

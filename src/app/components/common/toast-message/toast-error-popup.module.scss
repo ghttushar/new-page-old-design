@@ -1,0 +1,56 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/scrollbar.scss';
+
+.dialogTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tableContainer {
+  width: 100%;
+
+  .errTable {
+    width: 100%;
+    height: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid $disable-color;
+    border-radius: 5px;
+    overflow: hidden;
+
+    th,
+    td {
+      min-width: 15rem;
+      padding: 1.2rem;
+      text-align: left;
+      border-bottom: 1px solid $disable-color;
+      border-right: 1px solid $disable-color;
+    }
+
+    th:first-child {
+      border-top-left-radius: 5px;
+    }
+
+    th:last-child {
+      border-top-right-radius: 5px;
+      border-right: none;
+    }
+
+    tr:last-child td:first-child {
+      border-bottom-left-radius: 5px;
+    }
+
+    tr:last-child td:last-child {
+      border-bottom-right-radius: 5px;
+    }
+
+    tr td:last-child {
+      border-right: none;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  }
+}

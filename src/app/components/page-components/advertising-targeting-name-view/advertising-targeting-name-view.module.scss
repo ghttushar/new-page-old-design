@@ -1,0 +1,51 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.productNameContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .productTitle {
+    text-wrap: wrap;
+
+    .productTitleText {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: pre-wrap;
+      font-size: 1.1rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+
+      .productTitleLinkIcon {
+        padding: 3px;
+        border-radius: 50%;
+        transition: background-color 0.25s ease, transform 0.25s ease;
+
+        &:hover {
+          background-color: rgba($disable-color, 0.7);
+        }
+      }
+    }
+  }
+
+  .productSubtitle {
+    color: $sub-text;
+  }
+}
+
+.titleContainer {
+  width: 100%;
+  min-width: 25rem;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .titleName {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.1rem;
+    white-space: pre-wrap;
+  }
+}

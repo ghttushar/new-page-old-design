@@ -1,0 +1,45 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+.advanceSettings {
+  width: auto;
+  align-self: flex-start;
+  transition: all 0.4s ease;
+
+  .infoContainer {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+
+    .infoContainerTitle {
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: $primary-color;
+
+      &:hover {
+        font-weight: 700;
+      }
+    }
+
+    .icon {
+      @include containerCaretChangeStyles();
+
+      &:hover {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+    }
+  }
+
+  .optionsAction {
+    align-self: flex-start;
+    margin-top: 1rem;
+  }
+}
+
+.noMargin {
+  margin: 0 !important;
+}

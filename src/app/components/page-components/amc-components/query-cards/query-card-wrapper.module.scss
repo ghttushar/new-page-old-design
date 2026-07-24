@@ -1,0 +1,116 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+$minCardHeight: 20rem;
+$minImgWidth: 22rem;
+
+.cardContainer {
+  width: 49%;
+  min-height: $minCardHeight;
+  max-height: $minCardHeight;
+  border: 1px solid $stoke-color-1;
+  background: $foreground-color;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+
+  .imageContainer {
+    min-width: $minImgWidth;
+    max-width: $minImgWidth;
+    height: 100%;
+    border: 1px solid $stoke-color-1;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    img {
+      width: 100%;
+      aspect-ratio: 16 / 11;
+      object-fit: fill;
+    }
+  }
+
+  .contentContainer {
+    min-height: calc($minCardHeight - 3rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .tagsContainer {
+      width: auto;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+
+      .tag {
+        min-width: 3rem;
+        height: auto;
+        background: $alt-primary-color;
+        text-align: center;
+        padding: 0.2rem 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 12.1px;
+        letter-spacing: -0.03em;
+        color: $primary-color;
+      }
+    }
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 19px;
+      letter-spacing: -0.03em;
+      text-align: left;
+      margin-top: -1rem;
+    }
+
+    .description {
+      font-size: 1.2rem;
+      font-weight: 500;
+      line-height: 18px;
+      letter-spacing: -0.04em;
+      text-align: left;
+    }
+
+    .actionButton {
+      height: 2.5rem;
+      width: auto;
+      border-radius: 0;
+      background: $foreground-color;
+      color: $primary-color;
+      text-transform: none;
+      box-shadow: none;
+      padding: 0.5rem 1rem;
+      font-size: 1.2rem;
+      border: 1px solid $primary-color;
+
+      &:hover {
+        background: $primary-color;
+        color: $foreground-color;
+        box-shadow: none;
+      }
+    }
+
+    .requestStatus {
+      min-width: 10rem;
+      height: 2.5rem;
+      padding: 1rem;
+      text-transform: capitalize;
+      background: $status-initiated-background-color;
+      color: $status-initiated-text-color;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: normal;
+      letter-spacing: -0.3px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}

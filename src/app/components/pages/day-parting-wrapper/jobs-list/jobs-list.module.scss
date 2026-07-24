@@ -1,0 +1,30 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.jobListPageContainer {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+
+  .jobListContainer {
+    margin: 0 1rem;
+
+    .tableDiv {
+      width: 100%;
+      height: auto;
+      display: flex;
+    }
+  }
+
+  .header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+  }
+
+  .cell {
+    width: 100%;
+    font-size: 1.2rem;
+  }
+}

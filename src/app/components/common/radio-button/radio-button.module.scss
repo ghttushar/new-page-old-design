@@ -1,0 +1,12 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.radioContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .labelContainerStyle {
+    display: flex;
+    align-items: center;
+  }
+}

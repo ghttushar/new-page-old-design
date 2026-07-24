@@ -1,0 +1,16 @@
+@import '../../../../../../../assets/styles/variables/custom-table.scss';
+
+.td {
+  @include cell-style();
+  .wrapper {
+    border-top: 1px solid #dbdde9;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  .tdDiv {
+    min-height: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+}

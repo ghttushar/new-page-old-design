@@ -1,0 +1,26 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  width: 100%;
+  background-color: $background-color;
+  flex-direction: column;
+
+  .homepageSubContainer {
+    padding: 1rem;
+    height: calc(100vh - 8rem - $header-height);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .contentContainer {
+      width: 55rem;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}

@@ -1,0 +1,115 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.maintenanceContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $foreground-color;
+  padding: $spacing-20;
+}
+
+.contentWrapper {
+  text-align: center;
+  max-width: 80rem;
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10rem;
+  height: 10rem;
+  background: $primary-color-dropzone;
+  border-radius: 50%;
+  margin-bottom: $spacing-40;
+}
+
+.maintenanceIcon {
+  font-size: 5rem !important;
+  color: $primary-color;
+}
+
+.mainTitle {
+  font-size: 3.2rem;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  margin-bottom: $spacing-20;
+  font-family: $font-family;
+  letter-spacing: -0.05rem;
+
+  @media (min-width: 768px) {
+    font-size: 4rem;
+  }
+}
+
+.description {
+  font-size: $font-size-16;
+  font-weight: $font-weight-400;
+  color: $sub-text;
+  line-height: 1.6;
+  margin-bottom: $spacing-40;
+  font-family: $font-family;
+
+  @media (min-width: 768px) {
+    font-size: $font-size-18;
+  }
+}
+
+.statusIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-10;
+  background: $background-color-2;
+  padding: $spacing-12 $spacing-20;
+  border-radius: 10rem;
+  margin-bottom: $spacing-40;
+}
+
+.pulsingDot {
+  width: 0.8rem;
+  height: 0.8rem;
+  background: $primary-color;
+  border-radius: 50%;
+  animation: pulseAnimation 2s ease-in-out infinite;
+}
+
+.statusText {
+  font-size: $font-size-12;
+  color: $sub-text-1;
+  font-weight: $font-weight-500;
+  font-family: $font-family;
+  letter-spacing: 0.05rem;
+}
+
+.supportText {
+  font-size: $font-size-14;
+  color: $sub-text;
+  font-family: $font-family;
+  font-weight: $font-weight-400;
+}
+
+.supportLink {
+  color: $primary-color;
+  text-decoration: none;
+  font-weight: $font-weight-600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $primary-color-variant-1;
+  }
+}
+
+// Animations
+@keyframes pulseAnimation {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}

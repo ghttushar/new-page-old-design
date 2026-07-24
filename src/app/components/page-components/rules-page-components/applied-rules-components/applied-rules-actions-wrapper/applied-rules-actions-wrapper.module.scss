@@ -1,0 +1,70 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.actionsWrapper {
+  position: relative;
+  border-radius: 0.8rem;
+  padding: 0.5rem;
+  cursor: pointer;
+
+  .actionIcon {
+    padding: 0;
+  }
+
+  &:hover {
+    background-color: $background-color-4;
+
+    .actionIcon {
+      fill: $primary-color;
+    }
+  }
+
+  .optionsContainer {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    min-width: 12rem;
+    background-color: $foreground-color;
+    border: 0.5px solid $stoke-color-1;
+    z-index: 1000;
+    box-shadow: 0 0 0.8rem rgba(0, 0, 0, 0.2);
+
+    .option {
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      height: auto;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 400;
+
+      &:hover {
+        background-color: $table-selected-row-background-color-new;
+        color: $primary-color;
+        font-weight: 500;
+      }
+    }
+
+    .disabled-option {
+      cursor: not-allowed;
+      color: $border-color-2;
+      background-color: $table-selected-row-background-color-new;
+
+      &:hover {
+        color: $border-color-2;
+        font-weight: 400;
+      }
+    }
+  }
+}
+
+.popupDescription {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $sub-text-1;
+  line-height: 2rem;
+
+  .ruleName {
+    font-weight: 700;
+  }
+}

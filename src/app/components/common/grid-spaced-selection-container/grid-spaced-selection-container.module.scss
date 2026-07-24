@@ -1,0 +1,88 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+@mixin selectedOptionStyles() {
+  background: linear-gradient(
+    99.66deg,
+    rgba(137, 77, 181, 1) 4.22%,
+    rgba(98, 5, 167, 1) 89%
+  );
+  color: $foreground-color;
+}
+
+@mixin selectedOptionNewStyles() {
+  background: linear-gradient(
+    137.27deg,
+    rgba(122, 75, 235, 1) 14.75%,
+    rgba(42, 109, 244, 1) 85.25%
+  );
+  color: $foreground-color;
+}
+
+.gridContainer {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+
+  .itemButton {
+    width: 2.4rem;
+    height: 2.4rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $sub-text-1;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $background-color-6;
+    }
+  }
+
+  .withItemContainer {
+    background: $background-color-5;
+  }
+
+  .isSelected {
+    @include selectedOptionStyles();
+
+    &:hover {
+      @include selectedOptionStyles();
+    }
+  }
+
+  .isSelectedNewStyles {
+    @include selectedOptionNewStyles();
+
+    &:hover {
+      @include selectedOptionNewStyles();
+    }
+  }
+
+  .disabled {
+    background: $background-color-5;
+    color: $border-color-2;
+    cursor: not-allowed;
+
+    &:hover {
+      background: $background-color-5;
+      color: $border-color-2;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.flexWidthGrid {
+  place-items: stretch;
+
+  .flexWidthItem {
+    width: auto;
+    min-width: fit-content;
+    padding: 0.8rem 1.6rem;
+    height: auto;
+    font-size: 1.2rem;
+    white-space: nowrap;
+  }
+}

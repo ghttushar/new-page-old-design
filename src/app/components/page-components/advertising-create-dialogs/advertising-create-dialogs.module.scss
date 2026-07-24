@@ -1,0 +1,269 @@
+@import 'src/assets/styles/variables/variables.scss';
+.imageStyles {
+  width: 3rem;
+  height: 3rem;
+  margin-right: 1rem;
+}
+
+.titleTextContainer {
+  display: flex;
+  width: auto;
+}
+
+.titleButtonContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.descriptionContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 1rem;
+  height: 100%;
+  overflow: hidden;
+
+  .vl {
+    height: 100%;
+    width: 1px;
+    background-color: $stoke-color-1;
+  }
+
+  .componentsContainer {
+    padding: 2rem;
+    width: 49%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    flex: 1;
+    overflow: hidden;
+
+    .boxContainer {
+      width: 100%;
+      height: auto;
+    }
+
+    .inputContainer {
+      width: 100%;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+
+      .customBidContainer {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 4rem;
+
+        .inputErrorCheckContainer {
+          position: relative;
+        }
+      }
+    }
+
+    .buttonContainer {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .searchContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+
+      .filteredListContainer {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 30vh;
+        max-height: 100%;
+      }
+    }
+  }
+
+  .dataContainer {
+    width: 49%;
+    height: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1rem;
+
+    .dataHeader {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .addedListContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      max-height: 90%;
+    }
+  }
+
+  .dataListContainer {
+    width: 47%;
+    height: 100%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1rem;
+  }
+}
+
+.listContainer {
+  width: 100%;
+  height: 60rem;
+  padding: 0;
+  margin: 0;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2rem;
+  overflow: auto;
+
+  .progress {
+    width: 100%;
+    height: 30rem;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.emptyTable {
+  width: 100%;
+  height: 20rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.errorText {
+  color: #d32f2f;
+  font-weight: 400;
+  font-size: 0.75rem;
+  text-align: left;
+  margin-top: 3px;
+  position: absolute;
+  width: 10rem;
+}
+
+.tableErrorText {
+  color: #d32f2f;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.66;
+  letter-spacing: 0.03333em;
+  text-align: left;
+  margin-top: 3px;
+  max-width: 11rem;
+}
+
+.productNameContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .productTitle {
+    width: 100%;
+    text-decoration: none;
+    color: $black-text;
+
+    p {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+    }
+
+    :hover {
+      text-decoration: underline;
+    }
+  }
+
+  .productSubtitle {
+    color: $sub-text;
+  }
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.columnDivider {
+  width: 1px;
+  height: 110%;
+  background-color: $stoke-color-1;
+}
+
+.addKeywordContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+
+  .matchTypeContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .bidContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+}
+
+.textBoxContainer {
+  width: 100%;
+  height: auto;
+
+  .boxContainer {
+    width: 100%;
+    min-height: 20rem;
+    border: 1px solid $stoke-color-1;
+    border-radius: 0.6rem;
+  }
+}
+
+.totalCount {
+  background-color: $background-color-2;
+  padding: 0.4rem 0.8rem;
+  color: $primary-color;
+  font-weight: 600;
+  font-size: 1.7rem;
+  line-height: 100%;
+  margin-left: 1rem;
+  align-self: center;
+}

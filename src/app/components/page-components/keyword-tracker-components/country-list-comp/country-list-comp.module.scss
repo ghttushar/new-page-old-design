@@ -1,0 +1,16 @@
+.container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  flex-direction: column;
+  font-weight: 500;
+  column-gap: 0.8rem;
+  row-gap: 0.4rem;
+  font-size: 1rem;
+
+  .iconContainer {
+    display: flex;
+    gap: 0.8rem;
+  }
+}

@@ -1,0 +1,28 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  width: 100%;
+  background-color: #f3f5fa;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .title {
+    h3 {
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: #464646;
+      margin-top: 1rem;
+      line-height: 3.3rem;
+      letter-spacing: 0.4px;
+    }
+  }
+
+  .options {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-end;
+  }
+}

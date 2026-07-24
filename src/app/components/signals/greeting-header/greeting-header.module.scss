@@ -1,0 +1,48 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.greetingHeader {
+  padding: $spacing-8 $spacing-10;
+  margin-bottom: $spacing-8;
+
+  .greeting {
+    font-size: $font-size-20;
+    font-weight: $font-weight-600;
+    color: $main-text;
+    margin: 0;
+
+    .name {
+      color: $primary-color;
+    }
+  }
+
+  .subtitle {
+    font-size: $font-size-12;
+    color: $sub-text-2;
+    margin-top: $spacing-4;
+    font-weight: $font-weight-400;
+  }
+
+  .modeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-4;
+    margin-top: $spacing-8;
+    padding: $spacing-4 $spacing-10;
+    border-radius: 2rem;
+    font-size: $font-size-10;
+    font-weight: $font-weight-500;
+    border: 1px solid $border-color-4;
+
+    &.live {
+      background: rgba($positive-color, 0.08);
+      border-color: $positive-color;
+      color: $positive-color;
+    }
+
+    &.assisted {
+      background: rgba($primary-color, 0.08);
+      border-color: $primary-color;
+      color: $primary-color;
+    }
+  }
+}

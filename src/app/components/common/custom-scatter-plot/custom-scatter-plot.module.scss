@@ -1,0 +1,48 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  height: 40rem;
+  width: 100%;
+  background: $foreground-color;
+  box-shadow: 0 0.2rem 0.4rem 0 rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  border-radius: 0.4rem;
+  position: relative;
+
+  .scatterChart {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .emptyStateContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.zoomControls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.loadingWrapper {
+  margin-top: 2rem;
+}
+
+.loadingContainer {
+  position: relative;
+  height: 46vh;
+  width: 100%;
+  background-color: $foreground-color;
+  margin-top: 2rem;
+  border-radius: 0.4rem;
+  box-shadow: 0 0.2rem 0.4rem 0 rgba(0, 0, 0, 0.15);
+}

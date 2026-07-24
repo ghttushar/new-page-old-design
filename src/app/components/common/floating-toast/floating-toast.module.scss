@@ -1,0 +1,17 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.floatingToast {
+  position: fixed;
+  top: 85%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #000;
+  color: #fff;
+  border-radius: 0.4rem;
+  padding: 0.8rem 1rem;
+  z-index: 500;
+
+  p {
+    font-size: 1.2rem;
+  }
+}

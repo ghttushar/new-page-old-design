@@ -1,0 +1,123 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  padding: 0.4rem 1rem 0;
+}
+
+.viewerContainer {
+  width: 100%;
+  min-height: 100vh;
+  background: $background-color;
+}
+
+.cardsGrid {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  width: 100%;
+  margin: 0.4rem 0 1.4rem;
+}
+
+.reportCard {
+  display: flex;
+  width: calc(33.333% - 0.8rem);
+  border: 1px solid $stoke-color-1;
+  border-radius: 0.4rem;
+  background: $foreground-color;
+  box-shadow: 0rem 0.2rem 0.4rem 0rem rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cardAccent {
+  width: 0.5rem;
+  background: linear-gradient(180deg, $primary-color 0%, #b89cff 100%);
+}
+
+.cardContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.8rem;
+  padding: 1.4rem;
+}
+
+.cardTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #52525b;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.marketplaceTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: capitalize;
+}
+
+.cardTagPrimary {
+  background: rgba(127, 86, 217, 0.12);
+  color: $primary-color;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #18181b;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 2.3rem;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.cardAction {
+  width: fit-content;
+  min-height: 2.8rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  border: 1px solid $primary-color;
+  background: $foreground-color;
+  color: $primary-color;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $primary-color;
+    color: $foreground-color;
+  }
+}
+
+@media (max-width: 1400px) {
+  .reportCard {
+    width: calc(50% - 0.6rem);
+  }
+}
+
+@media (max-width: 1100px) {
+  .reportCard {
+    width: 100%;
+  }
+}

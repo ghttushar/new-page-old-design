@@ -1,0 +1,14 @@
+@import 'src/assets/styles/variables/custom-table.scss';
+@import 'src/assets/styles/variables/variables.scss';
+
+.thead {
+  @include cell-style();
+  position: sticky;
+  top: 0px;
+  z-index: 2;
+}
+
+.tr {
+  // border: 1px solid rgb(218, 222, 235);
+  background-color: white;
+}

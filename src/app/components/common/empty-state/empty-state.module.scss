@@ -1,0 +1,42 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.emptyContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 2rem;
+
+  .emptyDialog {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    .emptyDescription {
+      width: 51rem;
+      word-wrap: break-word;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+  }
+
+  .addButton {
+    height: 3.2rem;
+    width: 13rem;
+    border-radius: 0;
+    background: $foreground-color;
+    color: $primary-color;
+    text-transform: none;
+    box-shadow: none;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.2rem;
+    border: 2px solid $primary-color;
+
+    &:hover {
+      background: $primary-color;
+      color: $foreground-color;
+      box-shadow: none;
+    }
+  }
+}

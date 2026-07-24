@@ -1,0 +1,22 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.creativeCellContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .titleContainer {
+    width: 100%;
+    min-width: 25rem;
+    overflow: hidden;
+    white-space: nowrap;
+
+    .titleName {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+    }
+  }
+}

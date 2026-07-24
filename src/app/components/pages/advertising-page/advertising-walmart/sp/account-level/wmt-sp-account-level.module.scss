@@ -1,0 +1,73 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.accountLvlContainer {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.productNameContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .productTitle {
+    text-decoration: none;
+    color: $black-text;
+    text-wrap: wrap;
+
+    p {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+    }
+
+    :hover {
+      text-decoration: underline;
+    }
+  }
+
+  .productSubtitle {
+    color: $sub-text;
+  }
+}
+
+.titleContainer {
+  width: 100%;
+  min-width: 25rem;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .titleName {
+    width: fit-content;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.1rem;
+    white-space: pre-wrap;
+  }
+}
+
+.capitalizeText {
+  text-transform: capitalize;
+}
+
+.noDataView,
+.budgetView {
+  font-size: 1.1rem;
+}
+
+.header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: 100%;
+}
+
+.cell {
+  font-size: 1.2rem;
+  font-weight: 400;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

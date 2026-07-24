@@ -1,0 +1,98 @@
+@import 'src/assets/styles/variables/variables.scss';
+.chatbotContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+  border: none;
+
+  .welcomeMsg {
+    font-size: 2rem;
+    line-height: 2.8rem;
+    margin-top: 2rem;
+    font-weight: 600;
+    background: linear-gradient(90deg, #77469b 0%, #a542ed 50%, #59009b 100%);
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subWelcomeMSG {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-bottom: 3rem;
+    margin-top: 1rem;
+    color: #969696;
+  }
+
+  .promptCardContainer {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 3rem;
+    width: 100%;
+
+    &.expanded {
+      max-width: min(56rem, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    &.compact {
+      max-width: 100%;
+    }
+
+    .promptCard {
+      padding: 1.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.8rem;
+      box-shadow: 0rem 0rem 0.25rem 0rem rgba(0, 0, 0, 0.25);
+      font-size: 1.1rem;
+      font-weight: 400;
+      line-height: 1.4rem;
+      background-color: $foreground-color;
+      color: $black-text;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease-in;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      &:hover {
+        opacity: 1;
+        border-radius: 0.8rem;
+        border: 1px solid transparent;
+        box-shadow: 0rem 0rem 0.25rem 0rem #77469b80;
+        color: $primary-color;
+        background: linear-gradient($foreground-color, $foreground-color)
+            padding-box,
+          linear-gradient(90deg, #77469b 0%, #5f03a2 100%) border-box;
+      }
+
+      &:active,
+      &:focus {
+        background-color: #f4f4f4;
+      }
+    }
+  }
+
+  .staticPageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    height: 100%;
+
+    p {
+      font-size: 1.4rem;
+      color: #6b7280;
+    }
+  }
+}

@@ -1,0 +1,113 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/scrollbar.scss';
+@import 'src/assets/styles/variables/common-new-ui/common-new-ui.module.scss';
+
+@mixin promptTextStyles() {
+  font-weight: 400;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: $border-color-2;
+  display: inline-flex;
+  align-items: center;
+}
+
+@mixin tagStyles() {
+  display: inline-block;
+  max-width: 8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0.2rem 0.3rem;
+  border: 0.5px solid $border-color-5;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: $sub-text-1;
+  font-style: normal;
+  background-color: $foreground-color;
+}
+
+.taggingContainer {
+  width: 20rem;
+  height: auto;
+
+  .searchContainer {
+    width: 100%;
+    border-bottom: 0.5px solid $border-color-5;
+    padding: 1rem;
+
+    .textBoxContainer {
+      width: 100%;
+
+      .error {
+        @include errorStyles();
+        width: 100%;
+        font-size: 0.7rem;
+        margin-top: 1px;
+      }
+    }
+
+    .removeContainer {
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 1rem 0.3rem 0 0.3rem;
+    }
+  }
+
+  .listContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+
+    .noTagMessage {
+      width: 100%;
+      padding: 1rem;
+      @include promptTextStyles();
+    }
+
+    .tagCreatePrompt {
+      width: 100%;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+
+      .createPrompt {
+        @include promptTextStyles();
+      }
+
+      .createPrompt:first-child {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .tagBoxContainer {
+        @include tagStyles();
+      }
+
+      .promptEndAlign {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-shrink: 0;
+      }
+    }
+
+    .listActionContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      max-height: 25rem;
+      overflow-y: auto;
+      @include fancy-scrollbar();
+    }
+  }
+}

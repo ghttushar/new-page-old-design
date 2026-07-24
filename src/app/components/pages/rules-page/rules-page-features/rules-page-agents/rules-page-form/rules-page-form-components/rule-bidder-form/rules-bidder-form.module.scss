@@ -1,0 +1,41 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+.bidderSettingsContainer {
+  @include infoContainerStyles();
+
+  .infoContainerTitle {
+    @include infoContainerTitleStyles();
+  }
+
+  .optionsAction {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .fieldTitle {
+    @include fieldTitleStyles(600);
+  }
+
+  .disclaimer {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 2px;
+    margin-top: 5px;
+
+    p {
+      font-weight: 400;
+      font-size: 0.8rem;
+      line-height: 144%;
+      color: $info-primary-color;
+    }
+  }
+
+  .error {
+    @include errorStyles();
+  }
+}

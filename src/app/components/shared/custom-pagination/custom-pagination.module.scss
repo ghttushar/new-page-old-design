@@ -1,0 +1,39 @@
+.paginationWrapper {
+  .pagination {
+    box-sizing: border-box;
+    border: 1px solid rgb(218, 222, 235);
+    border-top: unset;
+    padding: 1rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 2rem;
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.8);
+    background-color: white;
+    .pageSizeDropdown {
+      border: none;
+      font-size: 0.8rem;
+      color: #444;
+
+      &:focus {
+        outline: none; /* Remove the focus outline */
+        border-color: #007bff; /* Border color on focus */
+      }
+
+      option {
+        background-color: #fff; /* Background color for dropdown options */
+        color: #333; /* Text color for dropdown options */
+      }
+    }
+    .paginationControls {
+      .btn {
+        background-color: transparent;
+        border: unset;
+        cursor: pointer;
+        padding: 1rem;
+      }
+    }
+  }
+}

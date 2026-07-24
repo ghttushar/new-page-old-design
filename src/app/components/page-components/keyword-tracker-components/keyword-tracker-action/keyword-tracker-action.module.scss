@@ -1,0 +1,17 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.buttonContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  .tableButtonContainer {
+    display: flex;
+    gap: $spacing-10;
+    height: 4.8rem;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0.4rem;
+  }
+}

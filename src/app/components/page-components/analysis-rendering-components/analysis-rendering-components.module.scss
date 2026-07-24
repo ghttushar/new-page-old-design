@@ -1,0 +1,17 @@
+.analysisContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1rem;
+
+  .analysisMainContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .tableHeader {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}

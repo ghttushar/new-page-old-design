@@ -1,0 +1,21 @@
+.insightTableWrapper {
+  cursor: pointer;
+  padding: 1rem;
+  border-radius: 0.4rem;
+  transition: all 0.2s ease;
+
+  .selectedCount {
+    padding: 0.125rem;
+    font-size: 0.9rem;
+    color: #808080;
+    font-weight: bold;
+  }
+}
+
+.dialogActions {
+  padding: 1.5rem 2rem !important;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  border-top: 1px solid #e0e0e0;
+}

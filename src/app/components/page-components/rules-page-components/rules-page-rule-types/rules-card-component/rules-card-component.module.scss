@@ -1,0 +1,60 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/variables/common-new-ui/common-new-ui.module.scss';
+@import 'src/app/components/page-components/rules-page-components/rules-page-rule-types/rules-types-component/rules-types-component.module.scss';
+
+.cardContainer {
+  height: auto;
+  border-radius: 0.8rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 1.6rem;
+  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .cardTitle {
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 144%;
+    color: $sub-text-1;
+    transition: color 0.3s ease;
+  }
+
+  .cardDescription {
+    font-weight: 400;
+    font-size: 1.2rem;
+    line-height: 144%;
+    color: $sub-text-2;
+  }
+
+  &:hover {
+    border-width: 0;
+    border-style: none;
+    cursor: pointer;
+
+    .cardTitle {
+      background: linear-gradient(94.09deg, #7a4beb 8.82%, #2a6df4 98.86%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+}
+
+.three_grid_card_container {
+  flex: 0 1 calc(33.3% - ($gap-between-cards * 2) / 3);
+}
+
+.two_grid_card_container {
+  flex: 0 1 calc(50% - $gap-between-cards / 2);
+}
+
+.card_container_outside_popup {
+  @include hoverStylesWithShadow();
+}
+
+.card_container_inside_popup {
+  @include hoverStylesWithShadow(0.5px, solid);
+}

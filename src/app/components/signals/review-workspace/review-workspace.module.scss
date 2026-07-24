@@ -1,0 +1,192 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.reviewWorkspace {
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .header {
+    padding: $spacing-16;
+    border-bottom: 1px solid $border-color-4;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-8;
+
+    .headerInfo {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sourceBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: $font-size-9;
+      font-weight: $font-weight-500;
+      color: $sub-text-3;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .title {
+      font-size: $font-size-16;
+      font-weight: $font-weight-600;
+      color: $main-text;
+      margin: $spacing-4 0 0 0;
+      line-height: 1.3;
+    }
+
+    .closeBtn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: $sub-text-3;
+      font-size: 1.6rem;
+      padding: 0.2rem;
+      line-height: 1;
+      border-radius: 0.3rem;
+
+      &:hover {
+        background: $icon-background-color;
+        color: $main-text;
+      }
+    }
+  }
+
+  .body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-16;
+  }
+
+  .section {
+    margin-bottom: $spacing-20;
+
+    .eyebrow {
+      font-size: $font-size-9;
+      font-weight: $font-weight-600;
+      color: $sub-text-3;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: $spacing-8;
+    }
+
+    .valueBlock {
+      background: linear-gradient(135deg, $foreground-color, rgba($primary-color, 0.03));
+      border: 1px solid $border-color-4;
+      border-radius: 0.6rem;
+      padding: $spacing-12;
+
+      .amount {
+        font-size: $font-size-24;
+        font-weight: $font-weight-700;
+        color: $positive-color;
+        line-height: 1.2;
+      }
+
+      .caption {
+        font-size: $font-size-10;
+        color: $sub-text-3;
+        margin-top: $spacing-2;
+      }
+    }
+
+    .text {
+      font-size: $font-size-12;
+      color: $sub-text-1;
+      line-height: 1.6;
+      margin-top: $spacing-8;
+    }
+
+    .inputList {
+      list-style: none;
+      padding: 0;
+      margin: $spacing-8 0 0 0;
+
+      li {
+font-size: $font-size-10;
+        color: $sub-text-2;
+        padding: $spacing-4 0;
+        display: flex;
+        align-items: flex-start;
+        gap: $spacing-4;
+
+        &::before {
+          content: '›';
+          color: $primary-color;
+          font-weight: $font-weight-700;
+        }
+      }
+    }
+  }
+
+  .footer {
+    padding: $spacing-12 $spacing-16;
+    border-top: 1px solid $border-color-4;
+    display: flex;
+    gap: $spacing-8;
+    flex-wrap: wrap;
+    background: linear-gradient(to top, rgba($background-color, 0.5), transparent);
+
+    .primaryBtn {
+      background: $primary-color;
+      color: $foreground-color;
+      border: none;
+      padding: $spacing-4 $spacing-16;
+      border-radius: 0.4rem;
+      font-size: $font-size-10;
+      font-weight: $font-weight-500;
+      cursor: pointer;
+      transition: background 0.15s;
+
+      &:hover {
+        background: $primary-color-variant-1;
+      }
+    }
+
+    .secondaryBtn {
+      background: transparent;
+      color: $sub-text-2;
+      border: 1px solid $border-color-4;
+      padding: $spacing-4 $spacing-16;
+      border-radius: 0.4rem;
+      font-size: $font-size-10;
+      cursor: pointer;
+      transition: all 0.15s;
+
+      &:hover {
+        border-color: $primary-color;
+        color: $primary-color;
+      }
+    }
+  }
+
+  .emptyDetail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: $spacing-40;
+    text-align: center;
+    color: $sub-text-3;
+
+    .bigIcon {
+      font-size: 4rem;
+      margin-bottom: $spacing-12;
+      opacity: 0.3;
+    }
+
+    h3 {
+      font-size: $font-size-14;
+      font-weight: $font-weight-500;
+      color: $sub-text-2;
+      margin: 0;
+    }
+  }
+}

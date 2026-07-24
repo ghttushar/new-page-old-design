@@ -1,0 +1,199 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+.criteriaContainer {
+  @include infoContainerStyles();
+  box-shadow: none;
+  border: 0.5px solid $border-color-3;
+
+  .criteriaInfoContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .priorityCountContainer {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+
+      .criteriaName {
+        width: 100%;
+      }
+
+      .collapsedNameContainer {
+        width: 100%;
+        flex: 1;
+        min-width: 0;
+
+        .collapsedName {
+          font-weight: 500;
+          font-size: 1.4rem;
+          color: $sub-text-1;
+          line-height: 130%;
+          display: flex;
+        }
+      }
+    }
+
+    .prioritySubText {
+      width: 100%;
+      padding: 0;
+      font-weight: 400;
+      font-size: 1rem;
+      line-height: auto;
+      color: $border-color-1;
+    }
+
+    .criteriaActions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+
+      .icon {
+        @include containerCaretChangeStyles();
+      }
+    }
+  }
+
+  .criteriaDetailsContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+
+    .conditionContainer {
+      @include infoContainerStyles();
+      margin-top: 0.2rem;
+      box-shadow: none;
+      background-color: $gray-50;
+      padding: 1.5rem;
+      gap: 1.2rem;
+
+      .cardTitle {
+        font-weight: 500;
+        font-size: 1.2rem;
+        line-height: 144%;
+        color: $sub-text-1;
+        align-self: flex-start;
+        display: flex;
+      }
+    }
+
+    .criteriaActionContainer {
+      width: 100%;
+      min-width: 0;
+      align-self: flex-start;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .criteriaActionRow {
+        width: 100%;
+        display: grid;
+        align-items: start;
+
+        --gap: 1rem;
+        gap: var(--gap);
+
+        > * {
+          width: 100%;
+          min-width: 0;
+        }
+
+        .actionDeleteButton {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+      }
+
+      .actionValueContainer {
+        width: 100%;
+        align-self: flex-end;
+      }
+
+      .criteriaActionButton {
+        margin-top: 1rem;
+      }
+
+      .adjustmentSingleRow {
+        grid-template-columns:
+          calc((100% - 3 * var(--gap)) * 0.32)
+          calc((100% - 3 * var(--gap)) * 0.32)
+          calc((100% - 3 * var(--gap)) * 0.32)
+          calc((100% - 3 * var(--gap)) * 0.04);
+      }
+
+      .actionSingleRow {
+        grid-template-columns:
+          calc((100% - var(--gap)) * 0.22)
+          calc((100% - var(--gap)) * 0.22);
+      }
+    }
+  }
+
+  .criteriaCompressedContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.2rem;
+    color: $border-color-2;
+    padding-right: 2rem;
+    font-weight: 400;
+    min-width: 0;
+
+    .compressedConditions {
+      flex: 1 1 calc(70% - 1rem);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .compressedAction {
+      flex: 1 1 calc(30% - 1rem);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .compressedTitle {
+      font-weight: 500;
+    }
+  }
+
+  .fieldTitle {
+    @include fieldTitleStyles(600);
+  }
+
+  .error {
+    @include errorStyles();
+    width: 100%;
+  }
+
+  .criteriaSeparator {
+    width: 100%;
+    border-top: 0.5px solid $border-color-3;
+  }
+}
+
+.noOpacityLabel {
+  opacity: 0;
+  margin-bottom: 0.2rem;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 144%;
+  letter-spacing: -2%;
+}

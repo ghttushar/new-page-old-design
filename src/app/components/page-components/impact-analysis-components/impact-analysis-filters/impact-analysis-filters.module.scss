@@ -1,0 +1,23 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.filtersContainer {
+  width: 100%;
+  border: 1px solid $stoke-color-1;
+  background-color: $foreground-color;
+  padding: 1rem 1rem 1.6rem 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1rem;
+
+  .middleText {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    height: 3rem;
+    width: auto;
+    font-size: 1.2rem;
+  }
+}

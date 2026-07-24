@@ -1,0 +1,96 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.tooltipDataDiv {
+  width: 100%;
+  min-height: 10rem;
+}
+
+.divider {
+  width: 100%;
+  height: 2px;
+  background-color: $disable-color;
+  border-radius: 2px;
+  margin: 0.7rem 0;
+}
+
+.titleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: $sub-text-1;
+
+  .titleLine {
+    font-size: 1.2rem !important;
+    font-weight: 700;
+  }
+}
+
+.bodyDiv {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  padding-top: 0.5rem;
+
+  .bodyEmptyContainer {
+    position: relative;
+    overflow: hidden;
+    height: 1.8rem;
+    width: 100%;
+    height: auto;
+  }
+
+  .bodyContainer {
+    position: relative;
+    overflow: hidden;
+    height: 1.8rem;
+    width: 100%;
+    background: #f8f8f8;
+    border: 0.5px solid #d5d5d5;
+    border-radius: 0.2rem;
+
+    .bodyPercentage1 {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      float: 'left';
+      border-radius: 0 0.2rem 0.2rem 0;
+    }
+
+    .noDataMsg {
+      padding: 0;
+      margin: 1px 3px;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .bodyContent {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px 5px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 600;
+      width: 100%;
+    }
+    .itemName {
+      width: 75%;
+      font-size: 1rem;
+      line-height: 144%;
+      overflow: hidden;
+      font-weight: 700;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: $sub-text-1;
+    }
+
+    .itemValue {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $sub-text-1;
+    }
+  }
+}

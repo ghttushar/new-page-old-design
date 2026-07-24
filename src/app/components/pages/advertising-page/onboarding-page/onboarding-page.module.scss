@@ -1,0 +1,181 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.onboardingContainer {
+  margin: 2rem 2.5rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5rem;
+
+  .onboardingHeaderContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+
+    .title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 3.5rem;
+      letter-spacing: -1.7%;
+      color: #77469b;
+    }
+    .subTitle {
+      font-size: 2rem;
+      font-weight: 400;
+      margin-top: 0.5rem;
+      opacity: 60%;
+      color: #050505;
+    }
+  }
+  .warningCard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    .linkStyle {
+      color: #77469b;
+      font-weight: 1000;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  .onboardingWrapper {
+    display: flex;
+    gap: 6rem;
+    justify-content: center;
+    align-items: flex-start;
+    border-radius: 0.5rem;
+    flex-wrap: wrap;
+
+    .onboardingSubWrapper {
+      max-width: 35rem;
+      padding: 2rem 2rem 2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+      border-radius: 0.7rem;
+      background-color: $foreground-color;
+
+      .accountTypeLogo {
+        min-height: 8rem;
+        max-height: 25rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .walmartConnectCard {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        margin-bottom: 1.3rem;
+        margin-top: 3.5rem;
+      }
+
+      .stepDetails {
+        padding: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
+        row-gap: 2rem;
+
+        .stepTexts {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          p {
+            margin-top: 0.5rem;
+          }
+
+          .stepLogoImg {
+            object-fit: contain;
+            width: 30%;
+          }
+        }
+      }
+    }
+  }
+
+  .borderLine {
+    width: 90%;
+    height: 0.1rem;
+    background: $stoke-color-1;
+  }
+
+  .onboardingFooter {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3rem;
+
+    .onboardingFooterText {
+      display: flex;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    .onboardingFooterCardContainer {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      min-width: 0;
+      padding: 1rem;
+
+      .onboardingFooterCard {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 0.8rem;
+        min-width: 0;
+
+        .onboardingFooterCardImg {
+          width: 4rem;
+          height: 4rem;
+          border: 1px solid $stoke-color-1;
+          object-fit: contain;
+        }
+
+        .onboardingFooterCardTextContainer {
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+          min-width: 0;
+
+          .onboardingFooterCardTitle {
+            font-size: 1.3rem;
+            font-weight: 700;
+          }
+
+          .onboardingFooterCardDescription {
+            font-size: 1.1rem;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+}
+
+.disabled {
+  cursor: not-allowed;
+}
+
+.enabled {
+  cursor: pointer;
+}

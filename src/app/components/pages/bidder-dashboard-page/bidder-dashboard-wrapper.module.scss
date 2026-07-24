@@ -1,0 +1,13 @@
+.wrapperContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.centerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}

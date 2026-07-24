@@ -1,0 +1,75 @@
+name: Frontend Build and Deploy[develop]
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: --max_old_space_size=4096
+  AWS_REGION: us-east-1
+  S3_BUCKET: anarix-application-dev
+  CLOUDFRONT_DISTRIBUTION_ID: E1NQOMJGU6CTCA
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install and Build
+        run: |
+          npm ci
+          npx nx reset
+          npm run build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.FRONTEND_DEPLOY_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.FRONTEND_DEPLOY_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Deploy static assets (JS, CSS, images) with long cache duration
+      - name: Deploy Static Assets to S3
+        run: |
+          aws s3 sync dist/anarix-ui/ s3://${{ env.S3_BUCKET }}/ \
+            --delete \
+            --exclude "index.html" \
+            --cache-control "public,max-age=31536000,immutable"
+
+      # Deploy index.html with no cache to ensure users always get the latest version
+      - name: Deploy index.html to S3
+        run: |
+          aws s3 cp dist/anarix-ui/index.html s3://${{ env.S3_BUCKET }}/index.html \
+            --cache-control "public,max-age=0,must-revalidate"
+
+      # Invalidate only index.html in CloudFront (free, fast, efficient)
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/index.html" "/index.html?*"
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "✅ Frontend build and deployment succeeded!"
+          echo "🌐 Live at: https://app.anarix.ai"
+          echo "📦 Build artifacts uploaded to S3"
+          echo "🔄 CloudFront cache invalidated"
+
+      - name: Send notification on failure
+        if: failure()
+        run: echo '❌ Frontend build and deployment failed. Check the logs for more details.'

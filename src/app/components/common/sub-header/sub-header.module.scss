@@ -1,0 +1,72 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.subHeader {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  padding: 0 0.2rem;
+  background-color: #f3f5fa;
+  min-height: 8rem;
+}
+
+.subHeaderContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  padding: 1rem 1rem;
+  width: 100%;
+  .rowFilter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3rem;
+    width: auto;
+    background-color: $foreground-color;
+    cursor: pointer;
+    gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    outline: none;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: -0.24px;
+    border: 1px solid #dadeeb;
+    color: $sub-text-1;
+    border-radius: 0.4rem;
+
+    &:hover {
+      border-color: #8b8b8b;
+    }
+  }
+}
+
+.subHeaderTitle {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #464646;
+  padding: 0rem 0 0rem 0;
+  font-weight: 700;
+  line-height: 29.05px;
+  align-items: end;
+  gap: 1rem;
+  .subHeaderSubTitle {
+    padding-top: 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #8b8b8b;
+    line-height: 14.52px;
+    height: 1.7rem;
+    text-transform: none;
+  }
+}
+
+.subHeaderFilter {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: $spacing-10;
+}

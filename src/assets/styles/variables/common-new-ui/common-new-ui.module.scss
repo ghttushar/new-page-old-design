@@ -1,0 +1,152 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+@function is-css-function($value) {
+  @return type-of($value) == string and
+    (str-index($value, 'var(') == 1 or str-index($value, 'calc(') == 1);
+}
+
+@mixin check-number-units-validity($value, $property) {
+  $valid-border-width-strings: inherit initial medium thick thin unset none;
+
+  @if type-of($value) == number {
+    @if unitless($value) and $value != 0 {
+      @error "#{$property} must have a unit unless it is 0";
+    }
+  } @else if type-of($value) == string {
+    @if not(
+      index($valid-border-width-strings, $value) or is-css-function($value)
+    )
+    {
+      @error "Invalid #{$property} keyword: #{$value}";
+    }
+  } @else {
+    @error "Invalid #{$property} type";
+  }
+}
+
+@mixin check-line-styles-validity($value, $property) {
+  $valid-border-styles: solid dashed dotted double groove ridge inset outset
+    none hidden;
+
+  @if type-of($value) != string or not index($valid-border-styles, $value) {
+    @error "Invalid #{$property}: #{$value}";
+  }
+}
+
+@mixin checkValidityWithShadow(
+  $borderWidth,
+  $borderStyle,
+  $blurSize,
+  $blurSpread
+) {
+  @include check-number-units-validity($borderWidth, 'border-width');
+  @include check-line-styles-validity($borderStyle, 'border-style');
+  @include check-number-units-validity($blurSize, 'blur');
+  @include check-number-units-validity($blurSpread, 'blur-spread');
+}
+
+@mixin checkValidity($borderWidth, $borderStyle) {
+  @include check-number-units-validity($borderWidth, 'border-width');
+  @include check-line-styles-validity($borderStyle, 'border-style');
+}
+
+@mixin focusedActiveStylesWithShadow(
+  $borderWidth: 0.5px,
+  $borderStyle: solid,
+  $blurSize: 16px,
+  $blurSpread: 3px
+) {
+  border: $borderWidth $borderStyle transparent;
+  background: linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(
+        90.2deg,
+        rgba(122, 75, 235, 0.6) 0.09%,
+        rgba(42, 109, 244, 0.6) 99.55%
+      )
+      border-box;
+  box-shadow: 0 0 $blurSize $blurSpread rgba(42, 109, 244, 0.25);
+}
+
+@mixin hoverStylesWithShadow(
+  $borderWidth: 0.5px,
+  $borderStyle: solid,
+  $blurSize: 12px,
+  $blurSpread: 2px
+) {
+  @include checkValidityWithShadow(
+    $borderWidth,
+    $borderStyle,
+    $blurSize,
+    $blurSpread
+  );
+  border: $borderWidth $borderStyle transparent;
+  &:hover {
+    border: $borderWidth $borderStyle transparent;
+    background: linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(
+          90.2deg,
+          rgba(122, 75, 235, 0.6) 0.09%,
+          rgba(42, 109, 244, 0.6) 99.55%
+        )
+        border-box;
+    box-shadow: 0 0 $blurSize $blurSpread rgba(42, 109, 244, 0.25);
+  }
+}
+
+@mixin MuiFocusedActiveStylesWithShadow(
+  $borderWidth: 0.5px,
+  $borderStyle: solid,
+  $blurSize: 16px,
+  $blurSpread: 3px
+) {
+  @include checkValidityWithShadow(
+    $borderWidth,
+    $borderStyle,
+    $blurSize,
+    $blurSpread
+  );
+
+  &.Mui-focused,
+  &.Mui-active {
+    @include focusedActiveStylesWithShadow();
+  }
+}
+
+@mixin focusedActiveStyles($borderWidth: 0.5px, $borderStyle: solid) {
+  border: $borderWidth $borderStyle $black-text;
+  background: $foreground-color;
+}
+
+@mixin hoverStyles($borderWidth: 0.5px, $borderStyle: solid) {
+  @include checkValidity($borderWidth, $borderStyle);
+  border: $borderWidth $borderStyle $black-text;
+  &:hover {
+    border: $borderWidth $borderStyle $black-text;
+    background: $foreground-color;
+  }
+}
+
+@mixin MuiFocusedActiveStyles($borderWidth: 0.5px, $borderStyle: solid) {
+  @include checkValidity($borderWidth, $borderStyle);
+
+  &.Mui-focused,
+  &.Mui-active {
+    @include focusedActiveStyles();
+  }
+}
+
+@mixin mirrorEffectStyles() {
+  background: rgb(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(255, 255, 255, 0.3);
+}
+
+@mixin errorStyles() {
+  width: 15rem;
+  color: $error-color;
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-top: 5px;
+  text-wrap: 'wrap';
+}

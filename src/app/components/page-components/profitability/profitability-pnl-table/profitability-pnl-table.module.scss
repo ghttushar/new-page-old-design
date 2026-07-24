@@ -1,0 +1,94 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.parameterHeaderContent {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: $sub-text-1;
+
+  .caretIcon {
+    &:hover {
+      color: $primary-color;
+    }
+  }
+
+  .parameterLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.parameterContent {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 500;
+  font-size: 1.2rem;
+  color: $sub-text-1;
+  transition: all 0.15s ease;
+  background: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 26rem !important;
+  // margin-left: -1rem;
+
+  &.expandable {
+    cursor: pointer;
+  }
+
+  .caretIcon {
+    &:hover {
+      color: $primary-color !important;
+    }
+  }
+
+  .parameterLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.dateHeaderContent {
+  font-size: 1.2rem;
+  font-weight: 400;
+  white-space: pre;
+  font-weight: 600;
+}
+
+.dateCellContent {
+  font-size: 1.1rem;
+}
+
+.totalHeaderContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: $sub-text-1;
+  text-align: center;
+}
+
+.totalCellContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 1.2rem;
+  font-weight: 600;
+  height: 100%;
+  padding: 0 1rem;
+}
+
+.tableWrapper {
+  width: 100%;
+  background: $foreground-color;
+  box-shadow: 0 0.1rem 0.3rem 0 rgba(0, 0, 0, 0.1);
+}

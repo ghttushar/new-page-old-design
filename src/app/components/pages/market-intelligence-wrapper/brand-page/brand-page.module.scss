@@ -1,0 +1,38 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.dashboardPage {
+  display: flex;
+  width: 100%;
+  background-color: $background-color;
+  flex-direction: column;
+
+  .dashboardContainer {
+    padding: 1rem;
+
+    .tableHeader {
+      width: 100%;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+
+      .buttonContainer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+
+        .showChartButton {
+          text-transform: none;
+          color: $primary-color;
+          font-size: 1rem;
+          font-weight: 600;
+          padding: 0;
+
+          &:hover {
+            background-color: transparent;
+          }
+        }
+      }
+    }
+  }
+}

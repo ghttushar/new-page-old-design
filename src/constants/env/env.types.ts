@@ -1,0 +1,23 @@
+export interface IEnvVariables {
+  AUTH_BASE_URL: string;
+  DAYPARTING_BASE_URL: string;
+  TARGET_SOV_BASE_URL: string;
+  AMC_BASE_URL: string;
+  BIDDER_BASE_URL: string;
+  PRICE_TRACKER_BASE_URL: string;
+  AMAZON_ADS_BASE_URL: string;
+  ADVERTISING_BASE_URL: string;
+  MONITORING_BASE_URL: string;
+  MARKET_INTELLIGENCE_BASE_URL: string;
+  TARGETING_ACTION_BASE_URL: string;
+  WALMART_ADS_BASE_URL: string;
+  JIVA_LLM_BASE_URL: string;
+  RULES_BASE_URL: string;
+  WALMART_MARKETPLACE_REDIRECT_URL: string;
+  WALMART_SUPPLIER_REDIRECT_URL: string;
+  AMAZON_ADS_REDIRECT_URL: string;
+  AMZ_CLIENT_ID: string;
+  AMAZON_SP_REDIRECT_URL: string;
+  ENV: string;
+  UNDER_MAINTENANCE: string;
+}

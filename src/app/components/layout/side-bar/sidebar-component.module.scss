@@ -1,0 +1,97 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.sidebarItem {
+  cursor: pointer;
+  margin-bottom: 0px;
+
+  &.active {
+    color: $primary-color;
+  }
+}
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+
+  .icon {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.primaryText {
+  color: $primary-color;
+  font-weight: 600 !important;
+  font-size: 1.2rem;
+}
+
+.caret {
+  transition: transform 0.3s ease;
+
+  &.expanded {
+    transform: rotate(180deg);
+  }
+}
+.sidebarComp {
+  font-size: $font-size-10;
+  font-weight: $font-weight-400;
+  font-family: $font-family;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  gap: 0.2rem;
+
+  .divider {
+    height: 1px;
+    width: 90%;
+    background-color: $stoke-color-1;
+  }
+}
+
+.sidebarText {
+  font-weight: $font-weight-400;
+}
+.subMenuHover {
+  height: 3rem;
+  &:hover {
+    background-color: white;
+    box-shadow: 0.1rem 0.1rem 0.8rem 0.1rem rgba($color: #000000, $alpha: 0.1);
+    color: $primary-color;
+    font-weight: 600;
+    width: auto;
+  }
+}
+.disabled {
+  color: #bfbfbf;
+  cursor: not-allowed;
+  &:hover {
+    background-color: inherit;
+    box-shadow: none;
+  }
+}
+
+.subMenuText {
+  border: 0.2rem white;
+  background-color: #f5f6f7;
+  margin: 0.5rem;
+  &.active {
+    color: $primary-color;
+  }
+}
+
+.normal {
+  cursor: 'pointer';
+}
+
+.MenuActive {
+  background-color: white;
+  box-shadow: 0.1rem 0.1rem 0.8rem 0.1rem rgba($color: #000000, $alpha: 0.1);
+  color: $primary-color;
+  font-weight: 600;
+}

@@ -1,0 +1,80 @@
+$scrollbar-width: 0.8rem;
+$scrollbar-track-bg: #f1f1f1;
+$scrollbar-thumb-start-color: #d7d7d7;
+$scrollbar-thumb-end-color: #c0c0c0;
+
+@mixin fancy-scrollbar {
+  /* Hide the default scrollbar */
+  &::-webkit-scrollbar {
+    width: $scrollbar-width;
+    height: $scrollbar-width; // Ensures correct height for horizontal scrollbar
+  }
+
+  /* Scrollbar track */
+  &::-webkit-scrollbar-track {
+    background: $scrollbar-track-bg;
+  }
+
+  /* Scrollbar thumb */
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      to bottom,
+      $scrollbar-thumb-start-color,
+      $scrollbar-thumb-end-color
+    );
+    border-radius: calc($scrollbar-width / 2);
+  }
+
+  /* Scrollbar thumb on hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      to bottom,
+      darken($scrollbar-thumb-start-color, 10%),
+      darken($scrollbar-thumb-end-color, 10%)
+    );
+  }
+
+  /* Scrollbar thumb when active (clicked) */
+  &::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(
+      to bottom,
+      darken($scrollbar-thumb-start-color, 20%),
+      darken($scrollbar-thumb-end-color, 20%)
+    );
+  }
+
+  /* Horizontal scrollbar thumb */
+  &::-webkit-scrollbar-thumb:horizontal {
+    background: linear-gradient(
+      to right,
+      $scrollbar-thumb-start-color,
+      $scrollbar-thumb-end-color
+    );
+  }
+
+  /* Horizontal scrollbar thumb on hover */
+  &::-webkit-scrollbar-thumb:horizontal:hover {
+    background: linear-gradient(
+      to right,
+      darken($scrollbar-thumb-start-color, 10%),
+      darken($scrollbar-thumb-end-color, 10%)
+    );
+  }
+
+  /* Horizontal scrollbar thumb when active (clicked) */
+  &::-webkit-scrollbar-thumb:horizontal:active {
+    background: linear-gradient(
+      to right,
+      darken($scrollbar-thumb-start-color, 20%),
+      darken($scrollbar-thumb-end-color, 20%)
+    );
+  }
+}
+
+@mixin fancy-scrollbar-horizontal {
+  @include fancy-scrollbar;
+  &::-webkit-scrollbar {
+    height: $scrollbar-width;
+    width: auto; // Ensures the vertical scrollbar is not affected
+  }
+}

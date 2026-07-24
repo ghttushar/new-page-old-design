@@ -1,0 +1,15 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.amcNavContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background-color: $foreground-color;
+  border: 0.1rem solid $stoke-color-1;
+  padding: 2rem;
+
+  .dateRange {
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,16 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.accountAvatar {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: $primary-color;
+  color: $foreground-color;
+  font-weight: 500;
+  font-size: 3rem;
+  text-align: center;
+  line-height: 48.41px;
+}

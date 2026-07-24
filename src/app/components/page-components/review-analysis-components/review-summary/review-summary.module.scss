@@ -1,0 +1,127 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.ReviewSummaryWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  width: 100%;
+  gap: $spacing-16;
+
+  .ReviewSummaryReportWrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: start;
+    width: 100%;
+    gap: $spacing-20;
+    background-color: #fff;
+    padding: 4rem;
+    border: 1px solid $stoke-color-1;
+
+    .ReviewSummaryReportBox {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: start;
+      gap: $spacing-16;
+      flex: 1;
+
+      .ReviewSummaryReportTitle {
+        font-size: $font-size-16;
+        font-weight: $font-weight-600;
+        color: #000;
+      }
+
+      .ReviewSummaryReportSummary {
+        font-size: $font-size-12;
+        font-weight: $font-weight-400;
+        color: #000;
+        line-height: 1.4;
+
+        span {
+          font-weight: $font-weight-700;
+        }
+      }
+
+      .ReviewSummaryReportBorderLine {
+        width: 100%;
+        border-top: 1px solid $stoke-color-1;
+        margin-top: $spacing-10;
+      }
+    }
+  }
+
+  .verticalBorder {
+    border-right: 1px solid $stoke-color-1;
+    height: 110%;
+    margin: 0 $spacing-8;
+  }
+}
+
+.TableWrapper {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+
+  .ReviewSummaryTable {
+    width: 100%;
+
+    th {
+      font-size: $font-size-12;
+      font-weight: $font-weight-400;
+      color: $disable-text;
+      padding: $spacing-10;
+      text-align: start;
+    }
+
+    td {
+      font-size: $font-size-14;
+      font-weight: $font-weight-400;
+      color: #000;
+      padding: $spacing-10;
+      text-align: start;
+    }
+
+    .centerAlign {
+      text-align: center;
+    }
+
+    .bold {
+      font-weight: $font-weight-600;
+      cursor: pointer;
+    }
+  }
+}
+
+.ReviewScoreCell {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 10rem;
+  font-size: 0.9rem;
+
+  .CellContent {
+    padding: 0.2rem;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .Positive {
+    background-color: #d3abf1;
+    border-radius: 1rem 0 0 1rem;
+  }
+
+  .Negative {
+    background-color: #ffb7bc;
+  }
+
+  .Neutral {
+    background-color: #e2e2e2;
+    border-radius: 0 1rem 1rem 0;
+  }
+}

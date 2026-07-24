@@ -1,0 +1,69 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/page-components/rules-page-components/rules-page-rule-types/rules-types-component/rules-types-component.module.scss';
+@import 'src/assets/styles/scrollbar.scss';
+
+.templatePopupContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 3rem;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+
+  .popupDescriptionContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    .popupDescription {
+      flex: 0 0 calc(80% - 1.5rem);
+      font-size: 1.5rem;
+      line-height: 144%;
+      font-weight: 300;
+      color: $border-color-1;
+      padding: 0;
+
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .templateContainer {
+    width: 100%;
+    max-height: 18rem;
+    flex: 1;
+    padding: 5px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: $gap-between-cards;
+
+    @include fancy-scrollbar();
+
+    .templateNotFoundText {
+      width: 100%;
+      font-size: 1.5rem;
+      line-height: 144%;
+      font-weight: 300;
+      padding: 0;
+      color: rgb(0, 0, 0, 0.7);
+      text-align: center;
+    }
+  }
+}

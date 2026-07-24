@@ -1,0 +1,46 @@
+.promptContainer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  gap: 1rem;
+  .progressBarContainer {
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    .notificationContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+
+      .headerContainer {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: start;
+        margin-left: -0.4rem;
+        font-size: 2rem;
+        line-height: 144%;
+        letter-spacing: -0.02rem;
+        font-weight: 500;
+        color: #464646;
+      }
+      .textContainer {
+        font-size: 1.4rem;
+        font-weight: 400;
+        max-width: 22rem;
+        letter-spacing: -0.02rem;
+        text-align: left;
+        line-height: 144%;
+      }
+    }
+  }
+
+  .buttonContainer {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    margin-top: 0.4rem;
+  }
+}

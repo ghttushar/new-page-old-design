@@ -1,0 +1,262 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.modalBackdrop {
+  z-index: 500;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  opacity: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: hidden;
+
+  .modalContainer {
+    z-index: 2000;
+    position: absolute;
+    width: 100%;
+    max-width: 42rem;
+    height: 100%;
+    max-height: 100vh;
+    background-color: $foreground-color;
+    border: 1px solid $stoke-color-1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    .initialState {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10rem;
+
+      .initialText {
+        font-size: $font-size-16;
+        font-weight: $font-weight-700;
+        text-align: center;
+        margin-top: 1rem;
+      }
+    }
+
+    .chatContainer {
+      height: 74vh;
+      width: 100%;
+
+      .chatContainerHeader {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 5rem;
+      }
+    }
+
+    .expand {
+      max-height: 55rem;
+    }
+
+    .collapse {
+      max-height: 11rem;
+    }
+
+    .viewAll {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: $font-size-10;
+      font-weight: $font-weight-600;
+      color: $sub-text;
+      border: 1px solid $stoke-color-1;
+      padding: $spacing-4 $spacing-8;
+      border-radius: 0.3rem;
+      margin: $spacing-10 16rem;
+      background-color: #fff;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .promptWrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+
+      .promptContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: $spacing-4;
+        padding: $spacing-16;
+        border: 1px solid #d1aceb;
+        border-radius: 0.5rem;
+        width: 30rem;
+        background-color: $primary-color-dropzone;
+        cursor: pointer;
+
+        &:hover {
+          border: 1px solid $primary-color;
+        }
+
+        .promptText {
+          font-size: $font-size-10;
+          font-weight: $font-weight-500;
+          text-align: center;
+        }
+      }
+    }
+
+    .footerText {
+      font-size: $font-size-9;
+      font-weight: $font-weight-400;
+      text-align: center;
+      margin: $spacing-10;
+      color: $disable-color;
+
+      span {
+        font-weight: $font-weight-700;
+        color: #8e8e8e;
+      }
+    }
+  }
+}
+
+.chatWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: scroll;
+  height: 100%;
+  width: 100%;
+  padding: $spacing-16 $spacing-8;
+
+  .chatMessageWrapper {
+    display: grid;
+    width: 100%;
+    margin-bottom: $spacing-12;
+    gap: $spacing-12;
+
+    .chatBlock {
+      .chatHeader {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: $spacing-8;
+        width: 100%;
+        height: 2.5rem;
+        padding: 0 1rem 0 0;
+      }
+
+      .chatMessageContainer {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        margin-bottom: $spacing-4;
+        max-width: 30rem;
+        background-color: $primary-color-dropzone;
+        padding: $spacing-16;
+        border: 1px solid $alt-primary-color;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        overflow-x: auto;
+
+        .chatText {
+          font-size: $font-size-12;
+          font-weight: $font-weight-500;
+          text-align: start;
+          line-height: 1.5;
+          p {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+          }
+          ol,
+          ul {
+            margin-bottom: 1rem;
+            p {
+              margin-bottom: unset;
+            }
+            margin-left: 0.5rem;
+            li {
+              margin-left: 1rem;
+            }
+          }
+        }
+      }
+
+      .chatMessageContainer::-webkit-scrollbar {
+        height: 0.5rem;
+        border-radius: 5rem;
+      }
+
+      .chatMessageContainer::-webkit-scrollbar-thumb {
+        background-color: $stoke-color-1;
+        border-radius: 5rem;
+      }
+
+      .chatMessageContainer::-webkit-scrollbar-track {
+        background-color: $primary-color-dropzone;
+      }
+    }
+  }
+}
+
+.chatWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.inputPromptContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  border: 1px solid $primary-color;
+  border-radius: 0.5rem;
+  padding: $spacing-8;
+  width: 100%;
+
+  input {
+    width: 100%;
+    height: 3rem;
+    border-radius: 0;
+    font-size: $font-size-12;
+    font-weight: $font-weight-500;
+    border: none;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .chatSendButton {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+.gptLoader {
+  display: grid;
+  width: 100%;
+}
+
+.overlay {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.5);
+  bottom: 0;
+  left: 0;
+  border-radius: 1rem 1rem 0 0;
+  width: 100%;
+  z-index: 100;
+  height: 100%;
+}

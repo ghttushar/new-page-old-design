@@ -1,0 +1,33 @@
+.container {
+  position: relative;
+  height: auto;
+  .root {
+    position: relative;
+  }
+
+  .bottom {
+    color: #b2b2b2;
+  }
+
+  .top {
+    animation-duration: 400ms;
+    position: absolute;
+    left: 0;
+  }
+
+  .circle {
+    stroke-linecap: round;
+  }
+
+  .text {
+    font-weight: 700;
+    font-size: 3rem;
+    display: flex;
+    position: absolute;
+    top: 5.2rem;
+    left: 3.8rem;
+    justify-content: end;
+    align-items: center;
+    min-width: 7rem;
+  }
+}

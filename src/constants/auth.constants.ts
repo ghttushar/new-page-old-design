@@ -1,0 +1,11 @@
+export const WALMART_ADVERTISING_ID_HEADER_KEY = 'walmartadvertiserid';
+export const WALMART_PARTNER_ID_HEADER_KEY = 'walmartpartnerid';
+export const WALMART_SUPPLIER_ID_HEADER_KEY = 'walmartsupplierid';
+export const AMAZON_ADVERTISING_PROFILE_ID_HEADER_KEY = 'amazonProfileId';
+export const AMC_INSTANCE_ID = 'instanceId';
+export const AMAZON_SP_PARTNER_ID = 'sellingpartnerid';
+export const NEW_AMAZON_SP_PARTNER_ID = 'sellingPartnerId';
+export const AUTHORIZATION_HEADER_ID = 'Authorization';
+export const MESSAGE_EXECUTION_MODE_HEADER_ID = 'executionMode';
+export const DSP_ADVERTISER_ID = 'dspAdvertiserId';
+export const VERSION_TYPE_BODY_KEY = 'version';

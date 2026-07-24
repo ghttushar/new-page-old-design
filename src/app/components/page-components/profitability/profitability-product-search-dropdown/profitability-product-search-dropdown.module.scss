@@ -1,0 +1,118 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.autocompleteContainer {
+  position: relative;
+  z-index: 10;
+}
+
+.selectedProductContainer {
+  background: $foreground-color;
+  border: 0.1rem solid $stoke-color-1;
+  border-radius: 0.8rem;
+  padding: 1.6rem;
+  box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.08);
+}
+
+.selectedTitle {
+  margin: 0 0 1.2rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $black-text;
+  border-bottom: 0.1rem solid $stoke-color-1;
+  padding-bottom: 0.8rem;
+}
+
+.selectedProductsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.selectedProduct {
+  background: #f8f9fa;
+  border: 0.1rem solid $stoke-color-1;
+  border-radius: 0.6rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.08);
+  }
+}
+
+.containerWrapper {
+  width: auto;
+
+  .autocomplete {
+    .inputContainer {
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+.optionWrapper {
+  width: 100%;
+  padding: 0.8rem;
+  border-bottom: 0.1rem solid $stoke-color-1;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .selectAllContainer {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    .selectAllText {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.selectionCounterContainer {
+  position: absolute;
+  right: 0.4rem;
+  display: flex;
+  background: transparent;
+  z-index: 1000;
+  align-items: center;
+  justify-content: end;
+
+  .selectionCounterBadge {
+    font-size: 1rem;
+    border-radius: 0.4rem;
+    padding: 0.2rem 0.4rem;
+    background: #f5f6f7;
+    align-items: center;
+    gap: 0.4rem;
+    display: flex;
+    color: #464646;
+    border: 1px solid #bbb;
+
+    .clearIcon {
+      cursor: pointer;
+    }
+  }
+}

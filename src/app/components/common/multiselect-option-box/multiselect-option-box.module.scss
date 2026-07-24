@@ -1,0 +1,109 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import '../../../../assets/styles/scrollbar.scss';
+
+.optionBoxContainer {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  .optionBoxDropdownContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.2rem;
+    position: relative;
+
+    .optionBoxDropdown {
+      background: $foreground-color;
+      border: 1px solid $stoke-color-1;
+      border-radius: 0.4rem;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &:hover {
+        border-color: #8b8b8b;
+        cursor: pointer;
+      }
+
+      &:active {
+        border-color: $primary-color;
+      }
+
+      &:focus {
+        border-color: $primary-color;
+      }
+    }
+
+    .optionBoxDropdownDisabled {
+      &:hover {
+        border-color: $stoke-color-1;
+        cursor: pointer;
+      }
+
+      &:active {
+        border-color: $stoke-color-1;
+      }
+
+      &:focus {
+        border-color: $stoke-color-1;
+      }
+    }
+  }
+
+  .optionBox {
+    height: 30rem;
+    background: $foreground-color;
+    position: absolute;
+    box-shadow: 0 0 0.4rem 0 rgba(0, 0, 0, 0.2);
+    border-radius: 0.4rem;
+    z-index: 1000;
+    padding: 1.5rem 0;
+    top: 6rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+
+    .searchContainer {
+      width: 95%;
+    }
+
+    .optionBoxButtonContainer {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .optionBoxOptionsContainerVertical {
+      width: 95%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      @include fancy-scrollbar();
+
+      .optionBoxOption {
+        width: 100%;
+      }
+    }
+  }
+
+  .optionBoxDropdownLabel {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.4rem;
+    background: #d9d9d9;
+    color: #464646;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 2rem;
+    padding: 0.4rem;
+    margin-right: 3px;
+  }
+}

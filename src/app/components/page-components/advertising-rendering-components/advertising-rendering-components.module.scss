@@ -1,0 +1,21 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.advertisingContainer {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  .creativeDisplay {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .noCreativeDisplay {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

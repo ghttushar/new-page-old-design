@@ -1,0 +1,32 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.headerContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0.5rem 0;
+  margin-bottom: 1.2rem;
+
+  .graphHeaderButton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: auto;
+    gap: 1rem;
+
+    .hideChartButton {
+      text-transform: none;
+      color: $primary-color;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0;
+
+      &:hover {
+        background-color: $foreground-color;
+      }
+    }
+  }
+}

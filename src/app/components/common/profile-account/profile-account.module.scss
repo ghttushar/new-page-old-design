@@ -1,0 +1,13 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.profileAccountContainer {
+  width: 100%;
+  display: flex;
+  padding: 0 0.8rem;
+  gap: 0.8rem;
+
+  .icon {
+    height: 2rem;
+    width: 2rem;
+  }
+}

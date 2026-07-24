@@ -1,0 +1,28 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.signalsPage {
+  padding: $spacing-8;
+
+  .layout {
+    display: grid;
+    grid-template-columns: 22rem 1fr 48rem;
+    gap: $spacing-12;
+    align-items: start;
+    height: calc(100vh - 12rem);
+    margin-top: $spacing-8;
+  }
+
+  .centerCol {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .rightCol {
+    height: 100%;
+    overflow: hidden;
+    position: sticky;
+    top: $spacing-8;
+  }
+}

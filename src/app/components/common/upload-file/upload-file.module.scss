@@ -1,0 +1,168 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.uploadContainer {
+  .uploadTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: -0.36px;
+    padding: 0;
+  }
+
+  .uploadDescription {
+    color: $black-text;
+    font-size: 1.3rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: -0.2px;
+  }
+  .button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3rem;
+    width: auto;
+    background-color: $foreground-color;
+    cursor: pointer;
+    gap: 0.5rem;
+    padding: 0.9rem;
+    outline: none;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: -0.24px;
+    border: 1px solid #dadeeb;
+    color: #464646;
+    border-radius: 0.4rem;
+
+    &:hover {
+      border-color: #8b8b8b;
+    }
+  }
+
+  .uploadButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3rem;
+    width: auto;
+    background-color: $foreground-color;
+    cursor: pointer;
+    gap: 0.5rem;
+    padding: 0.9rem;
+    outline: none;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: -0.24px;
+    border: 1px solid #dadeeb;
+    color: white;
+    border-radius: 0.4rem;
+    background-color: #b48ed0;
+  }
+}
+
+.bulkUploadContainer {
+  border-radius: 0.4rem;
+}
+
+.bulkUploadBox {
+  border: 1px dashed #a1a1a1;
+  border-radius: 0.4rem;
+  padding: 6rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.bulkUploadBoxWithFile {
+  padding: 0 1rem 15rem 0;
+}
+
+.emptyUploadState {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.uploadIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.templateRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.templateButton {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: $primary-color;
+  text-decoration: underline;
+  font: inherit;
+  text-transform: none;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.uploadMetaText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: #a1a1a1;
+  line-height: 1.16rem;
+  letter-spacing: -0.016rem;
+  text-align: center;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 4rem;
+  border: 1px solid #a1a1a1;
+  margin: 2rem;
+  border-radius: 0.6rem;
+}
+
+.loadingAnimation {
+  width: 7rem;
+  height: 7rem;
+}
+
+.loadingMessage {
+  width: 100%;
+  text-align: center;
+  font-size: 1.3rem;
+  color: #464646;
+}
+
+.loadingNote {
+  font-size: 1.1rem;
+}
+
+.actionsGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.hoverEffect {
+  text-decoration: underline;
+  &:hover {
+    color: $primary-color;
+  }
+}

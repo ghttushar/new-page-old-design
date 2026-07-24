@@ -1,0 +1,13 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.dashboardPage {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 5.3rem);
+  background-color: $background-color;
+  flex-direction: column;
+
+  .dashboardContainer {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,79 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+@mixin duplicateTitleStyles() {
+  font-size: 1.1rem;
+  color: $warning-text-color;
+  font-weight: 600;
+  line-height: 144%;
+}
+
+@mixin duplicateDescriptionStyles() {
+  font-size: 1.1rem;
+  color: $border-color-1;
+  font-weight: 400;
+  line-height: 144%;
+}
+
+// TODO: might be needed for new design
+// .duplicateCriteriaContainer {
+//   width: 100%;
+//   padding: 1rem 1rem 1rem 3rem;
+//   background: $warning-bg-color;
+//   border: 0.5px solid $warning-text-color;
+//   border-radius: 0.8rem;
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   align-items: flex-start;
+//   gap: 0.5rem;
+//   margin-bottom: 1rem;
+
+//   .duplicateTitleContainer {
+//     position: relative;
+//     display: flex;
+//     align-items: center;
+
+//     .duplicateIcon {
+//       position: absolute;
+//       left: -2rem;
+//     }
+
+//     .duplicateTitle {
+//       @include duplicateTitleStyles();
+//     }
+//   }
+
+//   .duplicateDescription {
+//     @include duplicateDescriptionStyles();
+//   }
+// }
+
+.duplicateWarningContainer {
+  width: 100%;
+  padding: 1rem;
+  background: $warning-bg-color;
+  border: 0.5px solid $warning-text-color;
+  border-radius: 0.8rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+
+  .duplicateTitleContainer {
+    display: flex;
+    align-items: center;
+
+    .duplicateTitle {
+      @include duplicateTitleStyles();
+    }
+  }
+
+  .duplicateDescription {
+    @include duplicateDescriptionStyles();
+  }
+}
+
+.marginBottom {
+  margin-bottom: 0.5rem;
+}

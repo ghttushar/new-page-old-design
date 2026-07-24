@@ -1,0 +1,64 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.bulkUploadContainer {
+  height: 12rem;
+  width: 100%;
+  position: relative;
+
+  .deleteFile {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+    cursor: pointer;
+    border-radius: 0.4rem;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s ease-in-out;
+    }
+  }
+
+  .bulkUploadBox {
+    border: 1px dashed $primary-color;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    height: 100%;
+    max-height: unset;
+    background: $primary-color-dropzone;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    .uploadImage {
+      width: 2.88rem;
+      height: 2.88rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .downloadLink {
+    color: $primary-color !important;
+    text-decoration-color: $primary-color;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+.chipBoxContainer {
+  width: 100%;
+  min-height: 20rem;
+  border: 1px solid $stoke-color-1;
+  border-radius: 0.6rem;
+}
+
+.disabled {
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}

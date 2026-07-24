@@ -1,0 +1,150 @@
+import { ColumnNameEnum } from '@/enums/advertising.enums';
+import { ColumnDef } from '@tanstack/react-table';
+import {
+  ACTIVE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  AD_ITEM_COLUMN,
+  AVG_CAP_OUT_TIME,
+  BID_MULTIPLIER_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  DAILY_BUDGET_COLUMN,
+  END_DATE_COLUMN,
+  KEYWORD_COLUMN,
+  KEYWORD_TEXT_COLUMN,
+  OVERALL_ADGROUP_NAME_EDIT_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  OVERALL_CAMPAIGN_NAME_EDIT_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN,
+  PAGE_TYPE_COLUMN,
+  PLATFORM_COLUMN,
+  PRODUCT_BID_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  START_DATE_COLUMN,
+  STATUS_COLUMN,
+  SUGGESTED_DAILY_BUDGET_COLUMN,
+  SUGGESTED_TOTAL_BUDGET_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  TOTAL_BUDGET_COLUMN,
+  VIEW_STATUS_COLUMN,
+  WALMART_AD_TYPE_COLUMN,
+  WALMART_BUDGET_TYPE_COLUMN,
+  WALMART_KEYWORD_BID_COLUMN,
+  WALMART_MATCH_TYPE_COLUMN,
+  WALMART_METRICS_COLUMNS,
+  WALMART_SEARCH_TERM_COLUMN,
+  WALMART_VIDEO_METRICS_COLUMNS,
+} from 'src/constants/table-columns/new-column-names.constants';
+import {
+  IWalmartOverallAdGroup,
+  IWalmartOverallCampaign,
+  IWalmartOverallKeywords,
+} from 'src/interfaces/advertising/walmart/walmart-overall-advertising.interface';
+import {
+  IWalmartAdItem,
+  IWalmartPageType,
+  IWalmartPlatform,
+  IWalmartSearchTerms,
+} from 'src/interfaces/advertising/walmart/walmart-sp-advertising.interface';
+
+export const walmartOverallCampaignColumns: Array<
+  ColumnDef<IWalmartOverallCampaign>
+> = [
+  ACTIVE_COLUMN(true, ColumnNameEnum.CAMPAIGN),
+  VIEW_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_EDIT_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  WALMART_AD_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  START_DATE_COLUMN,
+  END_DATE_COLUMN,
+  WALMART_BUDGET_TYPE_COLUMN,
+  TOTAL_BUDGET_COLUMN,
+  DAILY_BUDGET_COLUMN,
+  AVG_CAP_OUT_TIME,
+  SUGGESTED_DAILY_BUDGET_COLUMN,
+  SUGGESTED_TOTAL_BUDGET_COLUMN,
+  ...WALMART_METRICS_COLUMNS,
+  ...WALMART_VIDEO_METRICS_COLUMNS,
+] as Array<ColumnDef<IWalmartOverallCampaign>>;
+
+export const walmartOverallAdGroupsColumns: Array<
+  ColumnDef<IWalmartOverallAdGroup>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.ADGROUP),
+  OVERALL_ADGROUP_NAME_EDIT_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  WALMART_AD_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  ...WALMART_METRICS_COLUMNS,
+  ...WALMART_VIDEO_METRICS_COLUMNS,
+] as Array<ColumnDef<IWalmartOverallAdGroup>>;
+
+export const walmartOverallKeywordTargetingColumns: Array<
+  ColumnDef<IWalmartOverallKeywords>
+> = [
+  STATUS_COLUMN(true, ColumnNameEnum.KEYWORD),
+  KEYWORD_TEXT_COLUMN,
+  WALMART_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  WALMART_AD_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  WALMART_KEYWORD_BID_COLUMN,
+  ...WALMART_METRICS_COLUMNS,
+  ...WALMART_VIDEO_METRICS_COLUMNS,
+] as Array<ColumnDef<IWalmartOverallKeywords>>;
+
+export const walmartOverallAdItemsColumns: Array<ColumnDef<IWalmartAdItem>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.PRODUCT_AD),
+  AD_ITEM_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  WALMART_AD_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  PRODUCT_BID_COLUMN,
+  ...WALMART_METRICS_COLUMNS,
+] as Array<ColumnDef<IWalmartAdItem>>;
+
+export const walmartOverallPageTypeColumns: Array<ColumnDef<IWalmartPageType>> =
+  [
+    PAGE_TYPE_COLUMN,
+    CAMPAIGN_STATUS_COLUMN,
+    OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+    WALMART_AD_TYPE_COLUMN,
+    TARGETING_TYPE_COLUMN,
+    BID_MULTIPLIER_COLUMN(true),
+    ...WALMART_METRICS_COLUMNS,
+  ] as Array<ColumnDef<IWalmartPageType>>;
+
+export const walmartOverallPlatformColumns: Array<ColumnDef<IWalmartPlatform>> =
+  [
+    PLATFORM_COLUMN,
+    CAMPAIGN_STATUS_COLUMN,
+    OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+    WALMART_AD_TYPE_COLUMN,
+    TARGETING_TYPE_COLUMN,
+    BID_MULTIPLIER_COLUMN(),
+    ...WALMART_METRICS_COLUMNS,
+  ] as Array<ColumnDef<IWalmartPlatform>>;
+
+export const walmartOverallSearchTermColumns: Array<
+  ColumnDef<IWalmartSearchTerms>
+> = [
+  WALMART_SEARCH_TERM_COLUMN,
+  AD_ITEM_COLUMN,
+  KEYWORD_COLUMN,
+  WALMART_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  WALMART_AD_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  ...WALMART_METRICS_COLUMNS,
+] as Array<ColumnDef<IWalmartSearchTerms>>;

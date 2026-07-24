@@ -1,0 +1,102 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/scrollbar.scss';
+
+%childAlignment {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  & > .child {
+    flex: 1 1 100%;
+  }
+}
+
+.settingsContainer {
+  .titleButtonContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .descriptionContainer {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 1.5rem;
+    @include fancy-scrollbar();
+
+    .componentContainer {
+      width: 100%;
+    }
+
+    .idContainer {
+      @extend %childAlignment;
+
+      .reviewStatus {
+        display: inline-flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 0.3rem;
+      }
+    }
+
+    .tagsContainer {
+      @extend %childAlignment;
+
+      .infoContainer {
+        width: fit-content;
+        min-height: 2rem;
+        padding: 0rem 0.3rem;
+        color: #77469b;
+        border: 1px solid #77469b;
+        font-size: 1.1rem;
+        font-weight: 400;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 0.3rem;
+      }
+    }
+
+    .campaignOptionContainer {
+      @extend %childAlignment;
+      margin-top: 0.3rem;
+    }
+
+    .dateContainer {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .boxContainer {
+      width: 100%;
+      height: auto;
+      margin-top: 0.3rem;
+      border: 1px solid $stoke-color-1;
+      padding: 2rem 1rem;
+
+      .radioGroupContainer {
+        display: flex;
+        gap: 2rem;
+      }
+
+      .placementDropdownContainer {
+        margin-top: 2rem;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+
+        .dropdownComponent {
+          width: 80%;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.profilePage {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  .profileContainer {
+    padding: 1rem;
+
+    .tableDiv {
+      width: 100%;
+      height: auto;
+
+      .userType {
+        text-transform: capitalize;
+        font-size: 1.2rem;
+        font-weight: 400;
+        width: 100%;
+      }
+
+      .removeButton {
+        text-transform: none;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: $primary-color;
+
+        &:hover {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+}
+
+.tableHeader {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  width: 100%;
+}
+
+.nameCell {
+  margin-left: 2rem;
+  font-size: 1.2rem;
+  width: 100%;
+}

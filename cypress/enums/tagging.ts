@@ -1,0 +1,15 @@
+export enum TaggingTestIds {
+  TAG_ROW_TOGGLE_BUTTON = 'tag-row-toggle-button',
+  TAG_BULK_TOGGLE_BUTTON = 'tag-bulk-toggle-button',
+  TAG_POPUP = 'tag-popup',
+  TAG_SEARCH_CREATE_FIELD = 'tag-search-create-field',
+  TAG_CREATE_PROMPT = 'tag-create-prompt',
+  TAG_EMPTY_LIST_MSG = 'tag-empty-list-msg',
+  TAG_LIST = 'tag-list',
+  TAG_OPTION_COMPONENT = 'tag-option-component',
+  TAG_OPTION_EDIT_FIELD = 'tag-option-edit-field',
+  TAG_OPTION_EDIT_BUTTON = 'tag-option-edit-button',
+  TAG_OPTION_DELETE_BUTTON = 'tag-option-delete-button',
+  TAG_REMOVE_BUTTON = 'tag-remove-button',
+  TAG_BULK_REMOVE_BUTTON = 'tag-bulk-remove-button',
+}

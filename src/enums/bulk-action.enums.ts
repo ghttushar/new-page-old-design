@@ -1,0 +1,17 @@
+export enum BulkActionKeyEnum {
+  ACTIVE = 'active',
+  PAUSE = 'pause',
+  ARCHIVE = 'archive',
+  TAGGING = 'tagging',
+  END_DATE = 'endDate',
+  BIDDING_STRATEGY = 'biddingStrategy',
+  BUDGET = 'budget',
+  DAILY_BUDGET = 'dailyBudget',
+  TOTAL_BUDGET = 'totalBudget',
+  DEFAULT_BID = 'defaultBid',
+  WALMART_KEYWORD_BID = 'walmartKeywordBid',
+  WALMART_AD_ITEM_BID = 'walmartAdItemBid',
+  PAGE_TYPE_BID_MULTIPLIER = 'pageTypeBidMultiplier',
+  PLATFORM_BID_MULTIPLIER = 'platformBidMultiplier',
+  BID = 'bid',
+}

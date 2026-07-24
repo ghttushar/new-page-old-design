@@ -1,0 +1,73 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+@mixin getTextStyles(
+  $fontSize,
+  $fontWeight,
+  $lineHeight,
+  $letterSpacing,
+  $textAlign: left
+) {
+  font-size: $fontSize;
+  font-weight: $fontWeight;
+  line-height: $lineHeight;
+  letter-spacing: $letterSpacing;
+  text-align: $textAlign;
+}
+
+.customQueryFormContainer {
+  width: 60rem;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 3rem;
+  background: $foreground-color;
+  border: 1px solid $stoke-color-1;
+  padding: 2rem;
+
+  .headingInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .heading {
+      @include getTextStyles(2.4rem, 600, 29px, -0.03em);
+    }
+
+    .contactText {
+      @include getTextStyles(1.2rem, 400, 21px, -0.03em);
+    }
+
+    .contactInfo {
+      @include getTextStyles(1.4rem, 700, 21px, -0.03em);
+    }
+  }
+
+  .subHeading {
+    @include getTextStyles(1.8rem, 600, 24px, -0.03em);
+  }
+
+  .formFieldsContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .labelHeading {
+      @include getTextStyles(1.6rem, 500, 24px, -0.03em);
+      color: $black-text;
+    }
+
+    .timeDateContainer {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 2rem;
+    }
+  }
+}

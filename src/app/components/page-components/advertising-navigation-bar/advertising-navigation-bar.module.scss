@@ -1,0 +1,39 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  align-items: start;
+  width: 100%;
+  background-color: $foreground-color;
+  border: 0.1rem solid $stoke-color-1;
+  padding: 0.5rem 2rem;
+
+  .containerItem {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+
+    .notDisabledContainerItems {
+      cursor: pointer;
+      .containerItemButton {
+        margin-right: 2rem;
+
+        &:hover {
+          background-color: $foreground-color;
+        }
+      }
+    }
+
+    .disabledContainerItems {
+      cursor: not-allowed;
+      .containerItemButton {
+        margin-right: 2rem;
+
+        &:hover {
+          background-color: $foreground-color;
+        }
+      }
+    }
+  }
+}

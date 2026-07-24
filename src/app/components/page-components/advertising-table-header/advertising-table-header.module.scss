@@ -1,0 +1,124 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.Container {
+  display: flex;
+  width: 100%;
+  margin: 1rem 0 0rem 0;
+  padding: 1rem 0.2rem;
+  align-items: center;
+  justify-content: space-between;
+
+  .selectedOptionTitle {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #464646;
+  }
+
+  .titleArr {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.3rem 0.8rem;
+    border: 0.1rem solid $stoke-color-1;
+    background-color: $foreground-color;
+    height: 3rem;
+
+    p {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #000;
+      margin: 0 0.5rem;
+      cursor: pointer;
+    }
+  }
+
+  .disabledContainerItems {
+    cursor: not-allowed;
+
+    p {
+      cursor: not-allowed;
+    }
+  }
+
+  .tableHeaderButtons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .rowFilter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3rem;
+    width: auto;
+    background-color: $foreground-color;
+    cursor: pointer;
+    gap: 0.5rem;
+    padding: 0.9rem;
+    outline: none;
+    font-size: 1.2rem;
+    font-weight: 400;
+    border: 1px solid #dadeeb;
+    color: #464646;
+    border-radius: 0.4rem;
+
+    &:hover {
+      border-color: #8b8b8b;
+    }
+  }
+
+  .ColumnFilterContainer {
+    display: flex;
+    flex-direction: column;
+
+    .ColumnFilter {
+      position: absolute;
+      display: flex;
+      right: 20%;
+      margin-top: 3.5rem;
+      z-index: 1000;
+    }
+  }
+
+  .Button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem;
+    outline: none;
+    background-color: $foreground-color;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 400;
+    width: auto;
+    height: 3rem;
+    color: #464646;
+    gap: 0.3rem;
+    border: 1px solid #dadeeb;
+    border-radius: 0.4rem;
+    &:hover {
+      border-color: #8b8b8b;
+    }
+
+    img {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-top: 0.2rem;
+      margin-right: 0.3rem;
+    }
+  }
+
+  .showChartButton {
+    text-transform: none;
+    color: $primary-color;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}

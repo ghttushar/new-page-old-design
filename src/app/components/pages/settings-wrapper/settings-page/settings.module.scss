@@ -1,0 +1,183 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+@mixin textStyles($fontSize, $fontWeight, $lineHeight, $color: $black-text) {
+  font-size: $fontSize;
+  font-weight: $fontWeight;
+  line-height: $lineHeight;
+  color: $color;
+}
+
+.settingsComponent {
+  width: 100%;
+  background-color: $background-color;
+
+  .settingsSubContainer {
+    display: grid;
+    gap: 1.2rem;
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+    padding: 1.2rem;
+
+    .profileContainer {
+      width: 100%;
+      min-height: 8rem;
+      border: 1px solid $stoke-color-1;
+      background-color: $foreground-color;
+      padding: 2rem 3rem 2rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+
+      .profileAccountDetails {
+        width: 60%;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 3rem;
+
+        .accountDetails {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-basis: 40%;
+        }
+
+        .merchantInfo {
+          display: flex;
+          align-items: center;
+          gap: 0.2rem;
+
+          span {
+            @include textStyles(1.1rem, 600, 13.53px);
+          }
+        }
+
+        .accountDetails:nth-child(1) {
+          flex-basis: 100%;
+          h6 {
+            @include textStyles(1.1rem, 600, 1rem);
+          }
+
+          h4 {
+            @include textStyles(1.7rem, 700, 1.8rem);
+          }
+        }
+
+        .accountDetails:nth-child(2),
+        .accountDetails:nth-child(3) {
+          h6 {
+            @include textStyles(0.9rem, 600, 1rem);
+          }
+
+          h4 {
+            @include textStyles(1.2rem, 600, 1.8rem);
+          }
+        }
+      }
+
+      .profileDataDetails {
+        width: 40%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 3rem;
+
+        .dataDetails {
+          flex-basis: 20%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: flex-start;
+          gap: 0.5rem;
+          color: #000000 !important;
+
+          h5 {
+            @include textStyles(0.9rem, 600, 11.27px);
+            justify-self: center;
+          }
+        }
+
+        .dataDetails:nth-child(1) {
+          align-self: center;
+          margin-right: 1.5rem;
+        }
+
+        .dataDetails:nth-child(2),
+        .dataDetails:nth-child(4) {
+          align-items: flex-start;
+
+          h6 {
+            @include textStyles(1.1rem, 600, 13.53px);
+          }
+
+          p {
+            @include textStyles(1.1rem, 500, 14.65px, #475467);
+            display: inline-flex;
+            gap: 5px;
+          }
+        }
+
+        .dataDetails:nth-child(2) {
+          p {
+            width: 7vw;
+            display: flex;
+            justify-content: space-between;
+          }
+        }
+      }
+    }
+  }
+}
+.dashboardContainer {
+  .buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+
+    .addButton {
+      border-radius: 0;
+      background: $primary-color;
+      color: $foreground-color;
+      text-transform: none;
+      box-shadow: none;
+      padding: 0.5rem 1rem;
+      font-size: 1.1rem;
+      margin-right: 2.5rem;
+      margin-top: 2rem;
+      margin-left: -1rem;
+      &:hover {
+        background: $primary-color;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+.automationSection {
+  flex-direction: column;
+  width: 49%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0.6rem 0 0.7rem 1.2rem;
+
+  .automationLabel {
+    font-size: 1.2rem;
+    color: #7c7c7c;
+    display: flex;
+  }
+
+  .automationInfo {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    height: auto;
+  }
+}
+
+.disableSection {
+  color: gray;
+  opacity: 0.5;
+  cursor: not-allowed;
+}

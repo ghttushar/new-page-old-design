@@ -1,0 +1,32 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.WeeklyReviewTrendWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  width: 100%;
+  gap: $spacing-16;
+  min-width: 0;
+
+  .WeeklyReviewTrendTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .WeeklyTrendGraph {
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid $stoke-color-1;
+    padding: 2rem;
+    min-width: 0;
+  }
+}
+
+.reviewGraph {
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}

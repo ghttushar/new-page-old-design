@@ -1,0 +1,144 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.filterContainerWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  background-color: $foreground-color;
+  border: 1px solid $stoke-color-1;
+  gap: 2rem;
+  min-width: 0;
+  padding: 0 2rem;
+  box-shadow: 0rem 0.2rem 0.4rem 0rem rgba(0, 0, 0, 0.1);
+  border-radius: 0.4rem;
+
+  .filterContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    min-width: 0;
+
+    .filterContents {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 4rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      width: 100%;
+    }
+
+    .horizontalLine {
+      width: 100%;
+      height: 1px;
+      background-color: $stoke-color-1;
+    }
+
+    .filterTableContainer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem 1rem 0 1rem;
+      width: 100%;
+      gap: 2rem;
+
+      .priorityTab {
+        display: flex;
+        flex-direction: row;
+        align-items: end;
+        justify-content: center;
+        h4 {
+          font-size: 1.4rem;
+          font-weight: 500;
+          cursor: pointer;
+        }
+      }
+
+      .disabledPriorityTab {
+        display: flex;
+        flex-direction: row;
+        align-items: end;
+        justify-content: center;
+        cursor: not-allowed;
+        h4 {
+          font-size: 1.4rem;
+          font-weight: 500;
+          color: $disable-text;
+        }
+      }
+
+      .filters {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: start;
+        gap: 1rem;
+        p {
+          font-size: 1.2rem;
+          font-weight: 400;
+          color: $black-text;
+        }
+
+        .tableFilters {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          background-color: #fbf1ff;
+          border: 1.5px solid $primary-color;
+          border-radius: 0.5rem;
+          padding: 0.5rem;
+
+          h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: $primary-color;
+          }
+
+          .pencilStyle {
+            height: 1.5rem;
+            width: 1.5rem;
+            margin-left: 2px;
+            fill: $primary-color;
+          }
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
+
+        .clearOption {
+          background-color: white;
+          h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: $primary-color;
+          }
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+}
+
+.filterContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border: 1px solid #dadeeb;
+}

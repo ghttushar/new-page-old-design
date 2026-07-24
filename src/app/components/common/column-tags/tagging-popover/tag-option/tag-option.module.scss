@@ -1,0 +1,71 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/common/column-tags/tagging-popover/tagging-popover.module.scss';
+@import 'src/assets/styles/variables/common-new-ui/common-new-ui.module.scss';
+
+.tagActionContainerWrapper {
+  width: 100%;
+  cursor: pointer;
+
+  .tagActionContainer {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex: 1 1 calc(70% - 1rem);
+
+    .editTagContainer {
+      width: 100%;
+
+      .error {
+        @include errorStyles();
+        width: 100%;
+        font-size: 0.7rem;
+        margin-top: 1px;
+      }
+    }
+
+    .tagLoaderContainer {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 0.5rem;
+
+      .tagBoxContainer {
+        @include tagStyles();
+        max-width: 10rem;
+      }
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      align-items: center;
+      flex: 0 0 calc(30% - 1rem);
+    }
+  }
+}
+
+.tagActionContainerHover {
+  background-color: $background-color-2;
+}
+
+.popupDescription {
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 2rem;
+  color: $sub-text-1;
+}
+
+.popupTitleIcon {
+  border: 0.5px solid $secondary-color;
+  border-radius: 0.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+}

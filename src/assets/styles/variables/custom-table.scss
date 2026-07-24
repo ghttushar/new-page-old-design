@@ -1,0 +1,67 @@
+@mixin cell-style {
+  background-color: inherit;
+  word-wrap: break-word;
+  white-space: normal;
+  vertical-align: middle;
+
+  .wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 1rem 1rem;
+    border-right: 1px solid rgb(218, 222, 235);
+    border-bottom: 1px solid rgb(218, 222, 235);
+  }
+  .loaderWrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@mixin th-style {
+  @include cell-style();
+  .wrapper {
+    border-right: 1px solid #dadeeb;
+  }
+  position: sticky;
+  top: 0px;
+  z-index: 2;
+  height: 5rem;
+}
+
+@mixin custom-table-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 5rem 0rem 7rem;
+
+  &.isPlaceholder {
+    position: initial;
+  }
+  .container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .loader {
+        width: 5rem;
+        height: auto;
+      }
+      .text {
+        margin-top: 1rem;
+        font-size: 1.4rem;
+        font-weight: 500;
+      }
+    }
+  }
+}

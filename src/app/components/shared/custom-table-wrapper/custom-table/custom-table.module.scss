@@ -1,0 +1,12 @@
+@import 'src/assets/styles/scrollbar.scss';
+@import 'src/assets/styles/variables/variables.scss';
+
+.table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  position: relative;
+  overflow-x: scroll;
+  @include fancy-scrollbar();
+  height: 1px; // HACK: don't remove this, the table layout will get messed up, i don't know how it words, but it works, so don't touch it
+}

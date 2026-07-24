@@ -1,0 +1,79 @@
+import { ColumnNameEnum } from '@/enums/advertising.enums';
+import {
+  ISDAdGroup,
+  ISDAutomationRules,
+  ISDCampaign,
+  ISDProductAds,
+} from '@/interfaces/advertising/amazon/sd-advertising.interface';
+import { ColumnDef } from '@tanstack/react-table';
+import {
+  ADGROUP_NAME_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  AMAZON_METRICS_COLUMNS,
+  AMAZON_SD_AD_NAME_COLUMN,
+  AMAZON_SD_ADGROUP_TACTIC_COLUMN,
+  AMAZON_SD_BID_OPTIMIZATION_COLUMN,
+  AMAZON_SD_CAMPAIGN_TACTIC_COLUMN,
+  AMAZON_SD_CREATIVE_TYPE_COLUMN,
+  CAMPAIGN_BUDGET_COLUMN,
+  CAMPAIGN_COST_TYPE_COLUMN,
+  CAMPAIGN_NAME_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  DEFAULT_BID_COLUMN,
+  END_DATE_COLUMN,
+  LISTING_PRICE_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  RULE_ENTITY_LINK_STATUS_COLUMN,
+  RULE_NAME_COLUMN,
+  RULE_NEXT_EXECUTION_COLUMN,
+  RULE_TYPE_COLUMN,
+  START_DATE_COLUMN,
+  STATUS_COLUMN,
+} from 'src/constants/table-columns/new-column-names.constants';
+
+export const amazonSdCampaignColumns: Array<ColumnDef<ISDCampaign>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.CAMPAIGN),
+  CAMPAIGN_NAME_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  START_DATE_COLUMN,
+  END_DATE_COLUMN,
+  CAMPAIGN_BUDGET_COLUMN,
+  CAMPAIGN_COST_TYPE_COLUMN,
+  AMAZON_SD_CAMPAIGN_TACTIC_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISDCampaign>>;
+
+export const amazonSdAdGroupsColumns: Array<ColumnDef<ISDAdGroup>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.ADGROUP),
+  ADGROUP_NAME_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  AMAZON_SD_BID_OPTIMIZATION_COLUMN,
+  AMAZON_SD_ADGROUP_TACTIC_COLUMN,
+  AMAZON_SD_CREATIVE_TYPE_COLUMN,
+  DEFAULT_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISDAdGroup>>;
+
+export const amazonSdProductsColumns: Array<ColumnDef<ISDProductAds>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.PRODUCT_AD),
+  AMAZON_SD_AD_NAME_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  LISTING_PRICE_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISDProductAds>>;
+
+export const amazonSdAutomationRulesColumns = (
+  campaignSubHeaderData?: ISDCampaign | null
+): Array<ColumnDef<ISDAutomationRules>> =>
+  [
+    RULE_ENTITY_LINK_STATUS_COLUMN(campaignSubHeaderData),
+    RULE_NAME_COLUMN,
+    RULE_TYPE_COLUMN,
+    RULE_NEXT_EXECUTION_COLUMN,
+  ] as Array<ColumnDef<ISDAutomationRules>>;

@@ -1,0 +1,13 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.customAntSwitchContainer {
+  width: auto;
+  position: relative;
+
+  .infoIconWrapper {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    opacity: 0;
+  }
+}

@@ -1,0 +1,49 @@
+.header {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.headerCenter {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  justify-content: center;
+  width: 100%;
+}
+
+.noData {
+  color: #999;
+  font-style: italic;
+}
+
+.columnTags {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  flex-wrap: nowrap;
+  justify-content: end;
+  padding-right: 1rem;
+
+  .tagWrapper {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.statusIndicator {
+  cursor: pointer;
+
+  &.live {
+    color: #0aae57;
+  }
+}
+
+.existingRulesIcon {
+  cursor: pointer;
+  display: flex;
+  color: #77469b;
+}

@@ -1,0 +1,61 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.tableContainer {
+  width: 100%;
+}
+
+.header {
+  font-weight: 600 !important;
+  color: $black-text !important;
+  font-size: 1.1rem !important;
+}
+
+.MuiDataGridColumnHeaderTitle {
+  font-weight: bold !important;
+}
+
+.nameCell {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .nameText {
+    width: 100%;
+    font-size: 1.2rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.matchTypes {
+  border: 1px solid $primary-color;
+  padding: 2px;
+  background-color: aqua;
+}
+
+.ButtonGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  gap: 1rem;
+}
+
+.TableRow {
+  div {
+    align-items: center !important;
+  }
+}
+
+.searchTermContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: start !important;
+  justify-content: center;
+  gap: 1.2rem;
+  width: 100%;
+  padding: 2rem 0.5rem;
+  font-size: 1.1rem;
+}

@@ -1,0 +1,96 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.graphContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  width: auto;
+  margin-bottom: 1rem;
+  padding: 2rem;
+  background-color: $foreground-color;
+  border: 1px solid $stoke-color-1;
+}
+
+.graphHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  .trendHeader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+
+    .trendItem {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+
+      .trendColor {
+        width: 1.5rem;
+        height: 0.5rem;
+        border-radius: 1rem;
+      }
+    }
+  }
+}
+
+.graphMetrics {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 50%;
+}
+
+.graphHeaderButton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: auto;
+  gap: 1rem;
+
+  .hideChartButton {
+    text-transform: none;
+    color: $primary-color;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0;
+
+    &:hover {
+      background-color: $foreground-color;
+    }
+  }
+}
+
+.horizontalLine {
+  border-top: 0.2rem solid $stoke-color-1;
+  margin: 2rem 0;
+  width: 100%;
+}
+
+.graphBody {
+  margin-top: 1rem;
+  padding-bottom: 1rem;
+
+  .graphWrapper {
+    height: 100%;
+    width: 100%;
+    padding: 1rem;
+  }
+}
+
+.barGraph {
+  width: 95%;
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex: 1 1 auto;
+  background-color: $foreground-color;
+  height: 100%;
+}

@@ -1,0 +1,11 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.textCount {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: $disable-text;
+}
+
+.errorTextCount {
+  color: $error-color;
+}

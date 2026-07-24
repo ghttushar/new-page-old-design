@@ -1,0 +1,19 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: $foreground-color;
+  border: 0.1rem solid $stoke-color-1;
+  border-radius: 0.4rem;
+  padding: 0.5rem;
+  gap: 0.5rem;
+}
+
+.vl {
+  border-left: 0.1rem solid $stoke-color-1;
+  height: 1.5rem;
+  margin: 0 1rem;
+}

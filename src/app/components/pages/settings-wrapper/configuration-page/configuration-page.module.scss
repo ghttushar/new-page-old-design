@@ -1,0 +1,43 @@
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  min-height: calc(100vh - 6rem);
+  height: 100%;
+  background-color: $background-color-7;
+  margin-top: -2rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+
+  .configurationContainer {
+    background: $foreground-color;
+    border-radius: 0.8rem;
+    box-shadow: 0px 0px 4px 0px $shadow-color-2;
+    padding: 1.2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .infoContainerTitle {
+      @include infoContainerTitleStyles();
+    }
+
+    .navBar {
+      width: 100%;
+      background: $foreground-color;
+      border-radius: 0.8rem;
+      border: 0.5px solid $border-color-3;
+      margin-bottom: 1.5rem;
+    }
+
+    .stepContent {
+      background: $foreground-color;
+      border-radius: 0.8rem;
+      padding: 1.8rem;
+      box-shadow: 0px 0px 4px 0px $shadow-color-2;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}

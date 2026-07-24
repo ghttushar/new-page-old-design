@@ -1,0 +1,58 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.brandGraphContainer {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background-color: $foreground-color;
+  border: 1px solid $stoke-color-1;
+
+  .brandGraphHeader {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+
+    .brandGraphButtons {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: auto;
+      gap: 1rem;
+
+      .hideChartButton {
+        text-transform: none;
+        color: $primary-color;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0;
+
+        &:hover {
+          background-color: $foreground-color;
+        }
+      }
+    }
+  }
+
+  .brandGraph {
+    margin-top: 2.5rem;
+
+    .graph {
+      background-color: $foreground-color;
+      height: 100%;
+
+      .lineGraph {
+        width: 95%;
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 0;
+        flex: 1 1 auto;
+        padding-bottom: 1rem;
+      }
+    }
+  }
+}

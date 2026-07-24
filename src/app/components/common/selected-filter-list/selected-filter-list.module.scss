@@ -1,0 +1,55 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.filterContainer {
+  height: auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 1rem;
+
+  .filterList {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    min-width: 70rem;
+    max-width: 100%;
+    height: auto;
+
+    .singleFilterContainer {
+      display: flex;
+      padding: 0.4rem 0.6rem;
+      justify-content: space-between;
+      gap: 0.4rem;
+      align-items: center;
+      min-width: 8.8rem;
+      max-width: 50%;
+      min-height: 2.5rem;
+
+      border: 1px solid $primary-color;
+      background: #fbf3ff;
+      color: $primary-color;
+      overflow: hidden;
+      white-space: nowrap;
+
+      .singleFilter {
+        width: 90%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .filterClearButton {
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: none;
+      color: $primary-color;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+}

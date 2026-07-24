@@ -1,0 +1,114 @@
+import { ColumnNameEnum } from '@/enums/advertising.enums';
+import {
+  IOverallAdGroup,
+  IOverallCampaign,
+  IOverallKeywordTargeting,
+  IOverallProductAds,
+  IOverallProductTargeting,
+  IOverallSearchTerm,
+} from '@/interfaces/advertising/amazon/overall-advertising.interface';
+import { ColumnDef } from '@tanstack/react-table';
+import {
+  ADGROUP_STATUS_COLUMN,
+  AMAZON_BID_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  AMAZON_METRICS_COLUMNS,
+  AMAZON_OVERALL_AD_TYPE_COLUMN,
+  AMAZON_OVERALL_CAMPAIGN_BUDGET_COLUMN,
+  AMAZON_OVERALL_DYNAMIC_BIDDING_COLUMN,
+  AMAZON_OVERALL_PRODUCT_NAME_COLUMN,
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_SEARCH_TERM_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  DEFAULT_BID_COLUMN,
+  END_DATE_COLUMN,
+  KEYWORD_TEXT_COLUMN,
+  LISTING_PRICE_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  START_DATE_COLUMN,
+  STATUS_COLUMN,
+  TARGETING_TYPE_COLUMN,
+} from 'src/constants/table-columns/new-column-names.constants';
+
+export const amazonOverallCampaignColumns: Array<ColumnDef<IOverallCampaign>> =
+  [
+    STATUS_COLUMN(false, ColumnNameEnum.CAMPAIGN),
+    OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(true),
+    RULE_AUTOMATION_STATUS_COLUMN,
+    AMAZON_OVERALL_AD_TYPE_COLUMN,
+    TARGETING_TYPE_COLUMN,
+    START_DATE_COLUMN,
+    END_DATE_COLUMN,
+    AMAZON_OVERALL_DYNAMIC_BIDDING_COLUMN,
+    AMAZON_OVERALL_CAMPAIGN_BUDGET_COLUMN,
+    ...AMAZON_METRICS_COLUMNS,
+  ] as Array<ColumnDef<IOverallCampaign>>;
+
+export const amazonOverallAdGroupColumns: Array<ColumnDef<IOverallAdGroup>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.ADGROUP),
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  AMAZON_OVERALL_AD_TYPE_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  DEFAULT_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IOverallAdGroup>>;
+
+export const amazonOverallProductAdsColumns: Array<
+  ColumnDef<IOverallProductAds>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.PRODUCT_AD),
+  AMAZON_OVERALL_PRODUCT_NAME_COLUMN,
+  AMAZON_OVERALL_AD_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  LISTING_PRICE_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IOverallProductAds>>;
+
+export const amazonOverallKeywordTargetingColumns: Array<
+  ColumnDef<IOverallKeywordTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.KEYWORD),
+  KEYWORD_TEXT_COLUMN,
+  AMAZON_OVERALL_AD_TYPE_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IOverallKeywordTargeting>>;
+
+export const amazonOverallProductTargetingColumns: Array<
+  ColumnDef<IOverallProductTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.TARGETING),
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_OVERALL_AD_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IOverallProductTargeting>>;
+
+export const amazonOverallSearchTermColumns: Array<
+  ColumnDef<IOverallSearchTerm>
+> = [
+  AMAZON_SEARCH_TERM_COLUMN,
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  AMAZON_OVERALL_AD_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  OVERALL_ADGROUP_NAME_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  OVERALL_CAMPAIGN_NAME_VIEW_COLUMN(false),
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IOverallSearchTerm>>;

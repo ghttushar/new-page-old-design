@@ -1,0 +1,29 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.productNameContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .productTitle {
+    text-decoration: none;
+    color: $black-text;
+    text-wrap: wrap;
+
+    p {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+    }
+
+    :hover {
+      text-decoration: underline;
+    }
+  }
+
+  .productSubtitle {
+    color: $sub-text;
+  }
+}

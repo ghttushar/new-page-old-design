@@ -1,0 +1,75 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/variables/common-new-ui/common-new-ui.module.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+.entityCountStyles {
+  font-weight: 600;
+  color: $primary-color;
+  cursor: pointer;
+}
+
+.popupContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+
+  .popupRuleName {
+    width: 100%;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: $sub-text-1;
+    text-align: left;
+  }
+}
+
+.tableContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-height: 90%;
+}
+
+.tableHead {
+  background: linear-gradient(90deg, #77469b 0%, #5e02a2 50%) !important;
+  border-radius: 8px 8px 0 0;
+}
+
+.tableHeadRow {
+  background-color: transparent !important;
+  border: none;
+}
+.tableRow {
+  border-radius: 8px 8px 0 0;
+}
+
+.tableSelectedRow {
+  background-color: $foreground-color !important;
+}
+
+.tableHeaderCell {
+  background-color: transparent !important;
+  color: $foreground-color;
+  font-weight: 500;
+  text-align: center;
+  border: none;
+  height: auto !important;
+}
+
+.tableTdWrapper {
+  border-right: 0 !important;
+  padding: 0 !important;
+}
+
+.tableTdDiv {
+  min-height: 1rem !important;
+  border-right: 0 !important;
+}
+
+.tableHeaderTdDiv {
+  height: 1rem !important;
+  border-right: 0 !important;
+}

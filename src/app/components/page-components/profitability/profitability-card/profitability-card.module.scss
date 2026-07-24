@@ -1,0 +1,134 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.cardContainer {
+  background: white;
+  border-radius: 0.4rem;
+  width: 100%;
+  box-shadow: 0 0.2rem 0.4rem 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  .cardHeader {
+    background-color: $sub-text-1;
+    color: $foreground-color;
+    padding: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+
+    &.activeCard {
+      background-color: $primary-color;
+    }
+
+    .headerContent {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 1rem;
+
+      .title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .dateRange {
+        font-size: 1rem;
+      }
+
+      .viewMore {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .cardContent {
+    border: 1px solid white;
+    border-top: none !important;
+
+    &.activeCardContent {
+      border: 1px solid #77469b;
+      border-radius: 0 0 0.4rem 0.4rem;
+    }
+
+    .metricsGrid {
+      display: flex;
+      justify-content: space-evenly;
+
+      .metricItem {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-width: 6rem !important;
+        padding: 1.2rem 0 0.92rem 0;
+        &:last-child {
+          border: none;
+        }
+
+        .metricsHeader {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          height: 100%;
+          align-items: center;
+
+          .metricLabel {
+            font-size: 1.1rem;
+            color: #6b7280;
+            font-weight: 500;
+          }
+
+          .changeIndicator {
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.4rem;
+
+            &.positive {
+              color: #059669;
+            }
+
+            &.negative {
+              color: #dc2626;
+            }
+          }
+        }
+
+        .metricValue {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #111827;
+          display: flex;
+          align-items: center;
+          gap: 10.5rem;
+          position: relative;
+          min-height: 3rem;
+
+          .amount {
+            color: #111827;
+
+            &.activeValue {
+              color: #77469b;
+            }
+          }
+        }
+      }
+
+      .vl {
+        width: 1px;
+        margin: 0 0.2rem;
+        background-color: $stoke-color-1;
+        &:last-child {
+          display: none;
+        }
+      }
+    }
+  }
+}

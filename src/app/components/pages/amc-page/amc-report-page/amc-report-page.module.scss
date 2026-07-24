@@ -1,0 +1,8 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.amcReportPage {
+  display: flex;
+  width: 100%;
+  background-color: $background-color;
+  flex-direction: column;
+}

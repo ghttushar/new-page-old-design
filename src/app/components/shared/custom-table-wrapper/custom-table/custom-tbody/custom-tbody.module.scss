@@ -1,0 +1,69 @@
+@import '../../../../../../assets/styles/variables/custom-table.scss';
+@import 'src/assets/styles/variables/variables.scss';
+
+.td {
+  @include cell-style();
+}
+
+.tr {
+  background-color: white;
+  transition: 0.1s background-color;
+  &:hover {
+    background-color: $table-selected-row-background-color-new;
+  }
+
+  &:last-child {
+    td > div {
+      border-bottom: none;
+    }
+  }
+
+  &.lastRow {
+    &:last-child {
+      td > div {
+        border-bottom: none;
+      }
+    }
+  }
+
+  &.lastRowWithBorder {
+    &:last-child {
+      td > div {
+        border-bottom: 1px solid $stoke-color-1;
+      }
+    }
+
+    &.lastRow {
+      &:last-child {
+        td > div {
+          border-bottom: 1px solid $stoke-color-1;
+        }
+      }
+    }
+  }
+
+  &.selectedRow {
+    background-color: $table-selected-row-background-color-new;
+  }
+
+  &.subRow {
+    &[data-depth='0'] {
+      background-color: $foreground-color;
+      &:hover {
+        background-color: $hover-bg-color-3;
+      }
+    }
+    &[data-depth='1'] {
+      background-color: $background-color-2;
+      &:hover {
+        background-color: $hover-bg-color-3;
+      }
+    }
+    &[data-depth='2'] {
+      background-color: $background-color-4;
+      &:hover {
+        background-color: $hover-bg-color-3;
+      }
+    }
+  }
+}

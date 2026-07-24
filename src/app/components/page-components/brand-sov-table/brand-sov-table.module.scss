@@ -1,0 +1,50 @@
+@import 'src/assets/styles/variables/variables.scss';
+.imageStyles {
+  width: 3rem;
+  height: 3rem;
+  margin-right: 1rem;
+}
+.reportContainer {
+  width: 100%;
+  height: auto;
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+
+  .productNameContainer {
+    width: 25rem;
+    overflow: hidden;
+    white-space: nowrap;
+
+    .productTitle {
+      width: 100%;
+      text-decoration: none;
+      color: $black-text;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      p {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1.1rem;
+      }
+    }
+
+    .productSubtitle {
+      color: $sub-text;
+    }
+  }
+}
+
+.MuiDataGridColumnHeaderTitle {
+  font-weight: bold !important;
+}
+
+.header {
+  font-weight: 600 !important;
+  color: $black-text !important;
+  font-size: 1.1rem !important;
+  width: 100%;
+}

@@ -1,0 +1,12 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.noResultsOverlay {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  color: #8b8b8b;
+}

@@ -1,0 +1,92 @@
+.columnTags {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  width: 100%;
+  gap: 0.5rem;
+  margin-right: 0.4rem;
+
+  .existingRulesIcon {
+    cursor: pointer;
+  }
+}
+
+.popoverContent {
+  width: auto;
+  max-width: 30rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  .tooltipContent {
+    max-width: 30rem;
+    line-height: 1.4;
+    color: #464646;
+    position: relative;
+
+    .carouselContainer {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      color: #464646;
+    }
+
+    .carouselSlide {
+      display: none;
+
+      &.active {
+        display: block;
+      }
+    }
+
+    .carouselNavigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+
+      button {
+        background: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        cursor: pointer;
+
+        &:hover {
+          background: #e0e0e0;
+        }
+      }
+    }
+
+    .carouselIndicators {
+      display: flex;
+      justify-content: center;
+      gap: 0.3rem;
+      margin-top: 0.5rem;
+
+      .indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ccc;
+        cursor: pointer;
+
+        &.active {
+          background: #77469b;
+        }
+      }
+    }
+
+    .ruleTitle {
+      font-weight: bold;
+      color: #464646;
+    }
+
+    .label {
+      font-weight: 500;
+      color: #acacac;
+    }
+  }
+}

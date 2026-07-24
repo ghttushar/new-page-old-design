@@ -1,0 +1,112 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.productSection {
+  display: flex;
+  align-items: center;
+}
+
+.loadingImageContainer {
+  margin-right: 1rem;
+}
+
+.productImage {
+  height: 4rem;
+  width: 4rem;
+  margin-right: 0.8rem;
+}
+
+.productDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+
+  .productName {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 35rem;
+    overflow: hidden;
+    font-size: 1.24rem;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: $stoke-color-1;
+    width: 100%;
+  }
+
+  .productMeta {
+    display: flex;
+    align-items: center;
+
+    .metaText {
+      color: $table-group-subHeader-color;
+      font-weight: 400;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 15rem;
+      overflow: hidden;
+
+      b {
+        font-weight: bold;
+      }
+    }
+
+    .COGSText {
+      color: $primary-color;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .metaValue {
+      color: $table-group-subHeader-color;
+      font-weight: 500;
+    }
+
+    .COGSValue {
+      font-weight: 500;
+      color: $table-group-subHeader-color;
+      cursor: pointer;
+    }
+  }
+}
+
+.vl {
+  margin: 0 0.7rem;
+  border-left: 1px solid $disable-color;
+  height: 1.4rem;
+  display: inline-block;
+}
+
+.graphTitle {
+  display: flex;
+  justify-content: space-between;
+  height: 5rem;
+  align-items: center;
+  background-color: $primary-color;
+  color: white;
+  margin-left: -1rem !important;
+  gap: 1rem;
+}
+
+.input {
+  border: 1px solid $stoke-color-1;
+  background-color: $foreground-color;
+  color: #000;
+  padding: 0.5rem 1rem;
+  outline: none;
+  font-weight: 500;
+  border-radius: 0.4rem;
+  width: 100%;
+}
+
+.input:hover {
+  border: 0.15rem solid $primary-color;
+}
+
+.input:focus {
+  border: 0.15rem solid $primary-color;
+}

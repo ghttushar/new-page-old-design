@@ -1,0 +1,97 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+  justify-content: space-between;
+  width: auto;
+  margin-bottom: 0;
+  padding: 1rem 0;
+
+  .filterList {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 70rem;
+    height: auto;
+
+    .singleFilterContainer {
+      display: flex;
+      padding: 0.4rem 0.6rem;
+      justify-content: space-between;
+      gap: 0.4rem;
+      align-items: center;
+      min-width: 8.8rem;
+      height: 2.5rem;
+
+      border: 1px solid $primary-color;
+      background: #fbf3ff;
+      color: $primary-color;
+    }
+
+    .filterClearButton {
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: none;
+      color: $primary-color;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  .options {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: auto;
+    gap: 1rem;
+
+    .showChartButton {
+      text-transform: none;
+      color: $primary-color;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+
+    .optionSearch {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: auto;
+      height: 2.5rem;
+      margin-right: 1rem;
+      padding: 0.4rem 0.8rem;
+      background-color: $foreground-color;
+      border: 0.1rem solid $stoke-color-1;
+
+      h5 {
+        font-weight: 600;
+      }
+    }
+
+    .optionDownload {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: auto;
+
+      padding: 0.4rem;
+      background-color: $foreground-color;
+      border: 0.1rem solid $stoke-color-1;
+    }
+  }
+}

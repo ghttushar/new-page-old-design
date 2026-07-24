@@ -1,0 +1,11 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  background-color: $background-color;
+  z-index: 2;
+}

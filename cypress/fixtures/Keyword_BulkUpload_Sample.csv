@@ -1,0 +1,11 @@
+keyword,channel,isActive
+Sample 1,amazon,FALSE
+Sample 2,walmart,FALSE
+Sample 3,amazon,TRUE
+Sample 4,walmart,TRUE
+Sample 5,amazon,FALSE
+Sample 6,walmart,FALSE
+Sample 7,amazon,TRUE
+Sample 8,walmart,TRUE
+Sample 9,amazon,TRUE
+Sample 9,walmart,TRUE

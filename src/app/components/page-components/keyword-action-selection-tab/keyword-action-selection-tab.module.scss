@@ -1,0 +1,126 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.selectionTabContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: auto;
+  padding: 1rem;
+  background-color: $foreground-color;
+  border: 1px solid $stoke-color-1;
+  gap: 2rem;
+  box-shadow: 0rem 0.2rem 0.4rem 0rem rgba(0, 0, 0, 0.1);
+  border-radius: 0.4rem;
+
+  .countContainer {
+    display: flex;
+    align-items: center;
+    justify-self: center;
+    gap: 1rem;
+    margin-left: 1rem;
+
+    .countText {
+      color: #77469b;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: -0.24px;
+    }
+  }
+
+  .keywordActions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+    justify-content: space-around;
+    gap: 1rem;
+
+    .FilterUtilities {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+      gap: 1rem;
+      margin: 0 0.5rem;
+
+      .rowFilter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 3rem;
+        width: auto;
+        background-color: $foreground-color;
+        cursor: pointer;
+        gap: 0.5rem;
+        padding: 0.9rem;
+        outline: none;
+        font-size: 1.2rem;
+        font-weight: 400;
+        letter-spacing: -0.24px;
+        border: 1px solid #dadeeb;
+        color: #464646;
+        border-radius: 0.4rem;
+
+        &:hover {
+          border-color: #8b8b8b;
+        }
+      }
+
+      .ColumnFilterContainer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        color: #464646;
+        border: 1px solid #dadeeb;
+        border-radius: 0.4rem;
+        width: auto;
+        height: 3rem;
+        padding: 0.8rem;
+        font-size: 1.2rem;
+        font-weight: 400;
+        cursor: pointer;
+        gap: 0.2rem;
+
+        &:hover {
+          border-color: #8b8b8b;
+        }
+
+        .ColumnFilter {
+          position: absolute;
+          display: flex;
+          right: 0;
+          margin-top: 4rem;
+          padding: 0.8rem;
+        }
+      }
+    }
+
+    .actions {
+      color: $disable-text;
+      font-size: 1.2rem;
+      font-weight: 500;
+      letter-spacing: -0.24px;
+    }
+
+    .customBidBtn {
+      color: #000;
+      font-size: 1.2rem;
+      font-weight: 400;
+      border: 1px solid #dadeeb;
+      border-radius: 0.4rem;
+      padding: 0.7rem 1.6rem;
+      height: 3rem;
+      cursor: pointer;
+
+      &:hover {
+        border-color: #8b8b8b;
+      }
+    }
+
+    .columnDots {
+      height: 1rem;
+    }
+  }
+}

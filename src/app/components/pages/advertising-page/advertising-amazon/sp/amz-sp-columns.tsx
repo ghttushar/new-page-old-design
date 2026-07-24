@@ -1,0 +1,187 @@
+import { ColumnNameEnum } from '@/enums/advertising.enums';
+import {
+  IAdGroup,
+  IAutomationRules,
+  IAutoTargeting,
+  ICampaign,
+  IKeywordTargeting,
+  INegativeKeywordTargeting,
+  INegativeProductTargeting,
+  IPlacement,
+  IProductAds,
+  IProductTargeting,
+  ISearchTermKeyword,
+} from '@/interfaces/advertising/amazon/sp-advertising.interface';
+import { ColumnDef } from '@tanstack/react-table';
+import {
+  ADGROUP_NAME_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  AMAZON_BID_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  AMAZON_METRICS_COLUMNS,
+  AMAZON_NEG_TARGETING_CREATION_DATE_COLUMN,
+  AMAZON_NEG_TARGETING_MATCH_TYPE_COLUMN,
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_SEARCH_TERM_COLUMN,
+  AMAZON_SP_DYNAMIC_BIDDING_COLUMN,
+  AMAZON_SP_ITEM_NAME_COLUMN,
+  AMAZON_STRATEGY_VIEW_COLUMN,
+  AMAZON_TARGETING_NAME_COLUMN,
+  CAMPAIGN_NAME_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_SP_BUDGET_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  DEFAULT_BID_COLUMN,
+  END_DATE_COLUMN,
+  KEYWORD_TEXT_COLUMN,
+  LISTING_PRICE_COLUMN,
+  OUT_OF_BUDGET_TIME_COLUMN,
+  PLACEMENT_BID_ADJUSTMENT_COLUMN,
+  PLACEMENT_NAME_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  RULE_ENTITY_LINK_STATUS_COLUMN,
+  RULE_NAME_COLUMN,
+  RULE_NEXT_EXECUTION_COLUMN,
+  RULE_TYPE_COLUMN,
+  START_DATE_COLUMN,
+  STATUS_COLUMN,
+  TARGETING_TYPE_COLUMN,
+} from 'src/constants/table-columns/new-column-names.constants';
+
+export const amazonSpCampaignColumns: Array<ColumnDef<ICampaign>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.CAMPAIGN),
+  CAMPAIGN_NAME_COLUMN,
+  RULE_AUTOMATION_STATUS_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  START_DATE_COLUMN,
+  END_DATE_COLUMN,
+  AMAZON_SP_DYNAMIC_BIDDING_COLUMN,
+  CAMPAIGN_SP_BUDGET_COLUMN,
+  OUT_OF_BUDGET_TIME_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ICampaign>>;
+
+export const amazonSpAdGroupsColumns: Array<ColumnDef<IAdGroup>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.ADGROUP),
+  ADGROUP_NAME_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  DEFAULT_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IAdGroup>>;
+
+export const amazonSpProductAdsColumns: Array<ColumnDef<IProductAds>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.PRODUCT_AD),
+  AMAZON_SP_ITEM_NAME_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  LISTING_PRICE_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IProductAds>>;
+
+export const amazonSpKeywordTargetingColumns: Array<
+  ColumnDef<IKeywordTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.KEYWORD),
+  KEYWORD_TEXT_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IKeywordTargeting>>;
+
+export const amazonSpProductTargetingColumns: Array<
+  ColumnDef<IProductTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.TARGETING),
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IProductTargeting>>;
+
+export const amazonSpAutoTargetingColumns: Array<ColumnDef<IAutoTargeting>> = [
+  STATUS_COLUMN(false, ColumnNameEnum.TARGETING),
+  AMAZON_TARGETING_NAME_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  AMAZON_BID_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IAutoTargeting>>;
+
+export const amazonSpNegativeKeywordTargetingColumns: Array<
+  ColumnDef<INegativeKeywordTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.KEYWORD),
+  KEYWORD_TEXT_COLUMN,
+  AMAZON_NEG_TARGETING_MATCH_TYPE_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  AMAZON_NEG_TARGETING_CREATION_DATE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+] as Array<ColumnDef<INegativeKeywordTargeting>>;
+
+export const amazonSpNegativeProductTargetingColumns: Array<
+  ColumnDef<INegativeProductTargeting>
+> = [
+  STATUS_COLUMN(false, ColumnNameEnum.TARGETING),
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  TARGETING_TYPE_COLUMN,
+  AMAZON_NEG_TARGETING_CREATION_DATE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+] as Array<ColumnDef<INegativeProductTargeting>>;
+
+export const amazonSpSearchTermKeywordColumns: Array<
+  ColumnDef<ISearchTermKeyword>
+> = [
+  AMAZON_SEARCH_TERM_COLUMN,
+  // // TODO: keeping dead code as we might need it.
+  // KEYWORD_COLUMN,
+  AMAZON_PRODUCT_TARGETING_NAME_COLUMN,
+  AMAZON_MATCH_TYPE_COLUMN,
+  ADGROUP_STATUS_COLUMN,
+  ADGROUP_NAME_COLUMN_VIEW_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<ISearchTermKeyword>>;
+
+export const amazonSpPlacementColumns: Array<ColumnDef<IPlacement>> = [
+  PLACEMENT_NAME_COLUMN,
+  PLACEMENT_BID_ADJUSTMENT_COLUMN,
+  CAMPAIGN_STATUS_COLUMN,
+  CAMPAIGN_NAME_COLUMN_VIEW_COLUMN,
+  AMAZON_STRATEGY_VIEW_COLUMN,
+  ...AMAZON_METRICS_COLUMNS,
+] as Array<ColumnDef<IPlacement>>;
+
+export const amazonSpAutomationRulesColumns = (
+  campaignSubHeaderData?: ICampaign | null
+): Array<ColumnDef<IAutomationRules>> =>
+  [
+    RULE_ENTITY_LINK_STATUS_COLUMN(campaignSubHeaderData),
+    RULE_NAME_COLUMN,
+    RULE_TYPE_COLUMN,
+    RULE_NEXT_EXECUTION_COLUMN,
+  ] as Array<ColumnDef<IAutomationRules>>;

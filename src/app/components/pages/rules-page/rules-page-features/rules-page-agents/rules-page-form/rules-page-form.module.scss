@@ -1,0 +1,187 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/scrollbar.scss';
+
+@mixin infoContainerStyles($width: 100%) {
+  width: $width;
+  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.25);
+  background-color: $foreground-color;
+  border-radius: 0.8rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  transition: all 0.4s ease;
+}
+
+@mixin infoContainerTitleStyles($width: 100%) {
+  width: $width;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 144%;
+  text-align: left;
+  color: $sub-text-1;
+  margin-bottom: 1rem;
+
+  &.noMargin {
+    margin-bottom: 0;
+  }
+}
+
+@mixin fieldTitleStyles($fontWeight: 700) {
+  font-weight: $fontWeight;
+  font-size: 1rem;
+  line-height: 144%;
+  letter-spacing: -2%;
+  color: $sub-text-1;
+  margin-bottom: 0.3rem;
+
+  &.noMargin {
+    margin-bottom: 0;
+  }
+}
+
+@mixin containerCaretChangeStyles() {
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  &.expanded {
+    transform: rotate(-180deg);
+  }
+}
+
+@mixin errorStyles() {
+  width: 15rem;
+  color: $error-color;
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-top: 0.5rem;
+}
+
+.ruleCreationContainer {
+  width: 100%;
+  height: calc(100vh - 8rem);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .formContainer {
+    width: 100%;
+    padding: 1rem 1rem 0 1rem;
+    flex: 1;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+
+    .formSubContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 2rem;
+      background-color: $foreground-color;
+      border-radius: 0.8rem;
+      box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  .footerContainer {
+    position: sticky;
+    bottom: 0;
+    height: 7rem;
+    z-index: 10;
+    margin-top: auto;
+    width: calc(100% - 2rem);
+    margin: auto 1rem 0;
+  }
+}
+
+.noResultsOverlay {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  color: #8b8b8b;
+}
+
+.subContainer {
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 144%;
+  letter-spacing: 0;
+  color: #464646;
+
+  .tableContainer {
+    padding: 0;
+    max-height: 14.4rem;
+    overflow: hidden;
+    overflow-y: auto;
+    border-radius: 0.4rem;
+
+    margin: 1rem 0;
+    box-shadow: 0 0 0.4rem 0 rgba(0, 0, 0, 0.2) inset;
+    @include fancy-scrollbar();
+
+    &::-webkit-scrollbar-track {
+      border-radius: 0.4rem;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+
+      .thead {
+        box-shadow: 0 0 0.4rem 0 rgba(0, 0, 0, 0.2);
+      }
+
+      .thSticky {
+        position: sticky;
+        top: 0;
+        background: #f7fafc;
+        z-index: 1;
+        padding: 0.8rem 1rem;
+        border-right: 1px solid #dadeeb;
+        white-space: nowrap;
+      }
+
+      .thSticky::after {
+        content: '';
+        position: absolute;
+        background: #dadeeb;
+        width: 100%;
+        height: 0.1rem;
+        left: 0;
+        bottom: -0.1rem;
+      }
+
+      .td {
+        padding: 0.8rem 1rem;
+        border-right: 1px solid #dadeeb;
+        border-bottom: 1px solid #dadeeb;
+        vertical-align: top;
+
+        &:first-child {
+          border-top: 1px solid #dadeeb;
+        }
+      }
+
+      .tdBorder {
+        @extend .td;
+        border-right: 1px solid #dadeeb;
+        vertical-align: top;
+      }
+
+      .overflowText {
+        max-height: 2rem;
+        overflow: hidden;
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.productSovPage {
+  display: flex;
+  width: 100%;
+  background-color: $background-color;
+  flex-direction: column;
+
+  .productSovContainer {
+    padding: 1rem;
+  }
+}

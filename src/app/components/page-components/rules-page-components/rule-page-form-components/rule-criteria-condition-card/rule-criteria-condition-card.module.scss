@@ -1,0 +1,79 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+.conditionCardContainer {
+  width: 100%;
+
+  .conditionOptions {
+    width: 100%;
+    display: grid;
+    align-items: start;
+
+    --gap: 1rem;
+    gap: var(--gap);
+
+    > * {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .valueSymbolContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .valueSymbol {
+        height: 3.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        color: $sub-text-1;
+
+        svg {
+          fill: $sub-text-1;
+        }
+      }
+
+      .disabledValueSymbol {
+        svg {
+          fill: $border-color-2;
+        }
+      }
+    }
+  }
+
+  .singleRow {
+    grid-template-columns:
+      calc((100% - 5 * var(--gap)) * 0.24)
+      calc((100% - 5 * var(--gap)) * 0.24)
+      calc((100% - 5 * var(--gap)) * 0.24)
+      calc((100% - 5 * var(--gap)) * 0.02)
+      calc((100% - 5 * var(--gap)) * 0.22)
+      calc((100% - 5 * var(--gap)) * 0.04);
+  }
+
+  .multiRow {
+    grid-template-columns:
+      calc((100% - 6 * var(--gap)) * 0.22)
+      calc((100% - 6 * var(--gap)) * 0.22)
+      calc((100% - 6 * var(--gap)) * 0.22)
+      calc((100% - 6 * var(--gap)) * 0.02)
+      calc((100% - 6 * var(--gap)) * 0.22)
+      calc((100% - 6 * var(--gap)) * 0.05)
+      calc((100% - 6 * var(--gap)) * 0.05);
+  }
+
+  .error {
+    @include errorStyles();
+  }
+
+  .noOpacityLabel {
+    opacity: 0;
+    margin-bottom: 0.2rem;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 144%;
+    letter-spacing: -2%;
+  }
+}

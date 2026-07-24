@@ -1,0 +1,85 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.resultContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  width: auto;
+  margin-bottom: 1rem;
+  padding: 1rem 0rem;
+  background-color: $foreground-color;
+  border: 0.1rem solid $stoke-color-1;
+
+  .negativeTrend {
+    h6 {
+      font-weight: 600;
+      color: $error-color;
+    }
+  }
+
+  .positiveTrend {
+    h6 {
+      font-weight: 600;
+      color: $up-trend-color;
+    }
+  }
+
+  .noChangeTrend {
+    h6 {
+      font-weight: 600;
+      color: $no-change-trend-color;
+    }
+  }
+
+  .noChangeLogo {
+    width: 12px;
+    height: 12px;
+    border-radius: 1px;
+    background: $stoke-color-1;
+    color: $sub-text;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0 0.2rem;
+  }
+
+  p {
+    font-size: $font-size-10;
+
+    &:nth-child(1) {
+      color: $sub-text;
+    }
+
+    &:nth-child(2) {
+      color: $black-text;
+    }
+  }
+
+  h5 {
+    font-size: $font-size-14;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .brandTitle {
+    text-transform: capitalize;
+    margin-top: 0.3rem;
+  }
+
+  .Skeleton {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+}
+
+.vl {
+  border-left: 0.1rem solid $stoke-color-1;
+  height: 4rem;
+}

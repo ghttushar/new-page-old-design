@@ -1,0 +1,159 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.accountLvlContainer {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.productNameContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  gap: 3px;
+
+  span {
+    font-weight: 400;
+  }
+
+  .productTitle {
+    width: 100%;
+    text-decoration: none;
+    color: $black-text;
+
+    p {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    :hover {
+      text-decoration: underline;
+    }
+  }
+
+  .productSubtitle {
+    color: $sub-text;
+  }
+}
+
+.titleContainer {
+  width: 25rem;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .titleName {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.capitalizeText {
+  text-transform: capitalize;
+}
+
+.creativeContainer {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+
+  .creativeDropdownContainer {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    align-items: flex-end;
+  }
+
+  .versionContainer {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 3rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+
+    .versionBlock {
+      margin: 0;
+      padding: 1rem;
+      width: 10rem;
+      height: 100%;
+      border: 1px solid $stoke-color-1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+
+      h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      &:hover {
+        border: 2px solid $primary-color;
+        cursor: pointer;
+      }
+
+      &:focus {
+        border: 2px solid $primary-color;
+        cursor: pointer;
+      }
+    }
+
+    .versionActive {
+      border: 2px solid $primary-color;
+      cursor: pointer;
+    }
+  }
+
+  .creativeContentContainer {
+    width: 100%;
+    height: 30rem;
+    border: 2px dotted $stoke-color-1;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .creativeDesktopContainer {
+      width: 90%;
+      height: 10rem;
+      padding: 0.5rem;
+      border: 1px solid $stoke-color-1;
+      border-radius: 10px;
+      background: $background-color;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .creativeMobileContainer {
+      width: 40%;
+      height: 25rem;
+      padding: 0.5rem;
+      border: 1px solid $stoke-color-1;
+      border-radius: 10px;
+      background: $background-color;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
+}
+
+.noDataView {
+  font-size: 1.1rem;
+}

@@ -1,0 +1,50 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.resultContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: white;
+  border: 0.1rem solid $stoke-color-1;
+
+  h5 {
+    font-size: $font-size-14;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .brandTitle {
+    text-transform: capitalize;
+  }
+
+  .Skeleton {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+}
+
+.vl {
+  border-left: 0.1rem solid $stoke-color-1;
+  height: 4rem;
+}
+
+p {
+  font-size: $font-size-10;
+  margin-top: 0.2rem;
+}
+
+.childContainerStyle {
+  display: 'flex';
+  flex-direction: 'column';
+  width: 100%;
+  background-color: $error-color;
+  align-items: 'center';
+  justify-content: 'center';
+  padding: '1rem';
+}

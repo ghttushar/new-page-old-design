@@ -1,0 +1,57 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+@mixin noCriteriaTextStyles($fontWeight: 400, $color: $sub-text-3) {
+  font-weight: $fontWeight;
+  font-size: 1.2rem;
+  line-height: 144%;
+  color: $color;
+}
+
+.criteriaInformation {
+  @include infoContainerStyles();
+
+  .infoContainerTitle {
+    @include infoContainerTitleStyles();
+  }
+
+  .optionsAction {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+
+    .noCriteriaContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      .noCriteriaHeader {
+        @include noCriteriaTextStyles(500, $sub-text-2);
+      }
+
+      .noCriteriaText {
+        @include noCriteriaTextStyles(400, $border-color-2);
+        font-style: italic;
+      }
+    }
+
+    .addCriteriaContainer {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 0.8rem;
+      border: 0.5px dashed $border-color-3;
+      padding: 1.5rem;
+
+      .addCriteriaButton {
+        display: flex;
+      }
+    }
+  }
+}

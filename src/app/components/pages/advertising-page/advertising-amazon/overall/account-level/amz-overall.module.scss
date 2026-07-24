@@ -1,0 +1,68 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.overallContainer {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.productNameContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .productTitle {
+    width: 100%;
+    text-decoration: none;
+    color: $black-text;
+
+    p {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+    }
+
+    :hover {
+      text-decoration: underline;
+    }
+  }
+
+  .productSubtitle {
+    color: $sub-text;
+  }
+}
+
+.titleContainer {
+  width: 25rem;
+  overflow: hidden;
+  white-space: nowrap;
+
+  .titleName {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.capitalizeText {
+  text-transform: capitalize;
+}
+
+.noDataView {
+  font-size: 1.1rem;
+}
+
+.creativeDisplay {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.noCreativeDisplay {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

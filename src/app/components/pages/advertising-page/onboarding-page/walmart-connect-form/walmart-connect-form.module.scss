@@ -1,0 +1,79 @@
+.formTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #77469b;
+  color: white;
+}
+
+.formContainer {
+  display: flex;
+  gap: 2rem;
+  font-size: 1.6rem;
+  align-items: center;
+  justify-content: space-around;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.formSubContainer {
+  padding: 0 2rem;
+  width: 40rem;
+  transition: all 0.3s ease-in-out;
+
+  .formButtonContainer {
+    margin: 2rem 0 3rem 0;
+    display: flex;
+    justify-content: center;
+
+    padding: 0 0.8rem;
+  }
+}
+
+.authorizeContainer {
+  display: flex;
+  flex-direction: column;
+  width: 38rem;
+  padding: 1rem;
+
+  .logoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.6rem 0 2rem 0;
+    gap: 1.6rem;
+  }
+
+  .description {
+    color: black;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 1rem 0;
+  }
+
+  .descriptionMessage {
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.8rem;
+    letter-spacing: 0;
+  }
+
+  .authorizeLink {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 1.2rem;
+    margin: 1.6rem 0 1rem 0;
+    font-weight: 600;
+  }
+  .vl {
+    width: 100%;
+    height: 1px;
+    background-color: #d2ddee;
+    margin: 1.6rem 0;
+  }
+  .authorizeButtonContainer {
+    display: flex;
+    justify-content: end;
+    gap: 1rem;
+  }
+}

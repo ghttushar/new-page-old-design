@@ -1,0 +1,8 @@
+@import '../../../../../../assets/styles/scrollbar.scss';
+
+.options {
+  width: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  @include fancy-scrollbar();
+}

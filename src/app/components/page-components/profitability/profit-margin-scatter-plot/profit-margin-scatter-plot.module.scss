@@ -1,0 +1,133 @@
+@import '../../../../../assets/styles/variables/variables.scss';
+
+.container {
+  height: 40rem;
+  width: 100%;
+  background: $foreground-color;
+  box-shadow: 0 0.2rem 0.4rem 0 rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  border-radius: 0.4rem;
+
+  .scatterChart {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .emptyStateContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.loadingContainer {
+  position: relative;
+  height: 46vh;
+  width: 100%;
+  background-color: $foreground-color;
+  margin-top: 2rem;
+  border-radius: 0.4rem;
+  box-shadow: 0 0.2rem 0.4rem 0 rgba(0, 0, 0, 0.15);
+}
+
+.customTooltip {
+  border: 0.1rem solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.4rem;
+  box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.12),
+    0 0.4rem 0.8rem rgba(0, 0, 0, 0.08);
+  color: $sub-text-1;
+  background-color: $tooltip-bg-color !important;
+
+  .tooltipHeader {
+    border-bottom: 0.1rem solid rgba(0, 0, 0, 0.1);
+    // padding-bottom: 0.8rem;
+    // margin-bottom: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border-bottom: 1px solid $stoke-color-1;
+
+    .imgContainer {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem;
+
+      .imgStyles {
+        width: auto;
+        min-width: 7rem;
+        height: 7rem;
+        border-radius: 0.4rem;
+      }
+
+      .title {
+        max-width: 20rem;
+
+        .productName {
+          font-weight: 600;
+          font-size: 1.2rem;
+          margin-bottom: 0.4rem;
+          color: $foreground-color;
+
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+
+          overflow: hidden;
+        }
+
+        .asin {
+          font-size: 1.1rem;
+          color: $tooltip-text-color;
+        }
+      }
+    }
+  }
+
+  .tooltipBody {
+    display: flex;
+    gap: 0.6rem;
+    white-space: pre;
+    padding: 0.4rem 1rem;
+
+    .vl {
+      width: 1px;
+      height: 2rem;
+      background-color: white;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      gap: 0.4rem;
+      width: 100%;
+
+      .label {
+        color: $foreground-color;
+        font-weight: 500;
+        font-size: 1rem;
+      }
+
+      .value {
+        font-weight: 600;
+        color: $foreground-color;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.3rem;
+
+        &.negative {
+          color: red;
+        }
+
+        &.positive {
+          color: #07e46c;
+        }
+      }
+    }
+  }
+}

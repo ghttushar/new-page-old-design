@@ -1,0 +1,9 @@
+.marketplaceIcon {
+  width: auto;
+  &.amazon {
+    height: 3rem;
+  }
+  &.walmart {
+    height: 2rem;
+  }
+}

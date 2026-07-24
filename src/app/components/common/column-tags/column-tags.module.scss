@@ -1,0 +1,114 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/variables/common-new-ui/common-new-ui.module.scss';
+
+@mixin tagButtonStyles($borderStyle: dashed) {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.3rem;
+  color: $border-color-2;
+  font-size: 0.9rem;
+  font-weight: 300;
+  border: 0.5px $borderStyle $border-color-2;
+  cursor: default;
+  min-width: 0;
+  max-width: 8rem;
+}
+
+.tagContainer {
+  width: 100%;
+  max-width: 30rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  .tag {
+    width: auto;
+    padding: 1px 4px;
+    border: 0.5px solid $primary-color;
+    border-radius: 0.5rem;
+    background-color: $foreground-color;
+    font-size: 0.85rem;
+    line-height: 144%;
+    font-weight: 500;
+    color: $sub-text-1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .vl {
+    height: 100%;
+    width: 1px;
+    background-color: $stoke-color-1;
+    margin: 0 2px;
+
+    span {
+      visibility: hidden;
+    }
+  }
+
+  .noTagButton {
+    @include tagButtonStyles(dashed);
+  }
+
+  .tagButton {
+    @include tagButtonStyles(solid);
+    position: relative;
+
+    .tagIcon {
+      flex-shrink: 0;
+    }
+
+    .tagButtonText {
+      color: $sub-text-1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tagButtonClose {
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      padding-left: 0.1rem;
+      margin: 0;
+
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      pointer-events: none;
+
+      &:hover {
+        svg {
+          fill: $black-text;
+        }
+      }
+    }
+  }
+
+  .editMode {
+    cursor: pointer;
+
+    &:hover {
+      background-color: $background-color-8;
+
+      .tagButtonClose {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .tagButtonText {
+        width: calc(100% - 1.5rem);
+      }
+    }
+  }
+
+  .tagOpen {
+    background-color: $background-color-8;
+  }
+}

@@ -1,0 +1,241 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  width: 100%;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+  position: relative;
+  padding-bottom: 6.4rem;
+  border-radius: 0.8rem;
+
+  &.rulesPageContainer {
+    padding: 2rem;
+  }
+
+  .selectPageSourceTargetingActionsContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+
+  .controlsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
+    margin-top: -1.8rem;
+  }
+
+  &.rulesPageContainer .controlsRow {
+    margin-top: 0;
+  }
+
+  .pageStepTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $main-text;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .tableSection {
+    margin-top: 1rem;
+    position: relative;
+  }
+
+  .bottomControls {
+    @extend .controls;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .footerBar {
+    position: fixed;
+    left: 6.2rem;
+    right: 1rem;
+    bottom: 0rem;
+    padding: 1rem 1.6rem;
+    background: $foreground-color;
+    box-shadow: 0px -1px 4px 0px $shadow-color-1;
+    z-index: 1000;
+  }
+
+  .tableContainer {
+    width: 100%;
+    border: 0.5px solid $stoke-color-1;
+    border-radius: 0.8rem;
+    overflow: auto;
+    margin-top: 0.8rem;
+
+    table {
+      width: 100% !important;
+      min-width: 100%;
+    }
+  }
+
+  .tableHead {
+    background: linear-gradient(
+      90deg,
+      $primary-color 0%,
+      $primary-color-variant-2 50%
+    ) !important;
+    border-radius: 0.8rem 0.8rem 0 0;
+  }
+
+  .tableHeadRow {
+    background-color: transparent !important;
+    border: none;
+    height: 2.8rem !important;
+  }
+  .tableRow {
+    border-radius: 0.8rem 0.8rem 0 0;
+    height: 3.6rem !important;
+  }
+
+  .tableSelectedRow {
+    background-color: $foreground-color !important;
+  }
+
+  .tableHeaderCell {
+    background-color: transparent !important;
+    color: $foreground-color;
+    font-weight: 400;
+    text-align: center;
+    border: none;
+    height: 2.8rem !important;
+    min-height: 2.8rem !important;
+  }
+
+  .tableHeaderWrapper {
+    padding: 0.4rem 0.5rem !important;
+    height: 2.8rem !important;
+    min-height: 2rem !important;
+  }
+
+  .tableTdWrapper {
+    border-right: 0 !important;
+    height: 4rem !important;
+    padding: 0 0.5rem !important;
+  }
+
+  .tableTdDiv {
+    min-height: 3.6rem !important;
+    height: 3.6rem !important;
+    border-right: 0 !important;
+    padding: 0 0.25rem !important;
+  }
+
+  .selectContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+
+  .nameViewColumn {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    display: flex;
+    justify-content: start;
+    padding-left: 1rem;
+
+    p {
+      max-width: 20rem;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
+  .addMappingRow {
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: 1px dashed $disable-color;
+    border-radius: 0.4rem;
+    margin-top: 1.6rem;
+    color: $sub-text-2;
+    transition: background-color 0.2s, opacity 0.2s;
+
+    &:hover {
+      background-color: $background-color-5;
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  .emptyStateContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 4rem 2rem;
+    box-shadow: 0px 0px 4px 0px $shadow-color-2;
+    text-align: center;
+    border-radius: 0.8rem;
+    background-color: $foreground-color;
+    margin-top: 1rem;
+  }
+
+  .emptyStateTitle {
+    color: $sub-text-5;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .emptyStateSubtitle {
+    color: $border-color-2;
+    font-size: 1rem;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  .addMappingButton {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(
+      99.66deg,
+      $primary-color-variant-3 4.22%,
+      $primary-color-variant-4 89%
+    );
+    color: $foreground-color;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}

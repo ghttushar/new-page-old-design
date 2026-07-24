@@ -1,0 +1,112 @@
+{
+  "cSpell.words": [
+    "accum",
+    "adgroup",
+    "adgroups",
+    "Adgrp",
+    "adsales",
+    "adspend",
+    "AMCGPTServices",
+    "ampm",
+    "Analyse",
+    "Anarix",
+    "Asins",
+    "avgorganicrank",
+    "avgrank",
+    "avgsponsoredrank",
+    "bidded",
+    "chartjs",
+    "cssmodule",
+    "Datetime",
+    "DAYPARTING",
+    "dropzone",
+    "Fromatted",
+    "getCurrentTimeWithAMPM",
+    "IAMC",
+    "IAPI",
+    "IGPT",
+    "immer",
+    "ISOV",
+    "Kolkata",
+    "Lookback",
+    "lotties",
+    "marketPlace",
+    "papaparse",
+    "Plotly",
+    "powerbi",
+    "reduxjs",
+    "registerables",
+    "ROAS",
+    "SBSD",
+    "Scroller",
+    "serp",
+    "Soundcloud",
+    "stockup",
+    "sugg",
+    "syncfusion",
+    "tailwindcss",
+    "tanstack",
+    "totalsales",
+    "troas",
+    "unitssold",
+    "unitssoldclicks",
+    "Unmutes",
+    "unparse",
+    "VCPM",
+    "vctr",
+    "viewability",
+    "VITE",
+    "walmartpartnerid",
+    "webp"
+  ],
+  "cSpell.ignoreWords": ["GKKUQ", "QLSPSV"],
+  "cSpell.flagWords": ["marketPlace", "MarketPlace"],
+  "prettier.eslintIntegration": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "liveServer.settings.donotShowInfoMsg": true,
+  "tabnine.experimentalAutoImports": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode" // Use the standard Prettier formatter
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "terminal.integrated.enableMultiLinePasteWarning": false,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "html.format.extraLiners": "",
+  "emmet.triggerExpansionOnTab": true,
+  "files.associations": {
+    "*html": "html"
+  },
+  "emmet.useInlineCompletions": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.minimap.enabled": true,
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.stylelintIntegration": true,
+  "prettier.tslintIntegration": true,
+  "prettier.singleQuote": true,
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "prettier.jsxSingleQuote": true,
+  "html.completion.attributeDefaultValue": "singlequotes",
+  "editor.formatOnSave": true
+}

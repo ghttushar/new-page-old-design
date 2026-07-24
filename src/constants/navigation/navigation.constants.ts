@@ -1,0 +1,87 @@
+import { FeatureRoutes, FeaturesEnum } from 'src/enums/auth.enums';
+
+export const FeatureRoutesMap: Record<FeaturesEnum, FeatureRoutes> = {
+  [FeaturesEnum.ALL]: FeatureRoutes.ADVERTISING,
+  [FeaturesEnum.ADVERTISING]: FeatureRoutes.ADVERTISING,
+  [FeaturesEnum.ADVERTISING_AMAZON]: FeatureRoutes.ADVERTISING_AMAZON,
+  [FeaturesEnum.ADVERTISING_WALMART]: FeatureRoutes.ADVERTISING_WALMART,
+  [FeaturesEnum.ADVERTISING_TARGETING_ACTIONS]:
+    FeatureRoutes.ADVERTISING_TARGETING_ACTIONS,
+  [FeaturesEnum.ADVERTISING_TARGETING_ACTIONS_AMAZON]:
+    FeatureRoutes.ADVERTISING_TARGETING_ACTIONS_AMAZON,
+  [FeaturesEnum.ADVERTISING_TARGETING_ACTIONS_WALMART]:
+    FeatureRoutes.ADVERTISING_TARGETING_ACTIONS_WALMART,
+  [FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS]:
+    FeatureRoutes.ADVERTISING_IMPACT_ANALYSIS,
+  [FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS_AMAZON]:
+    FeatureRoutes.ADVERTISING_IMPACT_ANALYSIS_AMAZON,
+  [FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS_WALMART]:
+    FeatureRoutes.ADVERTISING_IMPACT_ANALYSIS_WALMART,
+  [FeaturesEnum.AMAZON_MARKETING_CLOUD]: FeatureRoutes.AMAZON_MARKETING_CLOUD,
+  [FeaturesEnum.DAYPARTING]: FeatureRoutes.DAYPARTING,
+  [FeaturesEnum.MARKET_INTELLIGENCE]: FeatureRoutes.MARKET_INTELLIGENCE,
+  [FeaturesEnum.MARKET_INTELLIGENCE_BRAND_SOV]:
+    FeatureRoutes.MARKET_INTELLIGENCE_BRAND_SOV,
+  [FeaturesEnum.MARKET_INTELLIGENCE_KEYWORD_SOV]:
+    FeatureRoutes.MARKET_INTELLIGENCE_KEYWORD_SOV,
+  [FeaturesEnum.MARKET_INTELLIGENCE_PRODUCT_SOV]:
+    FeatureRoutes.MARKET_INTELLIGENCE_PRODUCT_SOV,
+  [FeaturesEnum.MARKET_INTELLIGENCE_KEYWORD_TRACKER]:
+    FeatureRoutes.MARKET_INTELLIGENCE_KEYWORD_TRACKER,
+  [FeaturesEnum.DAYPARTING_AMAZON]: FeatureRoutes.DAYPARTING_AMAZON,
+  [FeaturesEnum.DAYPARTING_WALMART]: FeatureRoutes.DAYPARTING_WALMART,
+  [FeaturesEnum.SETTINGS]: FeatureRoutes.SETTINGS,
+  [FeaturesEnum.SETTINGS_USERS]: FeatureRoutes.SETTINGS_USERS,
+  [FeaturesEnum.SETTINGS_INVITES]: FeatureRoutes.SETTINGS_INVITES,
+  [FeaturesEnum.REPORTS]: FeatureRoutes.REPORTS,
+  [FeaturesEnum.MONITORING]: FeatureRoutes.ADMIN,
+  [FeaturesEnum.CATALOG]: FeatureRoutes.CATALOG,
+  [FeaturesEnum.CATALOG_HOME]: FeatureRoutes.CATALOG,
+  [FeaturesEnum.SETTINGS_LOGS]: FeatureRoutes.LOGS,
+  [FeaturesEnum.CONFIGURATION]: FeatureRoutes.CONFIGURATION,
+  [FeaturesEnum.JIVA_CHATBOT]: FeatureRoutes.NOT_DEFINED,
+  [FeaturesEnum.DAYPARTING_HOURLY_TRENDS]:
+    FeatureRoutes.DAYPARTING_HOURLY_TRENDS,
+  [FeaturesEnum.DAYPARTING_SETUP]: FeatureRoutes.DAYPARTING_SETUP,
+  [FeaturesEnum.DAYPARTING_HOME]: FeatureRoutes.DAYPARTING_HOME,
+  [FeaturesEnum.PROFITABILITY_AMAZON]: FeatureRoutes.PROFITABILITY,
+  [FeaturesEnum.PROFITABILITY_GEO]: FeatureRoutes.PROFITABILITY_GEO,
+  [FeaturesEnum.PROFITABILITY_PnL]: FeatureRoutes.PROFITABILITY_PnL,
+  [FeaturesEnum.PROFITABILITY_TRENDS]: FeatureRoutes.PROFITABILITY_TRENDS,
+  [FeaturesEnum.RULES]: FeatureRoutes.RULES,
+  [FeaturesEnum.RULES_AGENTS]: FeatureRoutes.RULES_AGENTS,
+  [FeaturesEnum.APPLIED_RULES]: FeatureRoutes.APPLIED_RULES,
+  [FeaturesEnum.RULE_CREATION]: FeatureRoutes.RULE_CREATION,
+  [FeaturesEnum.PROFITABILITY]: FeatureRoutes.PROFITABILITY,
+  [FeaturesEnum.PROFITABILITY_WALMART]: FeatureRoutes.PROFITABILITY,
+  [FeaturesEnum.MONITORING_HISTORY]: FeatureRoutes.MONITORING_HISTORY,
+  [FeaturesEnum.MONITORING_CRON_DEFINITIONS]: FeatureRoutes.CRON_DEFINITIONS,
+  [FeaturesEnum.MONITORING_QUEUES_INFO]: FeatureRoutes.QUEUES_INFO,
+};
+
+export const FeaturesRequiringAdsAccount: Array<FeaturesEnum> = [
+  FeaturesEnum.ADVERTISING,
+  FeaturesEnum.ADVERTISING_AMAZON,
+  FeaturesEnum.ADVERTISING_WALMART,
+  FeaturesEnum.ADVERTISING_TARGETING_ACTIONS,
+  FeaturesEnum.ADVERTISING_TARGETING_ACTIONS_AMAZON,
+  FeaturesEnum.ADVERTISING_TARGETING_ACTIONS_WALMART,
+  FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS,
+  FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS_AMAZON,
+  FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS_WALMART,
+  FeaturesEnum.AMAZON_MARKETING_CLOUD,
+  FeaturesEnum.DAYPARTING,
+  FeaturesEnum.DAYPARTING_AMAZON,
+  FeaturesEnum.DAYPARTING_WALMART,
+  FeaturesEnum.DAYPARTING_HOURLY_TRENDS,
+  FeaturesEnum.REPORTS,
+  FeaturesEnum.RULES,
+  FeaturesEnum.RULES_AGENTS,
+  FeaturesEnum.APPLIED_RULES,
+  FeaturesEnum.RULE_CREATION,
+];
+
+export const FeaturesRequiringCatalogAccount: Array<FeaturesEnum> = [
+  FeaturesEnum.CATALOG,
+  FeaturesEnum.CATALOG_HOME,
+];

@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif !important;
+}
+
+html {
+  font-size: 11px;
+}
+
+@media screen and (max-width: 1450px) {
+  html {
+    font-size: 10px;
+  }
+}
+
+@media screen and (max-width: 1350px) {
+  html {
+    font-size: 9px;
+  }
+}
+
+@media screen and (max-width: 1250px) {
+  html {
+    font-size: 7px;
+  }
+}
+
+.empty-page {
+  width: 100%;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 4rem;
+  font-weight: bold;
+  color: #000000;
+  gap: 1rem;
+  text-align: center;
+  padding: 3rem;
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 400;
+  }
+
+  h6 {
+    font-size: 1.4rem;
+    color: #774698;
+  }
+
+  h5 {
+    font-size: 2rem;
+    color: #774698;
+  }
+}
+
+.center-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.no-data-view {
+  font-size: 1.2rem;
+}
+
+.commonHeader {
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: 100%;
+  white-space: pre-wrap;
+}
+
+.commonCell {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  font-size: 1.1rem;
+}
+
+.commonFooter {
+  font-size: 1.2rem;
+  font-weight: 400;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

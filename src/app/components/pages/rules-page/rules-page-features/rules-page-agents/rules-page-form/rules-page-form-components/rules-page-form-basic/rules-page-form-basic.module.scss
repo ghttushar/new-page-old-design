@@ -1,0 +1,67 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/app/components/pages/rules-page/rules-page-features/rules-page-agents/rules-page-form/rules-page-form.module.scss';
+
+.basicInformationContainer {
+  @include infoContainerStyles();
+  gap: 2rem;
+
+  .basicInformationStatusContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .infoContainerTitle {
+      @include infoContainerTitleStyles();
+      margin: 0;
+    }
+
+    .statusAction {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+
+      .statusTitle {
+        @include fieldTitleStyles(600);
+        text-wrap: nowrap;
+      }
+    }
+  }
+
+  .basicAction {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 3rem;
+
+    .ruleName {
+      flex: 1 1 calc(35% - 3rem);
+      width: 100%;
+
+      .fieldTitle {
+        @include fieldTitleStyles(500);
+        color: #acacac;
+      }
+    }
+
+    .optionsAction {
+      flex: 1 1 calc(65% - 3rem);
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+
+  .verticalAlignMiddle {
+    vertical-align: middle;
+  }
+
+  .error {
+    @include errorStyles();
+    width: 100%;
+  }
+}

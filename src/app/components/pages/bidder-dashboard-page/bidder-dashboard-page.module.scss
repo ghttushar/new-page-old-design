@@ -1,0 +1,23 @@
+.bidderDashboardPageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f3f5fa;
+  padding: 1rem;
+}
+
+.statsSection {
+  margin-bottom: 2rem;
+}
+
+.filtersSection {
+  margin-bottom: 1.5rem;
+}
+
+.tableSection {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}

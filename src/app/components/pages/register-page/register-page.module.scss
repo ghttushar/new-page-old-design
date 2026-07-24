@@ -1,0 +1,136 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+@mixin errorStyles($width: 70%) {
+  margin-top: -2rem !important;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: $error-color;
+  width: $width;
+  overflow-wrap: 'break-word';
+}
+
+.registerContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: $background-color;
+  padding: 6rem 0;
+
+  .logoContainer {
+    flex-direction: column;
+
+    img {
+      width: 20rem;
+      height: auto;
+    }
+
+    h6 {
+      font-weight: 500;
+      color: #000;
+      margin-top: 1rem;
+    }
+  }
+
+  .registerForm {
+    width: 50rem;
+    margin-bottom: 3rem;
+    padding: 3.2rem 5.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: $foreground-color;
+    border: 0.1rem solid $stoke-color-1;
+
+    .registerTitle {
+      margin-bottom: 2rem;
+    }
+
+    .nameContainer {
+      width: 100%;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .firstLastNameStyles {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 0.8rem;
+        width: 50%;
+
+        .nameErrorStyles {
+          @include errorStyles('70%');
+        }
+      }
+    }
+
+    .inputErrorStyles {
+      @include errorStyles(100%);
+    }
+
+    .registerFormFooter {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      p {
+        margin-top: 0.3rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+
+        a {
+          color: $primary-color;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+  .registerFooter {
+    margin-top: 0;
+
+    h4 {
+      font-size: $font-size-14;
+
+      a {
+        color: $primary-color;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .registerContainer {
+    height: 100%;
+    padding: 6rem 0;
+  }
+
+  .registerForm {
+    margin: 0;
+    margin-bottom: 2rem;
+    padding: 2rem 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: $foreground-color;
+    border: 0.1rem solid $stoke-color-1;
+  }
+
+  .logoContainer {
+    margin-bottom: 3rem;
+
+    img {
+      width: 15rem;
+      height: auto;
+    }
+  }
+}

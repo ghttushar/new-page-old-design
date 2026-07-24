@@ -1,0 +1,18 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.emptyContainer {
+  width: 100%;
+  position: relative;
+  height: 22rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  .hideChart {
+    position: absolute;
+    right: 0.8rem;
+    top: 0;
+  }
+}

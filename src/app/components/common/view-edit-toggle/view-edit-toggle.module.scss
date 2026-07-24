@@ -1,0 +1,25 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: $foreground-color;
+  border: 0.5px solid $border-color-3;
+  border-radius: 0.8rem;
+  padding: 1rem;
+
+  .buttonsContainer {
+    height: 100%;
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.disabled {
+  cursor: not-allowed;
+}

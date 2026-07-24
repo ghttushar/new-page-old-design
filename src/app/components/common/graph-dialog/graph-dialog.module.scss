@@ -1,0 +1,12 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.hideChartButton {
+  &:hover {
+    background-color: $foreground-color;
+  }
+}
+
+.graph {
+  background-color: $foreground-color;
+  height: 100%;
+}

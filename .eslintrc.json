@@ -1,0 +1,28 @@
+{
+  "extends": ["plugin:@nx/react"],
+  "root": true,
+  "ignorePatterns": ["!**/*"],
+  "plugins": ["@nx"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": ["plugin:@nx/typescript"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+        "no-useless-escape": "off",
+        "no-prototype-builtins": "off",
+        "no-undef": "off",
+        "no-useless-catch": "off",
+        "no-empty": "off"
+      }
+    },
+    {
+      "files": ["*.js", "*.jsx"],
+      "extends": ["plugin:@nx/javascript"],
+      "rules": {}
+    }
+  ]
+}

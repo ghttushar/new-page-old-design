@@ -1,0 +1,82 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.executedQueryContainer {
+  display: flex;
+  width: 100%;
+  background-color: $background-color;
+  flex-direction: column;
+
+  .subContainer {
+    padding: 1rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+
+    .tableHeader {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-self: center;
+      gap: 1rem;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-evenly;
+      margin-bottom: 2rem;
+      width: 100%;
+      max-height: 50rem;
+    }
+  }
+
+  .header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+  }
+
+  .nameCell {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 1.2rem;
+  }
+
+  .executionId {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: $primary-color;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .executedName {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: -0.02em;
+    text-align: left;
+    color: $primary-color;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .frequency {
+    text-transform: capitalize;
+  }
+}
