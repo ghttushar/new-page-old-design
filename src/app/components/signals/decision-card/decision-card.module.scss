@@ -33,11 +33,11 @@
     border-radius: 50%;
     flex-shrink: 0;
     margin-top: 0.4rem;
-
-    &.critical { background: $error-color; }
-    &.opportunity { background: $primary-color; }
-    &.fyi { background: $sub-text-4; }
   }
+
+  .severity_critical { background: $error-color; }
+  .severity_opportunity { background: $primary-color; }
+  .severity_fyi { background: $sub-text-4; }
 
   .source {
     font-size: $font-size-9;
@@ -76,12 +76,12 @@
     border-radius: 0.3rem;
     font-size: $font-size-10;
     font-weight: $font-weight-600;
-
-    &.revenue { background: rgba($positive-color, 0.1); color: $positive-color; }
-    &.savings { background: rgba($info-primary-color, 0.1); color: $info-primary-color; }
-    &.risk { background: rgba($alert-color, 0.1); color: $alert-color; }
-    &.efficiency { background: rgba($sub-text-4, 0.1); color: $sub-text-3; }
   }
+
+  .value_revenue { background: rgba($positive-color, 0.1); color: $positive-color; }
+  .value_savings { background: rgba($info-primary-color, 0.1); color: $info-primary-color; }
+  .value_risk { background: rgba($alert-color, 0.1); color: $alert-color; }
+  .value_efficiency { background: rgba($sub-text-4, 0.1); color: $sub-text-3; }
 
   .actionBtn {
     display: inline-flex;

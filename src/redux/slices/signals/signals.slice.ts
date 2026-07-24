@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MOCK_DECISIONS, Decision } from '@/constants/signals/decisions.constants';
-import { IRootState } from 'src/redux/store';
+import type { IRootState } from 'src/redux/store';
 
 export interface SignalsState {
   decisions: Decision[];

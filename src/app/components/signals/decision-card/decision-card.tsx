@@ -34,12 +34,12 @@ export function DecisionCard({ decision: d, selected, onSelect, onApprove }: Dec
       onClick={onSelect}
     >
       <div className={styles.topRow}>
-        <span className={`${styles.severityDot} ${styles[d.severity]}`} />
+        <span className={`${styles.severityDot} ${styles[`severity_${d.severity}`]}`} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className={styles.source}>{d.sourceLabel} · {d.domain}</div>
           <div className={styles.insight}>{d.insight}</div>
           <div className={styles.meta}>
-            <span className={`${styles.valueBadge} ${styles[d.valueKind]}`}>
+            <span className={`${styles.valueBadge} ${styles[`value_${d.valueKind}`]}`}>
               {formatValue(d.valueCents, d.valueKind)} {d.valueCaption}
             </span>
             <span className={styles.separator}>·</span>
