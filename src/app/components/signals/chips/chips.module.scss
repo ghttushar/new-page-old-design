@@ -1,0 +1,184 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.valuePill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 2rem;
+  font-weight: $font-weight-600;
+  font-family: $font-family;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+
+  &.sm {
+    height: 1.8rem;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  &.md {
+    height: 2.2rem;
+    padding: 0 0.8rem;
+    font-size: 1.3rem;
+  }
+}
+
+.toneGain {
+  color: $positive-color;
+  background: rgba($positive-color, 0.08);
+  border: 1px solid rgba($positive-color, 0.2);
+}
+
+.toneCost {
+  color: $alert-color;
+  background: rgba($alert-color, 0.08);
+  border: 1px solid rgba($alert-color, 0.2);
+}
+
+.toneAtRisk {
+  color: #d97706;
+  background: rgba(#d97706, 0.08);
+  border: 1px solid rgba(#d97706, 0.2);
+}
+
+.toneInfo {
+  color: $sub-text-3;
+  background: rgba($sub-text-4, 0.08);
+  border: 1px solid rgba($sub-text-4, 0.15);
+}
+
+// ---------- SourcePill ----------
+
+.sourcePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 2rem;
+  font-weight: $font-weight-500;
+  white-space: nowrap;
+
+  &.sm {
+    height: 1.8rem;
+    padding: 0 0.6rem;
+    font-size: $font-size-9;
+  }
+
+  &.md {
+    height: 2.2rem;
+    padding: 0 0.8rem;
+    font-size: $font-size-10;
+  }
+}
+
+.sourcePillIcon {
+  opacity: 0.85;
+}
+
+.toneAmazon {
+  background: rgba(#ff9900, 0.08);
+  color: #b36a00;
+  border: 1px solid rgba(#ff9900, 0.2);
+}
+
+.toneAgent {
+  background: rgba($primary-color, 0.06);
+  color: $primary-color;
+  border: 1px solid rgba($primary-color, 0.15);
+}
+
+.toneMeeting {
+  background: rgba(#8b5cf6, 0.08);
+  color: #7c3aed;
+  border: 1px solid rgba(#8b5cf6, 0.2);
+}
+
+.toneSlack {
+  background: rgba(#611f69, 0.08);
+  color: #611f69;
+  border: 1px solid rgba(#611f69, 0.2);
+}
+
+.toneTeams {
+  background: rgba(#5059c9, 0.08);
+  color: #5059c9;
+  border: 1px solid rgba(#5059c9, 0.2);
+}
+
+.toneEmail {
+  background: rgba($sub-text-4, 0.1);
+  color: $sub-text-2;
+  border: 1px solid rgba($sub-text-4, 0.2);
+}
+
+.toneForecast {
+  background: rgba(#10b981, 0.08);
+  color: #059669;
+  border: 1px solid rgba(#10b981, 0.2);
+}
+
+.toneAan {
+  background: rgba($primary-color, 0.08);
+  color: $primary-color;
+  border: 1px solid rgba($primary-color, 0.2);
+}
+
+// ---------- SourceGlyph ----------
+
+.sourceGlyph {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: $font-size-10;
+  color: $sub-text-3;
+}
+
+.glyphLabel {
+  font-weight: $font-weight-500;
+  color: $sub-text-2;
+}
+
+.sourceGlyphIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.4rem;
+  background: rgba($sub-text-4, 0.08);
+  border: 1px solid $border-color-4;
+  color: $sub-text-3;
+  flex-shrink: 0;
+}
+
+.glyphIconInner {
+  font-size: 0.9rem;
+  font-weight: $font-weight-600;
+}
+
+// ---------- LivingStatus ----------
+
+.livingStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 1.8rem;
+  padding: 0 0.6rem;
+  border-radius: 2rem;
+  font-size: $font-size-9;
+  font-weight: $font-weight-500;
+  background: rgba($primary-color, 0.06);
+  color: $primary-color;
+  border: 1px solid rgba($primary-color, 0.2);
+  white-space: nowrap;
+}
+
+.livingDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: $primary-color;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

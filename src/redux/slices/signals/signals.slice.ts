@@ -20,8 +20,10 @@ export interface SignalsState {
   activeTab: string;
   searchQuery: string;
   activeCategoryKey: string | null;
+  selectedIds: string[];
   filterSources: string[];
   filterDomains: string[];
+  filterWindow: 'any' | 'today' | 'yesterday' | 'week';
   /** Undo bookkeeping — remembers previous status so we can roll back within 30s. */
   _undoMap: Record<string, { prevStatus: DecisionStatus; timerId: ReturnType<typeof setTimeout> }>;
 }
@@ -34,8 +36,10 @@ const initialState: SignalsState = {
   activeTab: 'all',
   searchQuery: '',
   activeCategoryKey: null,
+  selectedIds: [],
   filterSources: [],
   filterDomains: [],
+  filterWindow: 'any',
   _undoMap: {},
 };
 
@@ -67,6 +71,27 @@ export const SignalsSlice = createSlice({
     },
     setActiveCategoryKey: (state, action: PayloadAction<string | null>) => {
       state.activeCategoryKey = action.payload;
+    },
+    toggleSelect: (state, action: PayloadAction<string>) => {
+      const id = action.payload;
+      const idx = state.selectedIds.indexOf(id);
+      if (idx >= 0) state.selectedIds.splice(idx, 1);
+      else state.selectedIds.push(id);
+    },
+    selectAll: (state, action: PayloadAction<string[]>) => {
+      state.selectedIds = action.payload;
+    },
+    clearSelection: (state) => {
+      state.selectedIds = [];
+    },
+    setFilterSources: (state, action: PayloadAction<string[]>) => {
+      state.filterSources = action.payload;
+    },
+    setFilterDomains: (state, action: PayloadAction<string[]>) => {
+      state.filterDomains = action.payload;
+    },
+    setFilterWindow: (state, action: PayloadAction<'any' | 'today' | 'yesterday' | 'week'>) => {
+      state.filterWindow = action.payload;
     },
     approveDecision: (state, action: PayloadAction<string>) => {
       const d = state.decisions.find((x) => x.id === action.payload);
@@ -124,6 +149,12 @@ export const {
   setActiveTab,
   setSearchQuery,
   setActiveCategoryKey,
+  toggleSelect,
+  selectAll,
+  clearSelection,
+  setFilterSources,
+  setFilterDomains,
+  setFilterWindow,
   approveDecision,
   rejectDecision,
   delegateToAan,
@@ -141,6 +172,10 @@ export const selectSelectedMeetingId = (state: IRootState) => state.signals.sele
 export const selectActiveTab = (state: IRootState) => state.signals.activeTab;
 export const selectSearchQuery = (state: IRootState) => state.signals.searchQuery;
 export const selectActiveCategoryKey = (state: IRootState) => state.signals.activeCategoryKey;
+export const selectSelectedIds = (state: IRootState) => state.signals.selectedIds;
+export const selectFilterSources = (state: IRootState) => state.signals.filterSources;
+export const selectFilterDomains = (state: IRootState) => state.signals.filterDomains;
+export const selectFilterWindow = (state: IRootState) => state.signals.filterWindow;
 
 const signalsReducer = SignalsSlice.reducer;
 export default signalsReducer;

@@ -8,6 +8,10 @@ import { DecisionCard } from '../../signals/decision-card/decision-card';
 import { ReviewWorkspace } from '../../signals/review-workspace/review-workspace';
 import { EmptyState } from '../../signals/empty-state/empty-state';
 import { DailyBriefing } from '../../signals/daily-briefing/daily-briefing';
+import { BulkBar } from '../../signals/bulk-bar';
+import { FilterSheet, countActiveFilters, type FilterState } from '../../signals/filter-sheet';
+import { MeetingCard } from '../../signals/meeting-card';
+import { MeetingReviewView } from '../../signals/meeting-review-view';
 import { CRITICAL_ONLY_DECISION } from '@/constants/signals/criticalOnlyDecision';
 import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
 import { categorize } from '@/utils/signals/categories';
@@ -18,12 +22,19 @@ import {
   selectLiveMode,
   selectSelectedDecisionId,
   selectSelectedMeetingId,
+  selectSelectedIds,
   toggleLiveMode,
   setSelectedDecision,
   setSelectedMeeting,
   approveDecision,
   rejectDecision,
   delegateToAan,
+  bulkApprove,
+  toggleSelect,
+  clearSelection,
+  setFilterSources,
+  setFilterDomains,
+  setFilterWindow,
 } from '@/redux/slices/signals/signals.slice';
 import type { Decision } from '@/constants/signals/decisions.constants';
 
@@ -54,6 +65,7 @@ export function SignalsPage() {
   const liveMode = useSelector(selectLiveMode);
   const selectedDecisionId = useSelector(selectSelectedDecisionId);
   const selectedMeetingId = useSelector(selectSelectedMeetingId);
+  const selectedIds = useSelector(selectSelectedIds);
 
   const activeDecisions = useMemo<Decision[]>(
     () => (liveMode ? decisions : [CRITICAL_ONLY_DECISION]),
@@ -63,20 +75,41 @@ export function SignalsPage() {
   const [tab, setTab] = useState<AlertTabKey>('all');
   const [query, setQuery] = useState('');
   const [activeCategoryKey, setActiveCategoryKey] = useState<string | null>(null);
+  const [filterState, setFilterState] = useState<FilterState>({
+    sources: new Set(),
+    domains: new Set(),
+    window: 'any',
+  });
 
   const b = useMemo(() => briefingFor(activeDecisions), [activeDecisions]);
   const counts = useMemo(() => computeTabCounts(activeDecisions), [activeDecisions]);
   const pool = useMemo(() => filterByTab(activeDecisions, tab), [activeDecisions, tab]);
 
   const filtered = useMemo(() => {
+    let result = pool;
+
     const q = query.trim().toLowerCase();
-    return pool
-      .filter((d) => {
-        if (q && !`${d.insight} ${d.sourceRef.label} ${d.domain}`.toLowerCase().includes(q)) return false;
-        return true;
-      })
-      .sort((a, b) => importanceScore(b) - importanceScore(a));
-  }, [pool, query]);
+    if (q) {
+      result = result.filter((d) =>
+        `${d.insight} ${d.sourceRef.label} ${d.domain}`.toLowerCase().includes(q)
+      );
+    }
+
+    if (filterState.sources.size > 0) {
+      result = result.filter((d) => filterState.sources.has(d.source));
+    }
+    if (filterState.domains.size > 0) {
+      result = result.filter((d) => filterState.domains.has(d.domain));
+    }
+    if (filterState.window !== 'any') {
+      const now = Date.now();
+      const day = 86400000;
+      const earliest = filterState.window === 'today' ? now - day : filterState.window === 'yesterday' ? now - 2 * day : now - 7 * day;
+      result = result.filter((d) => d.createdAt >= earliest);
+    }
+
+    return result.sort((a, b) => importanceScore(b) - importanceScore(a));
+  }, [pool, query, filterState]);
 
   const allCategoryGroups = useMemo(() => categorize(tab, filtered), [tab, filtered]);
   const categoryGroups = useMemo(() => {
@@ -125,8 +158,16 @@ export function SignalsPage() {
     dispatch(approveDecision(id));
   }, [dispatch]);
 
-  const handleDelegate = useCallback((id: string) => {
-    dispatch(delegateToAan(id));
+  const handleBulkApprove = useCallback((ids: string[]) => {
+    dispatch(bulkApprove(ids));
+  }, [dispatch]);
+
+  const handleBulkDelegate = useCallback((ids: string[]) => {
+    ids.forEach((id) => dispatch(delegateToAan(id)));
+  }, [dispatch]);
+
+  const handleBulkDismiss = useCallback((ids: string[]) => {
+    ids.forEach((id) => dispatch(rejectDecision(id)));
   }, [dispatch]);
 
   useEffect(() => {
@@ -134,6 +175,7 @@ export function SignalsPage() {
       if (e.key === 'Escape') {
         if (selectedDecisionId) dispatch(setSelectedDecision(null));
         else if (selectedMeetingId) dispatch(setSelectedMeeting(null));
+        else dispatch(clearSelection());
       }
     };
     window.addEventListener('keydown', onKey);
@@ -143,12 +185,25 @@ export function SignalsPage() {
   const total = isMeetingsTab ? meetingGroups.length : filtered.length;
   const isSearchEmpty = query.trim().length > 0 && total === 0;
   const isEmpty = total === 0;
+  const filterActiveCount = countActiveFilters(filterState);
 
   return (
     <div className={styles.signalsPage}>
       <div className={styles.headerRow}>
         <GreetingHeader name="Tushar" liveMode={liveMode} briefing={b} />
-        <ModeToggle liveMode={liveMode} onToggle={() => dispatch(toggleLiveMode())} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FilterSheet
+            value={filterState}
+            onChange={(f) => {
+              setFilterState(f);
+              dispatch(setFilterSources([...f.sources]));
+              dispatch(setFilterDomains([...f.domains]));
+              dispatch(setFilterWindow(f.window));
+            }}
+            activeCount={filterActiveCount}
+          />
+          <ModeToggle liveMode={liveMode} onToggle={() => dispatch(toggleLiveMode())} />
+        </div>
       </div>
 
       <div className={styles.layout}>
@@ -193,19 +248,29 @@ export function SignalsPage() {
           </div>
 
           <div className={styles.queueScroll}>
+            {/* Bulk bar */}
+            <BulkBar
+              selectedIds={selectedIds}
+              decisions={filtered}
+              onClear={() => dispatch(clearSelection())}
+              onBulkApprove={handleBulkApprove}
+              onBulkDelegate={handleBulkDelegate}
+              onBulkDismiss={handleBulkDismiss}
+            />
+
             {isEmpty ? (
               <EmptyState variant={isSearchEmpty ? 'search' : tab === 'done' ? 'none' : 'needs_me'} />
             ) : isMeetingsTab ? (
               <div className={styles.meetingList}>
                 {meetingGroups.map((m) => (
-                  <div
+                  <MeetingCard
                     key={m.bundleId}
-                    className={`${styles.meetingCard} ${selectedMeetingId === m.bundleId ? styles.selected : ''}`}
-                    onClick={() => handleSelectMeeting(m.bundleId)}
-                  >
-                    <div className={styles.meetingTitle}>{m.title}</div>
-                    <div className={styles.meetingMeta}>{m.signals.length} signal{m.signals.length === 1 ? '' : 's'}</div>
-                  </div>
+                    bundleId={m.bundleId}
+                    title={m.title}
+                    signals={m.signals}
+                    selected={selectedMeetingId === m.bundleId}
+                    onSelect={() => handleSelectMeeting(m.bundleId)}
+                  />
                 ))}
               </div>
             ) : (
@@ -231,30 +296,20 @@ export function SignalsPage() {
           {selectedDecision ? (
             <ReviewWorkspace
               decision={selectedDecision}
+              decisions={activeDecisions}
               onClose={() => dispatch(setSelectedDecision(null))}
-              onApprove={handleApprove}
-              onDelegate={handleDelegate}
+              onOpenDecision={(id) => {
+                dispatch(setSelectedDecision(id));
+                dispatch(setSelectedMeeting(null));
+              }}
             />
           ) : selectedMeetingBundle ? (
-            <div className={styles.meetingReview}>
-              <div className={styles.meetingReviewHeader}>
-                <h3>{selectedMeetingBundle.title}</h3>
-                <button className={styles.closeBtn} onClick={() => dispatch(setSelectedMeeting(null))}>✕</button>
-              </div>
-              <div className={styles.meetingReviewList}>
-                {activeDecisions
-                  .filter((d) => d.meetingRef?.bundleId === selectedMeetingBundle.bundleId)
-                  .map((d) => (
-                    <DecisionCard
-                      key={d.id}
-                      decision={d}
-                      selected={selectedDecisionId === d.id}
-                      onSelect={() => handleSelectDecision(d.id)}
-                      onApprove={handleApprove}
-                    />
-                  ))}
-              </div>
-            </div>
+            <MeetingReviewView
+              bundleId={selectedMeetingBundle.bundleId}
+              bundleTitle={selectedMeetingBundle.title}
+              all={activeDecisions}
+              onOpen={(id) => dispatch(setSelectedDecision(id))}
+            />
           ) : (
             <DailyBriefing />
           )}
