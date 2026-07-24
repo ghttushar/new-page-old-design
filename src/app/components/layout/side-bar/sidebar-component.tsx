@@ -24,8 +24,8 @@ const SideBarComponent: React.FC<ISideBarComponentProps> = ({
   const user = useAppSelector(selectUser);
 
   const marketplace = useMemo(
-    () => selectedAccount.marketplace ?? MarketplaceEnum.AMAZON,
-    [selectedAccount.marketplace]
+    () => selectedAccount?.marketplace ?? MarketplaceEnum.AMAZON,
+    [selectedAccount?.marketplace]
   );
 
   useEffect(() => {
