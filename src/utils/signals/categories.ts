@@ -48,7 +48,7 @@ const FYI_ORDER: string[] = [
 const DONE_ORDER: string[] = ['Completed Today', 'Completed This Week'];
 
 function meetingBucket(d: Decision): string {
-  const label = (d.meetingRef?.title || d.sourceLabel || '').toLowerCase();
+  const label = (d.meetingRef?.title || d.sourceRef.label || '').toLowerCase();
   if (label.includes('staples') || label.includes('walmart') || label.includes('target') || label.includes('customer')) {
     if (label.includes('walmart')) return 'Walmart';
     if (label.includes('customer') || label.includes('buyer')) return 'Customer Calls';
@@ -59,7 +59,7 @@ function meetingBucket(d: Decision): string {
 }
 
 function fyiBucket(d: Decision): string {
-  const t = (d.insight + ' ' + d.sourceLabel).toLowerCase();
+  const t = (d.insight + ' ' + d.sourceRef.label).toLowerCase();
   if (t.includes('competitor') || t.includes('undercut') || t.includes('buy box')) return 'Competitor Updates';
   if (t.includes('trend') || t.includes('velocity') || t.includes('weeks')) return 'Trends';
   if (t.includes('market') || t.includes('price')) return 'Market Changes';

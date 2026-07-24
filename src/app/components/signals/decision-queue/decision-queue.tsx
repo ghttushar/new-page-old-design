@@ -35,7 +35,7 @@ function filterDecisions(decisions: Decision[], tab: string, query: string): Dec
 
   if (q) {
     pool = pool.filter((d) =>
-      `${d.insight} ${d.domain} ${d.sourceLabel}`.toLowerCase().includes(q)
+      `${d.insight} ${d.domain} ${d.sourceRef.label}`.toLowerCase().includes(q)
     );
   }
 

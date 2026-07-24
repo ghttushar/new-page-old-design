@@ -36,7 +36,7 @@ export function ReviewWorkspace({ decision: d, onClose, onApprove, onDelegate }:
       <div className={styles.header}>
         <div className={styles.headerInfo}>
           <div className={styles.sourceBadge}>
-            {d.sourceLabel} · {d.domain}
+            {d.sourceRef.label} · {d.domain}
           </div>
           <h2 className={styles.title}>{d.insight}</h2>
         </div>
@@ -76,7 +76,7 @@ export function ReviewWorkspace({ decision: d, onClose, onApprove, onDelegate }:
         <div className={styles.section}>
           <div className={styles.eyebrow}>Source</div>
           <p className={styles.text} style={{ fontSize: '1.1rem', color: '#7c7c7c' }}>
-            {d.sourceLabel} · {formatTime(d.createdAt)}
+            {d.sourceRef.label} · {formatTime(d.createdAt)}
           </p>
         </div>
 
