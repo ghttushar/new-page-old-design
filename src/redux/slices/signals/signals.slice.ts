@@ -47,6 +47,14 @@ export const SignalsSlice = createSlice({
   name: 'signals',
   initialState,
   reducers: {
+    setLiveMode: (state, action: PayloadAction<boolean>) => {
+      state.liveMode = action.payload;
+      if (!action.payload) {
+        state.selectedDecisionId = 'critical-b0csh8tcc6';
+      } else {
+        state.selectedDecisionId = null;
+      }
+    },
     toggleLiveMode: (state) => {
       state.liveMode = !state.liveMode;
       if (!state.liveMode) {
@@ -143,6 +151,7 @@ export const SignalsSlice = createSlice({
 });
 
 export const {
+  setLiveMode,
   toggleLiveMode,
   setSelectedDecision,
   setSelectedMeeting,
