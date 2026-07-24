@@ -251,6 +251,7 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
     primaryText: 'Signals',
     icon: <BellIcon className={styles.icon} />,
     feature: FeaturesEnum.SIGNALS,
+    divider: false,
   });
 
   if (isInternalUser) {

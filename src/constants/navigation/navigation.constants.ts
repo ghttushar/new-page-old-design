@@ -57,6 +57,7 @@ export const FeatureRoutesMap: Record<FeaturesEnum, FeatureRoutes> = {
   [FeaturesEnum.MONITORING_HISTORY]: FeatureRoutes.MONITORING_HISTORY,
   [FeaturesEnum.MONITORING_CRON_DEFINITIONS]: FeatureRoutes.CRON_DEFINITIONS,
   [FeaturesEnum.MONITORING_QUEUES_INFO]: FeatureRoutes.QUEUES_INFO,
+  [FeaturesEnum.SIGNALS]: FeatureRoutes.SIGNALS,
 };
 
 export const FeaturesRequiringAdsAccount: Array<FeaturesEnum> = [
