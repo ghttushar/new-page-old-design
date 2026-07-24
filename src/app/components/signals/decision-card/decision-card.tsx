@@ -1,5 +1,8 @@
+import { ArrowRight, DotsThree, WarningCircle } from '@phosphor-icons/react';
 import styles from './decision-card.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
+import { formatValue } from '@/utils/signals/valueFormat';
+import { getSourceMeta } from '@/utils/signals/sourceRegistry';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -18,47 +21,61 @@ function formatTime(ts: number): string {
   return `${d}d ago`;
 }
 
-function formatValue(cents: number, kind: string): string {
-  const amt = (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
-  if (kind === 'savings') return amt;
-  if (kind === 'risk') return amt;
-  return amt;
-}
+const valueTone: Record<string, string> = {
+  gain: styles.toneGain,
+  cost: styles.toneCost,
+  at_risk: styles.toneAtRisk,
+  info: styles.toneInfo,
+};
 
 export function DecisionCard({ decision: d, selected, onSelect, onApprove }: DecisionCardProps) {
   const isActionable = d.status === 'open';
+  const isDone = d.status === 'completed' || d.status === 'rejected' || d.status === 'in_flight' || d.status === 'with_aan';
+  const f = formatValue({ cents: d.valueCents, kind: d.valueKind, cadence: d.cadence });
+  const sourceMeta = getSourceMeta(d.source);
 
   return (
     <div
-      className={`${styles.decisionCard} ${selected ? styles.selected : ''}`}
+      className={`${styles.decisionCard} ${selected ? styles.selected : ''} ${isDone ? styles.done : ''}`}
       onClick={onSelect}
     >
+      {selected && <span className={styles.selectedBar} />}
       <div className={styles.topRow}>
         <span className={`${styles.severityDot} ${styles[`severity_${d.severity}`]}`} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className={styles.source}>{d.sourceLabel} · {d.domain}</div>
+          {/* Value headline */}
+          <div className={`${styles.valueHeadline} ${valueTone[d.valueKind] || ''}`}>
+            {f.text}
+          </div>
+          <div className={styles.valueCaption}>{d.valueCaption}</div>
+          {/* Insight */}
           <div className={styles.insight}>{d.insight}</div>
+          {/* Meta row */}
           <div className={styles.meta}>
-            <span className={`${styles.valueBadge} ${styles[`value_${d.valueKind}`]}`}>
-              {formatValue(d.valueCents, d.valueKind)} {d.valueCaption}
-            </span>
+            <span className={styles.sourcePill}>{sourceMeta.label}</span>
+            <span className={styles.separator}>·</span>
+            <span>{d.sourceRef.label}</span>
             <span className={styles.separator}>·</span>
             <span>{formatTime(d.createdAt)}</span>
-            {d.status !== 'open' && (
+            {d.severity === 'critical' && (
               <>
                 <span className={styles.separator}>·</span>
-                <span style={{ textTransform: 'uppercase', fontSize: '0.9rem', color: '#7c7c7c' }}>
-                  {d.status.replace('_', ' ')}
+                <span className={styles.criticalBadge}>
+                  <WarningCircle size={10} weight="fill" /> Critical
                 </span>
               </>
             )}
+            {d.status !== 'open' && (
+              <>
+                <span className={styles.separator}>·</span>
+                <span className={styles.statusLabel}>{d.status.replace('_', ' ')}</span>
+              </>
+            )}
           </div>
+          {/* Action button */}
           {isActionable && onApprove && (
-            <button
-              className={styles.actionBtn}
-              onClick={(e) => { e.stopPropagation(); onApprove(d.id); }}
-            >
-              {d.actionVerb} →
+            <button className={styles.actionBtn} onClick={(e) => { e.stopPropagation(); onApprove(d.id); }}>
+              {d.actionVerb} <ArrowRight size={12} weight="bold" />
             </button>
           )}
         </div>

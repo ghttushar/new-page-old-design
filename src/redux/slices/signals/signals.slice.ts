@@ -1,6 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MOCK_DECISIONS, Decision } from '@/constants/signals/decisions.constants';
-import type { IRootState } from 'src/redux/store';
+import { MOCK_DECISIONS, type Decision, type DecisionStatus } from '@/constants/signals/decisions.constants';
+import type { IRootState } from '../../store';
+
+const UNDO_MS = 30_000;
+
+export type SnoozeChoice = '1h' | 'tomorrow' | 'next_week';
+
+const SNOOZE_MS: Record<SnoozeChoice, number> = {
+  '1h': 60 * 60 * 1000,
+  tomorrow: 20 * 60 * 60 * 1000,
+  next_week: 7 * 24 * 60 * 60 * 1000,
+};
 
 export interface SignalsState {
   decisions: Decision[];
@@ -12,6 +22,8 @@ export interface SignalsState {
   activeCategoryKey: string | null;
   filterSources: string[];
   filterDomains: string[];
+  /** Undo bookkeeping — remembers previous status so we can roll back within 30s. */
+  _undoMap: Record<string, { prevStatus: DecisionStatus; timerId: ReturnType<typeof setTimeout> }>;
 }
 
 const initialState: SignalsState = {
@@ -24,6 +36,7 @@ const initialState: SignalsState = {
   activeCategoryKey: null,
   filterSources: [],
   filterDomains: [],
+  _undoMap: {},
 };
 
 export const SignalsSlice = createSlice({
@@ -57,26 +70,48 @@ export const SignalsSlice = createSlice({
     },
     approveDecision: (state, action: PayloadAction<string>) => {
       const d = state.decisions.find((x) => x.id === action.payload);
-      if (d) d.status = 'completed';
+      if (d && d.status === 'open') {
+        d.status = 'in_flight';
+        d.updatedAt = Date.now();
+      }
     },
     rejectDecision: (state, action: PayloadAction<string>) => {
       const d = state.decisions.find((x) => x.id === action.payload);
-      if (d) d.status = 'rejected';
+      if (d && d.status === 'open') {
+        d.status = 'rejected';
+        d.updatedAt = Date.now();
+      }
     },
     delegateToAan: (state, action: PayloadAction<string>) => {
       const d = state.decisions.find((x) => x.id === action.payload);
-      if (d) d.status = 'with_aan';
+      if (d && d.status === 'open') {
+        d.status = 'with_aan';
+        d.updatedAt = Date.now();
+      }
     },
     snoozeDecision: (state, action: PayloadAction<{ id: string; until: number }>) => {
       const d = state.decisions.find((x) => x.id === action.payload.id);
       if (d) {
         d.status = 'snoozed';
         d.snoozedUntil = action.payload.until;
+        d.updatedAt = Date.now();
+      }
+    },
+    bulkApprove: (state, action: PayloadAction<string[]>) => {
+      for (const id of action.payload) {
+        const d = state.decisions.find((x) => x.id === id);
+        if (d && d.status === 'open') {
+          d.status = 'in_flight';
+          d.updatedAt = Date.now();
+        }
       }
     },
     rollbackDecision: (state, action: PayloadAction<string>) => {
       const d = state.decisions.find((x) => x.id === action.payload);
-      if (d) d.status = 'open';
+      if (d) {
+        d.status = 'open';
+        d.updatedAt = Date.now();
+      }
     },
     resetSignals: () => initialState,
   },
@@ -93,6 +128,7 @@ export const {
   rejectDecision,
   delegateToAan,
   snoozeDecision,
+  bulkApprove,
   rollbackDecision,
   resetSignals,
 } = SignalsSlice.actions;

@@ -8,6 +8,7 @@
   margin-bottom: $spacing-8;
   cursor: pointer;
   transition: all 0.15s ease;
+  position: relative;
 
   &:hover {
     border-color: $primary-color;
@@ -18,88 +19,134 @@
     border-color: $primary-color;
     background: rgba($primary-color, 0.02);
     box-shadow: 0 0.2rem 1.2rem rgba($primary-color, 0.12);
-  }
 
-  .topRow {
-    display: flex;
-    align-items: flex-start;
-    gap: $spacing-8;
-    margin-bottom: $spacing-4;
-  }
-
-  .severityDot {
-    width: 0.8rem;
-    height: 0.8rem;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 0.4rem;
-  }
-
-  .severity_critical { background: $error-color; }
-  .severity_opportunity { background: $primary-color; }
-  .severity_fyi { background: $sub-text-4; }
-
-  .source {
-    font-size: $font-size-9;
-    color: $sub-text-4;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.2rem;
-  }
-
-  .insight {
-    font-size: $font-size-14;
-    font-weight: $font-weight-500;
-    color: $main-text;
-    line-height: 1.4;
-    margin-bottom: $spacing-4;
-  }
-
-  .meta {
-    display: flex;
-    align-items: center;
-    gap: $spacing-8;
-    flex-wrap: wrap;
-    font-size: $font-size-10;
-    color: $sub-text-3;
-
-    .separator {
-      opacity: 0.4;
+    .selectedBar {
+      position: absolute;
+      left: 0;
+      top: 0.6rem;
+      bottom: 0.6rem;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: $primary-color;
+      box-shadow: 0 0 12px rgba($primary-color, 0.5);
     }
   }
 
-  .valueBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.1rem 0.6rem;
-    border-radius: 0.3rem;
-    font-size: $font-size-10;
-    font-weight: $font-weight-600;
+  &.done {
+    opacity: 0.65;
   }
+}
 
-  .value_revenue { background: rgba($positive-color, 0.1); color: $positive-color; }
-  .value_savings { background: rgba($info-primary-color, 0.1); color: $info-primary-color; }
-  .value_risk { background: rgba($alert-color, 0.1); color: $alert-color; }
-  .value_efficiency { background: rgba($sub-text-4, 0.1); color: $sub-text-3; }
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-8;
+}
 
-  .actionBtn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-top: $spacing-8;
-    padding: 0.3rem 1rem;
-    border-radius: 0.4rem;
-    font-size: $font-size-10;
-    font-weight: $font-weight-500;
-    background: $primary-color;
-    color: $foreground-color;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s;
+.severityDot {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+}
 
-    &:hover {
-      background: $primary-color-variant-1;
-    }
+.severity_critical { background: $error-color; }
+.severity_opportunity { background: $primary-color; }
+.severity_fyi { background: $sub-text-4; }
+
+.valueHeadline {
+  font-size: 1.8rem;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
+}
+
+.toneGain { color: $positive-color; }
+.toneCost { color: $alert-color; }
+.toneAtRisk { color: #e6a817; }
+.toneInfo { color: $main-text; }
+
+.valueCaption {
+  font-size: $font-size-10;
+  color: $sub-text-3;
+  margin-top: 0.1rem;
+}
+
+.insight {
+  font-size: $font-size-12;
+  font-weight: $font-weight-500;
+  color: $main-text;
+  line-height: 1.4;
+  margin-top: $spacing-4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  flex-wrap: wrap;
+  font-size: $font-size-10;
+  color: $sub-text-3;
+  margin-top: $spacing-8;
+
+  .separator {
+    opacity: 0.4;
+  }
+}
+
+.sourcePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  background: rgba($sub-text-4, 0.1);
+  color: $sub-text-3;
+}
+
+.criticalBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  background: rgba($error-color, 0.1);
+  color: $error-color;
+}
+
+.statusLabel {
+  text-transform: uppercase;
+  font-size: $font-size-9;
+  color: $sub-text-4;
+  font-weight: $font-weight-500;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: $spacing-8;
+  padding: 0.3rem 1rem;
+  border-radius: 0.4rem;
+  font-size: $font-size-10;
+  font-weight: $font-weight-500;
+  background: $primary-color;
+  color: $foreground-color;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $primary-color-variant-1;
   }
 }

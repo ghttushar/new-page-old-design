@@ -1,3 +1,5 @@
+import { Folder, Megaphone, Package, TrendUp, ChatCircle, Users, Tag, Sparkle, Clock, CheckCircle, Lightning, Robot } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 import styles from './category-rail.module.scss';
 
 interface RailItem {
@@ -12,22 +14,25 @@ interface CategoryRailProps {
   onSelect: (key: string) => void;
 }
 
-function iconFor(label: string): string {
-  const map: Record<string, string> = {
-    'All': '□',
-    'Advertising': '📣',
-    'Inventory': '📦',
-    'Profitability': '📈',
-    'Customer Service': '💬',
-    'Buyer / Accounts': '👥',
-    'Retail Listings': '🏷️',
-    'Competitor Updates': '⚡',
-    'Market Changes': '📊',
-    'Insights': '💡',
-    'Completed Today': '✅',
-  };
-  return map[label] || '○';
-}
+const ICON_MAP: Record<string, Icon> = {
+  'Advertising': Megaphone,
+  'Inventory': Package,
+  'Profitability': TrendUp,
+  'Customer Service': ChatCircle,
+  'Buyer / Accounts': Users,
+  'Retail Listings': Tag,
+  'Competitor Updates': Lightning,
+  'Market Changes': TrendUp,
+  'Insights': Sparkle,
+  'Completed Today': CheckCircle,
+  'Completed This Week': CheckCircle,
+  'Pending This Week': Clock,
+  'Automated': Robot,
+  'Amazon': Tag,
+  'Walmart': Tag,
+  'Internal': Folder,
+  'Customer Calls': ChatCircle,
+};
 
 export function CategoryRail({ items, activeKey, onSelect }: CategoryRailProps) {
   const total = items.reduce((n, it) => n + it.count, 0);
@@ -38,23 +43,24 @@ export function CategoryRail({ items, activeKey, onSelect }: CategoryRailProps) 
         className={`${styles.item} ${activeKey === null || activeKey === '__all__' ? styles.active : ''}`}
         onClick={() => onSelect('__all__')}
       >
-        <span className={styles.icon}>□</span>
+        <Folder size={14} className={styles.icon} />
         <span className={styles.label}>All</span>
-        <span className={`${styles.count} ${activeKey === null || activeKey === '__all__' ? styles.active : ''}`}>
+        <span className={`${styles.count} ${activeKey === null || activeKey === '__all__' ? styles.countActive : ''}`}>
           {total}
         </span>
       </button>
       {items.map((it) => {
         const active = activeKey === it.key;
+        const IconComp = ICON_MAP[it.label] || Folder;
         return (
           <button
             key={it.key}
             className={`${styles.item} ${active ? styles.active : ''}`}
             onClick={() => onSelect(it.key)}
           >
-            <span className={styles.icon}>{iconFor(it.label)}</span>
+            <IconComp size={14} className={styles.icon} />
             <span className={styles.label}>{it.label}</span>
-            <span className={`${styles.count} ${active ? styles.active : ''}`}>{it.count}</span>
+            <span className={`${styles.count} ${active ? styles.countActive : ''}`}>{it.count}</span>
           </button>
         );
       })}
