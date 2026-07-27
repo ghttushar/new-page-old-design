@@ -5,7 +5,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   border-radius: 0.8rem;
   border: 1px solid $border-color-4;
   background: linear-gradient(90deg, rgba(122,75,235,0.05), rgba(42,109,244,0.03));
@@ -39,6 +39,8 @@
 .content {
   position: relative;
   padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .badge {
@@ -102,4 +104,140 @@
   margin-top: 1.5rem;
   font-size: $font-size-10;
   color: $sub-text-3;
+}
+
+// ---------- New sections ----------
+
+.section {
+  margin-top: 1.6rem;
+}
+
+.sectionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: $sub-text-3;
+  margin-bottom: 0.6rem;
+}
+
+.alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.alertItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba($border-color-4, 0.5);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: $primary-color;
+  }
+}
+
+.alertDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.alertInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertTitle {
+  display: block;
+  font-size: $font-size-10;
+  font-weight: $font-weight-500;
+  color: $main-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alertMeta {
+  display: block;
+  font-size: $font-size-9;
+  color: $sub-text-3;
+  margin-top: 0.1rem;
+}
+
+.alertArrow {
+  flex-shrink: 0;
+  color: $sub-text-4;
+}
+
+.meetingList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.meetingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba($border-color-4, 0.5);
+}
+
+.meetingTitle {
+  font-size: $font-size-10;
+  font-weight: $font-weight-500;
+  color: $main-text;
+}
+
+.meetingCount {
+  font-size: $font-size-9;
+  color: $sub-text-3;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: $font-size-10;
+  color: $sub-text-2;
+  line-height: 1.4;
+}
+
+.activityDot {
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: rgba(#10b981, 0.6);
+}
+
+.streakText {
+  font-size: $font-size-10;
+  color: $sub-text-2;
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba($border-color-4, 0.5);
 }

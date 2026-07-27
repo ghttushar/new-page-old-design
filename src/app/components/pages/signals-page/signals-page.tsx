@@ -187,19 +187,6 @@ export function SignalsPage() {
       <div className={styles.headerRow}>
         <GreetingHeader name="Tushar" liveMode={liveMode} briefing={b} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <FilterSheet
-            value={filterState}
-            categories={railItems}
-            activeCategory={activeCategoryKey}
-            onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
-            onChange={(f) => {
-              setFilterState(f);
-              dispatch(setFilterSources([...f.sources]));
-              dispatch(setFilterDomains([...f.domains]));
-              dispatch(setFilterWindow(f.window));
-            }}
-            activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
-          />
           <ModeToggle liveMode={liveMode} onToggle={() => dispatch(toggleLiveMode())} />
         </div>
       </div>
@@ -235,6 +222,19 @@ export function SignalsPage() {
               placeholder="Search signals, meetings, decisions…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+            />
+            <FilterSheet
+              value={filterState}
+              categories={railItems}
+              activeCategory={activeCategoryKey}
+              onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
+              onChange={(f) => {
+                setFilterState(f);
+                dispatch(setFilterSources([...f.sources]));
+                dispatch(setFilterDomains([...f.domains]));
+                dispatch(setFilterWindow(f.window));
+              }}
+              activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
             />
           </div>
 

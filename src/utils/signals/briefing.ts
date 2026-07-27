@@ -1,6 +1,19 @@
 import type { Decision } from '@/constants/signals/decisions.constants';
+import { formatValue } from './valueFormat';
 
 export type BriefingSlot = 'morning' | 'afternoon' | 'evening' | 'end_of_day';
+
+export interface PriorityAlert {
+  title: string;
+  value: string;
+  verb: string;
+  severity: 'critical' | 'opportunity' | 'fyi';
+}
+
+export interface UpcomingMeeting {
+  title: string;
+  signalCount: number;
+}
 
 export interface Briefing {
   slot: BriefingSlot;
@@ -8,6 +21,10 @@ export interface Briefing {
   dateline: string;
   bullets: string[];
   actionText?: string;
+  priorityAlerts?: PriorityAlert[];
+  upcomingMeetings?: UpcomingMeeting[];
+  aanActivity?: string[];
+  weeklyStreak?: string;
 }
 
 function slotOf(hours = new Date().getHours()): BriefingSlot {
@@ -48,6 +65,37 @@ export function briefingFor(decisions: Decision[]): Briefing {
     0,
   );
 
+  const priorityAlerts: PriorityAlert[] = open
+    .sort((a, b) => Math.abs(b.valueCents) - Math.abs(a.valueCents))
+    .slice(0, 3)
+    .map((d) => {
+      const val = formatValue({ cents: d.valueCents, kind: d.valueKind, cadence: d.cadence });
+      return { title: d.insight, value: val.text, verb: d.actionVerb, severity: d.severity };
+    });
+
+  const meetingMap = new Map<string, { title: string; signalCount: number }>();
+  for (const d of decisions) {
+    if (!d.meetingRef) continue;
+    const existing = meetingMap.get(d.meetingRef.bundleId);
+    if (existing) existing.signalCount++;
+    else meetingMap.set(d.meetingRef.bundleId, { title: d.meetingRef.title, signalCount: 1 });
+  }
+  const upcomingMeetings: UpcomingMeeting[] = [...meetingMap.values()].slice(0, 3);
+
+  const aanActivity: string[] = inFlight.slice(0, 3).map((d) => {
+    if (d.status === 'with_aan') return `Aan is working on: ${d.insight}`;
+    return `Executing: ${d.insight}`;
+  });
+
+  const weekMs = 7 * 24 * 3_600_000;
+  const daysWithActivity = new Set(
+    decisions
+      .filter((d) => d.status === 'completed' || d.status === 'rejected')
+      .filter((d) => Date.now() - d.updatedAt < weekMs)
+      .map((d) => new Date(d.updatedAt).toDateString()),
+  ).size;
+  const weeklyStreak = `${daysWithActivity} of 7 days with completed actions`;
+
   if (slot === 'morning') {
     return {
       slot,
@@ -59,6 +107,10 @@ export function briefingFor(decisions: Decision[]): Briefing {
         `Aan handled ${inFlight.length} low-risk automation${inFlight.length === 1 ? '' : 's'} while you slept`,
       ],
       actionText: 'Start with the highest-value item',
+      priorityAlerts,
+      upcomingMeetings,
+      aanActivity,
+      weeklyStreak,
     };
   }
   if (slot === 'afternoon') {
@@ -72,6 +124,10 @@ export function briefingFor(decisions: Decision[]): Briefing {
         `${inFlight.length} automation${inFlight.length === 1 ? '' : 's'} running in the background`,
       ],
       actionText: 'Pick up where you left off',
+      priorityAlerts,
+      upcomingMeetings,
+      aanActivity,
+      weeklyStreak,
     };
   }
   if (slot === 'evening') {
@@ -85,6 +141,10 @@ export function briefingFor(decisions: Decision[]): Briefing {
         `${meetingCount} meeting${meetingCount === 1 ? '' : 's'} still have follow-ups`,
       ],
       actionText: "Review tomorrow's priorities",
+      priorityAlerts,
+      upcomingMeetings,
+      aanActivity,
+      weeklyStreak,
     };
   }
 
@@ -97,5 +157,9 @@ export function briefingFor(decisions: Decision[]): Briefing {
       `Actions completed: ${completedToday.length}`,
       `Outstanding work: ${open.length}`,
     ],
+    priorityAlerts,
+    upcomingMeetings,
+    aanActivity,
+    weeklyStreak,
   };
 }

@@ -1,14 +1,20 @@
 import { useSelector } from 'react-redux';
-import { Sun, CloudSun, Moon, SunHorizon, Sparkle } from '@phosphor-icons/react';
+import { Sun, CloudSun, Moon, SunHorizon, Sparkle, WarningCircle, TrendUp, Robot, CalendarBlank, ArrowRight } from '@phosphor-icons/react';
 import styles from './daily-briefing.module.scss';
 import { selectDecisions } from '@/redux/slices/signals/signals.slice';
-import { briefingFor, type BriefingSlot } from '@/utils/signals/briefing';
+import { briefingFor, type BriefingSlot, type PriorityAlert, type UpcomingMeeting } from '@/utils/signals/briefing';
 
 const ICON_MAP: Record<BriefingSlot, typeof Sun | typeof CloudSun | typeof Moon | typeof SunHorizon> = {
   morning: SunHorizon,
   afternoon: Sun,
   evening: CloudSun,
   end_of_day: Moon,
+};
+
+const severityColor: Record<string, string> = {
+  critical: '#ff0000',
+  opportunity: '#77469b',
+  fyi: '#7c7c7c',
 };
 
 export function DailyBriefing() {
@@ -33,6 +39,68 @@ export function DailyBriefing() {
             </li>
           ))}
         </ul>
+
+        {b.priorityAlerts && b.priorityAlerts.length > 0 && (
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>
+              <WarningCircle size={12} /> Priority alerts
+            </div>
+            <div className={styles.alertList}>
+              {b.priorityAlerts.map((a, i) => (
+                <div key={i} className={styles.alertItem}>
+                  <span className={styles.alertDot} style={{ background: severityColor[a.severity] || '#7c7c7c' }} />
+                  <div className={styles.alertInfo}>
+                    <span className={styles.alertTitle}>{a.title}</span>
+                    <span className={styles.alertMeta}>{a.value} · {a.verb}</span>
+                  </div>
+                  <ArrowRight size={12} className={styles.alertArrow} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {b.upcomingMeetings && b.upcomingMeetings.length > 0 && (
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>
+              <CalendarBlank size={12} /> Upcoming meetings
+            </div>
+            <div className={styles.meetingList}>
+              {b.upcomingMeetings.map((m, i) => (
+                <div key={i} className={styles.meetingItem}>
+                  <span className={styles.meetingTitle}>{m.title}</span>
+                  <span className={styles.meetingCount}>{m.signalCount} signal{m.signalCount === 1 ? '' : 's'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {b.aanActivity && b.aanActivity.length > 0 && (
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>
+              <Robot size={12} /> Aan activity
+            </div>
+            <div className={styles.activityList}>
+              {b.aanActivity.map((a, i) => (
+                <div key={i} className={styles.activityItem}>
+                  <span className={styles.activityDot} />
+                  <span>{a}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {b.weeklyStreak && (
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>
+              <TrendUp size={12} /> 7-day streak
+            </div>
+            <p className={styles.streakText}>{b.weeklyStreak}</p>
+          </div>
+        )}
+
         {b.actionText && (
           <p className={styles.actionText}>
             <Sparkle size={12} weight="fill" /> {b.actionText}

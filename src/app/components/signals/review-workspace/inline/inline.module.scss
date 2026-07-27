@@ -2,6 +2,12 @@
 
 .inlineSection {
   margin-top: $spacing-8;
+  animation: inlineFadeIn 0.35s ease-out;
+}
+
+@keyframes inlineFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .inlineHeader {

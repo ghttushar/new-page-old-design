@@ -16,7 +16,7 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr 44rem;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
   gap: $spacing-12;
   flex: 1;
   min-height: 0;
@@ -102,8 +102,6 @@
   outline: none;
   transition: border-color 0.12s;
   min-width: 0;
-  max-width: 28rem;
-  margin-left: auto;
 
   &::placeholder {
     color: $sub-text-4;

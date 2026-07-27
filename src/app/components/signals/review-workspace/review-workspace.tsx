@@ -123,6 +123,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const dispatch = useDispatch();
   const [discuss, setDiscuss] = useState(false);
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string } | null>(null);
+  const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
   const tick = useLivingTick();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -147,6 +148,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     setExecuted(null);
     setCountdown(COUNTDOWN_SECONDS);
     setInlineDraft(null);
+    setTransitional(null);
   }, [d?.id]);
 
   const relationships = useMemo(
@@ -182,13 +184,25 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
 
     if (isInlineDraftAction) {
       if (shortId === 'notify-vm') {
-        setInlineDraft({ kind: 'email', strategyTitle: selectedStrategy.title, draft: NOTIFY_VM_EMAIL });
+        setTransitional('loading-email');
+        setTimeout(() => {
+          setInlineDraft({ kind: 'email', strategyTitle: selectedStrategy.title, draft: NOTIFY_VM_EMAIL });
+          setTransitional(null);
+        }, 600);
       } else if (shortId === 'draft-ticket') {
+        setTransitional('loading-chat');
         const seed = AAN_SEEDS['draft-ticket'];
-        setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
+        setTimeout(() => {
+          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
+          setTransitional(null);
+        }, 600);
       } else {
+        setTransitional('loading-chat');
         const seed = AAN_SEEDS['recommended'];
-        setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
+        setTimeout(() => {
+          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
+          setTransitional(null);
+        }, 600);
       }
       return;
     }
@@ -217,6 +231,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     const strategyTitle = inlineDraft.strategyTitle;
     const verifyMsg = inlineDraft.kind === 'email' ? 'Email sent. Aan is monitoring for a reply.' : 'Draft approved. Aan is tracking follow-up.';
     setInlineDraft(null);
+    setTransitional(null);
     dispatch(approveDecision(d!.id));
     setExecuted({ strategyTitle, verifyMsg, canUndo: false });
     startCountdown();
@@ -348,7 +363,12 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
             )}
 
             {/* Strategy OR Inline Draft */}
-            {inlineDraft ? (
+            {transitional ? (
+              <div className={styles.transitionLoading}>
+                <div className={styles.loadingPulse} />
+                <span className={styles.loadingLabel}>Preparing {transitional === 'loading-email' ? 'email draft' : 'ticket draft'}…</span>
+              </div>
+            ) : inlineDraft ? (
               inlineDraft.kind === 'email' ? (
                 <InlineEmailCompose initial={inlineDraft.draft} onCancel={() => setInlineDraft(null)} onSent={completeInlineDraft} />
               ) : (
@@ -402,7 +422,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
       </div>
 
       {/* Footer */}
-      {!executed && !inlineDraft && (
+      {!executed && !inlineDraft && !transitional && (
         <div className={styles.footer}>
           {isTerminal ? (
             <span className={styles.footerStatus}>This decision is closed.</span>
