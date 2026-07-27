@@ -53,13 +53,6 @@
     flex-wrap: wrap;
   }
 
-  .domainLabel {
-    font-size: $font-size-9;
-    color: $sub-text-3;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
   .title {
     margin-top: $spacing-4;
     font-size: 1.5rem;
@@ -174,6 +167,43 @@
     border: 1px solid rgba(122,75,235,0.25);
     background: linear-gradient(90deg, rgba(122,75,235,0.08), rgba(42,109,244,0.04));
     padding: $spacing-12;
+  }
+
+  .customInstructionWrap {
+    margin-top: $spacing-8;
+  }
+
+  .customInstructionInput {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    padding: $spacing-8 $spacing-10;
+    border: 1px solid $border-color-3;
+    border-radius: 0.6rem;
+    background: rgba(255,255,255,0.7);
+    color: $main-text;
+    resize: vertical;
+    min-height: 5rem;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.12);
+    }
+
+    &::placeholder {
+      color: $sub-text-3;
+    }
+  }
+
+  .customInstructionHint {
+    display: block;
+    font-size: $font-size-9;
+    color: $sub-text-3;
+    margin-top: $spacing-4;
   }
 
   // ---------- Transitional loading ----------

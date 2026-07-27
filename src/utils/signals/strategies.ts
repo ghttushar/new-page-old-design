@@ -1,5 +1,5 @@
 import type { Decision } from '@/constants/signals/decisions.constants';
-import { CRITICAL_ONLY_ID } from '@/constants/signals/criticalOnlyDecision';
+import { CRITICAL_ONLY_ID, IMAGE_ISSUE_ID } from '@/constants/signals/criticalOnlyDecision';
 
 export type Reversibility = 'reversible' | 'partial' | 'one_way';
 export type RiskLevel = 'low' | 'medium' | 'high';
@@ -80,6 +80,81 @@ export function strategiesFor(d: Decision): Strategy[] {
         steps: [
           { label: 'Aan drafts the support ticket in the side panel' },
           { label: 'You review & approve before it is filed' },
+        ],
+      },
+      {
+        id: `${d.id}:custom`,
+        title: 'Write your custom instruction',
+        detail:
+          'Tell Aan exactly what you want — revise the draft, check a different field, escalate, or anything else.',
+        valueCents: d.valueCents,
+        valueKind: d.valueKind,
+        cadence: d.cadence,
+        confidence: 'medium',
+        risk: 'low',
+        reversibility: 'reversible',
+        execution: 'opens custom input',
+        steps: [
+          { label: 'You write the instruction' },
+          { label: 'Aan executes and reports back' },
+        ],
+      },
+    ];
+  }
+
+  if (d.id === IMAGE_ISSUE_ID) {
+    return [
+      {
+        id: `${d.id}:recommended`,
+        title: 'Generate Compliant Image',
+        detail:
+          'Aan analyzes the current image, identifies the failing specs, generates a 1000×1000 px image on white background, and asks for your approval before publishing.',
+        valueCents: d.valueCents,
+        valueKind: d.valueKind,
+        cadence: d.cadence,
+        confidence: 'high',
+        risk: 'low',
+        reversibility: 'reversible',
+        execution: '~35s',
+        recommended: true,
+        steps: [
+          { label: 'Analyze current image against Amazon requirements', note: 'Identify which specs are failing.' },
+          { label: 'Generate compliant image with AI', note: 'Aan creates a 1000×1000 px image on white background.' },
+          { label: 'Preview and publish for your approval', note: 'Nothing publishes without your OK.' },
+        ],
+      },
+      {
+        id: `${d.id}:conservative`,
+        title: 'Generate — review first',
+        detail:
+          'Aan generates a compliant image but waits for your manual review before publishing. You can make additional edits.',
+        valueCents: Math.round(d.valueCents * 0.85),
+        valueKind: d.valueKind,
+        cadence: d.cadence,
+        confidence: 'medium',
+        risk: 'low',
+        reversibility: 'reversible',
+        execution: '~45s',
+        steps: [
+          { label: 'Aan generates image candidate' },
+          { label: 'You review and approve before publish' },
+        ],
+      },
+      {
+        id: `${d.id}:custom`,
+        title: 'Write your custom instruction',
+        detail:
+          'Tell Aan exactly what you want — different image style, retake, or anything else.',
+        valueCents: d.valueCents,
+        valueKind: d.valueKind,
+        cadence: d.cadence,
+        confidence: 'medium',
+        risk: 'low',
+        reversibility: 'reversible',
+        execution: 'opens custom input',
+        steps: [
+          { label: 'You write the instruction' },
+          { label: 'Aan executes and reports back' },
         ],
       },
     ];

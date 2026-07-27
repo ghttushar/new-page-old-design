@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { X, Check, Prohibit, Clock, ShareNetwork, Sparkle, ArrowElbowDownLeft, ArrowCounterClockwise, Pulse } from '@phosphor-icons/react';
+import { X, Check, Prohibit, Clock, ShareNetwork, ArrowElbowDownLeft, ArrowCounterClockwise, Pulse } from '@phosphor-icons/react';
 import { Accordion, AccordionSummary, AccordionDetails, AccordionActions } from '@mui/material';
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
@@ -117,6 +117,24 @@ Other fields (title, images, attributes) match the last eligible snapshot. Confi
 
 Want me to publish this edit, or should I tweak the wording first?`,
   },
+  'image-generate': {
+    title: 'Aan generated a compliant image',
+    approveLabel: 'Approve & publish image',
+    approveSuccess: 'Image published to listing.',
+    draft: `I analyzed the current image against Amazon's requirements:
+
+**Issues found:**
+1. Dimensions: 800×800 px (needs 1000×1000 minimum)
+2. Background: slight gradient detected (needs pure white, RGB 255,255,255)
+
+**Generated image preview:**
+✅ 1000×1000 px
+✅ Pure white background (RGB 255,255,255)
+✅ Product properly centered with no text overlay on main image
+✅ No lifestyle elements in main image
+
+The file is ready for preview. Approve to publish the new image to ASIN B0CSH8TCC6.`,
+  },
 };
 
 export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision }: Props) {
@@ -131,6 +149,8 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
 
   const strategies = useMemo(() => (d ? strategiesFor(d) : []), [d]);
   const [selectedStrategyId, setSelectedStrategyId] = useState<string>('');
+
+  const [customInstruction, setCustomInstruction] = useState('');
 
   const [executed, setExecuted] = useState<{ strategyTitle: string; verifyMsg: string; canUndo: boolean } | null>(null);
   const [countdown, setCountdown] = useState<number>(COUNTDOWN_SECONDS);
@@ -149,6 +169,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     setCountdown(COUNTDOWN_SECONDS);
     setInlineDraft(null);
     setTransitional(null);
+    setCustomInstruction('');
   }, [d?.id]);
 
   const relationships = useMemo(
@@ -180,7 +201,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     let verifyMsg = 'Change applied. Verifying downstream metrics…';
     let canUndo = true;
 
-    const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'draft-ticket' || (shortId === 'recommended' && d.id === 'critical-b0csh8tcc6');
+    const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'draft-ticket' || (shortId === 'recommended' && d.id === 'critical-b0csh8tcc6') || shortId === 'custom';
 
     if (isInlineDraftAction) {
       if (shortId === 'notify-vm') {
@@ -196,9 +217,23 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
           setTransitional(null);
         }, 600);
+      } else if (shortId === 'custom') {
+        const text = customInstruction.trim() || 'Custom instruction executed.';
+        setTransitional('loading-chat');
+        setTimeout(() => {
+          setInlineDraft({
+            kind: 'chat',
+            strategyTitle: selectedStrategy.title,
+            title: 'Aan received your instruction',
+            approveLabel: 'Approve & execute',
+            approveSuccess: 'Custom instruction completed.',
+            draft: text,
+          });
+          setTransitional(null);
+        }, 600);
       } else {
         setTransitional('loading-chat');
-        const seed = AAN_SEEDS['recommended'];
+        const seed = d.id === 'critical-image-b0csh8tcc6' ? AAN_SEEDS['image-generate'] : AAN_SEEDS['recommended'];
         setTimeout(() => {
           setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
           setTransitional(null);
@@ -289,7 +324,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           <div className={styles.headerInfo}>
             <div className={styles.headerPills}>
               <SourcePill decision={d} size="sm" />
-              <span className={styles.domainLabel}>{d.domain}</span>
             </div>
             <h2 className={styles.title}>{d.insight}</h2>
           </div>
@@ -387,6 +421,18 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                 <div className={styles.strategyWrapper}>
                   <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} />
                 </div>
+                {selectedStrategy?.id.endsWith(':custom') && (
+                  <div className={styles.customInstructionWrap}>
+                    <textarea
+                      className={styles.customInstructionInput}
+                      placeholder="Type your instruction for Aan…"
+                      rows={3}
+                      value={customInstruction}
+                      onChange={(e) => setCustomInstruction(e.target.value)}
+                    />
+                    <span className={styles.customInstructionHint}>Aan will execute your instruction and report back.</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -434,7 +480,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                   <span className={styles.enterHint}><ArrowElbowDownLeft size={10} /> Enter</span>
                 </button>
               </div>
-              <button className={styles.footerBtn} onClick={() => setDiscuss(true)}><Sparkle size={14} /> Modify</button>
               <AssignMenu onAssign={(key, label) => {
                 if (label === 'Aan') dispatch(delegateToAan(d.id));
               }} />

@@ -2,6 +2,8 @@ import type { Decision } from './decisions.constants';
 
 export const CRITICAL_ONLY_ID = 'critical-b0csh8tcc6';
 
+export const IMAGE_ISSUE_ID = 'critical-image-b0csh8tcc6';
+
 export const CRITICAL_ONLY_DECISION: Decision = {
   id: CRITICAL_ONLY_ID,
   source: 'anarix',
@@ -32,4 +34,33 @@ export const CRITICAL_ONLY_DECISION: Decision = {
     { label: 'Draft compliant edit for your approval', etaSec: 6, why: 'Nothing publishes without your OK.' },
   ],
   deepLink: { label: 'Open in Seller Central', href: '#' },
+};
+
+export const IMAGE_ISSUE_DECISION: Decision = {
+  id: IMAGE_ISSUE_ID,
+  source: 'anarix',
+  sourceRef: { label: 'Listing agent · featured image', ts: Date.now() - 30 * 60 * 1000 },
+  valueCents: 320000,
+  valueKind: 'at_risk',
+  cadence: 'weekly',
+  valueCaption: 'weekly revenue at risk',
+  valueBasis: "ASIN B0CSH8TCC6 main image does not meet Amazon's 1000×1000 px requirement on white background. Amazon may suppress the listing from search results until corrected.",
+  valueInputs: [
+    'Image dimensions: 800×800 px (below 1000×1000 minimum)',
+    'Estimated 40% click-through rate drop from search suppression',
+    'Estimated weekly revenue at risk: $3,200',
+  ],
+  insight: 'ASIN B0CSH8TCC6 main image is 800×800 — below Amazon\'s 1000×1000 minimum.',
+  insightDetail: "Amazon requires product images to be at least 1000×1000 pixels on a pure white background (RGB 255,255,255). The current image is 800×800 px with a slight gradient background. Amazon's system may suppress this ASIN from search results entirely.",
+  actionVerb: 'Generate Image',
+  domain: 'retail',
+  severity: 'critical',
+  status: 'open',
+  createdAt: Date.now() - 30 * 60 * 1000,
+  updatedAt: Date.now() - 30 * 60 * 1000,
+  steps: [
+    { label: 'Analyze current image against Amazon requirements', etaSec: 5, why: 'Identify which specs are failing.' },
+    { label: 'Generate compliant image with AI', etaSec: 30, why: 'Aan generates a 1000×1000 px image on white background.' },
+    { label: 'Preview and publish for your approval', etaSec: 5, why: 'Nothing publishes without your OK.' },
+  ],
 };
