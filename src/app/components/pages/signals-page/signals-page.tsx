@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import styles from './signals-page.module.scss';
 import { GreetingHeader } from '../../signals/greeting-header/greeting-header';
 import { ModeToggle } from '../../signals/mode-toggle/mode-toggle';
-import { CategoryRail } from '../../signals/category-rail/category-rail';
 import { DecisionCard } from '../../signals/decision-card/decision-card';
 import { ReviewWorkspace } from '../../signals/review-workspace/review-workspace';
 import { EmptyState } from '../../signals/empty-state/empty-state';
@@ -129,10 +128,6 @@ export function SignalsPage() {
     if (!liveMode && !selectedDecisionId) dispatch(setSelectedDecision(CRITICAL_ONLY_DECISION.id));
   }, [liveMode, selectedDecisionId, dispatch]);
 
-  const handleRailSelect = useCallback((key: string) => {
-    setActiveCategoryKey((prev) => (prev === key ? null : key));
-  }, []);
-
   const selectedDecision = useMemo(
     () => activeDecisions.find((d) => d.id === selectedDecisionId) ?? null,
     [activeDecisions, selectedDecisionId],
@@ -194,26 +189,22 @@ export function SignalsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <FilterSheet
             value={filterState}
+            categories={railItems}
+            activeCategory={activeCategoryKey}
+            onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
             onChange={(f) => {
               setFilterState(f);
               dispatch(setFilterSources([...f.sources]));
               dispatch(setFilterDomains([...f.domains]));
               dispatch(setFilterWindow(f.window));
             }}
-            activeCount={filterActiveCount}
+            activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
           />
           <ModeToggle liveMode={liveMode} onToggle={() => dispatch(toggleLiveMode())} />
         </div>
       </div>
 
       <div className={styles.layout}>
-        {/* Left: Category rail */}
-        <div className={styles.leftRail}>
-          {!isMeetingsTab && (
-            <CategoryRail items={railItems} activeKey={activeCategoryKey} onSelect={handleRailSelect} />
-          )}
-        </div>
-
         {/* Center: Queue */}
         <div className={styles.centerCol}>
           {/* Tabs + Search */}
@@ -292,7 +283,7 @@ export function SignalsPage() {
         </div>
 
         {/* Right: Workspace */}
-        <div className={styles.rightCol}>
+        <div className={`${styles.rightCol} ${selectedDecision || selectedMeetingBundle ? styles.rightColVisible : ''}`}>
           {selectedDecision ? (
             <ReviewWorkspace
               decision={selectedDecision}

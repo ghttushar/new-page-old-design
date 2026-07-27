@@ -17,6 +17,12 @@ export const EMPTY_FILTER: FilterState = {
   window: 'any',
 };
 
+interface CategoryItem {
+  key: string;
+  label: string;
+  count: number;
+}
+
 const DOMAINS: { key: DecisionDomain; label: string }[] = [
   { key: 'campaign', label: 'Advertising' },
   { key: 'retail', label: 'Retail / Listings' },
@@ -35,11 +41,14 @@ const WINDOWS: { key: FilterState['window']; label: string }[] = [
 
 interface Props {
   value: FilterState;
+  categories?: CategoryItem[];
+  activeCategory?: string | null;
+  onCategoryChange?: (key: string) => void;
   onChange: (f: FilterState) => void;
   activeCount: number;
 }
 
-export function FilterSheet({ value, onChange, activeCount }: Props) {
+export function FilterSheet({ value, onChange, activeCount, categories = [], activeCategory, onCategoryChange }: Props) {
   const [draft, setDraft] = useState<FilterState>(value);
   const [open, setOpen] = useState(false);
 
@@ -68,6 +77,11 @@ export function FilterSheet({ value, onChange, activeCount }: Props) {
         }}
       >
         <Funnel size={14} /> Filter
+        {activeCategory && activeCategory !== '__all__' && (
+          <span style={{ marginLeft: 2, borderRadius: 4, background: 'rgba(119,70,155,0.1)', color: '#77469b', fontSize: '0.85rem', fontWeight: 500, padding: '0 5px', lineHeight: '14px' }}>
+            {categories.find(c => c.key === activeCategory)?.label || activeCategory}
+          </span>
+        )}
         {activeCount > 0 && (
           <span style={{ marginLeft: 2, borderRadius: 999, background: '#77469b', color: '#fff', fontSize: '0.85rem', fontWeight: 600, padding: '0 5px', lineHeight: '14px' }}>
             {activeCount}
@@ -81,6 +95,38 @@ export function FilterSheet({ value, onChange, activeCount }: Props) {
         </div>
 
         <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {categories.length > 0 && (
+            <section>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Category</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                <button
+                  onClick={() => onCategoryChange?.('__all__')}
+                  style={{
+                    padding: '4px 10px', borderRadius: 4, border: '1px solid #e1e4e8',
+                    background: (!activeCategory || activeCategory === '__all__') ? '#77469b' : 'transparent',
+                    color: (!activeCategory || activeCategory === '__all__') ? '#fff' : '#474747',
+                    fontSize: '1rem', cursor: 'pointer',
+                  }}
+                >
+                  All
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.key}
+                    onClick={() => onCategoryChange?.(cat.key)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 4, border: '1px solid #e1e4e8',
+                      background: activeCategory === cat.key ? '#77469b' : 'transparent',
+                      color: activeCategory === cat.key ? '#fff' : '#474747',
+                      fontSize: '1rem', cursor: 'pointer',
+                    }}
+                  >
+                    {cat.label} · {cat.count}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
           <section>
             <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Source</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>

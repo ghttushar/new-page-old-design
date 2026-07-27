@@ -16,19 +16,21 @@
   }
 
   &.selected {
-    border-color: $primary-color;
-    background: rgba($primary-color, 0.02);
-    box-shadow: 0 0.2rem 1.2rem rgba($primary-color, 0.12);
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(90.2deg, rgba(122, 75, 235, 0.6) 0.09%, rgba(42, 109, 244, 0.6) 99.55%) border-box;
+    box-shadow: 0 0 12px 2px rgba(42, 109, 244, 0.25);
 
     .selectedBar {
       position: absolute;
       left: 0;
-      top: 0.6rem;
-      bottom: 0.6rem;
-      width: 3px;
-      border-radius: 0 3px 3px 0;
-      background: $primary-color;
-      box-shadow: 0 0 12px rgba($primary-color, 0.5);
+      top: 0.4rem;
+      bottom: 0.4rem;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background: linear-gradient(180deg, rgba(122, 75, 235, 0.9), rgba(42, 109, 244, 0.9));
+      box-shadow: 0 0 12px rgba(122, 75, 235, 0.6);
     }
   }
 
@@ -56,9 +58,9 @@
 .severity_fyi { background: $sub-text-4; }
 
 .valueHeadline {
-  font-size: 1.8rem;
+  font-size: 2.4rem;
   line-height: 1.1;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   font-family: 'Inter', sans-serif;
 }
@@ -144,7 +146,9 @@
   color: $foreground-color;
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: opacity 0.2s, max-height 0.2s, margin 0.2s, background 0.15s;
+  max-height: 3rem;
+  overflow: hidden;
 
   &:hover {
     background: $primary-color-variant-1;

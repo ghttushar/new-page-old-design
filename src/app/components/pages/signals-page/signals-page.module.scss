@@ -16,14 +16,11 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 18rem 1fr 44rem;
+  grid-template-columns: 1fr 44rem;
   gap: $spacing-12;
   flex: 1;
   min-height: 0;
-}
-
-.leftRail {
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .centerCol {
@@ -168,6 +165,16 @@
   overflow-y: auto;
   position: sticky;
   top: 0;
+  max-height: 100%;
+}
+
+.rightColVisible {
+  animation: fadeSlideIn 0.2s ease-out;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .meetingReview {
