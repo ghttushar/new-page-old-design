@@ -1,6 +1,9 @@
 @import 'src/assets/styles/variables/variables.scss';
 
 .decisionCard {
+  display: flex;
+  align-items: stretch;
+  gap: $spacing-12;
   background: $foreground-color;
   border: 1px solid $border-color-4;
   border-radius: 0.6rem;
@@ -39,30 +42,9 @@
   }
 }
 
-.topRow {
-  display: flex;
-  align-items: flex-start;
-  gap: $spacing-8;
-}
-
-.severityDot {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 0.4rem;
-}
-
-.severity_critical { background: $error-color; }
-.severity_opportunity { background: $primary-color; }
-.severity_fyi { background: $sub-text-4; }
-
-.chipsRow {
-  display: flex;
-  align-items: center;
-  gap: $spacing-4;
-  margin-bottom: 0.6rem;
-  flex-wrap: wrap;
+.cardBody {
+  flex: 1;
+  min-width: 0;
 }
 
 .valueHeadline {
@@ -72,8 +54,6 @@
   letter-spacing: -0.02em;
   font-family: 'Inter', sans-serif;
 }
-
-.toneInfo { color: $main-text; }
 
 .valueCaption {
   font-size: $font-size-10;
@@ -93,34 +73,12 @@
   overflow: hidden;
 }
 
-.metricRow {
+.chipsRow {
   display: flex;
   align-items: center;
   gap: $spacing-4;
-  margin-top: $spacing-4;
-  padding: $spacing-4 $spacing-8;
-  background: rgba($primary-color, 0.05);
-  border-radius: 0.4rem;
-  font-size: $font-size-10;
-
-  .metricLabel {
-    color: $sub-text-3;
-  }
-
-  .metricValue {
-    font-weight: $font-weight-700;
-    color: $main-text;
-  }
-}
-
-.meta {
-  display: flex;
-  align-items: center;
-  gap: $spacing-8;
-  flex-wrap: wrap;
-  font-size: $font-size-10;
-  color: $sub-text-3;
   margin-top: $spacing-8;
+  flex-wrap: wrap;
 }
 
 .criticalBadge {
@@ -138,19 +96,20 @@
   white-space: nowrap;
 }
 
-.statusLabel {
-  text-transform: uppercase;
-  font-size: $font-size-9;
-  color: $sub-text-4;
-  font-weight: $font-weight-500;
+.cardActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: $spacing-4;
 }
 
-.actionBtn {
+.reviewBtn {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  margin-top: $spacing-8;
-  padding: 0.3rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 0.4rem;
   font-size: $font-size-10;
   font-weight: $font-weight-500;
@@ -158,11 +117,29 @@
   color: $foreground-color;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s, max-height 0.2s, margin 0.2s, background 0.15s;
-  max-height: 3rem;
-  overflow: hidden;
+  transition: background 0.15s;
+  white-space: nowrap;
 
   &:hover {
     background: $primary-color-variant-1;
+  }
+}
+
+.menuBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.4rem;
+  border: none;
+  background: none;
+  color: $sub-text-3;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover {
+    background: $icon-background-color;
+    color: $main-text;
   }
 }
