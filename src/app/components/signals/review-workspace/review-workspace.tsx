@@ -1,7 +1,8 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise, CaretDown } from '@phosphor-icons/react';
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
+import { RECURRING_COST_ID } from '@/constants/signals/criticalOnlyDecision';
 import { strategiesFor } from '@/utils/signals/strategies';
 import { formatValue } from '@/utils/signals/valueFormat';
 import { relationshipsFor } from '@/utils/signals/relationships';
@@ -35,21 +36,45 @@ interface EmailDraftData {
   body: string;
 }
 
-const NOTIFY_VM_EMAIL: EmailDraftData = {
+const VM_EMAIL_ALERT_1: EmailDraftData = {
   to: 'vendor.manager@amazon.com',
   cc: '',
   bcc: '',
-  subject: 'ASIN B0CSH8TCC6 — Advertising eligibility lost (action needed)',
+  subject: 'ASIN B0CH3HSSLZ — Advertising eligibility warning (action needed)',
   body: `Hi [VM name],
 
-Amazon disabled advertising eligibility on ASIN B0CSH8TCC6 (Sampler — Decaf 40 Count) on 07 Jun 2026, citing missing or incorrect listing information.
+Amazon flagged advertising eligibility with a warning on ASIN B0CH3HSSLZ (Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct) on 18 Jul 2026, citing vendor cost-to-Amazon exceeding target pricing.
 
-- Estimated revenue at risk (next 7 days): $6,885
-- Estimated units at risk: 300
-- Inventory available: 2,810 units (~140 days of coverage)
-- Confidence: 82%
+- Estimated revenue at risk: $56.58 over next 30 days
+- Estimated units at risk: ~3 units
+- Inventory available: 81 Units (+148 on open PO)
+- Status: ELIGIBLE_WITH_WARNING (not yet fully blocked)
+- Confidence: 70%
 
-Could you confirm whether a recent content change on your side triggered this, and share the last known-good listing snapshot so we can restore eligibility quickly?
+List price has stayed flat at $18.47 since the alert — no cost reduction has been submitted yet. Could you review the wholesale cost terms for this ASIN and advise on next steps?
+
+Thanks,
+Tushar`,
+};
+
+const VM_EMAIL_ALERT_2: EmailDraftData = {
+  to: 'vendor.manager@amazon.com',
+  cc: '',
+  bcc: '',
+  subject: 'ASIN B0C33QC2R2 — Advertising eligibility lost (2nd occurrence)',
+  body: `Hi [VM name],
+
+Amazon disabled advertising eligibility on ASIN B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct) on 18 Jul 2026, citing vendor cost-to-Amazon exceeding target pricing. This is the 2nd occurrence in 30 days.
+
+- Estimated revenue at risk: $135.97 over next 30 days
+- ASIN Ad Sales (30D): $135.97
+- Estimated units at risk: ~8 units
+- Inventory available: 273 units (~82 days of coverage)
+- Confidence: high
+
+Previous occurrence: 27 Jun – 03 Jul 2026, recovered 04 Jul – 17 Jul, then relapsed on 18 Jul. Given this recurrence pattern, a one-off cost tweak may only produce a temporary fix — this may warrant an account-level cost structure review.
+
+Could you advise on the optimal path forward?
 
 Thanks,
 Tushar`,
@@ -60,58 +85,39 @@ const AAN_SEEDS: Record<string, { title: string; approveLabel: string; approveSu
     title: 'Aan drafted this support ticket',
     approveLabel: 'Approve & file ticket',
     approveSuccess: 'Support ticket filed with Amazon Seller Support.',
-    draft: `**Subject:** Reinstate advertising eligibility — ASIN B0CSH8TCC6
+    draft: `**Subject:** Reinstate advertising eligibility — ASIN [ASIN]
 
 **Case type:** Advertising / Product eligibility
 
 Hello Seller Support,
 
-On 07 Jun 2026, ASIN B0CSH8TCC6 (Sampler — Decaf 40 Count) was flagged as ineligible for advertising with the reason: *"This product is either missing important information or contains incorrect information."*
+ASIN [ASIN] was flagged as ineligible for advertising due to a vendor cost-to-Amazon issue: *"This product's cost to Amazon does not allow us to meet customers' pricing expectations."*
 
-On our end, the listing contains all required attributes and matches the last known-eligible version. We believe this flag was raised in error and request a manual review.
+On our end, the retail list price has remained stable and the listing contains all required attributes. We believe this is a wholesale cost threshold issue rather than a catalog or content defect.
 
-- Business impact: estimated **$6,885 in ad-driven revenue at risk** over the next 7 days (300 units).
-- Inventory on hand: 2,810 units, ~140 days of coverage — this is not a stock issue.
+- Business impact: estimated revenue at risk as detailed in the alert.
+- Inventory: healthy — this is not a supply issue.
 
-Please reinstate advertising eligibility or share the specific attribute that triggered the flag so we can correct it.
+Please review and reinstate advertising eligibility or share the specific cost threshold that triggered the flag.
 
 Thank you,
 Tushar`,
   },
-  'recommended': {
-    title: 'Aan analyzed the listing',
-    approveLabel: 'Approve & publish edit',
-    approveSuccess: 'Listing edit published for review.',
-    draft: `Here's what I found and the proposed fix. Approve before I publish:
+  'review-cost': {
+    title: 'Aan analyzed your cost structure',
+    approveLabel: 'Approve & share findings',
+    approveSuccess: 'Cost analysis shared.',
+    draft: `Here's the cost analysis I found. Approve before I share:
 
-**ASIN:** B0CSH8TCC6 (Sampler — Decaf 40 Count)
+**ASIN:** B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct)
 
-**Likely failing field:** \`bullet_point_3\` — currently reads *"Best decaf coffee — cures fatigue and boosts energy"*. Amazon's compliance model flagged this as an unsupported medical/functional claim.
+**Recurrence pattern:** This is the 2nd occurrence in 30 days — the same warning hit this ASIN 2026-06-27 to 2026-07-03, recovered fully 2026-07-04 to 2026-07-17, then relapsed on 2026-07-18.
 
-**Proposed edit:**
-> Smooth, low-acidity decaf blend — 40 single-serve pods per box, compatible with most single-serve brewers.
+**Account context:** On 2026-07-02 the team flagged rising price volatility and margin pressure on 40-count packs, calling Amazon's ~21-point margin-cut request "untenable" — pointing to a broader, account-wide cost-to-Amazon squeeze.
 
-Other fields (title, images, attributes) match the last eligible snapshot. Confidence: 84%.
+**Recommendation:** Given this is the 2nd flare-up in 3 weeks, a one-off cost tweak may only produce a temporary fix. Worth raising the recurrence pattern with the vendor manager directly as part of an account-level cost structure review.
 
-Want me to publish this edit, or should I tweak the wording first?`,
-  },
-  'image-generate': {
-    title: 'Aan generated a compliant image',
-    approveLabel: 'Approve & publish image',
-    approveSuccess: 'Image published to listing.',
-    draft: `I analyzed the current image against Amazon's requirements:
-
-**Issues found:**
-1. Dimensions: 800×800 px (needs 1000×1000 minimum)
-2. Background: slight gradient detected (needs pure white, RGB 255,255,255)
-
-**Generated image preview:**
-✅ 1000×1000 px
-✅ Pure white background (RGB 255,255,255)
-✅ Product properly centered with no text overlay on main image
-✅ No lifestyle elements in main image
-
-The file is ready for preview. Approve to publish the new image to ASIN B0CSH8TCC6.`,
+Want me to proceed with the escalation, or would you like me to dig deeper into any specific aspect?`,
   },
 };
 
@@ -121,6 +127,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const allDecisions = useMemo(() => decisions.length > 0 ? decisions : (d ? [d] : []), [decisions, d]);
 
@@ -157,6 +164,27 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const selectedStrategy = strategies.find((s) => s.id === selectedStrategyId);
   const f = d ? formatValue({ cents: d.valueCents, kind: d.valueKind, cadence: d.cadence }) : null;
 
+  function renderContent(content: string) {
+    if (!d?.keyMetrics || d.keyMetrics.length === 0) return content;
+    const parts = content.split('|');
+    return parts.map((part, i) => {
+      const trimmed = part.trim();
+      const match = d.keyMetrics!.find((km) => trimmed.includes(km.value));
+      if (match) {
+        const idx = trimmed.indexOf(match.value);
+        const before = trimmed.slice(0, idx);
+        const after = trimmed.slice(idx + match.value.length);
+        return (
+          <span key={i}>
+            {before}<span className={styles.metricHighlight}>{match.value}</span>{after}
+            {i < parts.length - 1 && <br />}
+          </span>
+        );
+      }
+      return <span key={i}>{trimmed}{i < parts.length - 1 && <br />}</span>;
+    });
+  }
+
   function startCountdown() {
     setCountdown(COUNTDOWN_SECONDS);
     if (countdownRef.current) clearInterval(countdownRef.current);
@@ -177,20 +205,29 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     if (!d || !selectedStrategy || executed) return;
     const shortId = selectedStrategy.id.split(':').pop() ?? '';
 
-    const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'draft-ticket' || (shortId === 'recommended' && d.id === 'critical-b0csh8tcc6') || shortId === 'custom';
+    const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'recommended' || shortId === 'draft-ticket' || shortId === 'review-cost' || shortId === 'custom';
 
     if (isInlineDraftAction) {
-      if (shortId === 'notify-vm') {
+      if (shortId === 'notify-vm' || shortId === 'recommended') {
+        const vmEmail = d.id === RECURRING_COST_ID ? VM_EMAIL_ALERT_2 : VM_EMAIL_ALERT_1;
         setTransitional('loading-email');
         setTimeout(() => {
-          setInlineDraft({ kind: 'email', strategyTitle: selectedStrategy.title, draft: NOTIFY_VM_EMAIL });
+          setInlineDraft({ kind: 'email', strategyTitle: selectedStrategy.title, draft: vmEmail });
           setTransitional(null);
         }, 600);
       } else if (shortId === 'draft-ticket') {
         setTransitional('loading-chat');
-        const seed = AAN_SEEDS['draft-ticket'];
+        const asin = d.id === RECURRING_COST_ID ? 'B0C33QC2R2' : 'B0CH3HSSLZ';
+        const draft = AAN_SEEDS['draft-ticket'].draft.replace('[ASIN]', asin);
         setTimeout(() => {
-          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft, showApprove: false });
+          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: AAN_SEEDS['draft-ticket'].title, approveLabel: AAN_SEEDS['draft-ticket'].approveLabel, approveSuccess: AAN_SEEDS['draft-ticket'].approveSuccess, draft, showApprove: false });
+          setTransitional(null);
+        }, 600);
+      } else if (shortId === 'review-cost') {
+        setTransitional('loading-chat');
+        const seed = AAN_SEEDS['review-cost'];
+        setTimeout(() => {
+          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
           setTransitional(null);
         }, 600);
       } else if (shortId === 'custom') {
@@ -205,13 +242,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
             approveSuccess: 'Custom instruction completed.',
             draft: text,
           });
-          setTransitional(null);
-        }, 600);
-      } else {
-        setTransitional('loading-chat');
-        const seed = d.id === 'critical-image-b0csh8tcc6' ? AAN_SEEDS['image-generate'] : AAN_SEEDS['recommended'];
-        setTimeout(() => {
-          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
           setTransitional(null);
         }, 600);
       }
@@ -359,6 +389,39 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
               </>
             )}
 
+            {/* Detail sections */}
+            {d.detailSections && d.detailSections.length > 0 && (
+              <div className={styles.detailSections}>
+                {d.detailSections
+                  .filter((s) => s.heading !== 'AI Summary')
+                  .map((s, i) => (
+                    <div key={i} className={styles.detailSection}>
+                      <div className={styles.detailHeading}>{s.heading}</div>
+                      <div className={styles.detailContent}>{renderContent(s.content)}</div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* AI Summary (collapsible) */}
+            {d.detailSections && d.detailSections.filter((s) => s.heading === 'AI Summary').length > 0 && (
+              <div className={styles.collapsibleSection}>
+                <button
+                  className={styles.collapsibleHeader}
+                  onClick={() => setSummaryExpanded(!summaryExpanded)}
+                  type="button"
+                >
+                  AI Summary
+                  <CaretDown size={12} className={`${styles.chevron} ${summaryExpanded ? styles.chevronOpen : ''}`} />
+                </button>
+                {summaryExpanded && (
+                  <div className={styles.collapsibleBody}>
+                    {d.detailSections.filter((s) => s.heading === 'AI Summary')[0].content}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Strategy */}
             <div className={styles.eyebrow}>CHOOSE YOUR STRATEGY</div>
 
@@ -385,7 +448,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
             ) : (
               <div className={styles.section}>
                 <div className={styles.strategyWrapper}>
-                  <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} customValue={customInstruction} onCustomChange={setCustomInstruction} />
+                  <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} customValue={customInstruction} onCustomChange={setCustomInstruction} onCustomSubmit={onExecute} />
                 </div>
               </div>
             )}

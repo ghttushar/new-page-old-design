@@ -2,41 +2,104 @@ import type { Decision } from './decisions.constants';
 
 export const CRITICAL_ONLY_ID = 'critical-b0csh8tcc6';
 
-export const IMAGE_ISSUE_ID = 'critical-image-b0csh8tcc6';
+export const RECURRING_COST_ID = 'recurring-cost-b0c33qc2r2';
 
 export const CRITICAL_ONLY_DECISION: Decision = {
   id: CRITICAL_ONLY_ID,
   source: 'anarix',
   sourceRef: { label: 'Inventory agent · listing compliance', ts: Date.now() - 50 * 60 * 1000 },
-  valueCents: 688500,
+  valueCents: 5658,
   valueKind: 'at_risk',
-  cadence: 'daily',
-  valueCaption: 'revenue at risk · next 7 days',
-  valueBasis: 'Amazon disabled advertising eligibility on ASIN B0CSH8TCC6 (Sampler — Decaf 40 Count) on 07 Jun 2026, citing missing or incorrect listing information. Estimated revenue at risk is $6,885 over the next 7 days.',
+  cadence: 'monthly',
+  valueCaption: 'revenue at risk · Opportunity Window: 30 Days',
+  valueBasis: 'Amazon flagged advertising eligibility with a warning on ASIN B0CH3HSSLZ (Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct) on 2026-07-18. The warning is still active as of 2026-07-22. The cause is vendor cost-to-Amazon being too high for Amazon to hit its target retail price, not a catalog or inventory issue.',
   valueInputs: [
-    'Average daily ad-attributed sales: $983.57 (30-day trailing)',
-    'Estimated revenue at risk (7 days): $6,885',
-    'Estimated units at risk: ~300 units',
-    'Inventory available: 2,810 units (~140 days of coverage)',
+    'Estimated Revenue at Risk: $56.58 over next 30 days',
+    'Estimated Units at Risk: ~3 units',
+    'Inventory Available: 81 Units (+148 on open PO)',
+    'Status: ELIGIBLE_WITH_WARNING — not yet fully blocked',
   ],
-  insight: 'ASIN B0CSH8TCC6 · Sampler — Decaf 40 Count lost advertising eligibility on 07 Jun 2026.',
-  insightDetail: 'Amazon disabled advertising for ASIN B0CSH8TCC6 (Sampler — Decaf 40 Count) on 07 Jun 2026, citing missing or incorrect listing information. The listing has no known compliance issues on our end. Estimated revenue at risk is $6,885 over the next 7 days, and we have 2,810 units in inventory (~140 days of coverage).',
-  actionVerb: 'Analyze Listing',
+  insight: 'ASIN B0CH3HSSLZ · Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct · advertising eligibility flagged with warning',
+  insightDetail: 'Advertising eligibility flagged with warning on 2026-07-18. Status confirmed still open as of 2026-07-22 (ELIGIBLE_WITH_WARNING — not yet fully blocked). Vendor cost-to-Amazon is too high for Amazon to hit its target retail price. List price has stayed flat at $18.47 since the alert — no cost reduction submitted yet.',
+  actionVerb: 'Escalate to Vendor Manager',
   domain: 'retail',
   severity: 'critical',
   status: 'open',
   createdAt: Date.now() - 50 * 60 * 1000,
   updatedAt: Date.now() - 50 * 60 * 1000,
-  evidence: { kind: 'delta', delta: { beforeLabel: 'Revenue at risk', before: 6885, afterLabel: 'Units at risk', after: 300, unit: ' units' } },
+  evidence: { kind: 'delta', delta: { beforeLabel: 'Revenue at risk', before: 57, afterLabel: 'Inventory', after: 81, unit: ' units' } },
   keyMetrics: [
-    { label: 'Estimated Revenue at Risk', value: '$135.97' },
-    { label: 'Ad Sales (30D)', value: '$135.97' },
-    { label: 'Units at Risk', value: '~8 Units' },
+    { label: 'Estimated Revenue at Risk', value: '$56.58' },
+    { label: 'Estimated Units at Risk', value: '~3 Units' },
+    { label: 'Inventory Available', value: '81 Units' },
   ],
   steps: [
-    { label: 'Review listing history & sentiment', etaSec: 10, why: 'Compare against the last eligible version.' },
-    { label: 'Identify the failing field', etaSec: 8, why: 'Locate the exact attribute Amazon flagged.' },
-    { label: 'Draft compliant edit for your approval', etaSec: 6, why: 'Nothing publishes without your OK.' },
+    { label: 'Review cost-to-Amazon terms & history', etaSec: 10, why: 'Understand current cost structure.' },
+    { label: 'Draft escalation email to Vendor Manager', etaSec: 8, why: 'Aan drafts the email for your approval.' },
+    { label: 'Monitor warning status for 24 hours', etaSec: 5, why: 'Track if warning resolves or escalates.' },
+  ],
+  deepLink: { label: 'Open in Seller Central', href: '#' },
+  detailSections: [
+    {
+      heading: 'What Happened',
+      content: `Advertising eligibility flagged with warning on 2026-07-18. Status confirmed still open as of 2026-07-22 (ELIGIBLE_WITH_WARNING — not yet fully blocked).`,
+    },
+    {
+      heading: 'Root Cause',
+      content: `Vendor cost-to-Amazon is too high for Amazon to hit its target retail price. List price has stayed flat at $18.47 since the alert — no cost reduction submitted yet.`,
+    },
+    {
+      heading: 'Business Impact',
+      content: `Opportunity Window: 30 Days
+Estimated Units at Risk: ~3 units
+Estimated Revenue at Risk: $56.58
+Inventory Available: 81 Units (+148 on open PO)
+Confidence: 70%`,
+    },
+    {
+      heading: 'Inventory Status',
+      content: `Not Inventory Constrained — stock and incoming PO are healthy; this is not a supply issue.`,
+    },
+    {
+      heading: 'AI Summary',
+      content: `No prior meeting notes exist on this SKU. Data-wise, the warning hasn't dented organic sales (in fact 7/21 was the best day in the window at $221.88), rank is stable, and stock is fine — so the exposure is limited to the ~$57 in ad sales this ASIN could lose if it's fully suspended from ads. The lever is cost, not catalog or inventory.`,
+    },
+  ],
+};
+
+export const RECURRING_COST_DECISION: Decision = {
+  id: RECURRING_COST_ID,
+  source: 'anarix',
+  sourceRef: { label: 'Inventory agent · listing compliance', ts: Date.now() - 30 * 60 * 1000 },
+  valueCents: 13597,
+  valueKind: 'at_risk',
+  cadence: 'monthly',
+  valueCaption: 'revenue at risk · 2nd occurrence in 30 days',
+  valueBasis: 'Amazon disabled advertising eligibility on ASIN B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct) on 2026-07-18. This is the 2nd occurrence in the past 30 days for this ASIN. The root cause is a Vendor Central cost-to-Amazon flag, not a listing/content issue.',
+  valueInputs: [
+    'ASIN Ad Sales (30D): $135.97',
+    'Estimated Units at Risk: ~8 Units (at $16.98 avg. realized unit price)',
+    'Estimated Revenue at Risk: $135.97',
+    "ASIN's Share of Account Ad Sales: 8.24%",
+  ],
+  insight: 'ASIN B0C33QC2R2 · Crazy Cups DECAF Blueberry Cobbler - 22 Ct · advertising eligibility lost — 2nd occurrence in 30 days',
+  insightDetail: 'Advertising eligibility was lost on ASIN B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct) on 2026-07-18. This is the 2nd occurrence in 30 days — the same warning hit 2026-06-27 to 2026-07-03, recovered 2026-07-04 to 2026-07-17, then relapsed. The cause is a Vendor Central cost-to-Amazon flag, not a listing/content issue.',
+  actionVerb: 'Escalate to Vendor Manager',
+  domain: 'retail',
+  severity: 'critical',
+  status: 'open',
+  createdAt: Date.now() - 30 * 60 * 1000,
+  updatedAt: Date.now() - 30 * 60 * 1000,
+  evidence: { kind: 'delta', delta: { beforeLabel: 'Revenue at risk', before: 136, afterLabel: 'Ad Sales (30D)', after: 136, unit: '' } },
+  keyMetrics: [
+    { label: 'Estimated Revenue at Risk', value: '$135.97' },
+    { label: 'ASIN Ad Sales (30D)', value: '$135.97' },
+    { label: 'Estimated Units at Risk', value: '~8 Units' },
+  ],
+  steps: [
+    { label: 'Review recurrence pattern & account context', etaSec: 12, why: 'Understand broader cost-to-Amazon trends.' },
+    { label: 'Draft escalation email with recurrence context', etaSec: 10, why: 'Aan drafts the email for your approval.' },
+    { label: 'Flag for account-level cost structure review', etaSec: 8, why: 'Recurrence suggests a broader issue.' },
   ],
   deepLink: { label: 'Open in Seller Central', href: '#' },
   detailSections: [
@@ -64,72 +127,8 @@ ASIN's Share of Account Ad Sales: 8.24%`,
 273 units currently available (Manufacturing/Sourcing view) vs. ~3.3 units/day recent sell-through → ~82 days of cover. Inventory is not the bottleneck here.`,
     },
     {
-      heading: 'Recommended Action',
-      content: `Draft Amazon/Vendor Manager Support Ticket
-No catalog, pricing-display, or content defect was found — price and rank were both stable through the flag. This is Amazon's wholesale-cost algorithm, which only your vendor-cost terms can resolve. Escalating to the vendor manager is the right lever (the team used this same path on 2026-06-03 for a different Decaf SKU's eligibility issue).`,
-    },
-    {
       heading: 'AI Summary',
       content: `No account-team discussion was found specifically on this SKU. But related context exists: on 2026-07-02 the team flagged rising price volatility and margin pressure on 40-count packs and called Amazon's ~21-point margin-cut request "untenable" — pointing to a broader, account-wide cost-to-Amazon squeeze rather than an isolated glitch on this ASIN. Given this is the 2nd flare-up in 3 weeks, a one-off cost tweak may only produce a temporary fix; worth raising the recurrence pattern with the vendor manager directly.`,
-    },
-  ],
-};
-
-export const IMAGE_ISSUE_DECISION: Decision = {
-  id: IMAGE_ISSUE_ID,
-  source: 'anarix',
-  sourceRef: { label: 'Listing agent · featured image', ts: Date.now() - 30 * 60 * 1000 },
-  valueCents: 320000,
-  valueKind: 'at_risk',
-  cadence: 'weekly',
-  valueCaption: 'weekly revenue at risk',
-  valueBasis: "ASIN B0CSH8TCC6 main image does not meet Amazon's 1000×1000 px requirement on white background. Amazon may suppress the listing from search results until corrected.",
-  valueInputs: [
-    'Image dimensions: 800×800 px (below 1000×1000 minimum)',
-    'Estimated 40% click-through rate drop from search suppression',
-    'Estimated weekly revenue at risk: $3,200',
-  ],
-  insight: "ASIN B0CSH8TCC6 main image is 800×800 — below Amazon's 1000×1000 minimum.",
-  insightDetail: "Amazon requires product images to be at least 1000×1000 pixels on a pure white background (RGB 255,255,255). The current image is 800×800 px with a slight gradient background. Amazon's system may suppress this ASIN from search results entirely.",
-  actionVerb: 'Generate Image',
-  domain: 'retail',
-  severity: 'critical',
-  status: 'open',
-  createdAt: Date.now() - 30 * 60 * 1000,
-  updatedAt: Date.now() - 30 * 60 * 1000,
-  keyMetrics: [
-    { label: 'Estimated Weekly Revenue at Risk', value: '$3,200' },
-    { label: 'Click-Through Drop', value: '~40%' },
-    { label: 'Inventory', value: '2,810 Units' },
-  ],
-  steps: [
-    { label: 'Analyze current image against Amazon requirements', etaSec: 5, why: 'Identify which specs are failing.' },
-    { label: 'Generate compliant image with AI', etaSec: 30, why: 'Aan generates a 1000×1000 px image on white background.' },
-    { label: 'Preview and publish for your approval', etaSec: 5, why: 'Nothing publishes without your OK.' },
-  ],
-  detailSections: [
-    {
-      heading: 'What Happened',
-      content: "Amazon flagged ASIN B0CSH8TCC6 (Sampler — Decaf 40 Count) for non-compliant main product image. The current image is 800×800 px with a slight gradient background, below Amazon's 1000×1000 px minimum on pure white.",
-    },
-    {
-      heading: 'Root Cause',
-      content: "Image dimensions are 800×800 px (below the 1000×1000 px minimum). Background has a slight gradient instead of pure white (RGB 255,255,255). Amazon's system may suppress the listing from search results.",
-    },
-    {
-      heading: 'Business Impact',
-      content: `Opportunity Window: 30 Days
-Estimated 40% click-through rate drop from search suppression
-Estimated weekly revenue at risk: $3,200
-ASIN currently has 2,810 units in inventory (~140 days of coverage)`,
-    },
-    {
-      heading: 'Recommended Action',
-      content: 'Generate a compliant image using AI. The new image must be 1000×1000 px on a pure white background (RGB 255,255,255) with the product properly centered and no text overlay on the main image.',
-    },
-    {
-      heading: 'AI Summary',
-      content: "This is a straightforward image compliance issue. The listing content (title, bullets, attributes) is fine — only the main image needs updating. Aan can generate a compliant image and preview it for your approval before publishing.",
     },
   ],
 };

@@ -1,5 +1,5 @@
 import type { Decision } from '@/constants/signals/decisions.constants';
-import { CRITICAL_ONLY_ID, IMAGE_ISSUE_ID } from '@/constants/signals/criticalOnlyDecision';
+import { CRITICAL_ONLY_ID, RECURRING_COST_ID } from '@/constants/signals/criticalOnlyDecision';
 
 export type Reversibility = 'reversible' | 'partial' | 'one_way';
 export type RiskLevel = 'low' | 'medium' | 'high';
@@ -31,45 +31,27 @@ export function strategiesFor(d: Decision): Strategy[] {
     return [
       {
         id: `${d.id}:recommended`,
-        title: 'Analyze Listing',
+        title: 'Escalate to Vendor Manager',
         detail:
-          'Aan reviews the listing, diffs the historical changes, reads sentiment on the currently eligible version, identifies the failing field, drafts the fix, and asks for your approval before publishing.',
+          'Aan drafts an email to the Vendor Manager notifying them about the cost-to-Amazon advertising eligibility warning — for your approval before it sends.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
         confidence: 'high',
         risk: 'low',
         reversibility: 'reversible',
-        execution: '~2 min',
+        execution: 'opens Aan draft',
         recommended: true,
         steps: [
-          { label: 'Review listing history & sentiment', note: 'Compare against the last eligible version.' },
-          { label: 'Identify the failing field', note: 'Locate the exact attribute Amazon flagged.' },
-          { label: 'Draft compliant edit for your approval', note: 'Nothing publishes without your OK.' },
-        ],
-      },
-      {
-        id: `${d.id}:notify-vm`,
-        title: 'Notify Vendor Manager',
-        detail:
-          'If the listing looks fine, Aan drafts an email to the Vendor Manager for your approval before it sends.',
-        valueCents: d.valueCents,
-        valueKind: d.valueKind,
-        cadence: d.cadence,
-        confidence: 'medium',
-        risk: 'low',
-        reversibility: 'reversible',
-        execution: 'opens Aan draft',
-        steps: [
-          { label: 'Aan drafts the VM email in the side panel' },
+          { label: 'Aan drafts the VM escalation email in the side panel' },
           { label: 'You review & approve before it sends' },
         ],
       },
       {
         id: `${d.id}:draft-ticket`,
-        title: 'Draft Amazon Support Ticket',
+        title: 'Draft Support Ticket',
         detail:
-          "If Amazon's eligibility claim looks false, Aan drafts a support ticket disputing it — for your approval before it goes to Seller Support.",
+          'Aan drafts a support ticket to Amazon Seller Support disputing the cost-to-Amazon flag — for your approval before it goes to Seller Support.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
@@ -83,10 +65,26 @@ export function strategiesFor(d: Decision): Strategy[] {
         ],
       },
       {
+        id: `${d.id}:wait`,
+        title: 'Monitor & Recheck',
+        detail:
+          'Aan will re-check the warning status with fresh data in 24 hours and surface any changes.',
+        valueCents: Math.round(d.valueCents * 0.25),
+        valueKind: d.valueKind,
+        cadence: d.cadence,
+        confidence: 'medium',
+        risk: 'low',
+        reversibility: 'reversible',
+        execution: 'queued for 24h',
+        steps: [
+          { label: 'Requeue for re-check', note: 'Aan will surface a refreshed recommendation.' },
+        ],
+      },
+      {
         id: `${d.id}:custom`,
         title: 'Write your custom instruction',
         detail:
-          'Tell Aan exactly what you want — revise the draft, check a different field, escalate, or anything else.',
+          'Tell Aan exactly what you want — revise the draft, check a different angle, escalate differently, or anything else.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
@@ -102,49 +100,65 @@ export function strategiesFor(d: Decision): Strategy[] {
     ];
   }
 
-  if (d.id === IMAGE_ISSUE_ID) {
+  if (d.id === RECURRING_COST_ID) {
     return [
       {
         id: `${d.id}:recommended`,
-        title: 'Generate Compliant Image',
+        title: 'Escalate to Vendor Manager',
         detail:
-          'Aan analyzes the current image, identifies the failing specs, generates a 1000×1000 px image on white background, and asks for your approval before publishing.',
+          'Aan drafts an escalation email to the Vendor Manager highlighting this is the 2nd occurrence in 30 days — with broader account context — for your approval before it sends.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
         confidence: 'high',
         risk: 'low',
         reversibility: 'reversible',
-        execution: '~35s',
+        execution: 'opens Aan draft',
         recommended: true,
         steps: [
-          { label: 'Analyze current image against Amazon requirements', note: 'Identify which specs are failing.' },
-          { label: 'Generate compliant image with AI', note: 'Aan creates a 1000×1000 px image on white background.' },
-          { label: 'Preview and publish for your approval', note: 'Nothing publishes without your OK.' },
+          { label: 'Aan drafts the VM escalation email with recurrence context' },
+          { label: 'You review & approve before it sends' },
         ],
       },
       {
-        id: `${d.id}:conservative`,
-        title: 'Generate — review first',
+        id: `${d.id}:draft-ticket`,
+        title: 'Draft Support Ticket',
         detail:
-          'Aan generates a compliant image but waits for your manual review before publishing. You can make additional edits.',
-        valueCents: Math.round(d.valueCents * 0.85),
+          'Aan drafts an urgent support ticket to Amazon Seller Support referencing the 2nd occurrence — for your approval before it goes to Seller Support.',
+        valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
         confidence: 'medium',
         risk: 'low',
         reversibility: 'reversible',
-        execution: '~45s',
+        execution: 'opens Aan draft',
         steps: [
-          { label: 'Aan generates image candidate' },
-          { label: 'You review and approve before publish' },
+          { label: 'Aan drafts the support ticket with recurrence context' },
+          { label: 'You review & approve before it is filed' },
+        ],
+      },
+      {
+        id: `${d.id}:review-cost`,
+        title: 'Review Cost Structure',
+        detail:
+          'Aan analyzes recent cost changes and account-level margin trends to help identify the optimal cost adjustment.',
+        valueCents: d.valueCents,
+        valueKind: d.valueKind,
+        cadence: d.cadence,
+        confidence: 'medium',
+        risk: 'low',
+        reversibility: 'reversible',
+        execution: 'opens Aan draft',
+        steps: [
+          { label: 'Aan analyzes cost history & margin trends' },
+          { label: 'Aan presents findings for your review' },
         ],
       },
       {
         id: `${d.id}:custom`,
         title: 'Write your custom instruction',
         detail:
-          'Tell Aan exactly what you want — different image style, retake, or anything else.',
+          'Tell Aan exactly what you want — revise the draft, schedule a meeting, escalate differently, or anything else.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,

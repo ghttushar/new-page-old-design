@@ -197,6 +197,85 @@
     padding: $spacing-8;
   }
 
+  // ---------- Detail sections ----------
+
+  .detailSections {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-12;
+    margin-bottom: $spacing-16;
+  }
+
+  .detailSection {
+    border-left: 2px solid rgba($primary-color, 0.25);
+    padding-left: $spacing-12;
+  }
+
+  .detailHeading {
+    font-size: $font-size-10;
+    font-weight: $font-weight-600;
+    color: $primary-color;
+    margin-bottom: $spacing-4;
+  }
+
+  .detailContent {
+    font-size: $font-size-12;
+    line-height: 1.7;
+    color: $sub-text-1;
+  }
+
+  .metricHighlight {
+    font-weight: $font-weight-600;
+    color: $main-text;
+  }
+
+  // ---------- Collapsible AI Summary ----------
+
+  .collapsibleSection {
+    border: 1px solid rgba($border-color-4, 0.6);
+    border-radius: 1rem;
+    overflow: hidden;
+    margin-bottom: $spacing-16;
+  }
+
+  .collapsibleHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: $spacing-8 $spacing-12;
+    border: none;
+    background: rgba($background-color, 0.3);
+    font-size: $font-size-10;
+    font-weight: $font-weight-600;
+    color: $primary-color;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s;
+
+    &:hover {
+      background: rgba($background-color, 0.6);
+    }
+  }
+
+  .chevron {
+    transition: transform 0.2s;
+    color: $sub-text-3;
+    flex-shrink: 0;
+  }
+
+  .chevronOpen {
+    transform: rotate(180deg);
+  }
+
+  .collapsibleBody {
+    padding: $spacing-8 $spacing-12;
+    font-size: $font-size-12;
+    line-height: 1.7;
+    color: $sub-text-1;
+    border-top: 1px solid rgba($border-color-4, 0.4);
+  }
+
   // ---------- Empty state ----------
 
   .transitionLoading {

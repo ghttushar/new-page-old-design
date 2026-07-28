@@ -10,7 +10,7 @@ import { BulkBar } from '../../signals/bulk-bar';
 import { FilterSheet, countActiveFilters, type FilterState } from '../../signals/filter-sheet';
 import { MeetingCard } from '../../signals/meeting-card';
 import { MeetingReviewView } from '../../signals/meeting-review-view';
-import { CRITICAL_ONLY_DECISION, IMAGE_ISSUE_DECISION } from '@/constants/signals/criticalOnlyDecision';
+import { CRITICAL_ONLY_DECISION, RECURRING_COST_DECISION } from '@/constants/signals/criticalOnlyDecision';
 import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
 import { categorize } from '@/utils/signals/categories';
 import { importanceScore } from '@/utils/signals/lifecycle';
@@ -60,7 +60,7 @@ export function SignalsPage() {
   const selectedIds = useSelector(selectSelectedIds);
 
   const activeDecisions = useMemo<Decision[]>(
-    () => [CRITICAL_ONLY_DECISION, IMAGE_ISSUE_DECISION],
+    () => [CRITICAL_ONLY_DECISION, RECURRING_COST_DECISION],
     [],
   );
 

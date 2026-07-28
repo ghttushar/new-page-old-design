@@ -6,9 +6,10 @@ interface Props {
   onSelect: (id: string) => void;
   customValue?: string;
   onCustomChange?: (v: string) => void;
+  onCustomSubmit?: () => void;
 }
 
-export function StrategyPicker({ strategies, selectedId, onSelect, customValue, onCustomChange }: Props) {
+export function StrategyPicker({ strategies, selectedId, onSelect, customValue, onCustomChange, onCustomSubmit }: Props) {
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
       {strategies.map((s) => {
@@ -67,6 +68,12 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
                         lineHeight: 1.5,
                       }}
                       onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && customValue?.trim()) {
+                          e.preventDefault();
+                          onCustomSubmit?.();
+                        }
+                      }}
                     />
                   ) : (
                     <div style={{ marginTop: 3, fontSize: '1rem', lineHeight: 1.5, color: '#676f7e' }}>{s.detail}</div>
