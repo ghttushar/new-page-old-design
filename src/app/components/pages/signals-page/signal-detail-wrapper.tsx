@@ -1,11 +1,11 @@
 import { useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CRITICAL_ONLY_DECISION, RECURRING_COST_DECISION } from '@/constants/signals/criticalOnlyDecision';
+import { CRITICAL_ONLY_DECISION } from '@/constants/signals/criticalOnlyDecision';
 import { ReviewWorkspace } from '../../signals/review-workspace/review-workspace';
 import useCatalogAccountSubHeader from '@/hooks/use-catalog-account-sub-header.hook';
 import { PageTitleEnum } from '@/enums/index.enums';
 
-const ALL_DECISIONS = [CRITICAL_ONLY_DECISION, RECURRING_COST_DECISION];
+const ALL_DECISIONS = [CRITICAL_ONLY_DECISION];
 
 export default function SignalDetailWrapper() {
   const { id } = useParams<{ id: string }>();

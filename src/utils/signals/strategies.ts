@@ -1,5 +1,5 @@
 import type { Decision } from '@/constants/signals/decisions.constants';
-import { CRITICAL_ONLY_ID, RECURRING_COST_ID } from '@/constants/signals/criticalOnlyDecision';
+import { CRITICAL_ONLY_ID } from '@/constants/signals/criticalOnlyDecision';
 
 export type Reversibility = 'reversible' | 'partial' | 'one_way';
 export type RiskLevel = 'low' | 'medium' | 'high';
@@ -85,80 +85,6 @@ export function strategiesFor(d: Decision): Strategy[] {
         title: 'Write your custom instruction',
         detail:
           'Tell Aan exactly what you want — revise the draft, check a different angle, escalate differently, or anything else.',
-        valueCents: d.valueCents,
-        valueKind: d.valueKind,
-        cadence: d.cadence,
-        confidence: 'medium',
-        risk: 'low',
-        reversibility: 'reversible',
-        execution: 'opens custom input',
-        steps: [
-          { label: 'You write the instruction' },
-          { label: 'Aan executes and reports back' },
-        ],
-      },
-    ];
-  }
-
-  if (d.id === RECURRING_COST_ID) {
-    return [
-      {
-        id: `${d.id}:recommended`,
-        title: 'Escalate to Vendor Manager',
-        detail:
-          'Aan drafts an escalation email to the Vendor Manager highlighting this is the 2nd occurrence in 30 days — with broader account context — for your approval before it sends.',
-        valueCents: d.valueCents,
-        valueKind: d.valueKind,
-        cadence: d.cadence,
-        confidence: 'high',
-        risk: 'low',
-        reversibility: 'reversible',
-        execution: 'opens Aan draft',
-        recommended: true,
-        steps: [
-          { label: 'Aan drafts the VM escalation email with recurrence context' },
-          { label: 'You review & approve before it sends' },
-        ],
-      },
-      {
-        id: `${d.id}:draft-ticket`,
-        title: 'Draft Support Ticket',
-        detail:
-          'Aan drafts an urgent support ticket to Amazon Seller Support referencing the 2nd occurrence — for your approval before it goes to Seller Support.',
-        valueCents: d.valueCents,
-        valueKind: d.valueKind,
-        cadence: d.cadence,
-        confidence: 'medium',
-        risk: 'low',
-        reversibility: 'reversible',
-        execution: 'opens Aan draft',
-        steps: [
-          { label: 'Aan drafts the support ticket with recurrence context' },
-          { label: 'You review & approve before it is filed' },
-        ],
-      },
-      {
-        id: `${d.id}:review-cost`,
-        title: 'Review Cost Structure',
-        detail:
-          'Aan analyzes recent cost changes and account-level margin trends to help identify the optimal cost adjustment.',
-        valueCents: d.valueCents,
-        valueKind: d.valueKind,
-        cadence: d.cadence,
-        confidence: 'medium',
-        risk: 'low',
-        reversibility: 'reversible',
-        execution: 'opens Aan draft',
-        steps: [
-          { label: 'Aan analyzes cost history & margin trends' },
-          { label: 'Aan presents findings for your review' },
-        ],
-      },
-      {
-        id: `${d.id}:custom`,
-        title: 'Write your custom instruction',
-        detail:
-          'Tell Aan exactly what you want — revise the draft, schedule a meeting, escalate differently, or anything else.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,

@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect, useRef } from 'react';
 import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise, CaretDown } from '@phosphor-icons/react';
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
-import { RECURRING_COST_ID } from '@/constants/signals/criticalOnlyDecision';
 import { strategiesFor } from '@/utils/signals/strategies';
 import { formatValue } from '@/utils/signals/valueFormat';
 import { relationshipsFor } from '@/utils/signals/relationships';
@@ -53,29 +52,6 @@ Amazon flagged advertising eligibility with a warning on ASIN B0CH3HSSLZ (Crazy 
 - Confidence: 70%
 
 List price has stayed flat at $18.47 since the alert — no cost reduction has been submitted yet. Could you review the wholesale cost terms for this ASIN and advise on next steps?
-
-Thanks,
-Tushar`,
-};
-
-const VM_EMAIL_ALERT_2: EmailDraftData = {
-  to: 'vendor.manager@amazon.com',
-  cc: '',
-  bcc: '',
-  subject: 'ASIN B0C33QC2R2 — Advertising eligibility lost (2nd occurrence)',
-  body: `Hi [VM name],
-
-Amazon disabled advertising eligibility on ASIN B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct) on 18 Jul 2026, citing vendor cost-to-Amazon exceeding target pricing. This is the 2nd occurrence in 30 days.
-
-- Estimated revenue at risk: $135.97 over next 30 days
-- ASIN Ad Sales (30D): $135.97
-- Estimated units at risk: ~8 units
-- Inventory available: 273 units (~82 days of coverage)
-- Confidence: high
-
-Previous occurrence: 27 Jun – 03 Jul 2026, recovered 04 Jul – 17 Jul, then relapsed on 18 Jul. Given this recurrence pattern, a one-off cost tweak may only produce a temporary fix — this may warrant an account-level cost structure review.
-
-Could you advise on the optimal path forward?
 
 Thanks,
 Tushar`,
@@ -210,16 +186,14 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
 
     if (isInlineDraftAction) {
       if (shortId === 'notify-vm' || shortId === 'recommended') {
-        const vmEmail = d.id === RECURRING_COST_ID ? VM_EMAIL_ALERT_2 : VM_EMAIL_ALERT_1;
         setTransitional('loading-email');
         setTimeout(() => {
-          setInlineDraft({ kind: 'email', strategyTitle: selectedStrategy.title, draft: vmEmail });
+          setInlineDraft({ kind: 'email', strategyTitle: selectedStrategy.title, draft: VM_EMAIL_ALERT_1 });
           setTransitional(null);
         }, 600);
       } else if (shortId === 'draft-ticket') {
         setTransitional('loading-chat');
-        const asin = d.id === RECURRING_COST_ID ? 'B0C33QC2R2' : 'B0CH3HSSLZ';
-        const draft = AAN_SEEDS['draft-ticket'].draft.replace('[ASIN]', asin);
+        const draft = AAN_SEEDS['draft-ticket'].draft.replace('[ASIN]', 'B0CH3HSSLZ');
         setTimeout(() => {
           setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: AAN_SEEDS['draft-ticket'].title, approveLabel: AAN_SEEDS['draft-ticket'].approveLabel, approveSuccess: AAN_SEEDS['draft-ticket'].approveSuccess, draft, showApprove: false });
           setTransitional(null);
