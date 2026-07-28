@@ -216,19 +216,19 @@
   }
 
   .detailSection {
-    border-left: 3px solid rgba($primary-color, 0.2);
+    border-left: 4px solid rgba($primary-color, 0.35);
     padding-left: $spacing-12;
   }
 
   .detailHeading {
-    font-size: $font-size-10;
+    font-size: $font-size-12;
     font-weight: $font-weight-600;
-    color: $main-text;
+    color: $primary-color;
     margin-bottom: $spacing-4;
   }
 
   .detailContent {
-    font-size: $font-size-12;
+    font-size: $font-size-14;
     line-height: 1.6;
     color: $sub-text-1;
     white-space: pre-line;
@@ -256,9 +256,9 @@
     border: none;
     background: rgba($sub-text-4, 0.04);
     cursor: pointer;
-    font-size: $font-size-10;
+    font-size: $font-size-12;
     font-weight: $font-weight-600;
-    color: $sub-text-2;
+    color: $primary-color;
     transition: background 0.12s;
 
     &:hover {
