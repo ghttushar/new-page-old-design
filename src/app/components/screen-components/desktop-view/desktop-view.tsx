@@ -31,6 +31,7 @@ import CatalogPageRoutes from '../../pages/catalog-page/catalog-wrapper';
 import CustomTablePage from '../../pages/custom-table-page/custom-table-page';
 import JivaPage from '../../pages/jiva-page/jiva-page';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
+import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
 import MonitoringWrapper from '../../pages/monitoring-page/monitoring-wrapper';
 import ProfitabilityPageWrapper from '../../pages/profitability/profitability-page-wrapper';
 import ReportsWrapper from '../../pages/reports-wrapper/reports-wrapper';
@@ -229,6 +230,7 @@ export default function DesktopView() {
               <Route path="/user/*" element={<UserAuthWrapper />} />
               <Route path="/custom-table/*" element={<CustomTablePage />} />
               <Route path="/signals" element={<SignalsPageWrapper />} />
+              <Route path="/signal/:id" element={<PrivateRoute component={<SignalDetailWrapper />} />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>

@@ -24,6 +24,7 @@ interface Props {
   decisions?: Decision[];
   onClose: () => void;
   onOpenDecision?: (id: string) => void;
+  defaultSummaryExpanded?: boolean;
 }
 
 const COUNTDOWN_SECONDS = 5;
@@ -121,13 +122,13 @@ Want me to proceed with the escalation, or would you like me to dig deeper into 
   },
 };
 
-export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision }: Props) {
+export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision, defaultSummaryExpanded }: Props) {
   const dispatch = useDispatch();
   const [discuss, setDiscuss] = useState(false);
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(defaultSummaryExpanded ?? false);
 
   const allDecisions = useMemo(() => decisions.length > 0 ? decisions : (d ? [d] : []), [decisions, d]);
 
