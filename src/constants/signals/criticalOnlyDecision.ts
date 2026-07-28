@@ -13,12 +13,6 @@ export const CRITICAL_ONLY_DECISION: Decision = {
   cadence: 'monthly',
   valueCaption: 'revenue at risk · Opportunity Window: 30 Days',
   valueBasis: 'Amazon flagged advertising eligibility with a warning on ASIN B0CH3HSSLZ (Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct) on 2026-07-18. The warning is still active as of 2026-07-22. The cause is vendor cost-to-Amazon being too high for Amazon to hit its target retail price, not a catalog or inventory issue.',
-  valueInputs: [
-    'Estimated Revenue at Risk: $56.58 over next 30 days',
-    'Estimated Units at Risk: ~3 units',
-    'Inventory Available: 81 Units (+148 on open PO)',
-    'Status: ELIGIBLE_WITH_WARNING — not yet fully blocked',
-  ],
   insight: 'ASIN B0CH3HSSLZ · Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct · advertising eligibility flagged with warning',
   insightDetail: 'Advertising eligibility flagged with warning on 2026-07-18. Status confirmed still open as of 2026-07-22 (ELIGIBLE_WITH_WARNING — not yet fully blocked). Vendor cost-to-Amazon is too high for Amazon to hit its target retail price. List price has stayed flat at $18.47 since the alert — no cost reduction submitted yet.',
   actionVerb: 'Escalate to Vendor Manager',
@@ -40,14 +34,6 @@ export const CRITICAL_ONLY_DECISION: Decision = {
   ],
   deepLink: { label: 'Open in Seller Central', href: '#' },
   detailSections: [
-    {
-      heading: 'What Happened',
-      content: `Advertising eligibility flagged with warning on 2026-07-18. Status confirmed still open as of 2026-07-22 (ELIGIBLE_WITH_WARNING — not yet fully blocked).`,
-    },
-    {
-      heading: 'Root Cause',
-      content: `Vendor cost-to-Amazon is too high for Amazon to hit its target retail price. List price has stayed flat at $18.47 since the alert — no cost reduction submitted yet.`,
-    },
     {
       heading: 'Business Impact',
       content: `Opportunity Window: 30 Days
@@ -76,12 +62,6 @@ export const RECURRING_COST_DECISION: Decision = {
   cadence: 'monthly',
   valueCaption: 'revenue at risk · 2nd occurrence in 30 days',
   valueBasis: 'Amazon disabled advertising eligibility on ASIN B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct) on 2026-07-18. This is the 2nd occurrence in the past 30 days for this ASIN. The root cause is a Vendor Central cost-to-Amazon flag, not a listing/content issue.',
-  valueInputs: [
-    'ASIN Ad Sales (30D): $135.97',
-    'Estimated Units at Risk: ~8 Units (at $16.98 avg. realized unit price)',
-    'Estimated Revenue at Risk: $135.97',
-    "ASIN's Share of Account Ad Sales: 8.24%",
-  ],
   insight: 'ASIN B0C33QC2R2 · Crazy Cups DECAF Blueberry Cobbler - 22 Ct · advertising eligibility lost — 2nd occurrence in 30 days',
   insightDetail: 'Advertising eligibility was lost on ASIN B0C33QC2R2 (Crazy Cups DECAF Blueberry Cobbler - 22 Ct) on 2026-07-18. This is the 2nd occurrence in 30 days — the same warning hit 2026-06-27 to 2026-07-03, recovered 2026-07-04 to 2026-07-17, then relapsed. The cause is a Vendor Central cost-to-Amazon flag, not a listing/content issue.',
   actionVerb: 'Escalate to Vendor Manager',
@@ -103,16 +83,6 @@ export const RECURRING_COST_DECISION: Decision = {
   ],
   deepLink: { label: 'Open in Seller Central', href: '#' },
   detailSections: [
-    {
-      heading: 'What Happened',
-      content: `Advertising eligibility was lost on 2026-07-18. This is the 2nd occurrence in the past 30 days — the same warning hit this ASIN 2026-06-27 to 2026-07-03, recovered fully 2026-07-04 to 2026-07-17, then relapsed on 2026-07-18 and is still active as of today (2026-07-22).`,
-    },
-    {
-      heading: 'Root Cause',
-      content: `"This product's cost to Amazon does not allow us to meet customers' pricing expectations. Consider reducing the cost. It may take a few weeks for your product to become eligible to advertise after you reduce the cost."
-
-Confirmed as a Vendor Central cost-to-Amazon flag, not a listing/content issue: retail list price held flat at $18.69 the entire time and BSR stayed steady (~11.5K-12.1K in Grocery), so nothing on the customer-facing listing changed.`,
-    },
     {
       heading: 'Business Impact',
       content: `Opportunity Window: 30 Days
