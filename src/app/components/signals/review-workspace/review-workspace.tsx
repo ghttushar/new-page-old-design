@@ -330,29 +330,20 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                     const lines = content.split('\n');
                     return lines.map((line, i) => {
                       const isBold = d.keyMetrics?.some(m => line.toLowerCase().includes(m.label.toLowerCase()));
+                      const isLast = i === lines.length - 1;
                       return (
-                        <div key={i} className={isBold ? styles.metricHighlightLine : styles.contentLine}>
-                          {line || '\u00A0'}
-                        </div>
+                        <span key={i} className={isBold ? styles.metricHighlight : undefined}>
+                          {line || '\u00A0'}{!isLast && <br />}
+                        </span>
                       );
                     });
                   };
 
                   return (
                     <>
-                      {/* Business Impact — highlighted card with metrics */}
+                      {/* Business Impact — highlighted card with key metric bolded */}
                       {bizImpact && (
                         <div className={styles.impactCard}>
-                          {d.keyMetrics && d.keyMetrics.length > 0 && (
-                            <div className={styles.metricsRow}>
-                              {d.keyMetrics.map((m, i) => (
-                                <div key={i} className={styles.metricItem}>
-                                  <span className={styles.metricLabel}>{m.label}</span>
-                                  <span className={styles.metricValue}>{m.value}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
                           <div className={styles.impactContent}>
                             {renderContent(bizImpact.content)}
                           </div>
