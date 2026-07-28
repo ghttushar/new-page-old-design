@@ -33,7 +33,7 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.2rem 0.6rem;
-  border-radius: 0.3rem;
+  border-radius: 0.6rem;
   border: none;
   background: none;
   cursor: pointer;
@@ -65,8 +65,8 @@
 // ---------- Email Compose ----------
 
 .emailForm {
-  border-radius: 0.8rem;
-  border: 1px solid rgba($primary-color, 0.25);
+  border-radius: 1.2rem;
+  border: 1px solid rgba($primary-color, 0.2);
   background: $foreground-color;
   overflow: hidden;
 }
@@ -156,8 +156,8 @@
 // ---------- Draft Chat ----------
 
 .chatContainer {
-  border-radius: 0.8rem;
-  border: 1px solid rgba($primary-color, 0.25);
+  border-radius: 1.2rem;
+  border: 1px solid rgba($primary-color, 0.2);
   background: $foreground-color;
   overflow: hidden;
   display: flex;
@@ -187,7 +187,7 @@
 
 .userBubble {
   max-width: 85%;
-  border-radius: 0.6rem;
+  border-radius: 1rem;
   background: $primary-color;
   color: $foreground-color;
   padding: $spacing-8 $spacing-12;
@@ -197,8 +197,8 @@
 
 .aanBubble {
   max-width: 92%;
-  border-radius: 0.6rem;
-  border: 1px solid $border-color-4;
+  border-radius: 1rem;
+  border: 1px solid rgba($border-color-4, 0.6);
   background: rgba($background-color, 0.5);
   color: $main-text;
   padding: $spacing-8 $spacing-12;

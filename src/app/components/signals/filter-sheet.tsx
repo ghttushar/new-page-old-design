@@ -89,13 +89,13 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
         onClick={() => setOpen((o) => !o)}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4, height: 28,
-          padding: '0 10px', borderRadius: 4, border: '1px solid #e1e4e8',
+          padding: '0 10px', borderRadius: 8, border: '1px solid #e1e4e8',
           background: '#fff', color: '#7c7c7c', fontSize: '1rem', cursor: 'pointer',
         }}
       >
         <Funnel size={14} /> Filter
         {activeCategory && activeCategory !== '__all__' && (
-          <span style={{ marginLeft: 2, borderRadius: 4, background: 'rgba(119,70,155,0.1)', color: '#77469b', fontSize: '0.85rem', fontWeight: 500, padding: '0 5px', lineHeight: '14px' }}>
+          <span style={{ marginLeft: 2, borderRadius: 8, background: 'rgba(119,70,155,0.1)', color: '#77469b', fontSize: '0.85rem', fontWeight: 500, padding: '0 5px', lineHeight: '14px' }}>
             {categories.find(c => c.key === activeCategory)?.label || activeCategory}
           </span>
         )}
@@ -112,7 +112,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
           style={{
             position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 100,
             width: 380, maxHeight: '70vh', overflow: 'auto',
-            background: '#fff', border: '1px solid #e1e4e8', borderRadius: 8,
+            background: '#fff', border: '1px solid #e1e4e8', borderRadius: 12,
             boxShadow: '0 12px 40px -8px rgba(0,0,0,0.18)',
           }}
         >
@@ -128,7 +128,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
                   <button
                     onClick={() => onCategoryChange?.('__all__')}
                     style={{
-                      padding: '4px 10px', borderRadius: 4, border: '1px solid #e1e4e8',
+                      padding: '4px 10px', borderRadius: 8, border: '1px solid #e1e4e8',
                       background: (!activeCategory || activeCategory === '__all__') ? '#77469b' : 'transparent',
                       color: (!activeCategory || activeCategory === '__all__') ? '#fff' : '#474747',
                       fontSize: '1rem', cursor: 'pointer',
@@ -141,7 +141,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
                       key={cat.key}
                       onClick={() => onCategoryChange?.(cat.key)}
                       style={{
-                        padding: '4px 10px', borderRadius: 4, border: '1px solid #e1e4e8',
+                        padding: '4px 10px', borderRadius: 8, border: '1px solid #e1e4e8',
                         background: activeCategory === cat.key ? '#77469b' : 'transparent',
                         color: activeCategory === cat.key ? '#fff' : '#474747',
                         fontSize: '1rem', cursor: 'pointer',
@@ -163,7 +163,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
                       key={s.key}
                       onClick={() => setDraft((d) => ({ ...d, sources: toggle(d.sources, s.key) }))}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 4,
+                        display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 8,
                         border: on ? '1px solid rgba(119,70,155,0.35)' : '1px solid #e1e4e8',
                         background: on ? 'rgba(119,70,155,0.04)' : 'transparent',
                         color: on ? '#77469b' : '#474747',
@@ -190,7 +190,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
                       key={d.key}
                       onClick={() => setDraft((s) => ({ ...s, domains: toggle(s.domains, d.key) }))}
                       style={{
-                        padding: '5px 8px', borderRadius: 4,
+                        padding: '5px 8px', borderRadius: 8,
                         border: on ? '1px solid rgba(119,70,155,0.35)' : '1px solid #e1e4e8',
                         background: on ? 'rgba(119,70,155,0.04)' : 'transparent',
                         color: on ? '#77469b' : '#474747',
@@ -212,7 +212,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
                     key={w.key}
                     onClick={() => setDraft((d) => ({ ...d, window: w.key }))}
                     style={{
-                      padding: '4px 10px', borderRadius: 4,
+                      padding: '4px 10px', borderRadius: 8,
                       border: draft.window === w.key ? '1px solid rgba(119,70,155,0.35)' : '1px solid #e1e4e8',
                       background: draft.window === w.key ? 'rgba(119,70,155,0.04)' : 'transparent',
                       color: draft.window === w.key ? '#77469b' : '#474747',
@@ -228,7 +228,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
 
           <div style={{ padding: '12px 20px', borderTop: '1px solid #e1e4e8', display: 'flex', justifyContent: 'space-between' }}>
             <button onClick={reset} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1rem', color: '#7c7c7c' }}>Reset</button>
-            <button onClick={apply} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#77469b', color: '#fff', fontSize: '1rem', cursor: 'pointer' }}>Apply</button>
+            <button onClick={apply} style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: '#77469b', color: '#fff', fontSize: '1rem', cursor: 'pointer' }}>Apply</button>
           </div>
         </div>
       )}
