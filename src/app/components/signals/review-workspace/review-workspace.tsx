@@ -397,7 +397,42 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                   .map((s, i) => (
                     <div key={i} className={styles.detailSection}>
                       <div className={styles.detailHeading}>{s.heading}</div>
-                      <div className={styles.detailContent}>{renderContent(s.content)}</div>
+                      {s.heading === 'Business Impact' ? (
+                        <div className={styles.bulletList}>
+                          {s.content.split('\n').filter(Boolean).map((line, j) => {
+                            const colonIdx = line.indexOf(':');
+                            const label = colonIdx >= 0 ? line.slice(0, colonIdx + 1) : '';
+                            const rest = colonIdx >= 0 ? line.slice(colonIdx + 1) : line;
+                            const parts = rest.split('|');
+                            return (
+                              <div key={j} className={styles.bulletItem}>
+                                <span className={styles.bulletDot} />
+                                <span>
+                                  {label && <span className={styles.bulletLabel}>{label}</span>}
+                                  {parts.map((part, k) => {
+                                    const trimmed = part.trim();
+                                    const match = d.keyMetrics?.find((km) => trimmed.includes(km.value));
+                                    if (match) {
+                                      const idx = trimmed.indexOf(match.value);
+                                      return (
+                                        <span key={k}>
+                                          {trimmed.slice(0, idx)}
+                                          <span className={styles.metricHighlight}>{match.value}</span>
+                                          {trimmed.slice(idx + match.value.length)}
+                                          {k < parts.length - 1 && ' | '}
+                                        </span>
+                                      );
+                                    }
+                                    return <span key={k}>{trimmed}{k < parts.length - 1 && ' | '}</span>;
+                                  })}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className={styles.detailContent}>{renderContent(s.content)}</div>
+                      )}
                     </div>
                   ))}
               </div>

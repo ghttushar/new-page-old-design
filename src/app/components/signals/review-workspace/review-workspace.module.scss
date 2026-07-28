@@ -224,6 +224,37 @@
     color: $sub-text-1;
   }
 
+  .bulletList {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-8;
+    margin-bottom: $spacing-16;
+  }
+
+  .bulletItem {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-8;
+    font-size: $font-size-14;
+    color: $sub-text-1;
+    line-height: 1.6;
+  }
+
+  .bulletDot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: $primary-color;
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+  }
+
+  .bulletLabel {
+    font-weight: $font-weight-600;
+    color: $main-text;
+    margin-right: 0.2rem;
+  }
+
   .metricHighlight {
     font-weight: $font-weight-600;
     color: $main-text;
