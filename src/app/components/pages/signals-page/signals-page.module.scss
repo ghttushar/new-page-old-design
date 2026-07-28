@@ -71,6 +71,7 @@
 
 .searchInput {
   flex: 1;
+  max-width: 36rem;
   height: 2.4rem;
   padding: 0 0.8rem;
   border-radius: 0.4rem;
@@ -128,9 +129,7 @@
 .rightCol {
   min-height: 0;
   overflow-y: auto;
-  position: sticky;
-  top: 0;
-  max-height: 100%;
+  height: 100%;
 }
 
 .rightColVisible {
