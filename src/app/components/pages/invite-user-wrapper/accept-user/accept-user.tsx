@@ -1,10 +1,8 @@
-import VerificationAnimation from '@/app/components/common/loader/verification-animation';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuthSelector } from 'src/redux/auth-selector/auth-selector';
 import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
 import AuthServices from 'src/services/auth.service';
-import OnProgress from '../../../common/loader/onprogress';
 import styles from './accept-user.module.scss';
 
 export default function AcceptUser() {
@@ -56,7 +54,7 @@ export default function AcceptUser() {
       <div className={styles.verifyContainer}>
         <div className={styles.verifyContent}>
           <div>
-            <VerificationAnimation />
+            <div style={{ fontSize: '4rem', textAlign: 'center' }}>&#10003;</div>
           </div>
           <h1>Invite Accepted Successfully!</h1>
           <div className={styles.verifyBody}>
@@ -82,14 +80,14 @@ export default function AcceptUser() {
   } else if (!isLoading && !isError && isSuccess && isVerified) {
     return (
       <div className={styles.verifyContainer}>
-        <OnProgress />
+        <div style={{ fontSize: '4rem', textAlign: 'center', color: '#77469b' }}>&#8987;</div>
         <h1>Signing you in few seconds...</h1>
       </div>
     );
   } else if (!isLoading && !isError && isSuccess && !isVerified) {
     return (
       <div className={styles.verifyContainer}>
-        <OnProgress />
+        <div style={{ fontSize: '4rem', textAlign: 'center', color: '#77469b' }}>&#8987;</div>
         <h1>Re-directing to Login page...</h1>
       </div>
     );

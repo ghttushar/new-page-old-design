@@ -1,6 +1,5 @@
 import ImgComponent from '@/app/components/common/img-component/img-component';
 import { imageUrls } from '@/constants/assets/images.constants';
-import ThreeDotLoader from 'src/app/components/common/loader/three-dots-loader';
 import styles from './gpt-chat-modal.module.scss';
 
 export const GPTLoader = () => {
@@ -22,7 +21,11 @@ export const GPTLoader = () => {
         />
         <h5>GPT</h5>
       </div>
-      <ThreeDotLoader />
+      <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', padding: '1rem' }}>
+        <span style={{ width: '0.6rem', height: '0.6rem', borderRadius: '50%', backgroundColor: '#77469b', animation: 'pulse 1s ease-in-out infinite' }} />
+        <span style={{ width: '0.6rem', height: '0.6rem', borderRadius: '50%', backgroundColor: '#77469b', animation: 'pulse 1s ease-in-out 0.2s infinite' }} />
+        <span style={{ width: '0.6rem', height: '0.6rem', borderRadius: '50%', backgroundColor: '#77469b', animation: 'pulse 1s ease-in-out 0.4s infinite' }} />
+      </div>
     </div>
   );
 };

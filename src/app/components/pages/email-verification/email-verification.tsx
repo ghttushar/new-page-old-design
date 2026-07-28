@@ -6,8 +6,6 @@ import { SELECT_ACCOUNT_URL } from 'src/constants/urls.constants';
 import { IAPIResponse } from 'src/interfaces/service.interface';
 import { useAuthSelector } from 'src/redux/auth-selector/auth-selector';
 import AuthServices from 'src/services/auth.service';
-import OnProgress from '../../common/loader/onprogress';
-import VerificationAnimation from '../../common/loader/verification-animation';
 import styles from './email-verification.module.scss';
 
 export default function EmailVerification() {
@@ -60,7 +58,7 @@ export default function EmailVerification() {
       <div className={styles.verifyContainer}>
         <div className={styles.verifyContent}>
           <div>
-            <VerificationAnimation />
+            <div style={{ fontSize: '4rem', textAlign: 'center' }}>&#10003;</div>
           </div>
           <h1>Email Verified Successfully!</h1>
           <div className={styles.verifyBody}>
@@ -86,7 +84,7 @@ export default function EmailVerification() {
   } else if (!isLoading && !isError && isVerified) {
     return (
       <div className={styles.verifyContainer}>
-        <OnProgress />
+        <div style={{ fontSize: '4rem', textAlign: 'center', color: '#77469b' }}>&#8987;</div>
         <h1>Signing you in few seconds...</h1>
       </div>
     );

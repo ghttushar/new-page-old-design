@@ -33,7 +33,6 @@ import {
   labelStyles,
   selectStyles,
 } from './register-invited-user-styles';
-import Loader from 'src/app/components/common/loader/loader';
 
 const initialRegisterFormState: IRegisterInvitedUserForm = {
   firstName: '',
@@ -156,9 +155,6 @@ export default function RegisterInvitedUser() {
         .finally(() => setIsLoading(false));
     }
   }, [token]);
-  if (!inviteDetails) {
-    <Loader/>
-  }
   return (
     <div className={styles.registerContainer}>
       <Logo />

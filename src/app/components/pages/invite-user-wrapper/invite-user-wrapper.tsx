@@ -7,7 +7,6 @@ import {
 import { IInviteDetails } from 'src/interfaces/auth.interfaces';
 import AuthServices from 'src/services/auth.service';
 import LoaderWrapper from '../../common/loader-wrapper/loader-wrapper';
-import Loader from '../../common/loader/loader';
 
 export default function InviteUserWrapper() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -31,9 +30,6 @@ export default function InviteUserWrapper() {
         .finally(() => setIsLoading(false));
     }
   }, [token]);
-  if (!inviteDetails) {
-    <Loader/>
-  }
   if (inviteDetails !== null) {
     if (inviteDetails?.existingUser === true) {
       navigate(`${ACCEPT_INVITE_URL}/${token}`);
