@@ -211,7 +211,7 @@
   .detailSections {
     display: flex;
     flex-direction: column;
-    gap: $spacing-12;
+    gap: $spacing-16;
     margin-bottom: $spacing-16;
   }
 
@@ -221,15 +221,15 @@
   }
 
   .detailHeading {
-    font-size: $font-size-12;
+    font-size: $font-size-10;
     font-weight: $font-weight-600;
     color: $primary-color;
-    margin-bottom: $spacing-4;
+    margin-bottom: $spacing-8;
   }
 
   .detailContent {
-    font-size: $font-size-14;
-    line-height: 1.6;
+    font-size: $font-size-12;
+    line-height: 1.7;
     color: $sub-text-1;
     white-space: pre-line;
   }
@@ -256,7 +256,7 @@
     border: none;
     background: rgba($sub-text-4, 0.04);
     cursor: pointer;
-    font-size: $font-size-12;
+    font-size: $font-size-10;
     font-weight: $font-weight-600;
     color: $primary-color;
     transition: background 0.12s;
@@ -281,7 +281,7 @@
   }
 
   .collapsibleBody {
-    padding: $spacing-12 $spacing-16;
+    padding: $spacing-16;
     border-top: 1px solid $border-color-4;
   }
 
