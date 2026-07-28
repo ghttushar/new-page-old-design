@@ -341,32 +341,27 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
 
                   return (
                     <>
-                      {/* Business Impact — highlighted card with key metric bolded */}
-                      {bizImpact && (
-                        <div className={styles.impactCard}>
-                          <div className={styles.impactContent}>
-                            {renderContent(bizImpact.content)}
-                          </div>
+                      {whatHappened && (
+                        <div className={styles.detailSection}>
+                          <div className={styles.detailHeading}>{whatHappened.heading}</div>
+                          <div className={styles.detailContent}>{whatHappened.content}</div>
                         </div>
                       )}
 
-                      {/* What Happened + Root Cause — two-column grid */}
-                      <div className={styles.detailGrid}>
-                        {whatHappened && (
-                          <div className={styles.detailSection}>
-                            <div className={styles.detailHeading}>{whatHappened.heading}</div>
-                            <div className={styles.detailContent}>{whatHappened.content}</div>
-                          </div>
-                        )}
-                        {rootCause && (
-                          <div className={styles.detailSection}>
-                            <div className={styles.detailHeading}>{rootCause.heading}</div>
-                            <div className={styles.detailContent}>{rootCause.content}</div>
-                          </div>
-                        )}
-                      </div>
+                      {rootCause && (
+                        <div className={styles.detailSection}>
+                          <div className={styles.detailHeading}>{rootCause.heading}</div>
+                          <div className={styles.detailContent}>{rootCause.content}</div>
+                        </div>
+                      )}
 
-                      {/* Inventory Status */}
+                      {bizImpact && (
+                        <div className={styles.detailSection}>
+                          <div className={styles.detailHeading}>{bizImpact.heading}</div>
+                          <div className={styles.detailContent}>{renderContent(bizImpact.content)}</div>
+                        </div>
+                      )}
+
                       {inventoryStatus && (
                         <div className={styles.detailSection}>
                           <div className={styles.detailHeading}>{inventoryStatus.heading}</div>
@@ -374,7 +369,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                         </div>
                       )}
 
-                      {/* AI Summary — collapsible */}
                       {aiSummary && (
                         <div className={styles.collapsibleSection}>
                           <button
