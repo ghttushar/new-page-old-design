@@ -28,6 +28,11 @@ export const CRITICAL_ONLY_DECISION: Decision = {
   createdAt: Date.now() - 50 * 60 * 1000,
   updatedAt: Date.now() - 50 * 60 * 1000,
   evidence: { kind: 'delta', delta: { beforeLabel: 'Revenue at risk', before: 6885, afterLabel: 'Units at risk', after: 300, unit: ' units' } },
+  keyMetrics: [
+    { label: 'Estimated Revenue at Risk', value: '$135.97' },
+    { label: 'Ad Sales (30D)', value: '$135.97' },
+    { label: 'Units at Risk', value: '~8 Units' },
+  ],
   steps: [
     { label: 'Review listing history & sentiment', etaSec: 10, why: 'Compare against the last eligible version.' },
     { label: 'Identify the failing field', etaSec: 8, why: 'Locate the exact attribute Amazon flagged.' },
@@ -92,6 +97,11 @@ export const IMAGE_ISSUE_DECISION: Decision = {
   status: 'open',
   createdAt: Date.now() - 30 * 60 * 1000,
   updatedAt: Date.now() - 30 * 60 * 1000,
+  keyMetrics: [
+    { label: 'Estimated Weekly Revenue at Risk', value: '$3,200' },
+    { label: 'Click-Through Drop', value: '~40%' },
+    { label: 'Inventory', value: '2,810 Units' },
+  ],
   steps: [
     { label: 'Analyze current image against Amazon requirements', etaSec: 5, why: 'Identify which specs are failing.' },
     { label: 'Generate compliant image with AI', etaSec: 30, why: 'Aan generates a 1000×1000 px image on white background.' },

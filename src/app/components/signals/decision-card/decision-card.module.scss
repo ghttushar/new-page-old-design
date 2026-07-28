@@ -93,6 +93,26 @@
   overflow: hidden;
 }
 
+.metricRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+  margin-top: $spacing-6;
+  padding: $spacing-4 $spacing-8;
+  background: rgba($primary-color, 0.05);
+  border-radius: 0.4rem;
+  font-size: $font-size-10;
+
+  .metricLabel {
+    color: $sub-text-3;
+  }
+
+  .metricValue {
+    font-weight: $font-weight-700;
+    color: $main-text;
+  }
+}
+
 .meta {
   display: flex;
   align-items: center;

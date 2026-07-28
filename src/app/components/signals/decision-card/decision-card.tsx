@@ -54,6 +54,13 @@ export function DecisionCard({ decision: d, selected, onSelect, onApprove }: Dec
           <div className={styles.valueCaption}>{d.valueCaption}</div>
           {/* Insight */}
           <div className={styles.insight}>{d.insight}</div>
+          {/* Key metrics */}
+          {d.keyMetrics && d.keyMetrics.length > 0 && (
+            <div className={styles.metricRow}>
+              <span className={styles.metricLabel}>{d.keyMetrics[0].label}:</span>{' '}
+              <span className={styles.metricValue}>{d.keyMetrics[0].value}</span>
+            </div>
+          )}
           {/* Meta row */}
           <div className={styles.meta}>
             <span>{formatTime(d.createdAt)}</span>

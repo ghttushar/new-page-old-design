@@ -119,6 +119,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const [discuss, setDiscuss] = useState(false);
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const allDecisions = useMemo(() => decisions.length > 0 ? decisions : (d ? [d] : []), [decisions, d]);
@@ -318,12 +319,90 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
             {/* Structured detail sections */}
             {d.detailSections && d.detailSections.length > 0 ? (
               <div className={styles.detailSections}>
-                {d.detailSections.map((sec, i) => (
-                  <div key={i} className={styles.detailSection}>
-                    <div className={styles.detailHeading}>{sec.heading}</div>
-                    <div className={styles.detailContent}>{sec.content}</div>
-                  </div>
-                ))}
+                {(() => {
+                  const bizImpact = d.detailSections!.find(s => s.heading === 'Business Impact');
+                  const whatHappened = d.detailSections!.find(s => s.heading === 'What Happened');
+                  const rootCause = d.detailSections!.find(s => s.heading === 'Root Cause');
+                  const inventoryStatus = d.detailSections!.find(s => s.heading === 'Inventory Status');
+                  const aiSummary = d.detailSections!.find(s => s.heading === 'AI Summary');
+
+                  const renderContent = (content: string) => {
+                    const lines = content.split('\n');
+                    return lines.map((line, i) => {
+                      const isBold = d.keyMetrics?.some(m => line.toLowerCase().includes(m.label.toLowerCase()));
+                      return (
+                        <div key={i} className={isBold ? styles.metricHighlightLine : styles.contentLine}>
+                          {line || '\u00A0'}
+                        </div>
+                      );
+                    });
+                  };
+
+                  return (
+                    <>
+                      {/* Business Impact — highlighted card with metrics */}
+                      {bizImpact && (
+                        <div className={styles.impactCard}>
+                          {d.keyMetrics && d.keyMetrics.length > 0 && (
+                            <div className={styles.metricsRow}>
+                              {d.keyMetrics.map((m, i) => (
+                                <div key={i} className={styles.metricItem}>
+                                  <span className={styles.metricLabel}>{m.label}</span>
+                                  <span className={styles.metricValue}>{m.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div className={styles.impactContent}>
+                            {renderContent(bizImpact.content)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* What Happened + Root Cause — two-column grid */}
+                      <div className={styles.detailGrid}>
+                        {whatHappened && (
+                          <div className={styles.detailSection}>
+                            <div className={styles.detailHeading}>{whatHappened.heading}</div>
+                            <div className={styles.detailContent}>{whatHappened.content}</div>
+                          </div>
+                        )}
+                        {rootCause && (
+                          <div className={styles.detailSection}>
+                            <div className={styles.detailHeading}>{rootCause.heading}</div>
+                            <div className={styles.detailContent}>{rootCause.content}</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Inventory Status */}
+                      {inventoryStatus && (
+                        <div className={styles.detailSection}>
+                          <div className={styles.detailHeading}>{inventoryStatus.heading}</div>
+                          <div className={styles.detailContent}>{inventoryStatus.content}</div>
+                        </div>
+                      )}
+
+                      {/* AI Summary — collapsible */}
+                      {aiSummary && (
+                        <div className={styles.collapsibleSection}>
+                          <button
+                            className={styles.collapsibleHeader}
+                            onClick={() => setSummaryExpanded(!summaryExpanded)}
+                          >
+                            <span>{aiSummary.heading}</span>
+                            <span className={`${styles.chevron} ${summaryExpanded ? styles.chevronOpen : ''}`} />
+                          </button>
+                          {summaryExpanded && (
+                            <div className={styles.collapsibleBody}>
+                              <div className={styles.detailContent}>{aiSummary.content}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             ) : (
               /* Fallback: basic insight display */

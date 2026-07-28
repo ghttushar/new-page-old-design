@@ -49,6 +49,7 @@ export interface Decision {
   steps: DecisionStep[];
   deepLink?: { label: string; href: string };
   detailSections?: DecisionSection[];
+  keyMetrics?: { label: string; value: string }[];
 }
 
 const HOUR = 60 * 60 * 1000;

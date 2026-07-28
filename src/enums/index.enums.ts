@@ -37,7 +37,7 @@ export enum PageTitleEnum {
   RULES_CREATION = 'Rule Creation',
   APPLIED_RULES = 'Applied Rules',
   CONFIGURATION_WIZARD = 'Configuration Wizard',
-  ALERTS = 'Alerts',
+  ALERTS = 'Signals',
 }
 
 export enum DropdownLabelEnum {
