@@ -1,5 +1,3 @@
-import BaseLottieAnimation from '@/app/components/common/loader/base-lottie-animation';
-import { lottieFiles } from '@/constants/assets/lotties.utils';
 import { AuditStatusEnum } from '@/enums/rules.enum';
 import useContainerCollapseAnimation from '@/hooks/use-container-collapse-animation';
 import { IAuditWarning } from '@/interfaces/rules/rules.interfaces';
@@ -54,11 +52,7 @@ export default function AuditRule({
           <div className={styles.statusContainer}>
             <div className={styles.statusBox} data-status="processing">
               <div className={styles.statusIcon}>
-                <BaseLottieAnimation
-                  lottieFile={lottieFiles.checkProgress}
-                  style={{ height: '5.2rem', width: '5.2rem' }}
-                  lottieOptions={{ loop: true, autoplay: true }}
-                />
+                <div className={styles.auditSpinner} />
               </div>
               <p className={styles.statusMessage}>
                 JiVA is auditing this rule for conflicts and performance
@@ -73,11 +67,7 @@ export default function AuditRule({
           <div className={styles.statusContainer}>
             <div className={styles.statusBox} data-status="success">
               <div className={styles.statusIcon}>
-                <BaseLottieAnimation
-                  lottieFile={lottieFiles.checkSuccess}
-                  style={{ height: '5.2rem', width: '5.2rem' }}
-                  lottieOptions={{ loop: false, autoplay: true }}
-                />
+                <div className={styles.auditCheck}>&#10003;</div>
               </div>
               <p className={styles.statusMessage}>
                 Everything looks good. Rule is ready to go.

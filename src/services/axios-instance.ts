@@ -1,4 +1,3 @@
-import { LOGIN_URL, SELECT_ACCOUNT_URL } from '@/constants/urls.constants';
 import { VersionEnum } from '@/enums/index.enums';
 import { MessageExecutionModeEnum } from '@/enums/pub-sub.enums';
 import requestUtils from '@/utils/request.utils';
@@ -207,18 +206,7 @@ class ErrorHandler {
     };
   }
 
-  static handleUnauthorizedError(delay = 0): void {
-    localStorageUtils.clearLocalStorage();
-    setTimeout(() => {
-      window.location.href = LOGIN_URL;
-    }, delay);
-  }
 
-  static handleTokenInvalidation(delay = 0): void {
-    setTimeout(() => {
-      window.location.href = SELECT_ACCOUNT_URL;
-    }, delay);
-  }
 }
 
 class ResponseInterceptor {
@@ -236,13 +224,7 @@ class ResponseInterceptor {
       const toastMessage = ErrorHandler.createToastMessage(error);
       store.dispatch(showToastMessage(toastMessage));
 
-      if (error.response?.status === 401) {
-        ErrorHandler.handleUnauthorizedError(3000);
-      }
 
-      if (error.response?.status === 409) {
-        ErrorHandler.handleTokenInvalidation(3000);
-      }
 
       return Promise.reject(error);
     } catch (e) {

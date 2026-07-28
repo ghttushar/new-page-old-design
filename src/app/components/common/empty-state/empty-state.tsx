@@ -2,16 +2,15 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { GlobalDataTestIds } from 'cypress/enums/global';
-import { LottieOptions } from 'lottie-react';
 import React from 'react';
-import BaseLottieAnimation from '../loader/base-lottie-animation';
+import { FolderDashedIcon } from '@phosphor-icons/react';
 import styles from './empty-state.module.scss';
 
 export interface IEmptyStateProps {
   emptyTitle: string;
   emptyDescription: string;
-  lottieFile: string;
-  emptyLottieOptions: Omit<LottieOptions, 'animationData'>;
+  lottieFile?: string;
+  emptyLottieOptions?: unknown;
   isButtonRequired: boolean;
   buttonText?: string;
   isButtonIconRequired?: boolean;
@@ -24,14 +23,12 @@ const EmptyState: React.FC<IEmptyStateProps> = (props) => {
   const {
     emptyTitle,
     emptyDescription,
-    emptyLottieOptions,
     isButtonRequired,
     buttonText,
     isButtonIconRequired,
     buttonIcon,
     buttonFunction,
     height,
-    lottieFile,
   } = props;
 
   const buttonStyles = {
@@ -46,11 +43,7 @@ const EmptyState: React.FC<IEmptyStateProps> = (props) => {
       sx={{ height: height ? height : '80vh' }}
       data-test={GlobalDataTestIds.EMPTY_PLACEHOLDER}
     >
-      <BaseLottieAnimation
-        lottieFile={lottieFile}
-        lottieOptions={emptyLottieOptions}
-        style={{ height: '16rem', width: '25rem' }}
-      />
+      <FolderDashedIcon size={96} color="#c1c7d0" weight="thin" />
 
       <div className={styles.emptyDialog}>
         <Typography variant="h3" fontSize="2.4rem" fontWeight={700} mb={1}>

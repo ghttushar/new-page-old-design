@@ -1,4 +1,3 @@
-import { lottieFiles } from '@/constants/assets/lotties.utils';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { MarketplaceEnum } from '@/enums/serp.enums';
 import useMarketplaceSubheader from '@/hooks/use-marketplace-sub-header.hook';
@@ -19,14 +18,6 @@ const reportsUnavailableEmptyState = {
   emptyTitle: 'No Reports Available',
   emptyDescription:
     'There are no reports configured yet for the selected marketplace.',
-  lottieFile: lottieFiles.emptyStateLottie,
-  emptyLottieOptions: {
-    loop: true,
-    autoplay: true,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-    },
-  },
   isButtonRequired: false,
 };
 

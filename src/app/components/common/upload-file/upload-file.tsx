@@ -1,5 +1,4 @@
 import { COGS_DOWNLOAD_TEMPLATE } from '@/constants';
-import { lottieFiles } from '@/constants/assets/lotties.utils';
 import { MarketplaceEnum } from '@/enums/serp.enums';
 import { TooltipPlacement } from '@/enums/tooltip-texts.enums';
 import { IUploadCogsResult } from '@/interfaces/advertising/advertising.interface';
@@ -39,7 +38,6 @@ import {
 } from 'src/redux/slices/notifications/toast-message.slice';
 import GenericTable from '../../shared/custom-table-wrapper/custom-table/generic-table';
 import InfoIcon from '../info-icon/info-icon';
-import BaseLottieAnimation from '../loader/base-lottie-animation';
 import PrimaryLoadingButton from '../primary-button/primary-loading-button';
 import ConflictPopup from '../rule-conflict-popup/rule-conflict-popup';
 import SecondaryButton from '../secondary-button/secondary-button';
@@ -278,11 +276,7 @@ export default function UploadFile({
         </ConflictPopup>
       ) : isLoading === true ? (
         <div className={styles.loadingState}>
-          <BaseLottieAnimation
-            lottieFile={lottieFiles.checkProgress}
-            className={styles.loadingAnimation}
-            lottieOptions={{ loop: true, autoplay: true }}
-          />
+          <div className={styles.loadingSpinner} />
           <span className={styles.loadingMessage}>
             COGs Uploaded data is being auditing for conflicts.
             <br />

@@ -139,9 +139,18 @@
   border-radius: 0.6rem;
 }
 
-.loadingAnimation {
-  width: 7rem;
-  height: 7rem;
+.loadingSpinner {
+  width: 5rem;
+  height: 5rem;
+  border: 0.4rem solid #e0e0e0;
+  border-top: 0.4rem solid $primary-color;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .loadingMessage {
