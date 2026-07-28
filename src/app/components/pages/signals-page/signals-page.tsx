@@ -16,7 +16,6 @@ import { categorize } from '@/utils/signals/categories';
 import { importanceScore } from '@/utils/signals/lifecycle';
 import { briefingFor } from '@/utils/signals/briefing';
 import {
-  selectDecisions,
   selectSelectedDecisionId,
   selectSelectedMeetingId,
   selectSelectedIds,
@@ -56,7 +55,6 @@ function groupByMeeting(list: Decision[]): MeetingGroup[] {
 
 export function SignalsPage() {
   const dispatch = useDispatch();
-  const decisions = useSelector(selectDecisions);
   const selectedDecisionId = useSelector(selectSelectedDecisionId);
   const selectedMeetingId = useSelector(selectSelectedMeetingId);
   const selectedIds = useSelector(selectSelectedIds);
@@ -132,12 +130,10 @@ export function SignalsPage() {
 
   const handleSelectDecision = useCallback((id: string) => {
     dispatch(setSelectedDecision(id));
-    dispatch(setSelectedMeeting(null));
   }, [dispatch]);
 
   const handleSelectMeeting = useCallback((bundleId: string) => {
     dispatch(setSelectedMeeting(bundleId));
-    dispatch(setSelectedDecision(null));
   }, [dispatch]);
 
   const handleApprove = useCallback((id: string) => {
@@ -278,7 +274,6 @@ export function SignalsPage() {
               onClose={() => dispatch(setSelectedDecision(null))}
               onOpenDecision={(id) => {
                 dispatch(setSelectedDecision(id));
-                dispatch(setSelectedMeeting(null));
               }}
             />
           ) : selectedMeetingBundle ? (
