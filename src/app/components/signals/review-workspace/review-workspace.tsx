@@ -3,6 +3,7 @@ import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise } from '@
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
 import { strategiesFor } from '@/utils/signals/strategies';
+import { formatValue } from '@/utils/signals/valueFormat';
 import { relationshipsFor } from '@/utils/signals/relationships';
 import { useDispatch } from 'react-redux';
 import { approveDecision, delegateToAan, rejectDecision, snoozeDecision, rollbackDecision } from '@/redux/slices/signals/signals.slice';
@@ -119,7 +120,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const [discuss, setDiscuss] = useState(false);
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const allDecisions = useMemo(() => decisions.length > 0 ? decisions : (d ? [d] : []), [decisions, d]);
@@ -155,6 +155,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   );
 
   const selectedStrategy = strategies.find((s) => s.id === selectedStrategyId);
+  const f = d ? formatValue({ cents: d.valueCents, kind: d.valueKind, cadence: d.cadence }) : null;
 
   function startCountdown() {
     setCountdown(COUNTDOWN_SECONDS);
@@ -316,85 +317,50 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           </div>
         ) : (
           <>
-            {/* Structured detail sections */}
-            {d.detailSections && d.detailSections.length > 0 ? (
-              <div className={styles.detailSections}>
-                {(() => {
-                  const bizImpact = d.detailSections!.find(s => s.heading === 'Business Impact');
-                  const whatHappened = d.detailSections!.find(s => s.heading === 'What Happened');
-                  const rootCause = d.detailSections!.find(s => s.heading === 'Root Cause');
-                  const inventoryStatus = d.detailSections!.find(s => s.heading === 'Inventory Status');
-                  const aiSummary = d.detailSections!.find(s => s.heading === 'AI Summary');
+            {/* Summary */}
+            {d.insightDetail && (
+              <div className={styles.summary}>{d.insightDetail}</div>
+            )}
 
-                  const renderContent = (content: string) => {
-                    const lines = content.split('\n');
-                    return lines.map((line, i) => {
-                      const isBold = d.keyMetrics?.some(m => line.toLowerCase().includes(m.label.toLowerCase()));
-                      const isLast = i === lines.length - 1;
-                      return (
-                        <span key={i} className={isBold ? styles.metricHighlight : undefined}>
-                          {line || '\u00A0'}{!isLast && <br />}
-                        </span>
-                      );
-                    });
-                  };
-
-                  return (
-                    <>
-                      {whatHappened && (
-                        <div className={styles.detailSection}>
-                          <div className={styles.detailHeading}>{whatHappened.heading}</div>
-                          <div className={styles.detailContent}>{whatHappened.content}</div>
-                        </div>
-                      )}
-
-                      {rootCause && (
-                        <div className={styles.detailSection}>
-                          <div className={styles.detailHeading}>{rootCause.heading}</div>
-                          <div className={styles.detailContent}>{rootCause.content}</div>
-                        </div>
-                      )}
-
-                      {bizImpact && (
-                        <div className={styles.detailSection}>
-                          <div className={styles.detailHeading}>{bizImpact.heading}</div>
-                          <div className={styles.detailContent}>{renderContent(bizImpact.content)}</div>
-                        </div>
-                      )}
-
-                      {inventoryStatus && (
-                        <div className={styles.detailSection}>
-                          <div className={styles.detailHeading}>{inventoryStatus.heading}</div>
-                          <div className={styles.detailContent}>{inventoryStatus.content}</div>
-                        </div>
-                      )}
-
-                      {aiSummary && (
-                        <div className={styles.collapsibleSection}>
-                          <button
-                            className={styles.collapsibleHeader}
-                            onClick={() => setSummaryExpanded(!summaryExpanded)}
-                          >
-                            <span>{aiSummary.heading}</span>
-                            <span className={`${styles.chevron} ${summaryExpanded ? styles.chevronOpen : ''}`} />
-                          </button>
-                          {summaryExpanded && (
-                            <div className={styles.collapsibleBody}>
-                              <div className={styles.detailContent}>{aiSummary.content}</div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            ) : (
-              /* Fallback: basic insight display */
-              <div className={styles.section}>
-                <p className={styles.text}>{d.insightDetail || d.insight}</p>
+            {/* Why It Matters */}
+            <div className={styles.eyebrow}>WHY IT MATTERS</div>
+            {f && (
+              <div className={styles.valueCard}>
+                <span className={styles.valueLabel}>
+                  {d.valueKind === 'at_risk' ? 'Protect' : d.valueKind === 'gain' ? 'Gain' : d.valueKind === 'cost' ? 'Save' : ''}
+                </span>
+                <span className={styles.valueAmount}>{f.text}</span>
               </div>
             )}
+            {d.valueBasis && (
+              <div className={styles.explanation}>{d.valueBasis}</div>
+            )}
+
+            {/* Evidence */}
+            {d.valueInputs && d.valueInputs.length > 0 && (
+              <>
+                <div className={styles.eyebrow}>EVIDENCE</div>
+                <div className={styles.evidenceList}>
+                  {d.valueInputs.map((item, i) => {
+                    const colonIdx = item.indexOf(':');
+                    const label = colonIdx >= 0 ? item.slice(0, colonIdx + 1) : '';
+                    const value = colonIdx >= 0 ? item.slice(colonIdx + 1) : item;
+                    return (
+                      <div key={i} className={styles.evidenceItem}>
+                        <span className={styles.evidenceDot} />
+                        <span>
+                          {label && <span className={styles.evidenceLabel}>{label}</span>}
+                          {value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Strategy */}
+            <div className={styles.eyebrow}>CHOOSE YOUR STRATEGY</div>
 
             {/* Strategy OR Inline Draft */}
             {transitional ? (
@@ -418,7 +384,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
               )
             ) : (
               <div className={styles.section}>
-                <div className={styles.eyebrow}>Choose your strategy</div>
                 <div className={styles.strategyWrapper}>
                   <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} customValue={customInstruction} onCustomChange={setCustomInstruction} />
                 </div>

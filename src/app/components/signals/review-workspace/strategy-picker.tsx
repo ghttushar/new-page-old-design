@@ -10,7 +10,7 @@ interface Props {
 
 export function StrategyPicker({ strategies, selectedId, onSelect, customValue, onCustomChange }: Props) {
   return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
       {strategies.map((s) => {
         const active = s.id === selectedId;
         const isCustom = s.id.endsWith(':custom');
@@ -21,24 +21,26 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
               style={{
                 width: '100%',
                 textAlign: 'left',
-                borderRadius: 12,
-                border: active ? '1px solid #77469b' : '1px solid #e1e4e8',
-                background: active ? 'rgba(119,70,155,0.04)' : '#fff',
-                padding: active && isCustom ? '12px 16px 16px' : '12px 16px',
+                borderRadius: 10,
+                border: 'none',
+                background: active ? 'rgba(119,70,155,0.05)' : 'transparent',
+                padding: active && isCustom ? '10px 14px 14px' : '10px 14px',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
-                boxShadow: active ? '0 0 0 1px rgba(119,70,155,0.25), 0 10px 28px -14px rgba(119,70,155,0.35)' : 'none',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <div style={{ marginTop: 2, width: 14, height: 14, borderRadius: '50%', border: active ? '4px solid #77469b' : '1px solid #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {active && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />}
-                </div>
+                <div style={{
+                  marginTop: 3, width: 16, height: 16, borderRadius: '50%',
+                  border: active ? '5px solid #77469b' : '1.5px solid #d1d5db',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  transition: 'border 0.15s',
+                }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.3rem', fontWeight: 600, color: '#23272d' }}>{s.title}</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 600, color: '#23272d' }}>{s.title}</span>
                     {s.recommended && (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.9rem', fontWeight: 600, color: '#77469b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.85rem', fontWeight: 600, color: '#77469b' }}>
                         ◆ Recommended
                       </span>
                     )}
@@ -54,11 +56,11 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
                         width: '100%',
                         boxSizing: 'border-box',
                         marginTop: 8,
-                        padding: '10px 12px',
+                        padding: '8px 10px',
                         border: 'none',
-                        borderRadius: 10,
+                        borderRadius: 8,
                         background: '#f5f6f7',
-                        fontSize: '1rem',
+                        fontSize: '0.95rem',
                         fontFamily: 'Inter, sans-serif',
                         color: '#23272d',
                         outline: 'none',
@@ -67,7 +69,7 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <div style={{ marginTop: 4, fontSize: '1.1rem', lineHeight: 1.5, color: '#474747' }}>{s.detail}</div>
+                    <div style={{ marginTop: 3, fontSize: '1rem', lineHeight: 1.5, color: '#676f7e' }}>{s.detail}</div>
                   )}
                 </div>
               </div>
