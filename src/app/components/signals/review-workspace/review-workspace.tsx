@@ -1,26 +1,18 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { X, Check, Prohibit, Clock, ShareNetwork, ArrowElbowDownLeft, ArrowCounterClockwise, Pulse } from '@phosphor-icons/react';
-import { Accordion, AccordionSummary, AccordionDetails, AccordionActions } from '@mui/material';
+import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise } from '@phosphor-icons/react';
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
-import { formatValue } from '@/utils/signals/valueFormat';
-import { strategiesFor, type Strategy } from '@/utils/signals/strategies';
+import { strategiesFor } from '@/utils/signals/strategies';
 import { relationshipsFor } from '@/utils/signals/relationships';
-import { sourcePillFor } from '@/utils/signals/sourcePill';
-import { livingStatusPhrase } from '@/utils/signals/lifecycle';
-import { useLivingTick } from '@/hooks/use-living-clock';
 import { useDispatch } from 'react-redux';
 import { approveDecision, delegateToAan, rejectDecision, snoozeDecision, rollbackDecision } from '@/redux/slices/signals/signals.slice';
 import { StrategyPicker } from './strategy-picker';
-import { ExecutionPlan } from './execution-plan';
 import { RelatedDecisionChip } from './related-decision-chip';
 import { AssignMenu } from './assign-menu';
 import { DiscussDrawer } from './discuss-drawer';
 import { InlineEmailCompose, type EmailDraft } from './inline/inline-email-compose';
 import { InlineDraftChat } from './inline/inline-draft-chat';
 import { SourcePill } from '../chips/source-pill';
-import { ValuePill } from '../chips/value-pill';
-import { LivingStatusChip } from '../chips/living-status-chip';
 import { SnoozeMenu } from '../snooze-menu';
 import { ShareMenu } from '../share-menu';
 import type { SnoozeChoice } from '@/redux/slices/signals/signals.slice';
@@ -33,21 +25,6 @@ interface Props {
 }
 
 const COUNTDOWN_SECONDS = 5;
-
-type State = 'healthy' | 'trending_up' | 'blocked' | 'critical' | 'recovering';
-
-function quickState(d: Decision): State {
-  if (d.severity === 'critical') return 'critical';
-  if (d.status === 'in_flight' || d.status === 'with_aan') return 'recovering';
-  if (d.severity === 'opportunity') return 'trending_up';
-  if (d.status === 'snoozed') return 'blocked';
-  return 'healthy';
-}
-
-const STATE_LABEL: Record<State, string> = {
-  healthy: 'Healthy', trending_up: 'Trending up', blocked: 'Blocked',
-  critical: 'Critical', recovering: 'Recovering',
-};
 
 interface EmailDraftData {
   to: string;
@@ -142,7 +119,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const [discuss, setDiscuss] = useState(false);
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
-  const tick = useLivingTick();
   const rootRef = useRef<HTMLDivElement>(null);
 
   const allDecisions = useMemo(() => decisions.length > 0 ? decisions : (d ? [d] : []), [decisions, d]);
@@ -198,8 +174,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   function onExecute() {
     if (!d || !selectedStrategy || executed) return;
     const shortId = selectedStrategy.id.split(':').pop() ?? '';
-    let verifyMsg = 'Change applied. Verifying downstream metrics…';
-    let canUndo = true;
 
     const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'draft-ticket' || (shortId === 'recommended' && d.id === 'critical-b0csh8tcc6') || shortId === 'custom';
 
@@ -245,19 +219,13 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     if (selectedStrategy.id.endsWith(':wait')) {
       const until = Date.now() + 20 * 60 * 60 * 1000;
       dispatch(snoozeDecision({ id: d.id, until }));
-      verifyMsg = 'Queued for tomorrow 8am. Aan will re-check with fresh data.';
-      canUndo = true;
     } else if (selectedStrategy.id.endsWith(':aan')) {
       dispatch(delegateToAan(d.id));
-      verifyMsg = 'Aan is executing within its policy budget.';
-      canUndo = true;
     } else {
       dispatch(approveDecision(d.id));
-      verifyMsg = 'Change applied. Verifying downstream metrics…';
-      canUndo = true;
     }
 
-    setExecuted({ strategyTitle: selectedStrategy.title, verifyMsg, canUndo });
+    setExecuted({ strategyTitle: selectedStrategy.title, verifyMsg: 'Change applied. Verifying downstream metrics…', canUndo: true });
     startCountdown();
   }
 
@@ -309,10 +277,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     );
   }
 
-  const state = quickState(d);
-  const val = formatValue({ cents: d.valueCents, kind: d.valueKind, cadence: d.cadence });
   const isTerminal = d.status === 'completed' || d.status === 'rejected';
-  const isRunning = d.status === 'in_flight' || d.status === 'with_aan';
   const progressPct = ((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100;
 
   return (
@@ -325,7 +290,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
             <div className={styles.headerPills}>
               <SourcePill decision={d} size="sm" />
             </div>
-            <h2 className={styles.title}>{d.insight}</h2>
           </div>
           <button className={styles.closeBtn} onClick={onClose}><X size={14} weight="bold" /></button>
         </div>
@@ -334,7 +298,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
       {/* Body */}
       <div className={styles.body}>
         {executed ? (
-          /* Post-execute confirmation */
           <div className={styles.executedState}>
             <div className={styles.progressRing} style={{ background: `conic-gradient(#429488 ${progressPct}%, #e1e4e8 0)` }}>
               <div className={styles.progressRingInner}>
@@ -352,47 +315,20 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           </div>
         ) : (
           <>
-            {/* Current State */}
-            <div className={styles.section}>
-              <div className={styles.eyebrow}>Current state</div>
-              <div className={styles.stateRow}>
-                <span className={styles.stateBadge} style={{
-                  background: state === 'critical' ? 'rgba(255,0,0,0.1)' : state === 'trending_up' ? 'rgba(119,70,155,0.08)' : state === 'recovering' ? 'rgba(241,160,58,0.1)' : 'rgba(154,154,154,0.1)',
-                  color: state === 'critical' ? '#ff0000' : state === 'trending_up' ? '#77469b' : state === 'recovering' ? '#e6a817' : '#7c7c7c',
-                  borderColor: state === 'critical' ? 'rgba(255,0,0,0.25)' : state === 'trending_up' ? 'rgba(119,70,155,0.25)' : state === 'recovering' ? 'rgba(241,160,58,0.25)' : 'rgba(154,154,154,0.25)',
-                }}>
-                  <Pulse size={12} /> {STATE_LABEL[state]}
-                </span>
-                {isRunning && <LivingStatusChip decision={d} />}
+            {/* Structured detail sections */}
+            {d.detailSections && d.detailSections.length > 0 ? (
+              <div className={styles.detailSections}>
+                {d.detailSections.map((sec, i) => (
+                  <div key={i} className={styles.detailSection}>
+                    <div className={styles.detailHeading}>{sec.heading}</div>
+                    <div className={styles.detailContent}>{sec.content}</div>
+                  </div>
+                ))}
               </div>
-              <p className={styles.text}>{d.insightDetail || d.insight}</p>
-            </div>
-
-            {/* Why it Matters */}
-            <div className={styles.section}>
-              <div className={styles.eyebrow}>Why it matters</div>
-              <div className={styles.valueCard}>
-                <div className={styles.valueAmount} style={{
-                  color: d.valueKind === 'gain' ? '#429488' : d.valueKind === 'cost' ? '#f1a03a' : d.valueKind === 'at_risk' ? '#d97706' : '#23272d',
-                }}>
-                  {val.text}
-                </div>
-              </div>
-              <p className={styles.text}>{d.valueBasis || 'This affects near-term revenue and needs a decision within the next 48 hours.'}</p>
-            </div>
-
-            {/* Evidence */}
-            {d.valueInputs && d.valueInputs.length > 0 && (
+            ) : (
+              /* Fallback: basic insight display */
               <div className={styles.section}>
-                <div className={styles.eyebrow}>Evidence</div>
-                <ul className={styles.evidenceList}>
-                  {d.valueInputs.map((line, i) => (
-                    <li key={i}>
-                      <span className={styles.evidenceDot} />
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className={styles.text}>{d.insightDetail || d.insight}</p>
               </div>
             )}
 
@@ -436,33 +372,19 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
               </div>
             )}
 
-            {/* Collapsed extras */}
-            <div className={styles.accordions}>
-              {relationships.length > 0 && (
-                <Accordion disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, borderTop: '1px solid #e1e4e8' }}>
-                  <AccordionSummary sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', minHeight: 0, '& .MuiAccordionSummary-content': { margin: '8px 0' } }}>
-                    Related signals · {relationships.length}
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ pt: 0, pb: 1 }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                      {relationships.map((r) => {
-                        const other = allDecisions.find((x) => x.id === r.otherId);
-                        if (!other) return null;
-                        return <RelatedDecisionChip key={r.otherId + r.type} decision={other} type={r.type} onOpen={(id) => onOpenDecision?.(id)} />;
-                      })}
-                    </div>
-                  </AccordionDetails>
-                </Accordion>
-              )}
-              <Accordion disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, borderTop: '1px solid #e1e4e8' }}>
-                <AccordionSummary sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', minHeight: 0, '& .MuiAccordionSummary-content': { margin: '8px 0' } }}>
-                  Execution plan
-                </AccordionSummary>
-                <AccordionDetails sx={{ pt: 0, pb: 1 }}>
-                  {selectedStrategy && <ExecutionPlan strategy={selectedStrategy} />}
-                </AccordionDetails>
-              </Accordion>
-            </div>
+            {/* Related signals */}
+            {relationships.length > 0 && (
+              <div className={styles.accordions}>
+                <div className={styles.accordionHeader}>Related signals · {relationships.length}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {relationships.map((r) => {
+                    const other = allDecisions.find((x) => x.id === r.otherId);
+                    if (!other) return null;
+                    return <RelatedDecisionChip key={r.otherId + r.type} decision={other} type={r.type} onOpen={(id) => onOpenDecision?.(id)} />;
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

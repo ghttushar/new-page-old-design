@@ -229,8 +229,6 @@ export default function DesktopView() {
               <Route path="/user/*" element={<UserAuthWrapper />} />
               <Route path="/custom-table/*" element={<CustomTablePage />} />
               <Route path="/signals" element={<SignalsPageWrapper />} />
-              <Route path="/signals/assisted" element={<SignalsPageWrapper />} />
-              <Route path="/signals/live" element={<SignalsPageWrapper />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>

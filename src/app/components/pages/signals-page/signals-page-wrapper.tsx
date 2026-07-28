@@ -1,17 +1,9 @@
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
-import { setLiveMode } from '@/redux/slices/signals/signals.slice';
+import useSubHeader from '@/hooks/use-sub-header.hook';
+import { PageTitleEnum } from '@/enums/index.enums';
 import { SignalsPage } from './signals-page';
 
 export default function SignalsPageWrapper() {
-  const dispatch = useDispatch();
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    if (pathname.endsWith('/assisted')) dispatch(setLiveMode(false));
-    else if (pathname.endsWith('/live')) dispatch(setLiveMode(true));
-  }, [dispatch, pathname]);
+  useSubHeader(PageTitleEnum.ALERTS, '');
 
   return <SignalsPage />;
 }

@@ -21,13 +21,6 @@ function formatTime(ts: number): string {
   return `${d}d ago`;
 }
 
-const valueTone: Record<string, string> = {
-  gain: styles.toneGain,
-  cost: styles.toneCost,
-  at_risk: styles.toneAtRisk,
-  info: styles.toneInfo,
-};
-
 export function DecisionCard({ decision: d, selected, onSelect, onApprove }: DecisionCardProps) {
   const isActionable = d.status === 'open';
   const isDone = d.status === 'completed' || d.status === 'rejected' || d.status === 'in_flight' || d.status === 'with_aan';
@@ -55,7 +48,7 @@ export function DecisionCard({ decision: d, selected, onSelect, onApprove }: Dec
             )}
           </div>
           {/* Value headline */}
-          <div className={`${styles.valueHeadline} ${valueTone[d.valueKind] || ''}`}>
+          <div className={styles.valueHeadline}>
             {f.text}
           </div>
           <div className={styles.valueCaption}>{d.valueCaption}</div>

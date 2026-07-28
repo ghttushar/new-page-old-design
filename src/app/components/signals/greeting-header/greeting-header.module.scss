@@ -4,13 +4,6 @@
   margin-bottom: 0;
 }
 
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: $spacing-8;
-  flex-wrap: wrap;
-}
-
 .greeting {
   font-size: 2rem;
   font-weight: 600;
@@ -23,21 +16,4 @@
   font-size: $font-size-10;
   color: $sub-text-3;
   margin-top: 0.2rem;
-}
-
-.modeBadge {
-  font-size: $font-size-9;
-  font-weight: $font-weight-500;
-  padding: 0.1rem 0.6rem;
-  border-radius: 0.3rem;
-
-  &.live {
-    background: rgba($positive-color, 0.1);
-    color: $positive-color;
-  }
-
-  &.assisted {
-    background: rgba($sub-text-4, 0.1);
-    color: $sub-text-4;
-  }
 }

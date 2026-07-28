@@ -3,21 +3,15 @@ import type { Briefing } from '@/utils/signals/briefing';
 
 interface GreetingHeaderProps {
   name: string;
-  liveMode: boolean;
   briefing: Briefing;
 }
 
-export function GreetingHeader({ name, liveMode, briefing }: GreetingHeaderProps) {
+export function GreetingHeader({ name, briefing }: GreetingHeaderProps) {
   return (
     <div className={styles.greetingHeader}>
-      <div className={styles.titleRow}>
-        <h1 className={styles.greeting}>
-          {briefing.greeting.replace(/\.$/, '')}, {name}.
-        </h1>
-        <span className={`${styles.modeBadge} ${liveMode ? styles.live : styles.assisted}`}>
-          {liveMode ? '● Live mode' : '○ Assisted mode'}
-        </span>
-      </div>
+      <h1 className={styles.greeting}>
+        {briefing.greeting.replace(/\.$/, '')}, {name}.
+      </h1>
       <p className={styles.subtitle}>{briefing.dateline}</p>
     </div>
   );

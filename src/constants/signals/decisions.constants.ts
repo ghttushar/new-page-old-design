@@ -18,6 +18,11 @@ export interface DecisionStep {
   why?: string;
 }
 
+export interface DecisionSection {
+  heading: string;
+  content: string;
+}
+
 export interface Decision {
   id: string;
   source: DecisionSource;
@@ -43,6 +48,7 @@ export interface Decision {
   evidence?: DecisionEvidence;
   steps: DecisionStep[];
   deepLink?: { label: string; href: string };
+  detailSections?: DecisionSection[];
 }
 
 const HOUR = 60 * 60 * 1000;

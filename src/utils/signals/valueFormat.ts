@@ -42,9 +42,9 @@ export function formatValue(input: {
 
   if (kind === 'at_risk') {
     return {
-      text: `Protect ${money}`,
+      text: money,
       kind,
-      ariaLabel: `Protects ${money} at risk`,
+      ariaLabel: `${money} at risk`,
     };
   }
 

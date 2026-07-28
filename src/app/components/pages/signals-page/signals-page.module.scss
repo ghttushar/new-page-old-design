@@ -7,28 +7,7 @@
   flex-direction: column;
 }
 
-.headerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $spacing-8;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  gap: $spacing-12;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.centerCol {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
+// ---------- Toolbar (spans above both columns) ----------
 
 .toolbar {
   display: flex;
@@ -112,6 +91,24 @@
   }
 }
 
+// ---------- Two-column grid ----------
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: $spacing-12;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.centerCol {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .queueScroll {
   flex: 1;
   overflow-y: auto;
@@ -126,36 +123,6 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-8;
-}
-
-.meetingCard {
-  background: $foreground-color;
-  border: 1px solid $border-color-4;
-  border-radius: 0.6rem;
-  padding: $spacing-12 $spacing-16;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    border-color: $primary-color;
-  }
-
-  &.selected {
-    border-color: $primary-color;
-    background: rgba($primary-color, 0.02);
-  }
-}
-
-.meetingTitle {
-  font-size: $font-size-12;
-  font-weight: $font-weight-500;
-  color: $main-text;
-}
-
-.meetingMeta {
-  font-size: $font-size-10;
-  color: $sub-text-3;
-  margin-top: 0.2rem;
 }
 
 .rightCol {
@@ -173,43 +140,4 @@
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateX(8px); }
   to { opacity: 1; transform: translateX(0); }
-}
-
-.meetingReview {
-  background: $foreground-color;
-  border: 1px solid $border-color-4;
-  border-radius: 0.6rem;
-  overflow: hidden;
-}
-
-.meetingReviewHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $spacing-12 $spacing-16;
-  border-bottom: 1px solid $border-color-4;
-
-  h3 {
-    font-size: $font-size-12;
-    font-weight: $font-weight-500;
-    color: $main-text;
-  }
-}
-
-.meetingReviewList {
-  padding: $spacing-8;
-}
-
-.closeBtn {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: $sub-text-4;
-  padding: 0.2rem;
-  line-height: 1;
-
-  &:hover {
-    color: $main-text;
-  }
 }

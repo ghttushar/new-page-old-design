@@ -2,7 +2,6 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from './signals-page.module.scss';
 import { GreetingHeader } from '../../signals/greeting-header/greeting-header';
-import { ModeToggle } from '../../signals/mode-toggle/mode-toggle';
 import { DecisionCard } from '../../signals/decision-card/decision-card';
 import { ReviewWorkspace } from '../../signals/review-workspace/review-workspace';
 import { EmptyState } from '../../signals/empty-state/empty-state';
@@ -18,18 +17,15 @@ import { importanceScore } from '@/utils/signals/lifecycle';
 import { briefingFor } from '@/utils/signals/briefing';
 import {
   selectDecisions,
-  selectLiveMode,
   selectSelectedDecisionId,
   selectSelectedMeetingId,
   selectSelectedIds,
-  toggleLiveMode,
   setSelectedDecision,
   setSelectedMeeting,
   approveDecision,
   rejectDecision,
   delegateToAan,
   bulkApprove,
-  toggleSelect,
   clearSelection,
   setFilterSources,
   setFilterDomains,
@@ -61,14 +57,13 @@ function groupByMeeting(list: Decision[]): MeetingGroup[] {
 export function SignalsPage() {
   const dispatch = useDispatch();
   const decisions = useSelector(selectDecisions);
-  const liveMode = useSelector(selectLiveMode);
   const selectedDecisionId = useSelector(selectSelectedDecisionId);
   const selectedMeetingId = useSelector(selectSelectedMeetingId);
   const selectedIds = useSelector(selectSelectedIds);
 
   const activeDecisions = useMemo<Decision[]>(
-    () => (liveMode ? decisions : [CRITICAL_ONLY_DECISION, IMAGE_ISSUE_DECISION]),
-    [liveMode, decisions],
+    () => [CRITICAL_ONLY_DECISION, IMAGE_ISSUE_DECISION],
+    [],
   );
 
   const [tab, setTab] = useState<AlertTabKey>('all');
@@ -123,10 +118,6 @@ export function SignalsPage() {
     () => allCategoryGroups.map((c) => ({ key: c.key, label: c.label, count: c.items.length })),
     [allCategoryGroups],
   );
-
-  useEffect(() => {
-    if (!liveMode && !selectedDecisionId) dispatch(setSelectedDecision(CRITICAL_ONLY_DECISION.id));
-  }, [liveMode, selectedDecisionId, dispatch]);
 
   const selectedDecision = useMemo(
     () => activeDecisions.find((d) => d.id === selectedDecisionId) ?? null,
@@ -184,62 +175,58 @@ export function SignalsPage() {
 
   return (
     <div className={styles.signalsPage}>
-      <div className={styles.headerRow}>
-        <GreetingHeader name="Tushar" liveMode={liveMode} briefing={b} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ModeToggle liveMode={liveMode} onToggle={() => dispatch(toggleLiveMode())} />
-        </div>
+      {/* Greeting */}
+      <GreetingHeader name="Tushar" briefing={b} />
+
+      {/* Toolbar — spans above both columns */}
+      <div className={styles.toolbar}>
+        <nav className={styles.tabBar} role="tablist">
+          {ALERT_TABS.map((t) => {
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                role="tab"
+                aria-selected={active}
+                className={`${styles.tab} ${active ? styles.tabActive : ''}`}
+                onClick={() => setTab(t.key)}
+              >
+                {t.label}
+                {counts[t.key] > 0 && (
+                  <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
+                    {counts[t.key]}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+        <input
+          className={styles.searchInput}
+          placeholder="Search signals, meetings, decisions…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <FilterSheet
+          value={filterState}
+          categories={railItems}
+          activeCategory={activeCategoryKey}
+          onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
+          onChange={(f) => {
+            setFilterState(f);
+            dispatch(setFilterSources([...f.sources]));
+            dispatch(setFilterDomains([...f.domains]));
+            dispatch(setFilterWindow(f.window));
+          }}
+          activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
+        />
       </div>
 
+      {/* Two-column layout */}
       <div className={styles.layout}>
-        {/* Center: Queue */}
+        {/* Left: Queue */}
         <div className={styles.centerCol}>
-          {/* Tabs + Search */}
-          <div className={styles.toolbar}>
-            <nav className={styles.tabBar} role="tablist">
-              {ALERT_TABS.map((t) => {
-                const active = tab === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    role="tab"
-                    aria-selected={active}
-                    className={`${styles.tab} ${active ? styles.tabActive : ''}`}
-                    onClick={() => setTab(t.key)}
-                  >
-                    {t.label}
-                    {counts[t.key] > 0 && (
-                      <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
-                        {counts[t.key]}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-            <input
-              className={styles.searchInput}
-              placeholder="Search signals, meetings, decisions…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <FilterSheet
-              value={filterState}
-              categories={railItems}
-              activeCategory={activeCategoryKey}
-              onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
-              onChange={(f) => {
-                setFilterState(f);
-                dispatch(setFilterSources([...f.sources]));
-                dispatch(setFilterDomains([...f.domains]));
-                dispatch(setFilterWindow(f.window));
-              }}
-              activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
-            />
-          </div>
-
           <div className={styles.queueScroll}>
-            {/* Bulk bar */}
             <BulkBar
               selectedIds={selectedIds}
               decisions={filtered}
@@ -282,7 +269,7 @@ export function SignalsPage() {
           </div>
         </div>
 
-        {/* Right: Workspace */}
+        {/* Right: Workspace or Briefing */}
         <div className={`${styles.rightCol} ${selectedDecision || selectedMeetingBundle ? styles.rightColVisible : ''}`}>
           {selectedDecision ? (
             <ReviewWorkspace
