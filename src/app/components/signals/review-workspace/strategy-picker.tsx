@@ -4,13 +4,16 @@ interface Props {
   strategies: Strategy[];
   selectedId: string;
   onSelect: (id: string) => void;
+  customValue?: string;
+  onCustomChange?: (v: string) => void;
 }
 
-export function StrategyPicker({ strategies, selectedId, onSelect }: Props) {
+export function StrategyPicker({ strategies, selectedId, onSelect, customValue, onCustomChange }: Props) {
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
       {strategies.map((s) => {
         const active = s.id === selectedId;
+        const isCustom = s.id.endsWith(':custom');
         return (
           <li key={s.id}>
             <button
@@ -18,10 +21,10 @@ export function StrategyPicker({ strategies, selectedId, onSelect }: Props) {
               style={{
                 width: '100%',
                 textAlign: 'left',
-                borderRadius: 8,
+                borderRadius: 12,
                 border: active ? '1px solid #77469b' : '1px solid #e1e4e8',
                 background: active ? 'rgba(119,70,155,0.04)' : '#fff',
-                padding: '12px 16px',
+                padding: active && isCustom ? '12px 16px 16px' : '12px 16px',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
                 boxShadow: active ? '0 0 0 1px rgba(119,70,155,0.25), 0 10px 28px -14px rgba(119,70,155,0.35)' : 'none',
@@ -40,7 +43,32 @@ export function StrategyPicker({ strategies, selectedId, onSelect }: Props) {
                       </span>
                     )}
                   </div>
-                  <div style={{ marginTop: 4, fontSize: '1.1rem', lineHeight: 1.5, color: '#474747' }}>{s.detail}</div>
+                  {active && isCustom ? (
+                    <input
+                      autoFocus
+                      value={customValue ?? ''}
+                      onChange={(e) => onCustomChange?.(e.target.value)}
+                      placeholder="Type your instruction for Aan…"
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        marginTop: 8,
+                        padding: '10px 12px',
+                        border: 'none',
+                        borderRadius: 10,
+                        background: '#f5f6f7',
+                        fontSize: '1rem',
+                        fontFamily: 'Inter, sans-serif',
+                        color: '#23272d',
+                        outline: 'none',
+                        lineHeight: 1.5,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <div style={{ marginTop: 4, fontSize: '1.1rem', lineHeight: 1.5, color: '#474747' }}>{s.detail}</div>
+                  )}
                 </div>
               </div>
             </button>

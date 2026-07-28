@@ -117,7 +117,7 @@ The file is ready for preview. Approve to publish the new image to ASIN B0CSH8TC
 export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision }: Props) {
   const dispatch = useDispatch();
   const [discuss, setDiscuss] = useState(false);
-  const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string } | null>(null);
+  const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -126,6 +126,8 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
 
   const strategies = useMemo(() => (d ? strategiesFor(d) : []), [d]);
   const [selectedStrategyId, setSelectedStrategyId] = useState<string>('');
+
+  const [customInstruction, setCustomInstruction] = useState('');
 
   const [executed, setExecuted] = useState<{ strategyTitle: string; verifyMsg: string; canUndo: boolean } | null>(null);
   const [countdown, setCountdown] = useState<number>(COUNTDOWN_SECONDS);
@@ -144,6 +146,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     setCountdown(COUNTDOWN_SECONDS);
     setInlineDraft(null);
     setTransitional(null);
+    setCustomInstruction('');
   }, [d?.id]);
 
   const relationships = useMemo(
@@ -186,19 +189,20 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
         setTransitional('loading-chat');
         const seed = AAN_SEEDS['draft-ticket'];
         setTimeout(() => {
-          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft });
+          setInlineDraft({ kind: 'chat', strategyTitle: selectedStrategy.title, title: seed.title, approveLabel: seed.approveLabel, approveSuccess: seed.approveSuccess, draft: seed.draft, showApprove: false });
           setTransitional(null);
         }, 600);
       } else if (shortId === 'custom') {
+        const text = customInstruction.trim() || 'Custom instruction executed.';
         setTransitional('loading-chat');
         setTimeout(() => {
           setInlineDraft({
             kind: 'chat',
             strategyTitle: selectedStrategy.title,
-            title: 'Aan is ready',
+            title: 'Aan received your instruction',
             approveLabel: 'Approve & execute',
             approveSuccess: 'Custom instruction completed.',
-            draft: 'What would you like me to do? Type your instruction below.',
+            draft: text,
           });
           setTransitional(null);
         }, 600);
@@ -409,13 +413,14 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                   initialDraft={inlineDraft.draft}
                   onCancel={() => setInlineDraft(null)}
                   onApprove={completeInlineDraft}
+                  showApprove={inlineDraft.showApprove}
                 />
               )
             ) : (
               <div className={styles.section}>
                 <div className={styles.eyebrow}>Choose your strategy</div>
                 <div className={styles.strategyWrapper}>
-                  <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} />
+                  <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} customValue={customInstruction} onCustomChange={setCustomInstruction} />
                 </div>
               </div>
             )}

@@ -50,18 +50,14 @@
 .copyBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 0.3rem;
-  border: 1px solid $border-color-4;
-  background: $foreground-color;
+  padding: 0;
+  border: none;
+  background: none;
   cursor: pointer;
-  font-size: $font-size-9;
-  color: $sub-text-3;
-  transition: all 0.12s;
+  color: $sub-text-4;
+  transition: color 0.12s;
 
   &:hover {
-    border-color: $primary-color;
     color: $primary-color;
   }
 }

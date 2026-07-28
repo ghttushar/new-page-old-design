@@ -12,10 +12,11 @@ interface Props {
   initialDraft: string;
   onCancel: () => void;
   onApprove: () => void;
+  showApprove?: boolean;
 }
 
 export function InlineDraftChat({
-  title, approveLabel, initialDraft, onCancel, onApprove,
+  title, approveLabel, initialDraft, onCancel, onApprove, showApprove = true,
 }: Props) {
   const [thread, setThread] = useState<Msg[]>([
     { role: 'aan', text: initialDraft, ts: Date.now() },
@@ -62,7 +63,7 @@ export function InlineDraftChat({
               </div>
               {m.role === 'aan' && i === 0 && (
                 <button className={styles.copyBtn} onClick={() => navigator.clipboard.writeText(m.text)} title="Copy draft">
-                  <Copy size={12} /> Copy
+                  <Copy size={14} />
                 </button>
               )}
             </div>
@@ -86,9 +87,11 @@ export function InlineDraftChat({
               <Button size="small" variant="text" onClick={send} disabled={!input.trim()} sx={{ fontSize: '1.1rem', textTransform: 'none', gap: 0.5, color: '#7c7c7c' }}>
                 <PaperPlaneTilt size={12} /> Send
               </Button>
-              <Button size="small" variant="contained" onClick={onApprove} sx={{ fontSize: '1.1rem', textTransform: 'none', gap: 0.5, background: '#77469b', '&:hover': { background: '#9551ab' } }}>
-                <Check size={12} /> {approveLabel}
-              </Button>
+              {showApprove && (
+                <Button size="small" variant="contained" onClick={onApprove} sx={{ fontSize: '1.1rem', textTransform: 'none', gap: 0.5, background: '#77469b', '&:hover': { background: '#9551ab' } }}>
+                  <Check size={12} /> {approveLabel}
+                </Button>
+              )}
             </div>
           </div>
         </div>

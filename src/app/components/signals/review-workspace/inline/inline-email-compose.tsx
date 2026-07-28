@@ -36,7 +36,7 @@ export function InlineEmailCompose({ initial, onCancel, onSent }: Props) {
         </span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button className={styles.copyBtn} onClick={() => navigator.clipboard.writeText(body)} title="Copy draft">
-            <Copy size={12} /> Copy
+            <Copy size={14} />
           </button>
           <button className={styles.cancelBtn} onClick={onCancel}><X size={12} /> Cancel</button>
         </div>
