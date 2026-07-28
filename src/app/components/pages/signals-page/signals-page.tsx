@@ -53,7 +53,12 @@ function groupByMeeting(list: Decision[]): MeetingGroup[] {
   return [...map.values()].sort((a, b) => b.signals.length - a.signals.length);
 }
 
-export function SignalsPage() {
+interface SignalsPageProps {
+  defaultSummaryExpanded?: boolean;
+  defaultSelectedDecisionId?: string;
+}
+
+export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId }: SignalsPageProps = {}) {
   const dispatch = useDispatch();
   const selectedDecisionId = useSelector(selectSelectedDecisionId);
   const selectedMeetingId = useSelector(selectSelectedMeetingId);
@@ -63,6 +68,12 @@ export function SignalsPage() {
     () => [CRITICAL_ONLY_DECISION],
     [],
   );
+
+  useEffect(() => {
+    if (defaultSelectedDecisionId) {
+      dispatch(setSelectedDecision(defaultSelectedDecisionId));
+    }
+  }, [defaultSelectedDecisionId, dispatch]);
 
   const [tab, setTab] = useState<AlertTabKey>('all');
   const [query, setQuery] = useState('');
@@ -275,6 +286,7 @@ export function SignalsPage() {
               onOpenDecision={(id) => {
                 dispatch(setSelectedDecision(id));
               }}
+              defaultSummaryExpanded={defaultSummaryExpanded}
             />
           ) : selectedMeetingBundle ? (
             <MeetingReviewView
