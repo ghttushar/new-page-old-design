@@ -127,8 +127,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const strategies = useMemo(() => (d ? strategiesFor(d) : []), [d]);
   const [selectedStrategyId, setSelectedStrategyId] = useState<string>('');
 
-  const [customInstruction, setCustomInstruction] = useState('');
-
   const [executed, setExecuted] = useState<{ strategyTitle: string; verifyMsg: string; canUndo: boolean } | null>(null);
   const [countdown, setCountdown] = useState<number>(COUNTDOWN_SECONDS);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -146,7 +144,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     setCountdown(COUNTDOWN_SECONDS);
     setInlineDraft(null);
     setTransitional(null);
-    setCustomInstruction('');
   }, [d?.id]);
 
   const relationships = useMemo(
@@ -193,16 +190,15 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           setTransitional(null);
         }, 600);
       } else if (shortId === 'custom') {
-        const text = customInstruction.trim() || 'Custom instruction executed.';
         setTransitional('loading-chat');
         setTimeout(() => {
           setInlineDraft({
             kind: 'chat',
             strategyTitle: selectedStrategy.title,
-            title: 'Aan received your instruction',
+            title: 'Aan is ready',
             approveLabel: 'Approve & execute',
             approveSuccess: 'Custom instruction completed.',
-            draft: text,
+            draft: 'What would you like me to do? Type your instruction below.',
           });
           setTransitional(null);
         }, 600);
@@ -421,18 +417,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                 <div className={styles.strategyWrapper}>
                   <StrategyPicker strategies={strategies} selectedId={selectedStrategyId} onSelect={setSelectedStrategyId} />
                 </div>
-                {selectedStrategy?.id.endsWith(':custom') && (
-                  <div className={styles.customInstructionWrap}>
-                    <textarea
-                      className={styles.customInstructionInput}
-                      placeholder="Type your instruction for Aan…"
-                      rows={3}
-                      value={customInstruction}
-                      onChange={(e) => setCustomInstruction(e.target.value)}
-                    />
-                    <span className={styles.customInstructionHint}>Aan will execute your instruction and report back.</span>
-                  </div>
-                )}
               </div>
             )}
 

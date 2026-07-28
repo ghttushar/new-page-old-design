@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PaperPlaneTilt, X, Sparkle } from '@phosphor-icons/react';
+import { PaperPlaneTilt, X, Sparkle, Copy } from '@phosphor-icons/react';
 import { Button, TextField } from '@mui/material';
 import styles from './inline.module.scss';
 
@@ -34,7 +34,12 @@ export function InlineEmailCompose({ initial, onCancel, onSent }: Props) {
         <span className={styles.aanLabel}>
           <Sparkle size={12} weight="fill" /> Aan drafted this email
         </span>
-        <button className={styles.cancelBtn} onClick={onCancel}><X size={12} /> Cancel</button>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button className={styles.copyBtn} onClick={() => navigator.clipboard.writeText(body)} title="Copy draft">
+            <Copy size={12} /> Copy
+          </button>
+          <button className={styles.cancelBtn} onClick={onCancel}><X size={12} /> Cancel</button>
+        </div>
       </div>
 
       <div className={styles.emailForm}>

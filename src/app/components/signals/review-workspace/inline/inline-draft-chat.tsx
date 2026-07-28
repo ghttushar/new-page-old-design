@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PaperPlaneTilt, X, Check, Sparkle } from '@phosphor-icons/react';
+import { PaperPlaneTilt, X, Check, Sparkle, Copy } from '@phosphor-icons/react';
 import { Button } from '@mui/material';
 import styles from './inline.module.scss';
 
@@ -60,6 +60,11 @@ export function InlineDraftChat({
               <div className={m.role === 'user' ? styles.userBubble : styles.aanBubble}>
                 {m.text.split('\n').map((line, j) => <span key={j}>{line}<br /></span>)}
               </div>
+              {m.role === 'aan' && i === 0 && (
+                <button className={styles.copyBtn} onClick={() => navigator.clipboard.writeText(m.text)} title="Copy draft">
+                  <Copy size={12} /> Copy
+                </button>
+              )}
             </div>
           ))}
         </div>
