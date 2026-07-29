@@ -1,30 +1,47 @@
 @import 'src/assets/styles/variables/variables.scss';
 
 .page {
-  padding: 2rem 2.5rem;
+  padding: 2.5rem 3rem;
 }
 
 .pageHeader {
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.4rem;
 }
 
 .pageTitle {
-  font-size: 2rem;
+  font-size: 2.8rem;
   font-weight: 700;
   color: $main-text;
   font-family: $font-family;
-  margin-bottom: 0.5rem;
+  letter-spacing: -0.04em;
+}
+
+.infoIcon {
+  color: $sub-text-4;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $primary-color;
+  }
 }
 
 .pageSubtitle {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
 }
 
 .section {
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
 }
 
 .sectionLabel {
@@ -37,27 +54,32 @@
 
 .card {
   border: 1px solid $border-color-4;
-  border-radius: 0.8rem;
-  padding: 2rem;
-  margin-bottom: 1rem;
+  border-radius: 1.2rem;
+  padding: 2.2rem 2.4rem;
+  margin-bottom: 1.2rem;
   background: $foreground-color;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
 }
 
-.cardContent {
+.cardLeft {
   display: flex;
-  gap: 1.6rem;
+  gap: 1.8rem;
   align-items: flex-start;
 }
 
 .cardIconWrap {
-  width: 4.8rem;
-  height: 4.8rem;
+  width: 5rem;
+  height: 5rem;
   border-radius: 50%;
-  background: $background-color-3;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: $background-color-3;
 }
 
 .cardInfo {
@@ -68,57 +90,66 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
 }
 
 .cardTitle {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
 }
 
-.badge {
-  font-size: 0.9rem;
+.badgeAlerts {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
   font-weight: 600;
-  color: $sub-text-2;
-  background: $background-color-4;
-  padding: 0.2rem 0.6rem;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 0.2rem 0.7rem;
   border-radius: 0.4rem;
   font-family: $font-family;
-  letter-spacing: 0.05rem;
+  letter-spacing: 0.04rem;
+  line-height: 1;
 }
 
 .badgeTools {
-  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
   font-weight: 600;
   color: $primary-color;
   background: $primary-color-dropzone;
-  padding: 0.2rem 0.6rem;
+  border: 1px solid $alt-primary-color;
+  padding: 0.2rem 0.7rem;
   border-radius: 0.4rem;
   font-family: $font-family;
-  letter-spacing: 0.05rem;
+  letter-spacing: 0.04rem;
+  line-height: 1;
 }
 
-.cardDescription {
+.cardDesc {
   font-size: 1.3rem;
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
   line-height: 1.6;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.4rem;
 }
 
-.connectButton {
+.connectBtn {
   background: $primary-color;
   color: $foreground-color;
-  text-transform: none;
-  font-size: 1.3rem;
-  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  font-weight: 700;
   font-family: $font-family;
   border-radius: 0.6rem;
-  padding: 0.6rem 1.6rem;
+  padding: 0.7rem 2rem;
   box-shadow: none;
+  letter-spacing: 0.04rem;
 
   &:hover {
     background: $primary-color-variant-1;
@@ -126,41 +157,41 @@
   }
 }
 
-.learnMoreButton {
-  background: $foreground-color;
-  color: $primary-color;
-  border: 1px solid $primary-color;
-  text-transform: none;
-  font-size: 1.3rem;
-  font-weight: 600;
+.learnMoreBtn {
+  background: $primary-color;
+  color: $foreground-color;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  font-weight: 700;
   font-family: $font-family;
   border-radius: 0.6rem;
-  padding: 0.6rem 1.6rem;
+  padding: 0.7rem 2rem;
   box-shadow: none;
+  letter-spacing: 0.04rem;
 
   &:hover {
-    background: $primary-color-dropzone;
+    background: $primary-color-variant-1;
     box-shadow: none;
   }
 }
 
 .emptyCard {
   border: 1px solid $border-color-4;
-  border-radius: 0.8rem;
-  padding: 3rem;
+  border-radius: 1.2rem;
+  padding: 4rem 3rem;
   background: $foreground-color;
   text-align: center;
 }
 
 .emptyTitle {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
   margin-bottom: 0.6rem;
 }
 
-.emptyDescription {
+.emptyDesc {
   font-size: 1.3rem;
   font-weight: 400;
   color: $sub-text-2;
@@ -168,177 +199,4 @@
   max-width: 50rem;
   margin: 0 auto;
   line-height: 1.6;
-}
-
-.dialogPaper {
-  border-radius: 1rem;
-}
-
-.dialogTitle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.6rem 2rem;
-  border-bottom: 1px solid $border-color-4;
-}
-
-.dialogTitleContent {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.dialogIconWrap {
-  width: 3.6rem;
-  height: 3.6rem;
-  border-radius: 50%;
-  background: $primary-color-dropzone;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dialogTitleText {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: $main-text;
-  font-family: $font-family;
-}
-
-.dialogCloseBtn {
-  min-width: auto;
-  padding: 0.4rem;
-  color: $sub-text-2;
-  background: transparent;
-  box-shadow: none;
-
-  &:hover {
-    background: $background-color-3;
-    box-shadow: none;
-  }
-}
-
-.dialogContent {
-  padding: 2rem;
-}
-
-.dialogDescription {
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.7;
-  margin-bottom: 2rem;
-}
-
-.urlSection {
-  margin-bottom: 2rem;
-}
-
-.urlLabel {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 0.6rem;
-}
-
-.urlBox {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: $background-color-3;
-  border: 1px solid $border-color-4;
-  border-radius: 0.6rem;
-  padding: 0.8rem 1rem;
-}
-
-.urlText {
-  font-size: 1.3rem;
-  font-weight: 500;
-  color: $main-text;
-  font-family: 'Courier New', monospace;
-}
-
-.copyBtn {
-  min-width: auto;
-  padding: 0.4rem;
-  color: $primary-color;
-  background: transparent;
-  box-shadow: none;
-
-  &:hover {
-    background: $primary-color-dropzone;
-    box-shadow: none;
-  }
-}
-
-.clientsSection {
-  margin-bottom: 2rem;
-}
-
-.clientsLabel {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 1rem;
-}
-
-.clientItem {
-  padding: 1rem 0;
-  border-bottom: 1px solid $border-color-4;
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.clientName {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 0.4rem;
-}
-
-.clientDesc {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.5;
-}
-
-.codeBlock {
-  background: $background-color-3;
-  border: 1px solid $border-color-4;
-  border-radius: 0.4rem;
-  padding: 0.6rem 1rem;
-  margin-bottom: 0.4rem;
-}
-
-.codeText {
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: $main-text;
-  font-family: 'Courier New', monospace;
-  word-break: break-all;
-}
-
-.dialogConnectBtn {
-  background: $primary-color;
-  color: $foreground-color;
-  text-transform: none;
-  font-size: 1.4rem;
-  font-weight: 600;
-  font-family: $font-family;
-  border-radius: 0.8rem;
-  padding: 1rem;
-  box-shadow: none;
-
-  &:hover {
-    background: $primary-color-variant-1;
-    box-shadow: none;
-  }
 }
