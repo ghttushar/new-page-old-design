@@ -1,5 +1,5 @@
 import {
-  Button,
+  Box,
   Checkbox,
   Collapse,
   Dialog,
@@ -294,16 +294,28 @@ export default function WhatsAppConnectDialog({
         </div>
       </div>
 
-      <Button
-        variant="contained"
-        fullWidth
-        disableTouchRipple
-        className={styles.primaryBtn}
+      <Box
+        component="button"
         onClick={() => setStep(2)}
-        disabled={!phoneNumber}
+        sx={{
+          width: '100%',
+          bgcolor: !phoneNumber ? '#d9d9d9' : '#77469b',
+          color: !phoneNumber ? 'rgba(0,0,0,0.38)' : '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: !phoneNumber ? 'not-allowed' : 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': !phoneNumber ? {} : { bgcolor: '#9551ab' },
+        }}
       >
         Continue
-      </Button>
+      </Box>
     </div>
   );
 
@@ -337,16 +349,28 @@ export default function WhatsAppConnectDialog({
 
       <button className={styles.resendLink}>Resend code</button>
 
-      <Button
-        variant="contained"
-        fullWidth
-        disableTouchRipple
-        className={styles.primaryBtn}
+      <Box
+        component="button"
         onClick={() => setStep(3)}
-        disabled={verifyCode.some((d) => !d)}
+        sx={{
+          width: '100%',
+          bgcolor: verifyCode.some((d) => !d) ? '#d9d9d9' : '#77469b',
+          color: verifyCode.some((d) => !d) ? 'rgba(0,0,0,0.38)' : '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: verifyCode.some((d) => !d) ? 'not-allowed' : 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': verifyCode.some((d) => !d) ? {} : { bgcolor: '#9551ab' },
+        }}
       >
         Verify
-      </Button>
+      </Box>
     </div>
   );
 
@@ -390,16 +414,35 @@ export default function WhatsAppConnectDialog({
         })}
       </div>
 
-      <Button
-        variant="contained"
-        fullWidth
-        disableTouchRipple
-        className={styles.primaryBtn}
+      <Box
+        component="button"
         onClick={() => setStep(4)}
-        disabled={selectedServices.length === 0}
+        sx={{
+          width: '100%',
+          bgcolor: selectedServices.length === 0 ? '#d9d9d9' : '#77469b',
+          color:
+            selectedServices.length === 0
+              ? 'rgba(0,0,0,0.38)'
+              : '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor:
+            selectedServices.length === 0 ? 'not-allowed' : 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover':
+            selectedServices.length === 0
+              ? {}
+              : { bgcolor: '#9551ab' },
+        }}
       >
         Continue
-      </Button>
+      </Box>
     </div>
   );
 
@@ -515,15 +558,28 @@ export default function WhatsAppConnectDialog({
         })}
       </div>
 
-      <Button
-        variant="contained"
-        fullWidth
-        disableTouchRipple
-        className={styles.primaryBtn}
+      <Box
+        component="button"
         onClick={onClose}
+        sx={{
+          width: '100%',
+          bgcolor: '#77469b',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': { bgcolor: '#9551ab' },
+        }}
       >
         Finish
-      </Button>
+      </Box>
     </div>
   );
 
@@ -549,13 +605,23 @@ export default function WhatsAppConnectDialog({
             </Typography>
           </div>
         </div>
-        <Button
+        <Box
+          component="button"
           onClick={onClose}
-          className={styles.closeBtn}
-          disableTouchRipple
+          sx={{
+            minWidth: 'auto',
+            p: '0.4rem',
+            bgcolor: 'transparent',
+            color: '#9a9a9a',
+            border: 'none',
+            borderRadius: '0.4rem',
+            cursor: 'pointer',
+            display: 'flex',
+            '&:hover': { bgcolor: '#f3f4f6' },
+          }}
         >
           <XIcon size={20} />
-        </Button>
+        </Box>
       </DialogTitle>
 
       {renderStepIndicator()}
