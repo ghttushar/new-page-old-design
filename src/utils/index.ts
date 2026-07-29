@@ -3189,13 +3189,14 @@ export const buildQueryKeyWithAccountIds = (
 };
 
 export const shouldShowHeader = (pathname: string) => {
-  return !pathname.startsWith('/user');
+  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance');
 };
 
 export const shouldShowSidebar = (pathname: string) => {
   return (
     !pathname.startsWith(ONBOARDING_CONNECTING_PAGE) &&
-    !pathname.startsWith('/user')
+    !pathname.startsWith('/user') &&
+    !pathname.startsWith('/maintenance')
   );
 };
 export const getRedirectURLByWMTClientType = (

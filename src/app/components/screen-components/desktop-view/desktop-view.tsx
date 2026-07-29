@@ -32,6 +32,7 @@ import CustomTablePage from '../../pages/custom-table-page/custom-table-page';
 import JivaPage from '../../pages/jiva-page/jiva-page';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
 import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
+import MaintenancePage from '../../pages/maintenance-page/maintenance-page';
 
 import MonitoringWrapper from '../../pages/monitoring-page/monitoring-wrapper';
 import ProfitabilityPageWrapper from '../../pages/profitability/profitability-page-wrapper';
@@ -232,6 +233,7 @@ export default function DesktopView() {
               <Route path="/custom-table/*" element={<CustomTablePage />} />
               <Route path="/signals" element={<SignalsPageWrapper />} />
               <Route path="/signal/:id" element={<PrivateRoute component={<SignalDetailWrapper />} />} />
+              <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>
