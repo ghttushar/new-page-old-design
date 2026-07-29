@@ -49,6 +49,7 @@ export enum FeaturesEnum {
   SETTINGS_INVITES = 'settings-invites',
   SETTINGS_LOGS = 'settings-logs',
   CONFIGURATION = 'configuration',
+  INTEGRATIONS = 'integrations',
 
   // Monitoring - Admin
   MONITORING = 'monitoring',
@@ -95,6 +96,7 @@ export enum FeatureRoutes {
   SETTINGS_USERS = `users`,
   SETTINGS_INVITES = `invites`,
   CONFIGURATION = 'configuration',
+  INTEGRATIONS = `integrations`,
   REPORTS = `reports`,
   REPORTS_LIST = `list`,
   ADMIN = `admin`,

@@ -269,6 +269,7 @@ export enum PAGE_TITLE_TOOLTIPS {
   RULES_CREATION = 'Rules Creation',
   APPLIED_RULES = 'Applied Rules',
   CONFIGURATION_WIZARD = 'Set global goals and mappings to optimize your campaigns automatically.',
+  INTEGRATIONS = 'Connect WhatsApp and MCP to receive alerts and enable AI assistant access.',
 }
 
 export enum RULES_TOOLTIPS {

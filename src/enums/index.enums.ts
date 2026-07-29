@@ -37,6 +37,7 @@ export enum PageTitleEnum {
   RULES_CREATION = 'Rule Creation',
   APPLIED_RULES = 'Applied Rules',
   CONFIGURATION_WIZARD = 'Configuration Wizard',
+  INTEGRATIONS = 'Integrations',
   ALERTS = 'Signals',
 }
 
