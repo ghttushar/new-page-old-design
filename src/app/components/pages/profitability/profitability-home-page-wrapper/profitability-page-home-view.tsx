@@ -1,4 +1,5 @@
 import Dropdown from '@/app/components/common/dropdown/dropdown';
+import DashboardBanner from '@/app/components/common/dashboard-banner/dashboard-banner';
 import MultiSelectDropdown from '@/app/components/common/dropdown/multi-select-dropdown';
 import GraphLoadingComponent from '@/app/components/common/graph-loading-state/graph-loading-state';
 import PrimaryButton from '@/app/components/common/primary-button/primary-button';
@@ -100,6 +101,7 @@ function ProfitabilityHomePageView<T, G>(
 
   return (
     <div id="tabs" className={styles.container}>
+      <DashboardBanner />
       <div className={styles.dateRangeContainer}>
         <CustomDateRangePickerWrapper
           title="Date Range"

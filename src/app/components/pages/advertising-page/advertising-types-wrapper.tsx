@@ -16,6 +16,7 @@ import {
   getSelectedAdTypeByMarketplace,
 } from 'src/utils/advertising.utils';
 import PrivateRoute from '../../private-route/private-route';
+import DashboardBanner from '@/app/components/common/dashboard-banner/dashboard-banner';
 import AdvertisingAmazonWrapper from './advertising-marketplace-wrapper/advertising-amazon-wrapper';
 import AdvertisingWalmartWrapper from './advertising-marketplace-wrapper/advertising-walmart-wrapper';
 import styles from './advertising-page.module.scss';
@@ -74,6 +75,7 @@ export default function AdvertisingTypesWrapper() {
 
   return (
     <div className={styles.Container}>
+      <DashboardBanner />
       <div className={styles.Container}>
         <Routes>
           <Route

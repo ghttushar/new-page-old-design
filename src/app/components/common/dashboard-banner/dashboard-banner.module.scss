@@ -1,0 +1,87 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.1rem 1.4rem;
+  border-radius: 1rem;
+  background: linear-gradient(
+    90deg,
+    $primary-color 0%,
+    $primary-color-variant-1 100%
+  );
+  color: #fff;
+  margin-bottom: 1.6rem;
+}
+
+.iconWrap {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.textWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-family: $font-family;
+  margin-bottom: 0.2rem;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: $font-family;
+  overflow-wrap: anywhere;
+}
+
+.learnMore {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  font-family: $font-family;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
