@@ -6,12 +6,9 @@
   gap: 1.4rem;
   padding: 1.2rem 1.8rem;
   border-left: 0.5rem solid $primary-color;
-  background: linear-gradient(
-    90deg,
-    $alt-primary-color 0%,
-    #f7f0fb 55%,
-    #fdfaff 100%
-  );
+  border-top: 1px solid #e4d4f5;
+  border-bottom: 1px solid #e4d4f5;
+  background: #f5ecff;
   color: $main-text;
   margin-bottom: 1.6rem;
 }
