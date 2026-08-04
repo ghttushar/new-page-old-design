@@ -1,7 +1,7 @@
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import useSubHeader from '@/hooks/use-sub-header.hook';
-import { Box, Button, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { WhatsappLogoIcon, LightningIcon } from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 import { getMcpConnected, subscribeMcpConnected } from './mcp-connection';
@@ -32,51 +32,37 @@ export default function IntegrationsPage() {
         </Typography>
 
         <div className={styles.card}>
-          <div className={styles.cardIconWrap}>
-            <WhatsappLogoIcon size={24} weight="fill" color="#25D366" />
+          <div className={`${styles.cardIconWrap} ${styles.cardIconWhatsapp}`}>
+            <WhatsappLogoIcon size={28} weight="fill" color="#25D366" />
           </div>
-          <div className={styles.cardBody}>
+          <div className={styles.cardInfo}>
             <div className={styles.cardTitleRow}>
               <Typography variant="body1" className={styles.cardTitle}>
                 WhatsApp
               </Typography>
-              <span className={styles.badge}>ALERTS</span>
+              <span className={styles.badgeAlerts}>ALERTS</span>
             </div>
             <Typography variant="body2" className={styles.cardDesc}>
               Receive Anarix alerts and notifications on WhatsApp. Choose which
               services and accounts trigger messages.
             </Typography>
           </div>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', flexShrink: 0 }}>
-            <Box
-              component="button"
+          <div className={styles.cardActions}>
+            <button
+              type="button"
+              className={styles.cardBtn}
               onClick={() => setWhatsappDialogOpen(true)}
-              sx={{
-                bgcolor: '#77469b',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '0.8rem',
-                px: '1.6rem',
-                py: '0.7rem',
-                fontSize: '1.2rem',
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
-                cursor: 'pointer',
-                textTransform: 'none',
-                transition: 'background 0.15s',
-                '&:hover': { bgcolor: '#9551ab' },
-              }}
             >
               Connect WhatsApp
-            </Box>
-          </Box>
+            </button>
+          </div>
         </div>
 
         <div className={styles.card}>
           <div className={styles.cardIconWrap}>
-            <LightningIcon size={24} weight="fill" color="#77469b" />
+            <LightningIcon size={28} weight="fill" color="#77469b" />
           </div>
-          <div className={styles.cardBody}>
+          <div className={styles.cardInfo}>
             <div className={styles.cardTitleRow}>
               <Typography variant="body1" className={styles.cardTitle}>
                 MCP
@@ -92,29 +78,15 @@ export default function IntegrationsPage() {
               via the Model Context Protocol for agent-driven workflows.
             </Typography>
           </div>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', flexShrink: 0 }}>
-            <Box
-              component="button"
+          <div className={styles.cardActions}>
+            <button
+              type="button"
+              className={styles.cardBtn}
               onClick={() => setMcpDialogOpen(true)}
-              sx={{
-                bgcolor: '#77469b',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '0.8rem',
-                px: '1.6rem',
-                py: '0.7rem',
-                fontSize: '1.2rem',
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
-                cursor: 'pointer',
-                textTransform: 'none',
-                transition: 'background 0.15s',
-                '&:hover': { bgcolor: '#9551ab' },
-              }}
             >
               Connect MCP
-            </Box>
-          </Box>
+            </button>
+          </div>
         </div>
       </div>
 

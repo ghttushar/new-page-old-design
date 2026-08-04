@@ -78,11 +78,11 @@
 
 .dialogBody {
   display: flex;
-  min-height: 42rem;
+  height: 48rem;
 }
 
 .tabList {
-  width: 19rem;
+  width: 20rem;
   flex-shrink: 0;
   border-right: 1px solid $border-color-4;
   background: $background-color-7;
@@ -90,6 +90,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  overflow-y: auto;
 }
 
 .tabItem {
@@ -119,11 +120,17 @@
   font-weight: 600;
 }
 
-.dialogContent {
+.dialogBodyRight {
   flex: 1;
-  padding: 2rem !important;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.dialogContent {
+  flex: 1;
+  min-height: 0;
+  padding: 2rem !important;
   overflow-y: auto;
 }
 
@@ -144,23 +151,61 @@
   margin-bottom: 1rem;
 }
 
-.featureList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  margin-bottom: 2rem;
+.clientGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
 }
 
-.feature {
+.clientCard {
+  position: relative;
+  border: 1px solid $border-color-4;
+  border-radius: 1rem;
+  background: $foreground-color;
+  padding: 1.6rem;
   display: flex;
-  gap: 1rem;
   align-items: flex-start;
+  gap: 1.2rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-family;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: $primary-color-variant-1;
+  }
 }
 
-.featureIcon {
-  width: 3.2rem;
-  height: 3.2rem;
-  border-radius: 0.8rem;
+.clientCardSelected {
+  border-color: $primary-color;
+  background: $primary-color-dropzone;
+  box-shadow: 0 2px 10px rgba(119, 70, 155, 0.12);
+}
+
+.clientRadio {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: 2px solid $border-color-2;
+  background: $foreground-color;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clientRadioSelected {
+  border-color: $primary-color;
+  background: $primary-color;
+}
+
+.clientIconWrap {
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
   background: $primary-color-dropzone;
   color: $primary-color;
   display: flex;
@@ -169,15 +214,21 @@
   flex-shrink: 0;
 }
 
-.featureTitle {
-  font-size: 1.3rem;
+.clientInfo {
+  flex: 1;
+  min-width: 0;
+  padding-right: 1.4rem;
+}
+
+.clientName {
+  font-size: 1.4rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
   margin-bottom: 0.2rem;
 }
 
-.featureDesc {
+.clientDesc {
   font-size: 1.2rem;
   font-weight: 400;
   color: $sub-text-2;
@@ -185,24 +236,130 @@
   line-height: 1.5;
 }
 
-.endpointRow {
+.subSection {
+  border: 1px solid $border-color-4;
+  border-radius: 1rem;
+  background: $foreground-color;
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+.subSectionInner {
+  margin-top: 1rem;
+}
+
+.subSectionHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.8rem;
+  color: $primary-color;
+  margin-bottom: 1rem;
+}
+
+.setupBlock {
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid $border-color-4;
+
+  &:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+.setupBlockTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin-bottom: 1rem;
+}
+
+.subSectionTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $main-text;
+  font-family: $font-family;
+}
+
+.stepList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+}
+
+.stepItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.stepNum {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: $primary-color-dropzone;
+  color: $primary-color;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: $font-family;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.stepContent {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: $main-text;
+  font-family: $font-family;
+  line-height: 1.65;
+  padding-top: 0.15rem;
+}
+
+.copyRow {
+  margin-top: 0.4rem;
+}
+
+.copyLabel {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin-bottom: 0.4rem;
+}
+
+.copyBox {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   background: $background-color-3;
   border: 1px solid $border-color-4;
   border-radius: 0.6rem;
-  padding: 0.8rem 1rem;
-  margin-bottom: 2rem;
+  padding: 0.7rem 1rem;
 }
 
-.endpointText {
-  font-size: 1.3rem;
+.copyText {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.2rem;
   font-weight: 500;
   color: $main-text;
-  font-family: 'Courier New', monospace;
+  font-family: $font-family;
   overflow-wrap: anywhere;
+}
+
+.copyMonospace {
+  font-family: 'Courier New', monospace;
+  font-size: 1.15rem;
 }
 
 .copyBtn {
@@ -221,198 +378,92 @@
   }
 }
 
-.toolList {
+.reauthNote {
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: $main-text;
+  font-family: $font-family;
+  margin-bottom: 1rem;
+}
+
+.bulletList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
-.tool {
-  border: 1px solid $border-color-4;
-  border-radius: 0.8rem;
-  padding: 1.2rem 1.4rem;
-}
-
-.toolName {
+.bulletItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   font-size: 1.3rem;
-  font-weight: 600;
-  color: $primary-color;
-  font-family: 'Courier New', monospace;
-  margin-bottom: 0.4rem;
-}
-
-.toolDesc {
-  font-size: 1.2rem;
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
   line-height: 1.5;
 }
 
-.toolIo {
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: $sub-text-4;
-  font-family: 'Courier New', monospace;
-  margin-top: 0.6rem;
-}
-
-.clientList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.client {
-  border: 1px solid $border-color-4;
-  border-radius: 0.8rem;
-  padding: 1.2rem 1.4rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1.2rem;
-}
-
-.clientIconWrap {
-  width: 3.6rem;
-  height: 3.6rem;
-  border-radius: 0.8rem;
-  background: $primary-color-dropzone;
-  color: $primary-color;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.bulletDot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: $primary-color;
   flex-shrink: 0;
 }
 
-.clientInfo {
-  flex: 1;
-  min-width: 0;
+.prompt {
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  background: $foreground-color;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1rem;
 }
 
-.clientName {
+.promptTitle {
   font-size: 1.3rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.8rem;
 }
 
-.clientDesc {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin-bottom: 0.6rem;
-}
-
-.clientCode {
-  font-family: 'Courier New', monospace;
-  font-size: 1.1rem;
-  color: $main-text;
+.promptBox {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   background: $background-color-3;
   border: 1px solid $border-color-4;
-  border-radius: 0.4rem;
-  padding: 0.6rem 0.9rem;
-  white-space: pre-wrap;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+}
+
+.promptText {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: $main-text;
+  font-family: 'Courier New', monospace;
   overflow-wrap: anywhere;
 }
 
-.emptyState {
-  flex: 1;
+.successNote {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.emptyIcon {
-  color: $border-color-3;
-}
-
-.emptyTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-}
-
-.emptyDesc {
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.6;
-  max-width: 32rem;
-}
-
-.faqList {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  margin-bottom: 2rem;
-}
-
-.faqItem {
-  border: 1px solid $border-color-4;
+  align-items: flex-start;
+  gap: 0.8rem;
+  background: #eafffc;
+  border: 1px solid #b8e6df;
   border-radius: 0.8rem;
-  padding: 1.2rem 1.4rem;
-}
-
-.faqQuestion {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: $main-text;
+  padding: 1rem 1.2rem;
+  color: $positive-color;
+  font-size: 1.25rem;
+  font-weight: 500;
   font-family: $font-family;
-  margin-bottom: 0.4rem;
-}
-
-.faqAnswer {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.6;
-}
-
-.supportRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  background: $background-color-3;
-  border-radius: 0.8rem;
-  padding: 1.2rem 1.4rem;
-}
-
-.supportText {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 0.2rem;
-}
-
-.supportDesc {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-}
-
-.supportLink {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: $primary-color;
-  font-family: $font-family;
-  text-decoration: none;
-  white-space: nowrap;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  line-height: 1.5;
+  margin-top: 1.2rem;
 }
 
 .footer {
@@ -420,8 +471,8 @@
   align-items: center;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.6rem;
+  flex-shrink: 0;
+  padding: 1.4rem 2rem;
   border-top: 1px solid $border-color-4;
 }
 

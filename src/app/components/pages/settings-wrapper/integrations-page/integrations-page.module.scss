@@ -53,48 +53,54 @@
 }
 
 .card {
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
   border: 1px solid $border-color-4;
-  border-radius: 1.2rem;
-  padding: 2.2rem 2.4rem;
-  margin-bottom: 1.2rem;
+  border-radius: 1.4rem;
+  padding: 2.6rem 2.8rem;
+  margin-bottom: 1.6rem;
   background: $foreground-color;
   transition: box-shadow 0.2s ease;
 
+  &:last-child {
+    margin-bottom: 0;
+  }
+
   &:hover {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
   }
 }
 
-.cardLeft {
-  display: flex;
-  gap: 1.8rem;
-  align-items: flex-start;
-}
-
 .cardIconWrap {
-  width: 5rem;
-  height: 5rem;
-  border-radius: 50%;
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 1.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: $background-color-3;
+  background: $primary-color-dropzone;
+}
+
+.cardIconWhatsapp {
+  background: #f0fdf4;
 }
 
 .cardInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .cardTitleRow {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 0.5rem;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
 }
 
 .cardTitle {
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
@@ -135,43 +141,33 @@
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
-  line-height: 1.6;
-  margin-bottom: 1.4rem;
+  line-height: 1.7;
+  max-width: 48rem;
+  margin: 0;
 }
 
-.connectBtn {
+.cardActions {
+  display: flex;
+  align-items: center;
+}
+
+.cardBtn {
   background: $primary-color;
   color: $foreground-color;
-  text-transform: uppercase;
-  font-size: 1.2rem;
-  font-weight: 700;
+  border: none;
+  border-radius: 0.8rem;
+  padding: 1rem 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
   font-family: $font-family;
-  border-radius: 0.6rem;
-  padding: 0.7rem 2rem;
-  box-shadow: none;
-  letter-spacing: 0.04rem;
+  cursor: pointer;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(119, 70, 155, 0.18);
+  transition: background 0.15s;
 
   &:hover {
     background: $primary-color-variant-1;
-    box-shadow: none;
-  }
-}
-
-.learnMoreBtn {
-  background: $primary-color;
-  color: $foreground-color;
-  text-transform: uppercase;
-  font-size: 1.2rem;
-  font-weight: 700;
-  font-family: $font-family;
-  border-radius: 0.6rem;
-  padding: 0.7rem 2rem;
-  box-shadow: none;
-  letter-spacing: 0.04rem;
-
-  &:hover {
-    background: $primary-color-variant-1;
-    box-shadow: none;
   }
 }
 

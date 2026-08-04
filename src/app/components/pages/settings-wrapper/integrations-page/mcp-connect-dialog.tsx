@@ -1,19 +1,14 @@
 import {
+  ChatCircleDotsIcon,
   CheckCircleIcon,
   CheckIcon,
-  CodeIcon,
   CopyIcon,
   CursorClickIcon,
   LightningIcon,
-  MonitorIcon,
-  PuzzlePieceIcon,
-  QuestionIcon,
-  RocketIcon,
+  LockIcon,
   SlidersHorizontalIcon,
   SparkleIcon,
   SpinnerGapIcon,
-  TerminalIcon,
-  TerminalWindowIcon,
   XCircleIcon,
   XIcon,
 } from '@phosphor-icons/react';
@@ -27,139 +22,152 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getMcpConnected, setMcpConnected } from './mcp-connection';
 import styles from './mcp-connect-dialog.module.scss';
 
-const MCP_SERVER_URL = 'https://app.anarix.ai/mcp';
-const MCP_DOCS_URL = 'https://www.anarix.ai/mcp';
+const MCP_SERVER_URL = 'https://mcp.anarix.ai/mcp/sse';
 const MCP_SUPPORT_EMAIL = 'mailto:support@anarix.ai';
 
-type TabKey = 'get-started' | 'customize' | 'logs' | 'help';
+type TabKey = 'choose-client' | 'client-setup' | 'auth' | 'verify' | 'reference';
+
+type ClientKey = 'claude' | 'codex';
 
 type StatusKey = 'idle' | 'verifying' | 'success' | 'failed';
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType }[] = [
-  { key: 'get-started', label: 'Get started', icon: LightningIcon },
-  { key: 'customize', label: 'Customize settings', icon: SlidersHorizontalIcon },
-  { key: 'logs', label: 'Logs', icon: TerminalWindowIcon },
-  { key: 'help', label: 'Help', icon: QuestionIcon },
+  { key: 'choose-client', label: 'Choose Your Client', icon: CursorClickIcon },
+  { key: 'client-setup', label: 'Client Setup', icon: SlidersHorizontalIcon },
+  { key: 'auth', label: 'Authentication', icon: LockIcon },
+  { key: 'verify', label: 'Verify Connection', icon: CheckCircleIcon },
+  { key: 'reference', label: 'Connection Reference', icon: CopyIcon },
 ];
 
-const FEATURES = [
+const CLIENTS: {
+  key: ClientKey;
+  name: string;
+  icon: React.ComponentType;
+  desc: string;
+}[] = [
   {
+    key: 'claude',
+    name: 'Claude',
+    icon: ChatCircleDotsIcon,
+    desc: 'Anthropic\u2019s assistant in the web app, desktop, and Code.',
+  },
+  {
+    key: 'codex',
+    name: 'ChatGPT (Codex)',
     icon: SparkleIcon,
-    title: 'Query advertising data',
-    desc: 'Ask your AI assistant for spend, sales, ACoS, or orders — it answers from live Anarix data.',
-  },
-  {
-    icon: LightningIcon,
-    title: 'Monitor campaigns',
-    desc: 'Agents can read campaign performance and automation rule status programmatically.',
-  },
-  {
-    icon: RocketIcon,
-    title: 'Surface insights',
-    desc: 'Let AI summarize P&L and marketplace intelligence without leaving your editor.',
+    desc: 'OpenAI\u2019s agentic coding environment.',
   },
 ];
 
-const MCP_TOOLS = [
+const REAUTH_TRIGGERS = [
+  'Your session expires',
+  'You switch accounts',
+  'You clear browser/app data',
+  'You\u2019ve been inactive for an extended period',
+];
+
+const VERIFY_PROMPTS = [
   {
-    name: 'get_account_summary',
-    desc: 'Headline KPIs for any marketplace — spend, sales, ACoS, TACoS, and orders — over any lookback window.',
-    io: 'Input: marketplace, lookbackDays  ·  Output: Spend, Sales, ACoS, TACoS, Orders',
+    title: 'Verify Account Access',
+    prompt: 'Show me the accounts I have access to.',
   },
   {
-    name: 'list_applied_rules',
-    desc: 'Browse all advertising automation rules with optional status filtering — running, paused, draft, or ended.',
-    io: 'Input: status?  ·  Output: Rule ID, name, status, campaign count, last run',
+    title: 'Verify Campaign Data',
+    prompt:
+      'What were my top 5 campaigns by ad spend from 2026-04-01 to 2026-04-30?',
   },
   {
-    name: 'echo',
-    desc: 'Verify MCP server connectivity. Useful for health checks and integration testing.',
-    io: 'Input: message  ·  Output: Echoed message',
+    title: 'Verify Visualizations',
+    prompt:
+      'Create a chart showing weekly ad spend and ROAS for the last 8 weeks.',
   },
 ];
 
-const CLIENTS = [
-  {
-    name: 'Claude Code',
-    icon: TerminalIcon,
-    description: 'Add via terminal command',
-    copyText: `claude mcp add anarix --transport http ${MCP_SERVER_URL}`,
-  },
-  {
-    name: 'Claude Desktop',
-    icon: MonitorIcon,
-    description: 'Add to Claude Desktop config',
-    copyText: `{
-  "mcpServers": {
-    "anarix": {
-      "url": "${MCP_SERVER_URL}"
-    }
-  }
-}`,
-  },
-  {
-    name: 'Cursor',
-    icon: CursorClickIcon,
-    description: 'Configure in Cursor settings',
-    copyText: `{
-  "mcpServers": {
-    "anarix": {
-      "url": "${MCP_SERVER_URL}"
-    }
-  }
-}`,
-  },
-  {
-    name: 'VS Code',
-    icon: CodeIcon,
-    description: 'Add to VS Code MCP config',
-    copyText: `{
-  "servers": {
-    "anarix": {
-      "type": "sse",
-      "url": "${MCP_SERVER_URL}"
-    }
-  }
-}`,
-  },
-  {
-    name: 'OpenCode',
-    icon: PuzzlePieceIcon,
-    description: 'Add to OpenCode config',
-    copyText: `{
-  "mcp": {
-    "servers": {
-      "anarix": {
-        "url": "${MCP_SERVER_URL}"
-      }
-    }
-  }
-}`,
-  },
-];
+function CopyRow({
+  label,
+  value,
+  monospace = true,
+}: {
+  label: string;
+  value: string;
+  monospace?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
 
-const FAQS = [
-  {
-    question: 'What is MCP?',
-    answer:
-      'The Model Context Protocol is an open standard that lets AI assistants securely call external tools. Anarix exposes its marketplace data as MCP tools.',
-  },
-  {
-    question: 'Which AI assistants are supported?',
-    answer:
-      'Claude Code, Claude Desktop, Cursor, VS Code, and OpenCode. See Customize settings for the exact configuration for each.',
-  },
-  {
-    question: 'Do I need an API key?',
-    answer:
-      'No. The Anarix MCP server is open at app.anarix.ai/mcp — point your assistant at the endpoint and you are ready.',
-  },
-  {
-    question: 'Is my advertising data safe?',
-    answer:
-      'The MCP server only exposes the tools listed in Get started and serves read-only data for your connected accounts.',
-  },
-];
+  const onCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className={styles.copyRow}>
+      <Typography variant="body2" className={styles.copyLabel}>
+        {label}
+      </Typography>
+      <div className={styles.copyBox}>
+        <Typography
+          variant="body2"
+          className={`${styles.copyText} ${
+            monospace ? styles.copyMonospace : ''
+          }`}
+        >
+          {value}
+        </Typography>
+        <button type="button" className={styles.copyBtn} onClick={onCopy}>
+          {copied ? (
+            <CheckIcon size={15} weight="bold" />
+          ) : (
+            <CopyIcon size={15} />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StepList({ children }: { children: React.ReactNode[] }) {
+  return (
+    <ol className={styles.stepList}>
+      {children.map((child, index) => (
+        <li key={index} className={styles.stepItem}>
+          <span className={styles.stepNum}>{index + 1}</span>
+          <div className={styles.stepContent}>{child}</div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function VerifyPrompt({ title, prompt }: { title: string; prompt: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = () => {
+    navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className={styles.prompt}>
+      <Typography variant="body1" className={styles.promptTitle}>
+        {title}
+      </Typography>
+      <div className={styles.promptBox}>
+        <Typography variant="body2" className={styles.promptText}>
+          {prompt}
+        </Typography>
+        <button type="button" className={styles.copyBtn} onClick={onCopy}>
+          {copied ? (
+            <CheckIcon size={15} weight="bold" />
+          ) : (
+            <CopyIcon size={15} />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 interface IMcpConnectDialogProps {
   open: boolean;
@@ -170,9 +178,8 @@ export default function McpConnectDialog({
   open,
   onClose,
 }: IMcpConnectDialogProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>('get-started');
-  const [copied, setCopied] = useState(false);
-  const [copiedClient, setCopiedClient] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>('choose-client');
+  const [selectedClient, setSelectedClient] = useState<ClientKey>('claude');
   const [status, setStatus] = useState<StatusKey>('idle');
   const [connected, setConnected] = useState(getMcpConnected);
   const timerRef = useRef<number | null>(null);
@@ -180,8 +187,6 @@ export default function McpConnectDialog({
   useEffect(() => {
     if (open) {
       setStatus('idle');
-      setCopied(false);
-      setCopiedClient(null);
       setConnected(getMcpConnected());
     }
   }, [open]);
@@ -196,18 +201,6 @@ export default function McpConnectDialog({
       }
     };
   }, [status, onClose]);
-
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(MCP_SERVER_URL);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleCopyClient = (name: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedClient(name);
-    setTimeout(() => setCopiedClient(null), 2000);
-  };
 
   const handleDone = () => {
     if (status === 'verifying') {
@@ -225,158 +218,199 @@ export default function McpConnectDialog({
     }, 1500);
   };
 
-  const renderGetStarted = () => (
+  const renderChooseClient = () => (
     <div>
       <Typography variant="body2" className={styles.intro}>
-        MCP is an open protocol that lets AI assistants interact with external
-        tools. By connecting Anarix via MCP, your AI agents can query
-        advertising data, monitor campaigns, and surface insights
-        programmatically.
+        This is the landing tab where you select your AI client. After
+        selecting a client, follow the corresponding setup guide.
       </Typography>
-
-      <div className={styles.featureList}>
-        {FEATURES.map((feature) => {
-          const FeatureIcon = feature.icon;
-          return (
-            <div key={feature.title} className={styles.feature}>
-              <div className={styles.featureIcon}>
-                <FeatureIcon size={16} weight="fill" />
-              </div>
-              <div>
-                <Typography variant="body1" className={styles.featureTitle}>
-                  {feature.title}
-                </Typography>
-                <Typography variant="body2" className={styles.featureDesc}>
-                  {feature.desc}
-                </Typography>
-              </div>
-            </div>
-          );
-        })}
-      </div>
 
       <Typography variant="body2" className={styles.sectionLabel}>
-        Server endpoint
+        Supported Clients
       </Typography>
-      <div className={styles.endpointRow}>
-        <Typography variant="body2" className={styles.endpointText}>
-          {MCP_SERVER_URL}
-        </Typography>
-        <button
-          type="button"
-          className={styles.copyBtn}
-          onClick={handleCopyUrl}
-        >
-          {copied ? (
-            <CheckIcon size={16} weight="bold" />
-          ) : (
-            <CopyIcon size={16} />
-          )}
-        </button>
-      </div>
-
-      <Typography variant="body2" className={styles.sectionLabel}>
-        Available tools
-      </Typography>
-      <div className={styles.toolList}>
-        {MCP_TOOLS.map((tool) => (
-          <div key={tool.name} className={styles.tool}>
-            <Typography variant="body1" className={styles.toolName}>
-              {tool.name}
-            </Typography>
-            <Typography variant="body2" className={styles.toolDesc}>
-              {tool.desc}
-            </Typography>
-            <Typography variant="body2" className={styles.toolIo}>
-              {tool.io}
-            </Typography>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderCustomize = () => (
-    <div>
-      <Typography variant="body2" className={styles.intro}>
-        Pick your assistant and copy the exact configuration. Point it at the
-        Anarix MCP endpoint and start querying.
-      </Typography>
-      <div className={styles.clientList}>
+      <div className={styles.clientGrid}>
         {CLIENTS.map((client) => {
           const ClientIcon = client.icon;
-          const isCopied = copiedClient === client.name;
+          const isSelected = selectedClient === client.key;
           return (
-            <div key={client.name} className={styles.client}>
+            <button
+              key={client.key}
+              type="button"
+              className={`${styles.clientCard} ${
+                isSelected ? styles.clientCardSelected : ''
+              }`}
+              onClick={() => setSelectedClient(client.key)}
+            >
+              <div
+                className={`${styles.clientRadio} ${
+                  isSelected ? styles.clientRadioSelected : ''
+                }`}
+              >
+                {isSelected && <CheckIcon size={12} weight="bold" />}
+              </div>
               <div className={styles.clientIconWrap}>
-                <ClientIcon size={18} weight="fill" />
+                <ClientIcon size={22} weight="fill" />
               </div>
               <div className={styles.clientInfo}>
                 <Typography variant="body1" className={styles.clientName}>
                   {client.name}
                 </Typography>
                 <Typography variant="body2" className={styles.clientDesc}>
-                  {client.description}
+                  {client.desc}
                 </Typography>
-                <div className={styles.clientCode}>{client.copyText}</div>
               </div>
-              <button
-                type="button"
-                className={styles.copyBtn}
-                onClick={() => handleCopyClient(client.name, client.copyText)}
-              >
-                {isCopied ? (
-                  <CheckIcon size={16} weight="bold" />
-                ) : (
-                  <CopyIcon size={16} />
-                )}
-              </button>
-            </div>
+            </button>
           );
         })}
       </div>
     </div>
   );
 
-  const renderLogs = () => (
-    <div className={styles.emptyState}>
-      <TerminalWindowIcon size={44} className={styles.emptyIcon} />
-      <Typography variant="body1" className={styles.emptyTitle}>
-        No logs yet
+  const renderClientSetup = () => (
+    <div>
+      <Typography variant="body2" className={styles.intro}>
+        Follow the setup guide for your selected client.
       </Typography>
-      <Typography variant="body2" className={styles.emptyDesc}>
-        MCP activity will appear here once your AI assistants start querying
-        the server.
-      </Typography>
+      <div className={styles.subSection}>
+        <div className={styles.subSectionHeader}>
+          <ChatCircleDotsIcon size={18} weight="fill" />
+          <Typography variant="body1" className={styles.subSectionTitle}>
+            Claude
+          </Typography>
+        </div>
+        <div className={styles.setupBlock}>
+          <div className={styles.setupBlockTitle}>
+            For Team &amp; Enterprise Owners
+          </div>
+          <StepList>
+            <span>
+              Go to Organization Settings {'\u2192'} Connectors
+            </span>
+            <span>Click Add</span>
+            <span>Select Custom {'\u2192'} Web</span>
+            <CopyRow label="Enter the MCP server URL:" value={MCP_SERVER_URL} />
+            <span>Click Add</span>
+          </StepList>
+        </div>
+        <div className={styles.setupBlock}>
+          <div className={styles.setupBlockTitle}>For Individual Users</div>
+          <StepList>
+            <span>Open Settings</span>
+            <span>Navigate to Connectors</span>
+            <span>Click Add Custom Connector</span>
+            <CopyRow label="Name" value="JIVA" monospace={false} />
+            <CopyRow label="Remote MCP URL" value={MCP_SERVER_URL} />
+            <span>Click Add</span>
+            <span>Verify JIVA appears in the connector list.</span>
+          </StepList>
+        </div>
+      </div>
+      <div className={styles.subSection}>
+        <div className={styles.subSectionHeader}>
+          <SparkleIcon size={18} weight="fill" />
+          <Typography variant="body1" className={styles.subSectionTitle}>
+            ChatGPT (Codex)
+          </Typography>
+        </div>
+        <div className={styles.setupBlock}>
+          <StepList>
+            <span>Open Settings</span>
+            <span>Navigate to MCP Servers</span>
+            <span>Click Add Server</span>
+            <CopyRow label="Name" value="Anarix" monospace={false} />
+            <CopyRow label="Transport" value="Streamable HTTP" monospace={false} />
+            <CopyRow label="URL" value={MCP_SERVER_URL} />
+            <span>Save the server.</span>
+          </StepList>
+        </div>
+      </div>
     </div>
   );
 
-  const renderHelp = () => (
+  const renderAuth = () => (
     <div>
-      <div className={styles.faqList}>
-        {FAQS.map((faq) => (
-          <div key={faq.question} className={styles.faqItem}>
-            <Typography variant="body1" className={styles.faqQuestion}>
-              {faq.question}
-            </Typography>
-            <Typography variant="body2" className={styles.faqAnswer}>
-              {faq.answer}
-            </Typography>
-          </div>
-        ))}
-      </div>
-      <div className={styles.supportRow}>
-        <div>
-          <Typography variant="body1" className={styles.supportText}>
-            Still stuck?
-          </Typography>
-          <Typography variant="body2" className={styles.supportDesc}>
-            Our team can help you connect your AI assistant.
+      <div className={styles.subSection}>
+        <div className={styles.subSectionHeader}>
+          <LockIcon size={18} weight="fill" />
+          <Typography variant="body1" className={styles.subSectionTitle}>
+            Login Flow
           </Typography>
         </div>
-        <a className={styles.supportLink} href={MCP_SUPPORT_EMAIL}>
-          Contact our support team
-        </a>
+        <StepList>
+          <span>Open a new chat.</span>
+          <CopyRow label="Run:" value="use anarix mcp and login" />
+          <span>Click the generated login URL.</span>
+          <span>Sign in using your Anarix credentials.</span>
+          <span>Return to Claude/Codex.</span>
+          <span>
+            Authentication completes and your available accounts are loaded.
+          </span>
+        </StepList>
+      </div>
+
+      <div className={styles.subSection}>
+        <div className={styles.subSectionHeader}>
+          <LockIcon size={18} weight="fill" />
+          <Typography variant="body1" className={styles.subSectionTitle}>
+            Re-authentication
+          </Typography>
+        </div>
+        <Typography variant="body2" className={styles.reauthNote}>
+          Repeat the login flow if:
+        </Typography>
+        <ul className={styles.bulletList}>
+          {REAUTH_TRIGGERS.map((trigger) => (
+            <li key={trigger} className={styles.bulletItem}>
+              <span className={styles.bulletDot} />
+              {trigger}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderVerify = () => (
+    <div>
+      <Typography variant="body2" className={styles.intro}>
+        Run the following prompts to confirm everything is working.
+      </Typography>
+      {VERIFY_PROMPTS.map((item) => (
+        <VerifyPrompt key={item.title} title={item.title} prompt={item.prompt} />
+      ))}
+      <div className={styles.successNote}>
+        <CheckCircleIcon size={18} weight="fill" />
+        If all three prompts return results, your MCP connection is working
+        correctly.
+      </div>
+    </div>
+  );
+
+  const renderReference = () => (
+    <div>
+      <Typography variant="body2" className={styles.intro}>
+        Keep this as a quick copy-paste page.
+      </Typography>
+      <div className={styles.subSection}>
+        <div className={styles.subSectionHeader}>
+          <ChatCircleDotsIcon size={18} weight="fill" />
+          <Typography variant="body1" className={styles.subSectionTitle}>
+            Claude
+          </Typography>
+        </div>
+        <CopyRow label="Connector Name" value="JIVA" monospace={false} />
+        <CopyRow label="Remote MCP URL" value={MCP_SERVER_URL} />
+      </div>
+      <div className={styles.subSection}>
+        <div className={styles.subSectionHeader}>
+          <SparkleIcon size={18} weight="fill" />
+          <Typography variant="body1" className={styles.subSectionTitle}>
+            ChatGPT (Codex)
+          </Typography>
+        </div>
+        <CopyRow label="Server Name" value="Anarix" monospace={false} />
+        <CopyRow label="Transport" value="Streamable HTTP" monospace={false} />
+        <CopyRow label="Server URL" value={MCP_SERVER_URL} />
       </div>
     </div>
   );
@@ -432,13 +466,6 @@ export default function McpConnectDialog({
     }
     return (
       <div className={styles.footer}>
-        <button
-          type="button"
-          className={styles.footerBtnOutline}
-          onClick={() => window.open(MCP_DOCS_URL, '_blank')}
-        >
-          Learn More
-        </button>
         <button
           type="button"
           className={styles.footerBtnPrimary}
@@ -501,13 +528,16 @@ export default function McpConnectDialog({
           })}
         </div>
 
-        <DialogContent className={styles.dialogContent}>
-          {activeTab === 'get-started' && renderGetStarted()}
-          {activeTab === 'customize' && renderCustomize()}
-          {activeTab === 'logs' && renderLogs()}
-          {activeTab === 'help' && renderHelp()}
+        <div className={styles.dialogBodyRight}>
+          <DialogContent className={styles.dialogContent}>
+            {activeTab === 'choose-client' && renderChooseClient()}
+            {activeTab === 'client-setup' && renderClientSetup()}
+            {activeTab === 'auth' && renderAuth()}
+            {activeTab === 'verify' && renderVerify()}
+            {activeTab === 'reference' && renderReference()}
+          </DialogContent>
           {renderFooter()}
-        </DialogContent>
+        </div>
       </div>
     </Dialog>
   );
