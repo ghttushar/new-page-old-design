@@ -59,7 +59,7 @@ export default function IntegrationsPage() {
               {mcpConnected ? (
                 <span className={styles.badgeConnected}>CONNECTED</span>
               ) : (
-                <span className={styles.badgeBeta}>BETA</span>
+                <span className={styles.badgeNew}>NEW</span>
               )}
             </div>
             <Typography variant="body2" className={styles.cardDesc}>
@@ -90,8 +90,6 @@ export default function IntegrationsPage() {
               <Typography variant="body1" className={styles.cardTitle}>
                 WhatsApp
               </Typography>
-              <span className={styles.badgeNeutral}>AVAILABLE</span>
-              <span className={styles.badgeConnected}>ALERTS</span>
             </div>
             <Typography variant="body2" className={styles.cardDesc}>
               Receive Anarix alerts and notifications on WhatsApp.

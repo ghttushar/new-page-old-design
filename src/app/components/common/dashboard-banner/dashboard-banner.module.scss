@@ -4,9 +4,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.6rem;
   height: 10rem;
-  padding: 1.2rem 1.6rem;
+  padding: 1rem 1.2rem;
   border: 1px solid $border-color-4;
   border-radius: 1.2rem;
   background: linear-gradient(135deg, #ffffff 0%, #fbf7ff 60%, #f4ecfd 100%);
@@ -45,7 +45,7 @@
 
 .network {
   position: relative;
-  flex: 0 0 32%;
+  flex: 0 0 26%;
   min-width: 0;
   height: 7.6rem;
 }
@@ -101,13 +101,13 @@
 }
 
 .headline {
-  font-size: 2.8rem;
+  font-size: 2rem;
   font-weight: 700;
-  line-height: 3.2rem;
+  line-height: 2.4rem;
   letter-spacing: -0.02em;
   color: $main-text;
   font-family: $font-family;
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.2rem;
   max-width: 60rem;
 }
 
@@ -116,9 +116,9 @@
 }
 
 .subline {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.5;
   color: $sub-text-2;
   font-family: $font-family;
   margin: 0;

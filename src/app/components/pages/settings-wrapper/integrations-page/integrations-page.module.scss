@@ -5,11 +5,11 @@
 }
 
 .pageSubtitle {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
-  margin-bottom: 1.6rem;
+  margin-bottom: 2.4rem;
 }
 
 .grid {
@@ -22,8 +22,8 @@
   display: flex;
   align-items: center;
   gap: 1.2rem;
-  min-height: 12rem;
-  padding: 1.6rem;
+  min-height: 10rem;
+  padding: 1.4rem;
   border: 1px solid $border-color-4;
   border-radius: 1.2rem;
   background: $foreground-color;
@@ -72,7 +72,7 @@
 }
 
 .cardTitle {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 600;
   line-height: 2.4rem;
   color: $main-text;
@@ -121,8 +121,22 @@
   line-height: 1.6rem;
 }
 
+.badgeNew {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $primary-color;
+  background: $primary-color-dropzone;
+  border: 1px solid $alt-primary-color;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.6rem;
+  font-family: $font-family;
+  line-height: 1.6rem;
+}
+
 .cardDesc {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 400;
   line-height: 1.5;
   color: $sub-text-2;
