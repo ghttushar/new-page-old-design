@@ -68,11 +68,9 @@ export default function IntegrationsPage() {
           )}
           <button
             type="button"
-            className={`${styles.cardBtn} ${
-              mcpConnected ? styles.cardBtnConnected : ''
-            }`}
+            className={styles.cardBtn}
             onClick={() => handleConnect('mcp')}
-            disabled={connecting === 'mcp' || mcpConnected}
+            disabled={connecting === 'mcp'}
           >
             {connecting === 'mcp' ? (
               <SpinnerGapIcon size={16} className={styles.spin} />
@@ -104,11 +102,9 @@ export default function IntegrationsPage() {
           )}
           <button
             type="button"
-            className={`${styles.cardBtn} ${
-              whatsappConnected ? styles.cardBtnConnected : ''
-            }`}
+            className={styles.cardBtn}
             onClick={() => handleConnect('whatsapp')}
-            disabled={connecting === 'whatsapp' || whatsappConnected}
+            disabled={connecting === 'whatsapp'}
           >
             {connecting === 'whatsapp' ? (
               <SpinnerGapIcon size={16} className={styles.spin} />

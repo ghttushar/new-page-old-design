@@ -15,6 +15,7 @@ import {
 import { Collapse, Dialog, DialogContent } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
+import CanvasConfetti from '@/app/components/shared/canvas-confetti/canvas-confetti';
 import {
   ClaudeLogo,
   GptLogo,
@@ -266,7 +267,7 @@ export default function McpConnectDialog({
       timerRef.current = window.setTimeout(() => {
         reset();
         onClose();
-      }, 1600);
+      }, 2400);
     }, 1500);
   };
 
@@ -615,6 +616,8 @@ export default function McpConnectDialog({
           )}
         </button>
       </div>
+
+      {success && <CanvasConfetti />}
     </Dialog>
   );
 }

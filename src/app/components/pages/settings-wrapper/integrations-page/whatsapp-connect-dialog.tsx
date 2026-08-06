@@ -14,6 +14,7 @@ import {
 import { Collapse, Dialog, DialogContent } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
+import CanvasConfetti from '@/app/components/shared/canvas-confetti/canvas-confetti';
 import { WhatsappLogo } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './whatsapp-connect-dialog.module.scss';
 
@@ -153,7 +154,7 @@ export default function WhatsAppConnectDialog({
       window.setTimeout(() => {
         reset();
         onClose();
-      }, 1600);
+      }, 2400);
     }, 1500);
   };
 
@@ -593,6 +594,8 @@ export default function WhatsAppConnectDialog({
           )}
         </button>
       </div>
+
+      {success && <CanvasConfetti />}
     </Dialog>
   );
 }

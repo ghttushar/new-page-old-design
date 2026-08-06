@@ -165,14 +165,6 @@
   }
 }
 
-.cardBtnConnected {
-  background: $positive-color;
-
-  &:hover:not(:disabled) {
-    background: $positive-color;
-  }
-}
-
 .spin {
   animation: spin 0.9s linear infinite;
 }
