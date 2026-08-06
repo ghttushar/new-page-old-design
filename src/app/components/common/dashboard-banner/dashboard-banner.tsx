@@ -38,11 +38,11 @@ export default function DashboardBanner() {
     <div className={styles.banner}>
       <div className={styles.logoChain} aria-hidden="true">
         <div className={styles.logoItem}>
-          <JivaJLogo size={28} />
+          <JivaJLogo size={24} />
         </div>
         <LinkIcon size={14} className={styles.chainLink} />
         <div className={styles.logoItem}>
-          <ClaudeLogo size={28} />
+          <ClaudeLogo size={26} />
         </div>
         <span className={styles.chainLine} />
         <div className={styles.logoItem}>
