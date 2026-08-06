@@ -14,39 +14,6 @@
   margin: 0 0 1.6rem;
 }
 
-// ---------- Connected row ----------
-
-.connectedRow {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 1.6rem;
-}
-
-.connectedLabel {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: $positive-color;
-  font-family: $font-family;
-}
-
-.connectedIcons {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.connectedIconWrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.2rem;
-  height: 3.2rem;
-  border-radius: 50%;
-  background: $background-color-3;
-  border: 1px solid $border-color-4;
-}
-
 // ---------- Grid ----------
 
 .grid {
@@ -76,16 +43,6 @@
   &:hover {
     border-color: $primary-color-variant-1;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-  }
-}
-
-.cardConnected {
-  border-color: rgba($positive-color, 0.4);
-  background: rgba($positive-color, 0.02);
-
-  &:hover {
-    border-color: rgba($positive-color, 0.55);
-    box-shadow: 0 6px 16px rgba(66, 148, 136, 0.08);
   }
 }
 
