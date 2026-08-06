@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ClaudeLogo,
   GptLogo,
-  JivaLogo,
+  JivaJLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './dashboard-banner.module.scss';
 
@@ -38,15 +38,15 @@ export default function DashboardBanner() {
     <div className={styles.banner}>
       <div className={styles.logoChain} aria-hidden="true">
         <div className={styles.logoItem}>
-          <JivaLogo size={20} />
+          <JivaJLogo size={28} />
         </div>
         <LinkIcon size={14} className={styles.chainLink} />
         <div className={styles.logoItem}>
-          <ClaudeLogo size={20} />
+          <ClaudeLogo size={28} />
         </div>
         <span className={styles.chainLine} />
         <div className={styles.logoItem}>
-          <GptLogo size={20} />
+          <GptLogo size={28} />
         </div>
       </div>
 
