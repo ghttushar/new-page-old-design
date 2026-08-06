@@ -5,35 +5,33 @@
 }
 
 .pageSubtitle {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.6rem;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2.4rem;
+  gap: 2rem;
 }
 
 .card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 16rem;
-  padding: 2.4rem;
+  padding: 2rem;
   border: 1px solid $border-color-4;
-  border-radius: 2rem;
+  border-radius: 1.2rem;
   background: $foreground-color;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
 
   &:hover {
-    transform: translateY(-4px);
     border-color: $primary-color-variant-1;
-    box-shadow: 0 14px 36px rgba(119, 70, 155, 0.14);
+    box-shadow: 0 6px 20px rgba(119, 70, 155, 0.1);
   }
 
   &:focus-within {
@@ -51,17 +49,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4.8rem;
-  height: 4.8rem;
-  border-radius: 1.2rem;
-  background: $background-color-3;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: #f0fdf4;
   flex-shrink: 0;
 }
 
 .netIllustration {
   position: relative;
-  width: 9.6rem;
-  height: 10rem;
+  width: 8.4rem;
+  height: 8.4rem;
   flex-shrink: 0;
 }
 
@@ -81,27 +79,27 @@
   justify-content: center;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .netNodeClaude {
   top: 0;
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 3rem;
+  height: 3rem;
 }
 
 .netNodeJiva {
-  top: 3.2rem;
-  width: 5.2rem;
-  height: 5.2rem;
-  box-shadow: 0 0 0 6px rgba(119, 70, 155, 0.08),
-    0 8px 20px rgba(119, 70, 155, 0.2);
+  top: 2.6rem;
+  width: 4.8rem;
+  height: 4.8rem;
+  box-shadow: 0 0 0 5px rgba(119, 70, 155, 0.07),
+    0 4px 12px rgba(119, 70, 155, 0.18);
 }
 
 .netNodeGpt {
   bottom: 0;
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 3rem;
+  height: 3rem;
 }
 
 .cardInfo {
@@ -113,67 +111,64 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.6rem;
   flex-wrap: wrap;
 }
 
 .cardTitle {
-  font-size: 1.8rem;
-  font-weight: 600;
-  line-height: 2.8rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 2.4rem;
   color: $main-text;
   font-family: $font-family;
 }
 
-.badgeAlerts {
+.badgeConnected {
   display: inline-flex;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #15803d;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  padding: 0.3rem 0.9rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 0.6rem;
   font-family: $font-family;
-  letter-spacing: 0.04rem;
   line-height: 1.6rem;
 }
 
 .badgeNeutral {
   display: inline-flex;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: $sub-text-2;
   background: $background-color-3;
   border: 1px solid $border-color-4;
-  padding: 0.3rem 0.9rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 0.6rem;
   font-family: $font-family;
-  letter-spacing: 0.04rem;
   line-height: 1.6rem;
 }
 
 .badgeBeta {
   display: inline-flex;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: $primary-color;
   background: $primary-color-dropzone;
   border: 1px solid $alt-primary-color;
-  padding: 0.3rem 0.9rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 0.6rem;
   font-family: $font-family;
-  letter-spacing: 0.04rem;
   line-height: 1.6rem;
 }
 
 .cardDesc {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 400;
-  line-height: 2.4rem;
+  line-height: 1.6;
   color: $sub-text-2;
   font-family: $font-family;
   margin: 0;
@@ -186,7 +181,7 @@
 .cardFooter {
   display: flex;
   justify-content: flex-end;
-  margin-top: 2rem;
+  margin-top: 1.6rem;
 }
 
 .cardBtn {
@@ -194,26 +189,24 @@
   align-items: center;
   justify-content: center;
   gap: 0.8rem;
-  height: 4.4rem;
+  height: 4rem;
   min-width: 12rem;
   padding: 0 2rem;
   background: $primary-color;
   color: $foreground-color;
   border: none;
-  border-radius: 1.2rem;
-  font-size: 1.5rem;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
   font-weight: 600;
   line-height: 2rem;
   font-family: $font-family;
   cursor: pointer;
   text-transform: none;
-  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 14px rgba(119, 70, 155, 0.22);
+  transition: background 0.15s;
+  box-shadow: 0 2px 8px rgba(119, 70, 155, 0.18);
 
   &:hover:not(:disabled) {
     background: $primary-color-variant-1;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(119, 70, 155, 0.3);
   }
 
   &:disabled {

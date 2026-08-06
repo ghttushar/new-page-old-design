@@ -1,6 +1,5 @@
 import {
   ChartBarIcon,
-  ChatCircleDotsIcon,
   CheckCircleIcon,
   CheckIcon,
   CopyIcon,
@@ -14,12 +13,7 @@ import {
   CaretDownIcon,
   KeyIcon,
 } from '@phosphor-icons/react';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material';
+import { Collapse, Dialog, DialogContent, DialogTitle, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
 import {
@@ -204,11 +198,11 @@ function Accordion({
           <span className={styles.accordionIcon}>{icon}</span>
           <span className={styles.accordionTitle}>{title}</span>
         </span>
-        <CaretDownIcon size={18} className={styles.accordionChevron} />
+        <CaretDownIcon size={16} className={styles.accordionChevron} />
       </button>
-      <div className={styles.accordionBodyWrap}>
+      <Collapse in={open}>
         <div className={styles.accordionBody}>{children}</div>
-      </div>
+      </Collapse>
     </div>
   );
 }
@@ -245,11 +239,15 @@ function VerifyCard({
     >
       <div className={styles.verifyTop}>
         <span className={styles.verifyIcon}>
-          <Icon size={20} weight="fill" />
+          <Icon size={18} weight="fill" />
         </span>
         <div className={styles.verifyInfo}>
-          <h4 className={styles.verifyTitle}>{title}</h4>
-          <p className={styles.verifyDesc}>{desc}</p>
+          <Typography variant="body1" className={styles.verifyTitle}>
+            {title}
+          </Typography>
+          <Typography variant="body2" className={styles.verifyDesc}>
+            {desc}
+          </Typography>
         </div>
         {copied && (
           <span className={styles.verifyDoneBadge}>
@@ -317,14 +315,18 @@ export default function McpConnectDialog({
     }
     setStatus('verifying');
     window.setTimeout(() => {
-      if (Math.random() < 0.9) {
-        setMcpConnected(true);
-        setConnected(true);
-        setStatus('success');
-      } else {
-        setStatus('failed');
-      }
+      setMcpConnected(true);
+      setConnected(true);
+      setStatus('success');
     }, 1500);
+  };
+
+  const handlePrimary = () => {
+    if (step < STEPS.length) {
+      setStep((s) => s + 1);
+    } else {
+      handleDone();
+    }
   };
 
   const selectedName = CLIENTS.find((c) => c.key === selectedClient)?.name;
@@ -336,29 +338,31 @@ export default function McpConnectDialog({
         const isCompleted = num < step;
         const isCurrent = num === step;
         return (
-          <div key={label} className={styles.stepCell}>
-            <div
-              className={`${styles.stepCircle} ${
-                isCompleted
-                  ? styles.stepCompleted
-                  : isCurrent
-                  ? styles.stepCurrent
-                  : ''
-              }`}
-            >
-              {isCompleted ? (
-                <CheckIcon size={16} weight="bold" />
-              ) : (
-                <span>{num}</span>
-              )}
+          <React.Fragment key={label}>
+            <div className={styles.stepItem}>
+              <div
+                className={`${styles.stepCircle} ${
+                  isCompleted
+                    ? styles.stepCompleted
+                    : isCurrent
+                    ? styles.stepCurrent
+                    : ''
+                }`}
+              >
+                {isCompleted ? (
+                  <CheckIcon size={14} weight="bold" />
+                ) : (
+                  <span>{num}</span>
+                )}
+              </div>
+              <span
+                className={`${styles.stepLabel} ${
+                  isCurrent ? styles.stepLabelActive : ''
+                } ${isCompleted ? styles.stepLabelCompleted : ''}`}
+              >
+                {label}
+              </span>
             </div>
-            <span
-              className={`${styles.stepLabel} ${
-                isCurrent ? styles.stepLabelActive : ''
-              } ${isCompleted ? styles.stepLabelCompleted : ''}`}
-            >
-              {label}
-            </span>
             {i < STEPS.length - 1 && (
               <div
                 className={`${styles.stepLine} ${
@@ -366,14 +370,14 @@ export default function McpConnectDialog({
                 }`}
               />
             )}
-          </div>
+          </React.Fragment>
         );
       })}
     </div>
   );
 
   const renderStepOne = () => (
-    <div className={styles.stepPane}>
+    <div className={styles.stepContent}>
       <Typography variant="h2" className={styles.stepTitle}>
         Choose your client
       </Typography>
@@ -396,13 +400,17 @@ export default function McpConnectDialog({
               aria-pressed={isSelected}
             >
               <span className={styles.clientLogoWrap}>
-                <ClientLogo size={44} />
+                <ClientLogo size={28} />
               </span>
               <span className={styles.clientRadio}>
-                {isSelected && <CheckIcon size={14} weight="bold" />}
+                {isSelected && <CheckIcon size={12} weight="bold" />}
               </span>
-              <h3 className={styles.clientName}>{client.name}</h3>
-              <p className={styles.clientDesc}>{client.desc}</p>
+              <Typography variant="body1" className={styles.clientName}>
+                {client.name}
+              </Typography>
+              <Typography variant="body2" className={styles.clientDesc}>
+                {client.desc}
+              </Typography>
               <span className={styles.clientChips}>
                 {client.chips.map((chip) => (
                   <span key={chip} className={styles.clientChip}>
@@ -414,11 +422,15 @@ export default function McpConnectDialog({
           );
         })}
       </div>
+
+      <button type="button" className={styles.primaryBtn} onClick={handlePrimary}>
+        Continue
+      </button>
     </div>
   );
 
   const renderStepTwo = () => (
-    <div className={styles.stepPane}>
+    <div className={styles.stepContent}>
       <Typography variant="h2" className={styles.stepTitle}>
         Set up your client
       </Typography>
@@ -430,7 +442,7 @@ export default function McpConnectDialog({
         <>
           <Accordion
             title="Team & Enterprise Owners"
-            icon={<ChatCircleDotsIcon size={20} weight="fill" />}
+            icon={<SparkleIcon size={16} weight="fill" />}
           >
             <Timeline
               items={[
@@ -454,7 +466,7 @@ export default function McpConnectDialog({
           </Accordion>
           <Accordion
             title="Individual Users"
-            icon={<ChatCircleDotsIcon size={20} weight="fill" />}
+            icon={<SparkleIcon size={16} weight="fill" />}
           >
             <Timeline
               items={[
@@ -480,7 +492,7 @@ export default function McpConnectDialog({
       ) : (
         <Accordion
           title="ChatGPT (Codex)"
-          icon={<SparkleIcon size={20} weight="fill" />}
+          icon={<SparkleIcon size={16} weight="fill" />}
         >
           <Timeline
             items={[
@@ -501,11 +513,18 @@ export default function McpConnectDialog({
           />
         </Accordion>
       )}
+
+      <button type="button" className={styles.backLink} onClick={() => setStep((s) => s - 1)}>
+        Back
+      </button>
+      <button type="button" className={styles.primaryBtn} onClick={handlePrimary}>
+        Continue
+      </button>
     </div>
   );
 
   const renderStepThree = () => (
-    <div className={styles.stepPane}>
+    <div className={styles.stepContent}>
       <Typography variant="h2" className={styles.stepTitle}>
         Authentication
       </Typography>
@@ -520,7 +539,9 @@ export default function McpConnectDialog({
               Open a new chat with <strong>{selectedName}</strong>.
             </>,
             <>
-              <span className={styles.timelinePromptLabel}>Run this command:</span>
+              <span className={styles.timelinePromptLabel}>
+                Run this command:
+              </span>
               <CodeBlock value={LOGIN_COMMAND} />
             </>,
             <>
@@ -539,9 +560,11 @@ export default function McpConnectDialog({
 
       <Accordion
         title="Advanced Information"
-        icon={<LockIcon size={20} weight="fill" />}
+        icon={<LockIcon size={16} weight="fill" />}
       >
-        <p className={styles.advancedNote}>Repeat the login flow if:</p>
+        <Typography variant="body2" className={styles.advancedNote}>
+          Repeat the login flow if:
+        </Typography>
         <ul className={styles.bulletList}>
           {REAUTH_TRIGGERS.map((trigger) => (
             <li key={trigger} className={styles.bulletItem}>
@@ -551,11 +574,18 @@ export default function McpConnectDialog({
           ))}
         </ul>
       </Accordion>
+
+      <button type="button" className={styles.backLink} onClick={() => setStep((s) => s - 1)}>
+        Back
+      </button>
+      <button type="button" className={styles.primaryBtn} onClick={handlePrimary}>
+        Continue
+      </button>
     </div>
   );
 
   const renderStepFour = () => (
-    <div className={styles.stepPane}>
+    <div className={styles.stepContent}>
       <Typography variant="h2" className={styles.stepTitle}>
         Verify your connection
       </Typography>
@@ -574,122 +604,101 @@ export default function McpConnectDialog({
       ))}
 
       <div className={styles.infoCard}>
-        <LightbulbIcon size={24} weight="fill" />
+        <LightbulbIcon size={18} weight="fill" />
         <div>
-          <h4 className={styles.infoTitle}>
+          <Typography variant="body1" className={styles.infoTitle}>
             Your MCP connection is almost complete
-          </h4>
-          <p className={styles.infoText}>
-            If all three prompts return valid responses, your MCP connection is
-            complete. Click Done after confirming the prompts have executed
+          </Typography>
+          <Typography variant="body2" className={styles.infoText}>
+            If all prompts return valid responses, your MCP connection is
+            complete. Click Done once you've verified the prompts execute
             successfully.
-          </p>
+          </Typography>
         </div>
       </div>
-    </div>
-  );
 
-  const renderFooter = () => {
-    if (status === 'verifying') {
-      return (
-        <div className={styles.footer}>
-          <div className={styles.footerStatus}>
-            <SpinnerGapIcon size={18} className={styles.spin} />
-            <span className={styles.footerStatusText}>
-              Verifying connection…
-            </span>
-          </div>
-          <button type="button" className={styles.btnPrimary} disabled>
-            <SpinnerGapIcon size={16} className={styles.spin} />
-            Verifying…
-          </button>
+      {status === 'verifying' && (
+        <div className={styles.statusRow}>
+          <SpinnerGapIcon size={16} className={styles.spin} />
+          <span className={styles.statusVerifying}>Verifying connection…</span>
         </div>
-      );
-    }
-    if (status === 'success') {
-      return (
-        <div className={styles.footer}>
-          <div className={styles.footerStatus}>
-            <CheckCircleIcon size={20} color="#429488" weight="fill" />
-            <span className={styles.footerStatusSuccess}>
-              MCP connected — your AI assistants are ready.
-            </span>
-          </div>
+      )}
+      {status === 'success' && (
+        <div className={styles.statusRow}>
+          <CheckCircleIcon size={16} color="#429488" weight="fill" />
+          <span className={styles.statusSuccess}>
+            MCP connected — your AI assistants are ready.
+          </span>
         </div>
-      );
-    }
-    if (status === 'failed') {
-      return (
-        <div className={styles.footer}>
-          <div className={styles.footerStatus}>
-            <XCircleIcon size={20} color="#ff0000" weight="fill" />
-            <span className={styles.footerStatusError}>
-              Connection failed. Please try again.
-            </span>
-          </div>
-          <button
-            type="button"
-            className={styles.btnOutline}
-            onClick={() => window.open(MCP_SUPPORT_EMAIL)}
-          >
+      )}
+      {status === 'failed' && (
+        <div className={styles.statusRow}>
+          <XCircleIcon size={16} color="#ff0000" weight="fill" />
+          <span className={styles.statusError}>
+            Connection failed. Please try again.
+          </span>
+        </div>
+      )}
+
+      <button
+        type="button"
+        className={styles.backLink}
+        onClick={() => setStep((s) => s - 1)}
+      >
+        Back
+      </button>
+      {status === 'failed' ? (
+        <>
+          <button type="button" className={styles.contactLink} onClick={() => window.open(MCP_SUPPORT_EMAIL)}>
             Contact support
           </button>
-          <button
-            type="button"
-            className={styles.btnPrimary}
-            onClick={handleDone}
-          >
+          <button type="button" className={styles.primaryBtn} onClick={handleDone}>
             Try again
           </button>
-        </div>
-      );
-    }
-    const nextLabel = ['', 'Continue', 'Continue', 'Next', 'Done'][step];
-    return (
-      <div className={styles.footer}>
-        {step > 1 && (
-          <button
-            type="button"
-            className={styles.btnOutline}
-            onClick={() => setStep((s) => s - 1)}
-          >
-            Previous
-          </button>
-        )}
-        <div className={styles.footerSpacer} />
+        </>
+      ) : (
         <button
           type="button"
-          className={styles.btnPrimary}
-          onClick={() =>
-            step < STEPS.length ? setStep((s) => s + 1) : handleDone()
-          }
+          className={styles.primaryBtn}
+          onClick={handlePrimary}
+          disabled={status === 'verifying'}
         >
-          {nextLabel}
+          {status === 'verifying' ? (
+            <>
+              <SpinnerGapIcon size={16} className={styles.spin} />
+              Verifying…
+            </>
+          ) : (
+            'Done'
+          )}
         </button>
-      </div>
-    );
-  };
+      )}
+    </div>
+  );
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth={false}
+      maxWidth="sm"
+      fullWidth
       PaperProps={{ className: styles.dialogPaper }}
     >
       <DialogTitle className={styles.dialogHeader}>
         <div className={styles.dialogHeaderLeft}>
           <div className={styles.dialogIconWrap}>
-            <JivaLogo size={40} />
+            <JivaLogo size={22} />
           </div>
           <div>
             <div className={styles.dialogTitleRow}>
-              <span className={styles.dialogTitle}>MCP Connection</span>
+              <Typography variant="body1" className={styles.dialogTitle}>
+                Connect MCP
+              </Typography>
               {connected && <span className={styles.connectedBadge}>ACTIVE</span>}
             </div>
-            <span className={styles.dialogSubtitle}>
+            <Typography variant="body2" className={styles.dialogSubtitle}>
               Connect your AI assistant to JIVA in a few steps.
-            </span>
+            </Typography>
           </div>
         </div>
         <button
@@ -710,8 +719,6 @@ export default function McpConnectDialog({
         {step === 3 && renderStepThree()}
         {step === 4 && renderStepFour()}
       </DialogContent>
-
-      {renderFooter()}
     </Dialog>
   );
 }

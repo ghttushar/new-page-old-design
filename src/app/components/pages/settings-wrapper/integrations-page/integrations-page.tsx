@@ -15,14 +15,18 @@ import McpConnectDialog from './mcp-connect-dialog';
 import WhatsAppConnectDialog from './whatsapp-connect-dialog';
 import styles from './integrations-page.module.scss';
 
-const NET_PARTICLE = '#9551ab';
-
 function McpIllustration() {
   return (
     <div className={styles.netIllustration} aria-hidden="true">
-      <svg className={styles.netSvg} viewBox="0 0 120 100">
+      <svg className={styles.netSvg} viewBox="0 0 100 94">
         <defs>
-          <linearGradient id="netGradClaude" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id="netGradClaude"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="#d97757" />
             <stop offset="100%" stopColor="#9551ab" />
           </linearGradient>
@@ -31,70 +35,55 @@ function McpIllustration() {
             <stop offset="100%" stopColor="#9551ab" />
           </linearGradient>
           <radialGradient id="netGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(119,70,155,0.28)" />
+            <stop offset="0%" stopColor="rgba(119,70,155,0.2)" />
             <stop offset="100%" stopColor="rgba(119,70,155,0)" />
           </radialGradient>
         </defs>
 
-        <circle cx="60" cy="50" r="40" fill="url(#netGlow)" />
+        <circle cx="50" cy="47" r="34" fill="url(#netGlow)" />
 
         <path
           id="netPathClaude"
-          d="M60 26 C 34 36, 34 44, 58 48"
+          d="M50 24 C 28 33, 28 40, 50 44"
           fill="none"
           stroke="url(#netGradClaude)"
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
-          opacity="0.6"
+          opacity="0.55"
         />
         <path
           id="netPathGpt"
-          d="M60 74 C 86 64, 86 56, 62 52"
+          d="M50 70 C 72 61, 72 54, 50 50"
           fill="none"
           stroke="url(#netGradGpt)"
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
-          opacity="0.6"
+          opacity="0.55"
         />
 
-        <circle r="2.6" fill={NET_PARTICLE}>
+        <circle r="2" fill="#9551ab">
           <animateMotion
             dur="3.6s"
             repeatCount="indefinite"
-            path="M60 26 C 34 36, 34 44, 58 48"
+            path="M50 24 C 28 33, 28 40, 50 44"
           />
           <animate
             attributeName="opacity"
             values="0;1;1;0"
             dur="3.6s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2.6" fill="#10a37f">
-          <animateMotion
-            dur="3.6s"
-            begin="1.4s"
-            repeatCount="indefinite"
-            path="M60 74 C 86 64, 86 56, 62 52"
-          />
-          <animate
-            attributeName="opacity"
-            values="0;1;1;0"
-            dur="3.6s"
-            begin="1.4s"
             repeatCount="indefinite"
           />
         </circle>
       </svg>
 
       <div className={`${styles.netNode} ${styles.netNodeClaude}`}>
-        <ClaudeLogo size={24} />
+        <ClaudeLogo size={22} />
       </div>
       <div className={`${styles.netNode} ${styles.netNodeJiva}`}>
-        <JivaLogo size={44} />
+        <JivaLogo size={40} />
       </div>
       <div className={`${styles.netNode} ${styles.netNodeGpt}`}>
-        <GptLogo size={24} />
+        <GptLogo size={22} />
       </div>
     </div>
   );
@@ -143,7 +132,7 @@ export default function IntegrationsPage() {
                   MCP
                 </Typography>
                 {mcpConnected ? (
-                  <span className={styles.badgeAlerts}>CONNECTED</span>
+                  <span className={styles.badgeConnected}>CONNECTED</span>
                 ) : (
                   <span className={styles.badgeBeta}>BETA</span>
                 )}
@@ -162,7 +151,7 @@ export default function IntegrationsPage() {
               disabled={connecting === 'mcp'}
             >
               {connecting === 'mcp' ? (
-                <SpinnerGapIcon size={18} className={styles.spin} />
+                <SpinnerGapIcon size={16} className={styles.spin} />
               ) : (
                 'Connect'
               )}
@@ -173,7 +162,7 @@ export default function IntegrationsPage() {
         <div className={styles.card}>
           <div className={styles.cardTop}>
             <div className={styles.cardLogoWrap}>
-              <WhatsappLogo size={40} />
+              <WhatsappLogo size={22} />
             </div>
             <div className={styles.cardInfo}>
               <div className={styles.cardTitleRow}>
@@ -181,7 +170,7 @@ export default function IntegrationsPage() {
                   WhatsApp
                 </Typography>
                 <span className={styles.badgeNeutral}>AVAILABLE</span>
-                <span className={styles.badgeAlerts}>ALERTS</span>
+                <span className={styles.badgeConnected}>ALERTS</span>
               </div>
               <Typography variant="body2" className={styles.cardDesc}>
                 Receive Anarix alerts and notifications on WhatsApp.
@@ -196,7 +185,7 @@ export default function IntegrationsPage() {
               disabled={connecting === 'whatsapp'}
             >
               {connecting === 'whatsapp' ? (
-                <SpinnerGapIcon size={18} className={styles.spin} />
+                <SpinnerGapIcon size={16} className={styles.spin} />
               ) : (
                 'Connect'
               )}

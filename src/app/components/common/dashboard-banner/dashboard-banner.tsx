@@ -10,8 +10,6 @@ import styles from './dashboard-banner.module.scss';
 
 const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
 
-const PARTICLE_COLOR = '#9551ab';
-
 export default function DashboardBanner() {
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
@@ -50,50 +48,62 @@ export default function DashboardBanner() {
       <div className={styles.network} aria-hidden="true">
         <svg
           className={styles.networkSvg}
-          viewBox="0 0 320 200"
+          viewBox="0 0 260 150"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <linearGradient id="flowGradClaude" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="flowGradClaude"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#d97757" />
               <stop offset="100%" stopColor="#9551ab" />
             </linearGradient>
-            <linearGradient id="flowGradGpt" x1="100%" y1="0%" x2="0%" y2="100%">
+            <linearGradient
+              id="flowGradGpt"
+              x1="100%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#10a37f" />
               <stop offset="100%" stopColor="#9551ab" />
             </linearGradient>
             <radialGradient id="jivaGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(119,70,155,0.35)" />
+              <stop offset="0%" stopColor="rgba(119,70,155,0.25)" />
               <stop offset="100%" stopColor="rgba(119,70,155,0)" />
             </radialGradient>
           </defs>
 
-          <circle cx="160" cy="140" r="64" fill="url(#jivaGlow)" />
+          <circle cx="130" cy="112" r="48" fill="url(#jivaGlow)" />
 
           <path
-            id="pathClaude"
-            d="M76 34 C 70 84, 106 116, 148 132"
+            id="bannerPathClaude"
+            d="M74 40 C 78 84, 106 100, 124 106"
             fill="none"
             stroke="url(#flowGradClaude)"
-            strokeWidth="3"
+            strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.6"
+            opacity="0.55"
           />
           <path
-            id="pathGpt"
-            d="M244 34 C 250 84, 214 116, 172 132"
+            id="bannerPathGpt"
+            d="M186 40 C 182 84, 154 100, 136 106"
             fill="none"
             stroke="url(#flowGradGpt)"
-            strokeWidth="3"
+            strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.6"
+            opacity="0.55"
           />
 
-          <circle r="4" fill={PARTICLE_COLOR}>
+          <circle r="2.5" fill="#9551ab">
             <animateMotion
               dur="3.6s"
               repeatCount="indefinite"
-              path="M76 34 C 70 84, 106 116, 148 132"
+              path="M74 40 C 78 84, 106 100, 124 106"
             />
             <animate
               attributeName="opacity"
@@ -102,40 +112,12 @@ export default function DashboardBanner() {
               repeatCount="indefinite"
             />
           </circle>
-          <circle r="3" fill="#d97757">
-            <animateMotion
-              dur="3.6s"
-              begin="1.2s"
-              repeatCount="indefinite"
-              path="M76 34 C 70 84, 106 116, 148 132"
-            />
-            <animate
-              attributeName="opacity"
-              values="0;1;1;0"
-              dur="3.6s"
-              begin="1.2s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle r="4" fill={PARTICLE_COLOR}>
-            <animateMotion
-              dur="3.6s"
-              repeatCount="indefinite"
-              path="M244 34 C 250 84, 214 116, 172 132"
-            />
-            <animate
-              attributeName="opacity"
-              values="0;1;1;0"
-              dur="3.6s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle r="3" fill="#10a37f">
+          <circle r="2.5" fill="#10a37f">
             <animateMotion
               dur="3.6s"
               begin="1.4s"
               repeatCount="indefinite"
-              path="M244 34 C 250 84, 214 116, 172 132"
+              path="M186 40 C 182 84, 154 100, 136 106"
             />
             <animate
               attributeName="opacity"
@@ -148,23 +130,29 @@ export default function DashboardBanner() {
         </svg>
 
         <div className={`${styles.node} ${styles.nodeClaude}`}>
-          <ClaudeLogo size={44} />
+          <ClaudeLogo size={28} />
         </div>
         <div className={`${styles.node} ${styles.nodeGpt}`}>
-          <GptLogo size={44} />
+          <GptLogo size={28} />
         </div>
         <div className={`${styles.node} ${styles.nodeJiva}`}>
-          <JivaLogo size={88} />
+          <JivaLogo size={56} />
         </div>
 
-        <span className={`${styles.nodeLabel} ${styles.labelClaude}`}>Claude</span>
-        <span className={`${styles.nodeLabel} ${styles.labelGpt}`}>ChatGPT</span>
+        <span className={`${styles.nodeLabel} ${styles.labelClaude}`}>
+          Claude
+        </span>
+        <span className={`${styles.nodeLabel} ${styles.labelGpt}`}>
+          ChatGPT
+        </span>
       </div>
 
       <div className={styles.textWrap}>
         <h2 className={styles.headline}>
           Give Claude &amp; ChatGPT{' '}
-          <span className={styles.headlineAccent}>Real Marketplace Intelligence.</span>
+          <span className={styles.headlineAccent}>
+            Real Marketplace Intelligence.
+          </span>
         </h2>
         <p className={styles.subline}>
           JIVA securely gives Claude and ChatGPT access to marketplace
