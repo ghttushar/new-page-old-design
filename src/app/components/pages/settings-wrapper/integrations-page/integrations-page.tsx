@@ -1,9 +1,15 @@
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import useSubHeader from '@/hooks/use-sub-header.hook';
-import { CircularProgress, Typography } from '@mui/material';
-import { WhatsappLogoIcon, LightningIcon } from '@phosphor-icons/react';
+import { Typography } from '@mui/material';
+import { SpinnerGapIcon } from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
+import {
+  ClaudeLogo,
+  GptLogo,
+  JivaLogo,
+  WhatsappLogo,
+} from '@/app/components/common/integration-logos/integration-logos';
 import { getMcpConnected, subscribeMcpConnected } from './mcp-connection';
 import McpConnectDialog from './mcp-connect-dialog';
 import WhatsAppConnectDialog from './whatsapp-connect-dialog';
@@ -14,118 +20,113 @@ export default function IntegrationsPage() {
   const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
   const [mcpDialogOpen, setMcpDialogOpen] = useState(false);
   const [mcpConnected, setMcpConnected] = useState(getMcpConnected);
+  const [connecting, setConnecting] = useState<'' | 'whatsapp' | 'mcp'>('');
 
   useEffect(() => {
     const unsubscribe = subscribeMcpConnected(setMcpConnected);
     return unsubscribe;
   }, []);
 
+  const handleConnect = (kind: 'whatsapp' | 'mcp') => {
+    if (connecting) {
+      return;
+    }
+    setConnecting(kind);
+    window.setTimeout(() => {
+      setConnecting('');
+      if (kind === 'whatsapp') {
+        setWhatsappDialogOpen(true);
+      } else {
+        setMcpDialogOpen(true);
+      }
+    }, 450);
+  };
+
   return (
     <div className={styles.page}>
       <Typography variant="body1" className={styles.pageSubtitle}>
-        Send Anarix alerts to the channels you actually check.
+        Connect external services to extend JIVA.
       </Typography>
 
-      <div className={styles.section}>
-        <Typography variant="body2" className={styles.sectionLabel}>
-          Available integrations
-        </Typography>
-
+      <div className={styles.grid}>
         <div className={styles.card}>
-          <div className={`${styles.cardIconWrap} ${styles.cardIconWhatsapp}`}>
-            <WhatsappLogoIcon size={22} weight="fill" color="#25D366" />
-          </div>
-          <div className={styles.cardInfo}>
-            <div className={styles.cardTitleRow}>
-              <Typography variant="body1" className={styles.cardTitle}>
-                WhatsApp
-              </Typography>
-              <span className={styles.badgeAlerts}>ALERTS</span>
+          <div className={styles.cardTop}>
+            <div className={styles.cardLogoWrap}>
+              <WhatsappLogo size={44} />
             </div>
-            <Typography variant="body2" className={styles.cardDesc}>
-              Receive Anarix alerts and notifications on WhatsApp. Choose which
-              services and accounts trigger messages.
-            </Typography>
+            <div className={styles.cardInfo}>
+              <div className={styles.cardTitleRow}>
+                <Typography variant="body1" className={styles.cardTitle}>
+                  WhatsApp
+                </Typography>
+                <span className={styles.badgeNeutral}>AVAILABLE</span>
+                <span className={styles.badgeAlerts}>ALERTS</span>
+              </div>
+              <Typography variant="body2" className={styles.cardDesc}>
+                Receive Anarix alerts and notifications on WhatsApp.
+              </Typography>
+            </div>
           </div>
-          <div className={styles.cardActions}>
+          <div className={styles.cardFooter}>
             <button
               type="button"
               className={styles.cardBtn}
-              onClick={() => setWhatsappDialogOpen(true)}
+              onClick={() => handleConnect('whatsapp')}
+              disabled={connecting === 'whatsapp'}
             >
-              Connect WhatsApp
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <div className={styles.cardIconWrap}>
-            <LightningIcon size={22} weight="fill" color="#77469b" />
-          </div>
-          <div className={styles.cardInfo}>
-            <div className={styles.cardTitleRow}>
-              <Typography variant="body1" className={styles.cardTitle}>
-                MCP
-              </Typography>
-              {mcpConnected ? (
-                <span className={styles.badgeAlerts}>ACTIVE</span>
+              {connecting === 'whatsapp' ? (
+                <SpinnerGapIcon size={18} className={styles.spin} />
               ) : (
-                <span className={styles.badgeTools}>TOOLS</span>
+                'Connect'
               )}
-            </div>
-            <Typography variant="body2" className={styles.cardDesc}>
-              Connect AI assistants like Claude, Cursor, and VS Code to Anarix
-              via the Model Context Protocol for agent-driven workflows.
-            </Typography>
-          </div>
-          <div className={styles.cardActions}>
-            <button
-              type="button"
-              className={styles.cardBtn}
-              onClick={() => setMcpDialogOpen(true)}
-            >
-              Connect MCP
             </button>
           </div>
         </div>
-      </div>
 
-      <div className={styles.section}>
-        <Typography variant="body2" className={styles.sectionLabel}>
-          Your connections
-        </Typography>
-
-        {mcpConnected ? (
-          <div className={styles.card}>
-            <div className={styles.cardIconWrap}>
-              <LightningIcon size={22} weight="fill" color="#77469b" />
+        <div className={styles.card}>
+          <div className={styles.cardTop}>
+            <div className={styles.cardLogoWrap}>
+              <JivaLogo size={44} />
+              <span className={styles.logoConnector} />
+              <span className={styles.assistantLogo} title="Claude">
+                <ClaudeLogo size={24} />
+              </span>
+              <span className={styles.assistantLogo} title="ChatGPT">
+                <GptLogo size={24} />
+              </span>
             </div>
             <div className={styles.cardInfo}>
               <div className={styles.cardTitleRow}>
                 <Typography variant="body1" className={styles.cardTitle}>
                   MCP
                 </Typography>
-                <span className={styles.badgeAlerts}>ACTIVE</span>
+                {mcpConnected ? (
+                  <span className={styles.badgeAlerts}>CONNECTED</span>
+                ) : (
+                  <span className={styles.badgeBeta}>BETA</span>
+                )}
               </div>
               <Typography variant="body2" className={styles.cardDesc}>
-                AI assistants can access your Anarix marketplace intelligence.
+                Connect Claude or ChatGPT to JIVA and unlock AI-powered
+                marketplace intelligence.
               </Typography>
             </div>
-            <div className={styles.cardActions}>
-              <button
-                type="button"
-                className={styles.cardBtn}
-                onClick={() => setMcpDialogOpen(true)}
-              >
-                Manage
-              </button>
-            </div>
           </div>
-        ) : (
-          <div className={styles.emptyCard}>
-            <CircularProgress size={30} className={styles.spinner} />
+          <div className={styles.cardFooter}>
+            <button
+              type="button"
+              className={styles.cardBtn}
+              onClick={() => handleConnect('mcp')}
+              disabled={connecting === 'mcp'}
+            >
+              {connecting === 'mcp' ? (
+                <SpinnerGapIcon size={18} className={styles.spin} />
+              ) : (
+                'Connect'
+              )}
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       <WhatsAppConnectDialog

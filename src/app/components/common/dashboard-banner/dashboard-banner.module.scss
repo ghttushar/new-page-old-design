@@ -1,159 +1,203 @@
 @import 'src/assets/styles/variables/variables.scss';
 
 .banner {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 1.6rem;
-  padding: 1.2rem 1.6rem;
+  gap: 4rem;
+  min-height: 20rem;
+  padding: 3.2rem 4rem;
   border: 1px solid $border-color-4;
-  border-radius: 1rem;
-  background: #ffffff;
-  color: $main-text;
-  margin-bottom: 1.6rem;
+  border-radius: 2.4rem;
+  background: linear-gradient(135deg, #ffffff 0%, #fbf7ff 55%, #f4ecfd 100%);
+  box-shadow: 0 12px 40px rgba(119, 70, 155, 0.1);
+  margin-bottom: 2.4rem;
+  overflow: hidden;
 }
 
-.iconChain {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-shrink: 0;
-}
-
-.chainItem {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.chainIcon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
+.closeBtn {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  min-width: 3.6rem;
+  background: transparent;
+  border: none;
+  color: $sub-text-4;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(119, 70, 155, 0.1);
+    color: $primary-color;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.network {
+  position: relative;
+  width: 32rem;
+  min-width: 32rem;
+  height: 20rem;
   flex-shrink: 0;
 }
 
-.chainConnector {
+.networkSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.node {
+  position: absolute;
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
-.chainConnectorLine {
-  width: 1.2rem;
-  height: 2px;
-  background: $border-color-4;
-  border-radius: 1px;
+.nodeClaude {
+  top: 0;
+  left: 3.6rem;
+  width: 5rem;
+  height: 5rem;
 }
 
-.chainConnectorArrow {
-  color: $sub-text-4;
-  flex-shrink: 0;
+.nodeGpt {
+  top: 0;
+  right: 3.6rem;
+  width: 5rem;
+  height: 5rem;
+}
+
+.nodeJiva {
+  bottom: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9.6rem;
+  height: 9.6rem;
+  box-shadow: 0 0 0 8px rgba(119, 70, 155, 0.08), 0 12px 32px rgba(119, 70, 155, 0.25);
+}
+
+.nodeLabel {
+  position: absolute;
+  top: 4.6rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $sub-text-2;
+  font-family: $font-family;
+  white-space: nowrap;
+}
+
+.labelClaude {
+  left: 2.2rem;
+}
+
+.labelGpt {
+  right: 2.2rem;
 }
 
 .textWrap {
   flex: 1;
   min-width: 0;
-}
-
-.title {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.4rem;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.headline {
+  font-size: 4.8rem;
   font-weight: 700;
-  font-family: $font-family;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
   color: $main-text;
-  margin-bottom: 0.2rem;
+  font-family: $font-family;
+  margin: 0 0 1.2rem;
+  max-width: 62rem;
 }
 
-.newBadge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: #1d4ed8;
-  background: #dbeafe;
-  border: 1px solid #bfdbfe;
-  padding: 0.15rem 0.55rem;
-  border-radius: 0.4rem;
-  line-height: 1.4;
+.headlineAccent {
+  color: $primary-color;
 }
 
-.subtitle {
-  font-size: 1.1rem;
-  font-weight: 400;
+.subline {
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1.45;
   color: $sub-text-2;
   font-family: $font-family;
-  overflow-wrap: anywhere;
+  margin: 0 0 2.4rem;
+  max-width: 58rem;
 }
 
-.rightActions {
+.actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  flex-shrink: 0;
+  gap: 1.6rem;
 }
 
-.linkBtn {
+.connectBtn {
+  height: 4.8rem;
+  padding: 0 2.4rem;
+  background: $primary-color;
+  color: #ffffff;
+  border: none;
+  border-radius: 1.2rem;
+  font-family: $font-family;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 2rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(119, 70, 155, 0.28);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    background: $primary-color-variant-1;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(119, 70, 155, 0.32);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.learnBtn {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.8rem;
+  height: 4.8rem;
+  padding: 0 0.8rem;
   background: transparent;
   border: none;
   color: $primary-color;
   font-family: $font-family;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0.6rem;
+  line-height: 2rem;
   cursor: pointer;
-  white-space: nowrap;
+  border-radius: 1.2rem;
   transition: background 0.15s;
 
   &:hover {
     background: $primary-color-dropzone;
   }
-}
 
-.connectBtn {
-  background: $primary-color;
-  color: #ffffff;
-  border: none;
-  border-radius: 0.6rem;
-  padding: 0.7rem 1.6rem;
-  font-family: $font-family;
-  font-size: 1.15rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(119, 70, 155, 0.2);
-  transition: background 0.15s;
-
-  &:hover {
-    background: $primary-color-variant-1;
-  }
-}
-
-.closeBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  background: transparent;
-  border: none;
-  color: $sub-text-4;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
-
-  &:hover {
-    background: rgba(119, 70, 155, 0.12);
-    color: $primary-color;
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
   }
 }

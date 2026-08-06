@@ -1,28 +1,37 @@
 import {
+  ChartBarIcon,
   ChatCircleDotsIcon,
   CheckCircleIcon,
   CheckIcon,
   CopyIcon,
-  LightningIcon,
   LockIcon,
   SparkleIcon,
   SpinnerGapIcon,
+  TrendUpIcon,
   XCircleIcon,
   XIcon,
+  CaretDownIcon,
+  KeyIcon,
 } from '@phosphor-icons/react';
 import {
-  Box,
   Dialog,
   DialogContent,
   DialogTitle,
   Typography,
 } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
+import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
+import {
+  ClaudeLogo,
+  GptLogo,
+  JivaLogo,
+} from '@/app/components/common/integration-logos/integration-logos';
 import { getMcpConnected, setMcpConnected } from './mcp-connection';
 import styles from './mcp-connect-dialog.module.scss';
 
 const MCP_SERVER_URL = 'https://mcp.anarix.ai/mcp/sse';
 const MCP_SUPPORT_EMAIL = 'mailto:support@anarix.ai';
+const LOGIN_COMMAND = 'use anarix mcp and login';
 
 const STEPS = ['Choose Client', 'Setup', 'Authentication', 'Verify'];
 
@@ -33,20 +42,23 @@ type StatusKey = 'idle' | 'verifying' | 'success' | 'failed';
 const CLIENTS: {
   key: ClientKey;
   name: string;
-  icon: React.ComponentType;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   desc: string;
+  chips: string[];
 }[] = [
   {
     key: 'claude',
     name: 'Claude',
-    icon: ChatCircleDotsIcon,
+    icon: ClaudeLogo,
     desc: 'Anthropic\u2019s assistant in the web app, desktop, and Code.',
+    chips: ['Desktop', 'Web', 'Code'],
   },
   {
     key: 'codex',
     name: 'ChatGPT (Codex)',
-    icon: SparkleIcon,
+    icon: GptLogo,
     desc: 'OpenAI\u2019s agentic coding environment.',
+    chips: ['Desktop', 'Projects', 'Codex'],
   },
 ];
 
@@ -57,59 +69,61 @@ const REAUTH_TRIGGERS = [
   'You\u2019ve been inactive for an extended period',
 ];
 
-const VERIFY_PROMPTS = [
+const VERIFY_CARDS = [
   {
+    id: 'accounts',
+    icon: KeyIcon,
     title: 'Verify Account Access',
+    desc: 'Confirm your connected accounts are visible to the assistant.',
     prompt: 'Show me the accounts I have access to.',
   },
   {
+    id: 'campaigns',
+    icon: ChartBarIcon,
     title: 'Verify Campaign Data',
+    desc: 'Check that real campaign data comes through the connection.',
     prompt:
       'What were my top 5 campaigns by ad spend from 2026-04-01 to 2026-04-30?',
   },
   {
+    id: 'visuals',
+    icon: TrendUpIcon,
     title: 'Verify Visualizations',
+    desc: 'Make sure charts and reports render correctly.',
     prompt:
       'Create a chart showing weekly ad spend and ROAS for the last 8 weeks.',
   },
 ];
 
-function CopyRow({
-  label,
-  value,
-  monospace = true,
-}: {
-  label: string;
-  value: string;
-  monospace?: boolean;
-}) {
+function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
 
   const onCopy = () => {
-    navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      showSuccessToastMessage({
+        title: 'Copied to clipboard',
+        description: value,
+      });
+      window.setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
-    <div className={styles.copyRow}>
-      <Typography variant="body2" className={styles.copyLabel}>
-        {label}
-      </Typography>
-      <div className={styles.copyBox}>
-        <Typography
-          variant="body2"
-          className={`${styles.copyText} ${
-            monospace ? styles.copyMonospace : ''
-          }`}
+    <div className={styles.copyField}>
+      <span className={styles.copyFieldLabel}>{label}</span>
+      <div className={styles.copyFieldBox}>
+        <code className={styles.copyFieldText}>{value}</code>
+        <button
+          type="button"
+          className={styles.copyBtn}
+          onClick={onCopy}
+          aria-label={`Copy ${label}`}
         >
-          {value}
-        </Typography>
-        <button type="button" className={styles.copyBtn} onClick={onCopy}>
           {copied ? (
-            <CheckIcon size={15} weight="bold" />
+            <CheckIcon size={16} weight="bold" />
           ) : (
-            <CopyIcon size={15} />
+            <CopyIcon size={16} />
           )}
         </button>
       </div>
@@ -117,42 +131,144 @@ function CopyRow({
   );
 }
 
-function StepList({ children }: { children: React.ReactNode[] }) {
+function CodeBlock({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      showSuccessToastMessage({
+        title: 'Copied to clipboard',
+        description: value,
+      });
+      window.setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
-    <ol className={styles.stepList}>
-      {children.map((child, index) => (
-        <li key={index} className={styles.stepItem}>
-          <span className={styles.stepNum}>{index + 1}</span>
-          <div className={styles.stepContent}>{child}</div>
+    <div className={styles.codeBlock}>
+      <code className={styles.codeBlockText}>{value}</code>
+      <button
+        type="button"
+        className={styles.copyBtn}
+        onClick={onCopy}
+        aria-label="Copy command"
+      >
+        {copied ? (
+          <CheckIcon size={16} weight="bold" />
+        ) : (
+          <CopyIcon size={16} />
+        )}
+      </button>
+    </div>
+  );
+}
+
+function Timeline({ items }: { items: React.ReactNode[] }) {
+  return (
+    <ol className={styles.timeline}>
+      {items.map((item, i) => (
+        <li key={i} className={styles.timelineItem}>
+          <div className={styles.timelineRail}>
+            <span className={styles.timelineNum}>{i + 1}</span>
+            {i < items.length - 1 && <span className={styles.timelineLine} />}
+          </div>
+          <div className={styles.timelineBody}>{item}</div>
         </li>
       ))}
     </ol>
   );
 }
 
-function VerifyPrompt({ title, prompt }: { title: string; prompt: string }) {
+function Accordion({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className={`${styles.accordion} ${open ? styles.accordionOpen : ''}`}>
+      <button
+        type="button"
+        className={styles.accordionHeader}
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className={styles.accordionTitleWrap}>
+          <span className={styles.accordionIcon}>{icon}</span>
+          <span className={styles.accordionTitle}>{title}</span>
+        </span>
+        <CaretDownIcon size={18} className={styles.accordionChevron} />
+      </button>
+      <div className={styles.accordionBodyWrap}>
+        <div className={styles.accordionBody}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function VerifyCard({
+  icon: Icon,
+  title,
+  desc,
+  prompt,
+}: {
+  icon: React.ComponentType<{ size?: number; weight?: 'fill' }>;
+  title: string;
+  desc: string;
+  prompt: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const onCopy = () => {
-    navigator.clipboard.writeText(prompt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true);
+      showSuccessToastMessage({
+        title: 'Copied to clipboard',
+        description: prompt,
+      });
+      window.setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
-    <div className={styles.prompt}>
-      <Typography variant="body1" className={styles.promptTitle}>
-        {title}
-      </Typography>
-      <div className={styles.promptBox}>
-        <Typography variant="body2" className={styles.promptText}>
-          {prompt}
-        </Typography>
-        <button type="button" className={styles.copyBtn} onClick={onCopy}>
+    <div
+      className={`${styles.verifyCard} ${
+        copied ? styles.verifyCardDone : ''
+      }`}
+    >
+      <div className={styles.verifyTop}>
+        <span className={styles.verifyIcon}>
+          <Icon size={20} weight="fill" />
+        </span>
+        <div className={styles.verifyInfo}>
+          <h4 className={styles.verifyTitle}>{title}</h4>
+          <p className={styles.verifyDesc}>{desc}</p>
+        </div>
+        {copied && (
+          <span className={styles.verifyDoneBadge}>
+            <CheckIcon size={12} weight="bold" />
+            Copied
+          </span>
+        )}
+      </div>
+      <div className={styles.verifyPromptBox}>
+        <code className={styles.verifyPromptText}>{prompt}</code>
+        <button
+          type="button"
+          className={styles.copyBtn}
+          onClick={onCopy}
+          aria-label={`Copy prompt: ${title}`}
+        >
           {copied ? (
-            <CheckIcon size={15} weight="bold" />
+            <CheckIcon size={16} weight="bold" />
           ) : (
-            <CopyIcon size={15} />
+            <CopyIcon size={16} />
           )}
         </button>
       </div>
@@ -199,7 +315,7 @@ export default function McpConnectDialog({
       return;
     }
     setStatus('verifying');
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (Math.random() < 0.9) {
         setMcpConnected(true);
         setConnected(true);
@@ -209,6 +325,8 @@ export default function McpConnectDialog({
       }
     }, 1500);
   };
+
+  const selectedName = CLIENTS.find((c) => c.key === selectedClient)?.name;
 
   const renderStepIndicator = () => (
     <div className={styles.stepIndicator}>
@@ -229,7 +347,7 @@ export default function McpConnectDialog({
                 }`}
               >
                 {isCompleted ? (
-                  <CheckIcon size={14} weight="bold" />
+                  <CheckIcon size={16} weight="bold" />
                 ) : (
                   <span>{num}</span>
                 )}
@@ -256,17 +374,17 @@ export default function McpConnectDialog({
   );
 
   const renderStepOne = () => (
-    <div className={styles.stepContent}>
+    <div className={styles.stepPane}>
       <Typography variant="h2" className={styles.stepTitle}>
         Choose your client
       </Typography>
       <Typography variant="body2" className={styles.stepSubtitle}>
-        Select the AI assistant you want to connect to Anarix.
+        Select the AI assistant you want to connect to JIVA.
       </Typography>
 
       <div className={styles.clientGrid}>
         {CLIENTS.map((client) => {
-          const ClientIcon = client.icon;
+          const ClientLogo = client.icon;
           const isSelected = selectedClient === client.key;
           return (
             <button
@@ -276,186 +394,155 @@ export default function McpConnectDialog({
                 isSelected ? styles.clientCardSelected : ''
               }`}
               onClick={() => setSelectedClient(client.key)}
+              aria-pressed={isSelected}
             >
-              <div
-                className={`${styles.clientRadio} ${
-                  isSelected ? styles.clientRadioSelected : ''
-                }`}
-              >
-                {isSelected && <CheckIcon size={12} weight="bold" />}
-              </div>
-              <div className={styles.clientIconWrap}>
-                <ClientIcon size={22} weight="fill" />
-              </div>
-              <div className={styles.clientInfo}>
-                <Typography variant="body1" className={styles.clientName}>
-                  {client.name}
-                </Typography>
-                <Typography variant="body2" className={styles.clientDesc}>
-                  {client.desc}
-                </Typography>
-              </div>
+              <span className={styles.clientLogoWrap}>
+                <ClientLogo size={44} />
+              </span>
+              <span className={styles.clientRadio}>
+                {isSelected && <CheckIcon size={14} weight="bold" />}
+              </span>
+              <h3 className={styles.clientName}>{client.name}</h3>
+              <p className={styles.clientDesc}>{client.desc}</p>
+              <span className={styles.clientChips}>
+                {client.chips.map((chip) => (
+                  <span key={chip} className={styles.clientChip}>
+                    {chip}
+                  </span>
+                ))}
+              </span>
             </button>
           );
         })}
       </div>
-
-      <Box
-        component="button"
-        onClick={() => setStep(2)}
-        sx={{
-          width: '100%',
-          bgcolor: '#77469b',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '0.8rem',
-          px: '1rem',
-          py: '1rem',
-          fontSize: '1.4rem',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-          cursor: 'pointer',
-          textTransform: 'none',
-          transition: 'background 0.15s',
-          '&:hover': { bgcolor: '#9551ab' },
-        }}
-      >
-        Continue
-      </Box>
     </div>
   );
 
   const renderStepTwo = () => (
-    <div className={styles.stepContent}>
+    <div className={styles.stepPane}>
       <Typography variant="h2" className={styles.stepTitle}>
         Set up your client
       </Typography>
       <Typography variant="body2" className={styles.stepSubtitle}>
-        Follow the setup guide for {CLIENTS.find((c) => c.key === selectedClient)?.name}.
+        Follow the steps below to connect {selectedName}.
       </Typography>
 
-      {selectedClient === 'claude' && (
-        <div className={styles.subSection}>
-          <div className={styles.subSectionHeader}>
-            <ChatCircleDotsIcon size={18} weight="fill" />
-            <Typography variant="body1" className={styles.subSectionTitle}>
-              Claude
-            </Typography>
-          </div>
-          <div className={styles.setupBlock}>
-            <div className={styles.setupBlockTitle}>
-              For Team &amp; Enterprise Owners
-            </div>
-            <StepList>
-              <span>
-                Go to Organization Settings {'\u2192'} Connectors
-              </span>
-              <span>Click Add</span>
-              <span>Select Custom {'\u2192'} Web</span>
-              <CopyRow label="Enter the MCP server URL:" value={MCP_SERVER_URL} />
-              <span>Click Add</span>
-            </StepList>
-          </div>
-          <div className={styles.setupBlock}>
-            <div className={styles.setupBlockTitle}>For Individual Users</div>
-            <StepList>
-              <span>Open Settings</span>
-              <span>Navigate to Connectors</span>
-              <span>Click Add Custom Connector</span>
-              <CopyRow label="Name" value="JIVA" monospace={false} />
-              <CopyRow label="Remote MCP URL" value={MCP_SERVER_URL} />
-              <span>Click Add</span>
-              <span>Verify JIVA appears in the connector list.</span>
-            </StepList>
-          </div>
-        </div>
+      {selectedClient === 'claude' ? (
+        <>
+          <Accordion
+            title="Team & Enterprise Owners"
+            icon={<ChatCircleDotsIcon size={20} weight="fill" />}
+          >
+            <Timeline
+              items={[
+                <>
+                  Go to <strong>Organization Settings</strong> {'\u2192'}{' '}
+                  <strong>Connectors</strong>.
+                </>,
+                <>
+                  Click <strong>Add</strong> and select <strong>Custom</strong>{' '}
+                  {'\u2192'} <strong>Web</strong>.
+                </>,
+                <CopyField
+                  label="Enter the MCP server URL"
+                  value={MCP_SERVER_URL}
+                />,
+                <>
+                  Click <strong>Add</strong> to save the connector.
+                </>,
+              ]}
+            />
+          </Accordion>
+          <Accordion
+            title="Individual Users"
+            icon={<ChatCircleDotsIcon size={20} weight="fill" />}
+          >
+            <Timeline
+              items={[
+                <>
+                  Open <strong>Settings</strong> and navigate to{' '}
+                  <strong>Connectors</strong>.
+                </>,
+                <>
+                  Click <strong>Add Custom Connector</strong>.
+                </>,
+                <CopyField label="Connector name" value="JIVA" />,
+                <CopyField label="Remote MCP URL" value={MCP_SERVER_URL} />,
+                <>
+                  Click <strong>Add</strong>.
+                </>,
+                <>
+                  Verify <strong>JIVA</strong> appears in the connector list.
+                </>,
+              ]}
+            />
+          </Accordion>
+        </>
+      ) : (
+        <Accordion
+          title="ChatGPT (Codex)"
+          icon={<SparkleIcon size={20} weight="fill" />}
+        >
+          <Timeline
+            items={[
+              <>
+                Open <strong>Settings</strong> and navigate to{' '}
+                <strong>MCP Servers</strong>.
+              </>,
+              <>
+                Click <strong>Add Server</strong>.
+              </>,
+              <CopyField label="Name" value="Anarix" />,
+              <CopyField label="Transport" value="Streamable HTTP" />,
+              <CopyField label="Server URL" value={MCP_SERVER_URL} />,
+              <>
+                Save the server.
+              </>,
+            ]}
+          />
+        </Accordion>
       )}
-
-      {selectedClient === 'codex' && (
-        <div className={styles.subSection}>
-          <div className={styles.subSectionHeader}>
-            <SparkleIcon size={18} weight="fill" />
-            <Typography variant="body1" className={styles.subSectionTitle}>
-              ChatGPT (Codex)
-            </Typography>
-          </div>
-          <div className={styles.setupBlock}>
-            <StepList>
-              <span>Open Settings</span>
-              <span>Navigate to MCP Servers</span>
-              <span>Click Add Server</span>
-              <CopyRow label="Name" value="Anarix" monospace={false} />
-              <CopyRow label="Transport" value="Streamable HTTP" monospace={false} />
-              <CopyRow label="URL" value={MCP_SERVER_URL} />
-              <span>Save the server.</span>
-            </StepList>
-          </div>
-        </div>
-      )}
-
-      <Box
-        component="button"
-        onClick={() => setStep(3)}
-        sx={{
-          width: '100%',
-          bgcolor: '#77469b',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '0.8rem',
-          px: '1rem',
-          py: '1rem',
-          fontSize: '1.4rem',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-          cursor: 'pointer',
-          textTransform: 'none',
-          transition: 'background 0.15s',
-          '&:hover': { bgcolor: '#9551ab' },
-        }}
-      >
-        Continue
-      </Box>
     </div>
   );
 
   const renderStepThree = () => (
-    <div className={styles.stepContent}>
+    <div className={styles.stepPane}>
       <Typography variant="h2" className={styles.stepTitle}>
         Authentication
       </Typography>
       <Typography variant="body2" className={styles.stepSubtitle}>
-        Complete the login flow to connect {CLIENTS.find((c) => c.key === selectedClient)?.name}.
+        Complete the login flow to connect {selectedName}.
       </Typography>
 
-      <div className={styles.subSection}>
-        <div className={styles.subSectionHeader}>
-          <LockIcon size={18} weight="fill" />
-          <Typography variant="body1" className={styles.subSectionTitle}>
-            Login Flow
-          </Typography>
-        </div>
-        <StepList>
-          <span>Open a new chat.</span>
-          <CopyRow label="Run:" value="use anarix mcp and login" />
-          <span>Click the generated login URL.</span>
-          <span>Sign in using your Anarix credentials.</span>
-          <span>Return to Claude/Codex.</span>
-          <span>
-            Authentication completes and your available accounts are loaded.
-          </span>
-        </StepList>
+      <div className={styles.authCard}>
+        <Timeline
+          items={[
+            <>
+              Open a new chat with <strong>{selectedName}</strong>.
+            </>,
+            <>
+              <span className={styles.timelinePromptLabel}>Run this command:</span>
+              <CodeBlock value={LOGIN_COMMAND} />
+            </>,
+            <>
+              Click the <strong>generated login URL</strong>.
+            </>,
+            <>
+              Sign in using your <strong>Anarix credentials</strong>.
+            </>,
+            <>
+              Return to {selectedName} — authentication completes and your
+              available accounts are loaded.
+            </>,
+          ]}
+        />
       </div>
 
-      <div className={styles.subSection}>
-        <div className={styles.subSectionHeader}>
-          <LockIcon size={18} weight="fill" />
-          <Typography variant="body1" className={styles.subSectionTitle}>
-            Re-authentication
-          </Typography>
-        </div>
-        <Typography variant="body2" className={styles.reauthNote}>
-          Repeat the login flow if:
-        </Typography>
+      <Accordion
+        title="Advanced Information"
+        icon={<LockIcon size={20} weight="fill" />}
+      >
+        <p className={styles.advancedNote}>Repeat the login flow if:</p>
         <ul className={styles.bulletList}>
           {REAUTH_TRIGGERS.map((trigger) => (
             <li key={trigger} className={styles.bulletItem}>
@@ -464,73 +551,39 @@ export default function McpConnectDialog({
             </li>
           ))}
         </ul>
-      </div>
-
-      <Box
-        component="button"
-        onClick={() => setStep(4)}
-        sx={{
-          width: '100%',
-          bgcolor: '#77469b',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '0.8rem',
-          px: '1rem',
-          py: '1rem',
-          fontSize: '1.4rem',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-          cursor: 'pointer',
-          textTransform: 'none',
-          transition: 'background 0.15s',
-          '&:hover': { bgcolor: '#9551ab' },
-        }}
-      >
-        Continue
-      </Box>
+      </Accordion>
     </div>
   );
 
   const renderStepFour = () => (
-    <div className={styles.stepContent}>
+    <div className={styles.stepPane}>
       <Typography variant="h2" className={styles.stepTitle}>
-        Verify connection
+        Verify your connection
       </Typography>
       <Typography variant="body2" className={styles.stepSubtitle}>
-        Run the following prompts to confirm everything is working.
+        Run these prompts in {selectedName} to confirm everything works.
       </Typography>
 
-      {VERIFY_PROMPTS.map((item) => (
-        <VerifyPrompt key={item.title} title={item.title} prompt={item.prompt} />
+      {VERIFY_CARDS.map((card) => (
+        <VerifyCard
+          key={card.id}
+          icon={card.icon}
+          title={card.title}
+          desc={card.desc}
+          prompt={card.prompt}
+        />
       ))}
-      <div className={styles.successNote}>
-        <CheckCircleIcon size={18} weight="fill" />
-        If all three prompts return results, your MCP connection is working
-        correctly.
-      </div>
 
-      <Box
-        component="button"
-        onClick={handleDone}
-        sx={{
-          width: '100%',
-          bgcolor: status === 'verifying' ? '#d9d9d9' : '#77469b',
-          color: status === 'verifying' ? 'rgba(0,0,0,0.38)' : '#fff',
-          border: 'none',
-          borderRadius: '0.8rem',
-          px: '1rem',
-          py: '1rem',
-          fontSize: '1.4rem',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-          cursor: status === 'verifying' ? 'not-allowed' : 'pointer',
-          textTransform: 'none',
-          transition: 'background 0.15s',
-          '&:hover': status === 'verifying' ? {} : { bgcolor: '#9551ab' },
-        }}
-      >
-        {status === 'verifying' ? 'Verifying…' : 'Done'}
-      </Box>
+      <div className={styles.successCard}>
+        <CheckCircleIcon size={28} weight="fill" />
+        <div>
+          <h4 className={styles.successTitle}>Your MCP connection is complete</h4>
+          <p className={styles.successText}>
+            If all prompts return valid responses, your MCP connection is
+            complete.
+          </p>
+        </div>
+      </div>
     </div>
   );
 
@@ -538,19 +591,25 @@ export default function McpConnectDialog({
     if (status === 'verifying') {
       return (
         <div className={styles.footer}>
-          <div className={styles.statusBlock}>
+          <div className={styles.footerStatus}>
             <SpinnerGapIcon size={18} className={styles.spin} />
-            <span className={styles.verifyText}>Verifying connection…</span>
+            <span className={styles.footerStatusText}>
+              Verifying connection…
+            </span>
           </div>
+          <button type="button" className={styles.btnPrimary} disabled>
+            <SpinnerGapIcon size={16} className={styles.spin} />
+            Verifying…
+          </button>
         </div>
       );
     }
     if (status === 'success') {
       return (
         <div className={styles.footer}>
-          <div className={styles.statusBlock}>
+          <div className={styles.footerStatus}>
             <CheckCircleIcon size={20} color="#429488" weight="fill" />
-            <span className={styles.statusSuccess}>
+            <span className={styles.footerStatusSuccess}>
               MCP connected — your AI assistants are ready.
             </span>
           </div>
@@ -560,22 +619,22 @@ export default function McpConnectDialog({
     if (status === 'failed') {
       return (
         <div className={styles.footer}>
-          <div className={styles.statusBlock}>
+          <div className={styles.footerStatus}>
             <XCircleIcon size={20} color="#ff0000" weight="fill" />
-            <span className={styles.statusFailed}>
+            <span className={styles.footerStatusError}>
               Connection failed. Please try again.
             </span>
           </div>
           <button
             type="button"
-            className={styles.footerBtnOutline}
+            className={styles.btnOutline}
             onClick={() => window.open(MCP_SUPPORT_EMAIL)}
           >
-            Contact our support team
+            Contact support
           </button>
           <button
             type="button"
-            className={styles.footerBtnPrimary}
+            className={styles.btnPrimary}
             onClick={handleDone}
           >
             Try again
@@ -583,35 +642,58 @@ export default function McpConnectDialog({
         </div>
       );
     }
-    return null;
+    const nextLabel = ['', 'Continue', 'Continue', 'Next', 'Done'][step];
+    return (
+      <div className={styles.footer}>
+        {step > 1 && (
+          <button
+            type="button"
+            className={styles.btnOutline}
+            onClick={() => setStep((s) => s - 1)}
+          >
+            Previous
+          </button>
+        )}
+        <div className={styles.footerSpacer} />
+        <button
+          type="button"
+          className={styles.btnPrimary}
+          onClick={() => setStep((s) => Math.min(STEPS.length, s + 1))}
+        >
+          {nextLabel}
+        </button>
+      </div>
+    );
   };
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
-      fullWidth
+      maxWidth={false}
       PaperProps={{ className: styles.dialogPaper }}
     >
       <DialogTitle className={styles.dialogHeader}>
         <div className={styles.dialogHeaderLeft}>
           <div className={styles.dialogIconWrap}>
-            <LightningIcon size={22} weight="fill" color="#77469b" />
+            <JivaLogo size={40} />
           </div>
           <div>
             <div className={styles.dialogTitleRow}>
-              <Typography variant="body1" className={styles.dialogTitle}>
-                MCP (Model Context Protocol)
-              </Typography>
+              <span className={styles.dialogTitle}>MCP Connection</span>
               {connected && <span className={styles.connectedBadge}>ACTIVE</span>}
             </div>
-            <Typography variant="body2" className={styles.dialogSubtitle}>
-              Connect AI assistants to Anarix via the Model Context Protocol.
-            </Typography>
+            <span className={styles.dialogSubtitle}>
+              Connect your AI assistant to JIVA in a few steps.
+            </span>
           </div>
         </div>
-        <button type="button" className={styles.closeBtn} onClick={onClose}>
+        <button
+          type="button"
+          className={styles.closeBtn}
+          onClick={onClose}
+          aria-label="Close"
+        >
           <XIcon size={20} />
         </button>
       </DialogTitle>

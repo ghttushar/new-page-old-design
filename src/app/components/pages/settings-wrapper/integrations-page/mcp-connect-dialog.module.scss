@@ -1,32 +1,44 @@
 @import 'src/assets/styles/variables/variables.scss';
 
+// ---------- Paper ----------
 .dialogPaper {
-  border-radius: 1.2rem;
+  width: 90rem;
+  max-width: calc(100vw - 3.2rem);
+  height: 76rem;
+  max-height: calc(100vh - 3.2rem);
+  border-radius: 2rem;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: $foreground-color;
 }
 
+// ---------- Header ----------
 .dialogHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.6rem 2rem;
+  padding: 3.2rem;
   border-bottom: 1px solid $border-color-4;
+  flex-shrink: 0;
 }
 
 .dialogHeaderLeft {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 1.6rem;
+  min-width: 0;
 }
 
 .dialogIconWrap {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 1.4rem;
   background: $primary-color-dropzone;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .dialogTitleRow {
@@ -36,73 +48,94 @@
 }
 
 .dialogTitle {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 2.4rem;
   color: $main-text;
   font-family: $font-family;
-  margin-bottom: 0.2rem;
 }
 
 .dialogSubtitle {
-  font-size: 1.2rem;
+  display: block;
+  font-size: 1.4rem;
   font-weight: 400;
+  line-height: 2rem;
   color: $sub-text-2;
   font-family: $font-family;
+  margin-top: 0.4rem;
 }
 
 .connectedBadge {
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: $positive-color;
   background: #eafffc;
   border: 1px solid #b8e6df;
-  border-radius: 0.4rem;
-  padding: 0.2rem 0.6rem;
+  border-radius: 0.6rem;
+  padding: 0.3rem 0.9rem;
+  line-height: 1.6rem;
 }
 
 .closeBtn {
-  min-width: auto;
-  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  min-width: 4.4rem;
   color: $sub-text-4;
   background: transparent;
   border: none;
-  border-radius: 0.4rem;
+  border-radius: 1.2rem;
   cursor: pointer;
-  display: flex;
+  transition: background 0.15s, color 0.15s;
 
   &:hover {
     background: $background-color-3;
+    color: $main-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
   }
 }
 
-// Step Indicator
+// ---------- Stepper ----------
 .stepIndicator {
   display: flex;
-  align-items: center;
-  padding: 1.8rem 2.4rem;
+  align-items: flex-start;
+  height: 7.2rem;
+  padding: 1.6rem 3.2rem 0;
   border-bottom: 1px solid $border-color-4;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .stepItem {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.8rem;
+  min-width: 0;
 }
 
 .stepCircle {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 3.6rem;
+  height: 3.6rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 600;
+  line-height: 2rem;
   font-family: $font-family;
   background: $background-color-4;
   color: $sub-text-4;
   flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .stepCompleted {
@@ -113,15 +146,17 @@
 .stepCurrent {
   background: $primary-color;
   color: #fff;
-  box-shadow: 0 0 0 3px rgba(119, 70, 155, 0.15);
+  box-shadow: 0 0 0 6px rgba(119, 70, 155, 0.16);
 }
 
 .stepLabel {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 500;
+  line-height: 2rem;
   color: $sub-text-4;
   font-family: $font-family;
   white-space: nowrap;
+  transition: color 0.2s;
 }
 
 .stepLabelActive {
@@ -134,410 +169,737 @@
 }
 
 .stepLine {
+  position: relative;
   flex: 1;
+  align-self: flex-start;
   height: 2px;
   background: $border-color-4;
-  margin: 0 0.8rem;
+  margin-top: 1.7rem;
+  min-width: 4rem;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: $primary-color;
+    width: 0;
+    transition: width 0.3s ease;
+  }
 }
 
 .stepLineCompleted {
-  background: $primary-color;
+  &::after {
+    width: 100%;
+  }
 }
 
-// Step Content
-.stepContent {
-  padding: 2.5rem 2.4rem;
-}
-
-.stepTitle {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 0.5rem;
-}
-
-.stepSubtitle {
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin-bottom: 2rem;
-}
-
+// ---------- Content ----------
 .dialogContent {
-  padding: 0 !important;
+  flex: 1;
+  min-height: 0;
+  padding: 4rem !important;
   overflow-y: auto;
 }
 
-.intro {
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.7;
-  margin-bottom: 1.6rem;
+.stepPane {
+  animation: stepIn 0.15s ease;
 }
 
-.sectionLabel {
-  font-size: 1.2rem;
-  font-weight: 600;
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stepTitle {
+  font-size: 3.6rem;
+  font-weight: 700;
+  line-height: 4.4rem;
+  letter-spacing: -0.02em;
   color: $main-text;
   font-family: $font-family;
-  margin-bottom: 1rem;
+  margin: 0 0 0.8rem;
 }
 
+.stepSubtitle {
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 2.6rem;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0 0 3.2rem;
+}
+
+// ---------- Step 1: Client cards ----------
 .clientGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
+  gap: 2.4rem;
 }
 
 .clientCard {
   position: relative;
-  border: 1px solid $border-color-4;
-  border-radius: 1rem;
-  background: $foreground-color;
-  padding: 1.6rem;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 1.2rem;
+  min-height: 14rem;
+  padding: 2.4rem;
+  border: 1px solid $border-color-4;
+  border-radius: 1.6rem;
+  background: $foreground-color;
   cursor: pointer;
   text-align: left;
   font-family: $font-family;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    border-color: $primary-color-variant-1;
+    box-shadow: 0 8px 24px rgba(119, 70, 155, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.clientCardSelected {
+  border-color: $primary-color;
+  border-width: 2px;
+  padding: calc(2.4rem - 1px);
+  box-shadow: 0 0 0 4px rgba(119, 70, 155, 0.1),
+    0 12px 32px rgba(119, 70, 155, 0.14);
+}
+
+.clientLogoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 1.2rem;
+  background: $background-color-3;
+  margin-bottom: 1.6rem;
+}
+
+.clientRadio {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 2px solid $border-color-2;
+  background: $foreground-color;
+  color: #fff;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.clientCardSelected .clientRadio {
+  border-color: $primary-color;
+  background: $primary-color;
+}
+
+.clientName {
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 2.6rem;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0 0 0.4rem;
+  padding-right: 3rem;
+}
+
+.clientDesc {
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2.2rem;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0 0 1.6rem;
+  padding-right: 3rem;
+}
+
+.clientChips {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.clientChip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.8rem;
+  color: $sub-text-2;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  padding: 0.4rem 1.2rem;
+  font-family: $font-family;
+}
+
+// ---------- Accordions ----------
+.accordion {
+  border: 1px solid $border-color-4;
+  border-radius: 1.6rem;
+  background: $foreground-color;
+  margin-bottom: 1.6rem;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
 
   &:hover {
     border-color: $primary-color-variant-1;
   }
 }
 
-.clientCardSelected {
-  border-color: $primary-color;
-  background: $primary-color-dropzone;
-  box-shadow: 0 2px 10px rgba(119, 70, 155, 0.12);
+.accordionOpen {
+  border-color: $primary-color-variant-1;
+  box-shadow: 0 8px 24px rgba(119, 70, 155, 0.08);
 }
 
-.clientRadio {
-  position: absolute;
-  top: 1.2rem;
-  right: 1.2rem;
-  width: 1.8rem;
-  height: 1.8rem;
-  border-radius: 50%;
-  border: 2px solid $border-color-2;
-  background: $foreground-color;
-  color: #fff;
+.accordionHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.clientRadioSelected {
-  border-color: $primary-color;
-  background: $primary-color;
-}
-
-.clientIconWrap {
-  width: 4.4rem;
-  height: 4.4rem;
-  border-radius: 1rem;
-  background: $primary-color-dropzone;
-  color: $primary-color;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.clientInfo {
-  flex: 1;
-  min-width: 0;
-  padding-right: 1.4rem;
-}
-
-.clientName {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: $main-text;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 4.4rem;
+  padding: 1.6rem 2.4rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
   font-family: $font-family;
-  margin-bottom: 0.2rem;
-}
+  transition: background 0.15s;
 
-.clientDesc {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.5;
-}
+  &:hover {
+    background: $background-color-3;
+  }
 
-.subSection {
-  border: 1px solid $border-color-4;
-  border-radius: 1rem;
-  background: $foreground-color;
-  padding: 1.4rem 1.6rem;
-  margin-bottom: 1.6rem;
-}
-
-.subSectionInner {
-  margin-top: 1rem;
-}
-
-.subSectionHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  color: $primary-color;
-  margin-bottom: 1rem;
-}
-
-.setupBlock {
-  margin-top: 1.4rem;
-  padding-top: 1.4rem;
-  border-top: 1px solid $border-color-4;
-
-  &:first-of-type {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -2px;
   }
 }
 
-.setupBlockTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin-bottom: 1rem;
-}
-
-.subSectionTitle {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-}
-
-.stepList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.accordionTitleWrap {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  gap: 1.2rem;
+  min-width: 0;
 }
 
-.stepItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.stepNum {
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 50%;
-  background: $primary-color-dropzone;
-  color: $primary-color;
-  font-size: 1.2rem;
-  font-weight: 700;
-  font-family: $font-family;
+.accordionIcon {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  background: $primary-color-dropzone;
+  color: $primary-color;
   flex-shrink: 0;
-  line-height: 1;
 }
 
-.stepContent {
-  flex: 1;
-  min-width: 0;
-  font-size: 1.3rem;
-  font-weight: 400;
+.accordionTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
   color: $main-text;
   font-family: $font-family;
-  line-height: 1.65;
-  padding-top: 0.15rem;
 }
 
-.copyRow {
-  margin-top: 0.4rem;
+.accordionChevron {
+  color: $sub-text-4;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
-.copyLabel {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin-bottom: 0.4rem;
+.accordionOpen .accordionChevron {
+  transform: rotate(180deg);
 }
 
-.copyBox {
+.accordionBodyWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+
+.accordionOpen .accordionBodyWrap {
+  grid-template-rows: 1fr;
+}
+
+.accordionBody {
+  overflow: hidden;
+  padding: 0 2.4rem;
+}
+
+.accordionOpen .accordionBody {
+  padding: 0 2.4rem 2.4rem;
+}
+
+// ---------- Timeline ----------
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineItem {
+  display: flex;
+  align-items: stretch;
+  gap: 1.6rem;
+  min-height: 4.4rem;
+}
+
+.timelineRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.timelineNum {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  background: $background-color-3;
-  border: 1px solid $border-color-4;
-  border-radius: 0.6rem;
-  padding: 0.7rem 1rem;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background: $primary-color-dropzone;
+  color: $primary-color;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 2rem;
+  font-family: $font-family;
+  flex-shrink: 0;
 }
 
-.copyText {
+.timelineLine {
+  width: 2px;
+  flex: 1;
+  min-height: 1.2rem;
+  background: $alt-primary-color;
+}
+
+.timelineBody {
   flex: 1;
   min-width: 0;
-  font-size: 1.2rem;
-  font-weight: 500;
+  padding: 0.4rem 0 2.4rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 2.6rem;
   color: $main-text;
   font-family: $font-family;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.timelinePromptLabel {
+  display: block;
+  font-size: 1.3rem;
+  color: $sub-text-2;
+  margin-bottom: 0.8rem;
+}
+
+// ---------- Copy field ----------
+.copyField {
+  margin: 0.4rem 0;
+}
+
+.copyFieldLabel {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 2rem;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin-bottom: 0.8rem;
+}
+
+.copyFieldBox {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  height: 4.8rem;
+  padding: 0 0.8rem 0 1.6rem;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+  border-radius: 1.2rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(119, 70, 155, 0.12);
+  }
+}
+
+.copyFieldText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  line-height: 2.4rem;
+  color: $main-text;
   overflow-wrap: anywhere;
 }
 
-.copyMonospace {
-  font-family: 'Courier New', monospace;
-  font-size: 1.15rem;
-}
-
 .copyBtn {
-  min-width: auto;
-  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  min-width: 4.4rem;
   color: $primary-color;
   background: transparent;
   border: none;
-  border-radius: 0.4rem;
+  border-radius: 1rem;
   cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 
   &:hover {
     background: $primary-color-dropzone;
   }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
 }
 
-.reauthNote {
-  font-size: 1.3rem;
+// ---------- Code block ----------
+.codeBlock {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 0.8rem 1.2rem 1.6rem;
+  background: #1f2937;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.codeBlockText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  line-height: 2.4rem;
+  color: #f3f4f6;
+  overflow-wrap: anywhere;
+}
+
+.codeBlock .copyBtn {
+  color: #d1d5db;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+}
+
+// ---------- Step 3 extras ----------
+.authCard {
+  border: 1px solid $border-color-4;
+  border-radius: 1.6rem;
+  padding: 2.4rem;
+  margin-bottom: 1.6rem;
+}
+
+.advancedNote {
+  font-size: 1.5rem;
   font-weight: 400;
+  line-height: 2.4rem;
   color: $main-text;
   font-family: $font-family;
-  margin-bottom: 1rem;
+  margin: 0 0 1.2rem;
 }
 
 .bulletList {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.2rem;
 }
 
 .bulletItem {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  font-size: 1.3rem;
+  gap: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 400;
+  line-height: 2.4rem;
   color: $sub-text-2;
   font-family: $font-family;
-  line-height: 1.5;
 }
 
 .bulletDot {
-  width: 0.7rem;
-  height: 0.7rem;
+  width: 0.8rem;
+  height: 0.8rem;
   border-radius: 50%;
   background: $primary-color;
   flex-shrink: 0;
 }
 
-.prompt {
+// ---------- Step 4: verify cards ----------
+.verifyCard {
   border: 1px solid $border-color-4;
-  border-radius: 0.8rem;
+  border-radius: 1.6rem;
+  padding: 2.4rem;
+  margin-bottom: 1.6rem;
   background: $foreground-color;
-  padding: 1.2rem 1.4rem;
-  margin-bottom: 1rem;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    border-color: $primary-color-variant-1;
+    box-shadow: 0 8px 24px rgba(119, 70, 155, 0.08);
+  }
 }
 
-.promptTitle {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 0.8rem;
+.verifyCardDone {
+  border-color: #bbf7d0;
+  background: #fbfefc;
 }
 
-.promptBox {
+.verifyTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.verifyIcon {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  background: $background-color-3;
-  border: 1px solid $border-color-4;
-  border-radius: 0.6rem;
-  padding: 0.8rem 1rem;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 1.2rem;
+  background: $primary-color-dropzone;
+  color: $primary-color;
+  flex-shrink: 0;
 }
 
-.promptText {
+.verifyInfo {
   flex: 1;
   min-width: 0;
-  font-size: 1.15rem;
-  font-weight: 400;
+}
+
+.verifyTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
   color: $main-text;
+  font-family: $font-family;
+  margin: 0 0 0.4rem;
+}
+
+.verifyDesc {
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2.2rem;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0;
+}
+
+.verifyDoneBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.8rem;
+  padding: 0.4rem 1rem;
+  font-family: $font-family;
+  flex-shrink: 0;
+}
+
+.verifyPromptBox {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 1.6rem;
+  padding: 0.8rem 0.8rem 0.8rem 1.6rem;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+  border-radius: 1.2rem;
+}
+
+.verifyPromptText {
+  flex: 1;
+  min-width: 0;
   font-family: 'Courier New', monospace;
+  font-size: 1.4rem;
+  line-height: 2.2rem;
+  color: $main-text;
   overflow-wrap: anywhere;
 }
 
-.successNote {
+.successCard {
   display: flex;
   align-items: flex-start;
-  gap: 0.8rem;
+  gap: 1.6rem;
   background: #eafffc;
   border: 1px solid #b8e6df;
-  border-radius: 0.8rem;
-  padding: 1rem 1.2rem;
+  border-radius: 2rem;
+  padding: 2.4rem;
   color: $positive-color;
-  font-size: 1.25rem;
-  font-weight: 500;
-  font-family: $font-family;
-  line-height: 1.5;
-  margin-top: 1.2rem;
+  margin-top: 2.4rem;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
 }
 
+.successTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
+  color: #256b62;
+  font-family: $font-family;
+  margin: 0 0 0.4rem;
+}
+
+.successText {
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2.2rem;
+  color: #3d7a72;
+  font-family: $font-family;
+  margin: 0;
+}
+
+// ---------- Footer ----------
 .footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
-  flex-shrink: 0;
-  padding: 1.4rem 2rem;
+  gap: 1.6rem;
+  padding: 2rem 3.2rem;
   border-top: 1px solid $border-color-4;
+  flex-shrink: 0;
+  min-height: 8.8rem;
+  box-sizing: border-box;
 }
 
-.statusBlock {
+.footerSpacer {
+  flex: 1;
+}
+
+.footerStatus {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1.2rem;
+  min-width: 0;
 }
 
-.statusSuccess {
-  font-size: 1.3rem;
+.footerStatusText {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: $sub-text-2;
+  font-family: $font-family;
+}
+
+.footerStatusSuccess {
+  font-size: 1.5rem;
   font-weight: 600;
   color: $positive-color;
   font-family: $font-family;
 }
 
-.statusFailed {
-  font-size: 1.3rem;
+.footerStatusError {
+  font-size: 1.5rem;
   font-weight: 600;
   color: $error-color;
   font-family: $font-family;
 }
 
-.verifyText {
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: $sub-text-2;
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  height: 4.8rem;
+  min-width: 14rem;
+  padding: 0 2.4rem;
+  background: $primary-color;
+  color: #ffffff;
+  border: none;
+  border-radius: 1.2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 2rem;
   font-family: $font-family;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(119, 70, 155, 0.22);
+
+  &:hover:not(:disabled) {
+    background: $primary-color-variant-1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(119, 70, 155, 0.3);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.btnOutline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4.8rem;
+  min-width: 12rem;
+  padding: 0 2.4rem;
+  background: transparent;
+  color: $primary-color;
+  border: 1px solid $primary-color;
+  border-radius: 1.2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 2rem;
+  font-family: $font-family;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $primary-color-dropzone;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
 }
 
 .spin {
@@ -547,41 +909,5 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-.footerBtnPrimary {
-  background: $primary-color;
-  color: #fff;
-  border: none;
-  border-radius: 0.8rem;
-  padding: 0.9rem 1.8rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  font-family: $font-family;
-  cursor: pointer;
-  text-transform: none;
-  transition: background 0.15s;
-
-  &:hover {
-    background: $primary-color-variant-1;
-  }
-}
-
-.footerBtnOutline {
-  background: transparent;
-  color: $primary-color;
-  border: 1px solid $primary-color;
-  border-radius: 0.8rem;
-  padding: 0.9rem 1.8rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  font-family: $font-family;
-  cursor: pointer;
-  text-transform: none;
-  transition: background 0.15s;
-
-  &:hover {
-    background: $primary-color-dropzone;
   }
 }
