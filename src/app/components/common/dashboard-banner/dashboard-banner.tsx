@@ -1,4 +1,4 @@
-import { ArrowRightIcon, XIcon } from '@phosphor-icons/react';
+import { LinkIcon, XIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -36,124 +36,41 @@ export default function DashboardBanner() {
 
   return (
     <div className={styles.banner}>
-      <button
-        type="button"
-        className={styles.closeBtn}
-        onClick={handleDismiss}
-        aria-label="Dismiss banner"
-      >
-        <XIcon size={18} />
-      </button>
-
-      <div className={styles.network} aria-hidden="true">
-        <svg
-          className={styles.networkSvg}
-          viewBox="0 0 260 150"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <defs>
-            <linearGradient
-              id="flowGradClaude"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#d97757" />
-              <stop offset="100%" stopColor="#9551ab" />
-            </linearGradient>
-            <linearGradient
-              id="flowGradGpt"
-              x1="100%"
-              y1="0%"
-              x2="0%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#10a37f" />
-              <stop offset="100%" stopColor="#9551ab" />
-            </linearGradient>
-            <radialGradient id="jivaGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(119,70,155,0.25)" />
-              <stop offset="100%" stopColor="rgba(119,70,155,0)" />
-            </radialGradient>
-          </defs>
-
-          <circle cx="130" cy="112" r="48" fill="url(#jivaGlow)" />
-
-          <path
-            id="bannerPathClaude"
-            d="M74 40 C 78 84, 106 100, 124 106"
-            fill="none"
-            stroke="url(#flowGradClaude)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity="0.55"
-          />
-          <path
-            id="bannerPathGpt"
-            d="M186 40 C 182 84, 154 100, 136 106"
-            fill="none"
-            stroke="url(#flowGradGpt)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity="0.55"
-          />
-
-          <circle r="2.5" fill="#9551ab">
-            <animateMotion
-              dur="3.6s"
-              repeatCount="indefinite"
-              path="M74 40 C 78 84, 106 100, 124 106"
-            />
-            <animate
-              attributeName="opacity"
-              values="0;1;1;0"
-              dur="3.6s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle r="2.5" fill="#10a37f">
-            <animateMotion
-              dur="3.6s"
-              begin="1.4s"
-              repeatCount="indefinite"
-              path="M186 40 C 182 84, 154 100, 136 106"
-            />
-            <animate
-              attributeName="opacity"
-              values="0;1;1;0"
-              dur="3.6s"
-              begin="1.4s"
-              repeatCount="indefinite"
-            />
-          </circle>
-        </svg>
-
-        <div className={`${styles.node} ${styles.nodeClaude}`}>
+      <div className={styles.logoChain} aria-hidden="true">
+        <div className={styles.logoItem}>
+          <JivaLogo size={20} />
+        </div>
+        <LinkIcon size={14} className={styles.chainLink} />
+        <div className={styles.logoItem}>
           <ClaudeLogo size={20} />
         </div>
-        <div className={`${styles.node} ${styles.nodeGpt}`}>
+        <span className={styles.chainLine} />
+        <div className={styles.logoItem}>
           <GptLogo size={20} />
-        </div>
-        <div className={`${styles.node} ${styles.nodeJiva}`}>
-          <JivaLogo size={44} />
         </div>
       </div>
 
       <div className={styles.textWrap}>
-        <h2 className={styles.headline}>
-          Give Claude &amp; ChatGPT{' '}
-          <span className={styles.headlineAccent}>
-            Real Marketplace Intelligence.
-          </span>
-        </h2>
+        <div className={styles.headlineRow}>
+          <h2 className={styles.headline}>
+            Connect Claude &amp; ChatGPT to JIVA
+          </h2>
+          <span className={styles.badgeNew}>NEW</span>
+        </div>
         <p className={styles.subline}>
-          JIVA securely gives Claude and ChatGPT access to marketplace
-          intelligence through MCP.
+          Real marketplace intelligence through MCP. Available on Diamond and
+          above.
         </p>
       </div>
 
       <div className={styles.actions}>
+        <button
+          type="button"
+          className={styles.learnBtn}
+          onClick={handleConnect}
+        >
+          See How It Works
+        </button>
         <button
           type="button"
           className={styles.connectBtn}
@@ -161,15 +78,16 @@ export default function DashboardBanner() {
         >
           Connect MCP
         </button>
-        <button
-          type="button"
-          className={styles.learnBtn}
-          onClick={handleConnect}
-        >
-          Learn How It Works
-          <ArrowRightIcon size={16} weight="bold" />
-        </button>
       </div>
+
+      <button
+        type="button"
+        className={styles.closeBtn}
+        onClick={handleDismiss}
+        aria-label="Dismiss banner"
+      >
+        <XIcon size={14} />
+      </button>
     </div>
   );
 }
