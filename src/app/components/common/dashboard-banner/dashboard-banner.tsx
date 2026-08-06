@@ -1,9 +1,46 @@
-import { ArrowRightIcon, LightningIcon, XIcon } from '@phosphor-icons/react';
+import {
+  ArrowRightIcon,
+  ChatCircleDotsIcon,
+  LightningIcon,
+  SparkleIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './dashboard-banner.module.scss';
 
 const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
+
+const AGENT_CHAIN = [
+  {
+    key: 'jiva',
+    name: 'JIVA',
+    icon: ChatCircleDotsIcon,
+    color: '#ffffff',
+    bg: '#77469b',
+  },
+  {
+    key: 'claude',
+    name: 'Claude',
+    icon: ChatCircleDotsIcon,
+    color: '#ffffff',
+    bg: '#d97706',
+  },
+  {
+    key: 'codex',
+    name: 'Codex',
+    icon: SparkleIcon,
+    color: '#ffffff',
+    bg: '#10a37f',
+  },
+  {
+    key: 'anarix',
+    name: 'Anarix',
+    icon: LightningIcon,
+    color: '#ffffff',
+    bg: '#2563eb',
+  },
+];
 
 export default function DashboardBanner() {
   const [visible, setVisible] = useState(false);
@@ -31,31 +68,65 @@ export default function DashboardBanner() {
 
   return (
     <div className={styles.banner}>
-      <div className={styles.iconWrap}>
-        <LightningIcon size={18} weight="fill" />
+      <div className={styles.iconChain}>
+        {AGENT_CHAIN.map((agent, i) => {
+          const AgentIcon = agent.icon;
+          return (
+            <div className={styles.chainItem} key={agent.key}>
+              <div
+                className={styles.chainIcon}
+                style={{ background: agent.bg, color: agent.color }}
+                title={agent.name}
+              >
+                <AgentIcon size={16} weight="fill" />
+              </div>
+              {i < AGENT_CHAIN.length - 1 && (
+                <div className={styles.chainConnector}>
+                  <span className={styles.chainConnectorLine} />
+                  <ArrowRightIcon
+                    size={10}
+                    weight="bold"
+                    className={styles.chainConnectorArrow}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className={styles.textWrap}>
-        <div className={styles.title}>Connect MCP to enable AI-powered workflows</div>
+        <div className={styles.title}>
+          Connect MCP via JIVA
+          <span className={styles.newBadge}>NEW</span>
+        </div>
         <div className={styles.subtitle}>
-          Let your AI assistant access your marketplace intelligence.
+          Connect Claude or ChatGPT to access your marketplace intelligence.
         </div>
       </div>
-      <button
-        type="button"
-        className={styles.learnMore}
-        onClick={handleLearnMore}
-      >
-        Learn More
-        <ArrowRightIcon size={14} weight="bold" />
-      </button>
-      <button
-        type="button"
-        className={styles.closeBtn}
-        onClick={handleDismiss}
-        aria-label="Dismiss banner"
-      >
-        <XIcon size={16} />
-      </button>
+      <div className={styles.rightActions}>
+        <button
+          type="button"
+          className={styles.linkBtn}
+          onClick={handleLearnMore}
+        >
+          See How It Works
+        </button>
+        <button
+          type="button"
+          className={styles.connectBtn}
+          onClick={handleLearnMore}
+        >
+          Connect MCP
+        </button>
+        <button
+          type="button"
+          className={styles.closeBtn}
+          onClick={handleDismiss}
+          aria-label="Dismiss banner"
+        >
+          <XIcon size={16} />
+        </button>
+      </div>
     </div>
   );
 }

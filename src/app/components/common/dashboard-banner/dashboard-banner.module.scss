@@ -3,25 +3,53 @@
 .banner {
   display: flex;
   align-items: center;
-  gap: 1.4rem;
-  padding: 1.2rem 1.8rem;
-  border-left: 0.5rem solid $primary-color;
-  border-top: 1px solid #e4d4f5;
-  border-bottom: 1px solid #e4d4f5;
-  background: #f5ecff;
+  gap: 1.6rem;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid $border-color-4;
+  border-radius: 1rem;
+  background: #ffffff;
   color: $main-text;
   margin-bottom: 1.6rem;
 }
 
-.iconWrap {
-  width: 3.4rem;
-  height: 3.4rem;
+.iconChain {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.chainItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.chainIcon {
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
-  background: #ffffff;
-  color: $primary-color;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.chainConnector {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.chainConnectorLine {
+  width: 1.2rem;
+  height: 2px;
+  background: $border-color-4;
+  border-radius: 1px;
+}
+
+.chainConnectorArrow {
+  color: $sub-text-4;
   flex-shrink: 0;
 }
 
@@ -31,11 +59,28 @@
 }
 
 .title {
-  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
   font-family: $font-family;
   color: $main-text;
   margin-bottom: 0.2rem;
+}
+
+.newBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #1d4ed8;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.4rem;
+  line-height: 1.4;
 }
 
 .subtitle {
@@ -46,25 +91,50 @@
   overflow-wrap: anywhere;
 }
 
-.learnMore {
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.linkBtn {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   background: transparent;
-  border: 1px solid $primary-color;
+  border: none;
   color: $primary-color;
   font-family: $font-family;
   font-size: 1.1rem;
   font-weight: 600;
-  padding: 0.5rem 1.1rem;
+  padding: 0.5rem 0.8rem;
   border-radius: 0.6rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s;
 
   &:hover {
-    background: $primary-color;
-    color: #fff;
+    background: $primary-color-dropzone;
+  }
+}
+
+.connectBtn {
+  background: $primary-color;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.7rem 1.6rem;
+  font-family: $font-family;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(119, 70, 155, 0.2);
+  transition: background 0.15s;
+
+  &:hover {
+    background: $primary-color-variant-1;
   }
 }
 

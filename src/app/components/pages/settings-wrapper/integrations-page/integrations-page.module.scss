@@ -55,10 +55,10 @@
 .card {
   display: flex;
   align-items: center;
-  gap: 2.4rem;
+  gap: 1.4rem;
   border: 1px solid $border-color-4;
-  border-radius: 1.4rem;
-  padding: 2.6rem 2.8rem;
+  border-radius: 1rem;
+  padding: 1.4rem 2rem;
   margin-bottom: 1.6rem;
   background: $foreground-color;
   transition: box-shadow 0.2s ease;
@@ -73,9 +73,9 @@
 }
 
 .cardIconWrap {
-  width: 5.6rem;
-  height: 5.6rem;
-  border-radius: 1.4rem;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,12 +95,12 @@
 .cardTitleRow {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.6rem;
+  gap: 0.8rem;
+  margin-bottom: 0.4rem;
 }
 
 .cardTitle {
-  font-size: 1.7rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
@@ -109,12 +109,12 @@
 .badgeAlerts {
   display: inline-flex;
   align-items: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #15803d;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  padding: 0.2rem 0.7rem;
+  padding: 0.15rem 0.6rem;
   border-radius: 0.4rem;
   font-family: $font-family;
   letter-spacing: 0.04rem;
@@ -124,12 +124,12 @@
 .badgeTools {
   display: inline-flex;
   align-items: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: $primary-color;
   background: $primary-color-dropzone;
   border: 1px solid $alt-primary-color;
-  padding: 0.2rem 0.7rem;
+  padding: 0.15rem 0.6rem;
   border-radius: 0.4rem;
   font-family: $font-family;
   letter-spacing: 0.04rem;
@@ -137,12 +137,11 @@
 }
 
 .cardDesc {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 400;
   color: $sub-text-2;
   font-family: $font-family;
-  line-height: 1.7;
-  max-width: 48rem;
+  line-height: 1.6;
   margin: 0;
 }
 
@@ -155,15 +154,14 @@
   background: $primary-color;
   color: $foreground-color;
   border: none;
-  border-radius: 0.8rem;
-  padding: 1rem 2rem;
-  font-size: 1.25rem;
+  border-radius: 0.7rem;
+  padding: 0.7rem 1.6rem;
+  font-size: 1.15rem;
   font-weight: 600;
   font-family: $font-family;
   cursor: pointer;
   text-transform: none;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(119, 70, 155, 0.18);
   transition: background 0.15s;
 
   &:hover {
@@ -173,26 +171,12 @@
 
 .emptyCard {
   border: 1px solid $border-color-4;
-  border-radius: 1.2rem;
-  padding: 4rem 3rem;
+  border-radius: 1rem;
+  padding: 2rem;
   background: $foreground-color;
   text-align: center;
 }
 
-.emptyTitle {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: $main-text;
-  font-family: $font-family;
-  margin-bottom: 0.6rem;
-}
-
-.emptyDesc {
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  max-width: 50rem;
-  margin: 0 auto;
-  line-height: 1.6;
+.spinner {
+  color: $primary-color;
 }

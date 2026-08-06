@@ -1,7 +1,7 @@
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import useSubHeader from '@/hooks/use-sub-header.hook';
-import { Typography } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import { WhatsappLogoIcon, LightningIcon } from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 import { getMcpConnected, subscribeMcpConnected } from './mcp-connection';
@@ -33,7 +33,7 @@ export default function IntegrationsPage() {
 
         <div className={styles.card}>
           <div className={`${styles.cardIconWrap} ${styles.cardIconWhatsapp}`}>
-            <WhatsappLogoIcon size={28} weight="fill" color="#25D366" />
+            <WhatsappLogoIcon size={22} weight="fill" color="#25D366" />
           </div>
           <div className={styles.cardInfo}>
             <div className={styles.cardTitleRow}>
@@ -60,7 +60,7 @@ export default function IntegrationsPage() {
 
         <div className={styles.card}>
           <div className={styles.cardIconWrap}>
-            <LightningIcon size={28} weight="fill" color="#77469b" />
+            <LightningIcon size={22} weight="fill" color="#77469b" />
           </div>
           <div className={styles.cardInfo}>
             <div className={styles.cardTitleRow}>
@@ -95,16 +95,37 @@ export default function IntegrationsPage() {
           Your connections
         </Typography>
 
-        <div className={styles.emptyCard}>
-          <Typography variant="body1" className={styles.emptyTitle}>
-            No integrations yet
-          </Typography>
-          <Typography variant="body2" className={styles.emptyDesc}>
-            Connect WhatsApp or MCP to receive operational alerts — ACoS
-            spikes, stockouts, rule triggers — for the accounts and services
-            you care about.
-          </Typography>
-        </div>
+        {mcpConnected ? (
+          <div className={styles.card}>
+            <div className={styles.cardIconWrap}>
+              <LightningIcon size={22} weight="fill" color="#77469b" />
+            </div>
+            <div className={styles.cardInfo}>
+              <div className={styles.cardTitleRow}>
+                <Typography variant="body1" className={styles.cardTitle}>
+                  MCP
+                </Typography>
+                <span className={styles.badgeAlerts}>ACTIVE</span>
+              </div>
+              <Typography variant="body2" className={styles.cardDesc}>
+                AI assistants can access your Anarix marketplace intelligence.
+              </Typography>
+            </div>
+            <div className={styles.cardActions}>
+              <button
+                type="button"
+                className={styles.cardBtn}
+                onClick={() => setMcpDialogOpen(true)}
+              >
+                Manage
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.emptyCard}>
+            <CircularProgress size={30} className={styles.spinner} />
+          </div>
+        )}
       </div>
 
       <WhatsAppConnectDialog

@@ -3,16 +3,15 @@ import {
   CheckCircleIcon,
   CheckIcon,
   CopyIcon,
-  CursorClickIcon,
   LightningIcon,
   LockIcon,
-  SlidersHorizontalIcon,
   SparkleIcon,
   SpinnerGapIcon,
   XCircleIcon,
   XIcon,
 } from '@phosphor-icons/react';
 import {
+  Box,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -25,19 +24,11 @@ import styles from './mcp-connect-dialog.module.scss';
 const MCP_SERVER_URL = 'https://mcp.anarix.ai/mcp/sse';
 const MCP_SUPPORT_EMAIL = 'mailto:support@anarix.ai';
 
-type TabKey = 'choose-client' | 'client-setup' | 'auth' | 'verify' | 'reference';
+const STEPS = ['Choose Client', 'Setup', 'Authentication', 'Verify'];
 
 type ClientKey = 'claude' | 'codex';
 
 type StatusKey = 'idle' | 'verifying' | 'success' | 'failed';
-
-const TABS: { key: TabKey; label: string; icon: React.ComponentType }[] = [
-  { key: 'choose-client', label: 'Choose Your Client', icon: CursorClickIcon },
-  { key: 'client-setup', label: 'Client Setup', icon: SlidersHorizontalIcon },
-  { key: 'auth', label: 'Authentication', icon: LockIcon },
-  { key: 'verify', label: 'Verify Connection', icon: CheckCircleIcon },
-  { key: 'reference', label: 'Connection Reference', icon: CopyIcon },
-];
 
 const CLIENTS: {
   key: ClientKey;
@@ -178,7 +169,7 @@ export default function McpConnectDialog({
   open,
   onClose,
 }: IMcpConnectDialogProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>('choose-client');
+  const [step, setStep] = useState(1);
   const [selectedClient, setSelectedClient] = useState<ClientKey>('claude');
   const [status, setStatus] = useState<StatusKey>('idle');
   const [connected, setConnected] = useState(getMcpConnected);
@@ -186,6 +177,7 @@ export default function McpConnectDialog({
 
   useEffect(() => {
     if (open) {
+      setStep(1);
       setStatus('idle');
       setConnected(getMcpConnected());
     }
@@ -218,16 +210,60 @@ export default function McpConnectDialog({
     }, 1500);
   };
 
-  const renderChooseClient = () => (
-    <div>
-      <Typography variant="body2" className={styles.intro}>
-        This is the landing tab where you select your AI client. After
-        selecting a client, follow the corresponding setup guide.
+  const renderStepIndicator = () => (
+    <div className={styles.stepIndicator}>
+      {STEPS.map((label, i) => {
+        const num = i + 1;
+        const isCompleted = num < step;
+        const isCurrent = num === step;
+        return (
+          <React.Fragment key={label}>
+            <div className={styles.stepItem}>
+              <div
+                className={`${styles.stepCircle} ${
+                  isCompleted
+                    ? styles.stepCompleted
+                    : isCurrent
+                    ? styles.stepCurrent
+                    : ''
+                }`}
+              >
+                {isCompleted ? (
+                  <CheckIcon size={14} weight="bold" />
+                ) : (
+                  <span>{num}</span>
+                )}
+              </div>
+              <span
+                className={`${styles.stepLabel} ${
+                  isCurrent ? styles.stepLabelActive : ''
+                } ${isCompleted ? styles.stepLabelCompleted : ''}`}
+              >
+                {label}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div
+                className={`${styles.stepLine} ${
+                  num < step ? styles.stepLineCompleted : ''
+                }`}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+
+  const renderStepOne = () => (
+    <div className={styles.stepContent}>
+      <Typography variant="h2" className={styles.stepTitle}>
+        Choose your client
+      </Typography>
+      <Typography variant="body2" className={styles.stepSubtitle}>
+        Select the AI assistant you want to connect to Anarix.
       </Typography>
 
-      <Typography variant="body2" className={styles.sectionLabel}>
-        Supported Clients
-      </Typography>
       <div className={styles.clientGrid}>
         {CLIENTS.map((client) => {
           const ClientIcon = client.icon;
@@ -263,72 +299,134 @@ export default function McpConnectDialog({
           );
         })}
       </div>
+
+      <Box
+        component="button"
+        onClick={() => setStep(2)}
+        sx={{
+          width: '100%',
+          bgcolor: '#77469b',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': { bgcolor: '#9551ab' },
+        }}
+      >
+        Continue
+      </Box>
     </div>
   );
 
-  const renderClientSetup = () => (
-    <div>
-      <Typography variant="body2" className={styles.intro}>
-        Follow the setup guide for your selected client.
+  const renderStepTwo = () => (
+    <div className={styles.stepContent}>
+      <Typography variant="h2" className={styles.stepTitle}>
+        Set up your client
       </Typography>
-      <div className={styles.subSection}>
-        <div className={styles.subSectionHeader}>
-          <ChatCircleDotsIcon size={18} weight="fill" />
-          <Typography variant="body1" className={styles.subSectionTitle}>
-            Claude
-          </Typography>
-        </div>
-        <div className={styles.setupBlock}>
-          <div className={styles.setupBlockTitle}>
-            For Team &amp; Enterprise Owners
+      <Typography variant="body2" className={styles.stepSubtitle}>
+        Follow the setup guide for {CLIENTS.find((c) => c.key === selectedClient)?.name}.
+      </Typography>
+
+      {selectedClient === 'claude' && (
+        <div className={styles.subSection}>
+          <div className={styles.subSectionHeader}>
+            <ChatCircleDotsIcon size={18} weight="fill" />
+            <Typography variant="body1" className={styles.subSectionTitle}>
+              Claude
+            </Typography>
           </div>
-          <StepList>
-            <span>
-              Go to Organization Settings {'\u2192'} Connectors
-            </span>
-            <span>Click Add</span>
-            <span>Select Custom {'\u2192'} Web</span>
-            <CopyRow label="Enter the MCP server URL:" value={MCP_SERVER_URL} />
-            <span>Click Add</span>
-          </StepList>
+          <div className={styles.setupBlock}>
+            <div className={styles.setupBlockTitle}>
+              For Team &amp; Enterprise Owners
+            </div>
+            <StepList>
+              <span>
+                Go to Organization Settings {'\u2192'} Connectors
+              </span>
+              <span>Click Add</span>
+              <span>Select Custom {'\u2192'} Web</span>
+              <CopyRow label="Enter the MCP server URL:" value={MCP_SERVER_URL} />
+              <span>Click Add</span>
+            </StepList>
+          </div>
+          <div className={styles.setupBlock}>
+            <div className={styles.setupBlockTitle}>For Individual Users</div>
+            <StepList>
+              <span>Open Settings</span>
+              <span>Navigate to Connectors</span>
+              <span>Click Add Custom Connector</span>
+              <CopyRow label="Name" value="JIVA" monospace={false} />
+              <CopyRow label="Remote MCP URL" value={MCP_SERVER_URL} />
+              <span>Click Add</span>
+              <span>Verify JIVA appears in the connector list.</span>
+            </StepList>
+          </div>
         </div>
-        <div className={styles.setupBlock}>
-          <div className={styles.setupBlockTitle}>For Individual Users</div>
-          <StepList>
-            <span>Open Settings</span>
-            <span>Navigate to Connectors</span>
-            <span>Click Add Custom Connector</span>
-            <CopyRow label="Name" value="JIVA" monospace={false} />
-            <CopyRow label="Remote MCP URL" value={MCP_SERVER_URL} />
-            <span>Click Add</span>
-            <span>Verify JIVA appears in the connector list.</span>
-          </StepList>
+      )}
+
+      {selectedClient === 'codex' && (
+        <div className={styles.subSection}>
+          <div className={styles.subSectionHeader}>
+            <SparkleIcon size={18} weight="fill" />
+            <Typography variant="body1" className={styles.subSectionTitle}>
+              ChatGPT (Codex)
+            </Typography>
+          </div>
+          <div className={styles.setupBlock}>
+            <StepList>
+              <span>Open Settings</span>
+              <span>Navigate to MCP Servers</span>
+              <span>Click Add Server</span>
+              <CopyRow label="Name" value="Anarix" monospace={false} />
+              <CopyRow label="Transport" value="Streamable HTTP" monospace={false} />
+              <CopyRow label="URL" value={MCP_SERVER_URL} />
+              <span>Save the server.</span>
+            </StepList>
+          </div>
         </div>
-      </div>
-      <div className={styles.subSection}>
-        <div className={styles.subSectionHeader}>
-          <SparkleIcon size={18} weight="fill" />
-          <Typography variant="body1" className={styles.subSectionTitle}>
-            ChatGPT (Codex)
-          </Typography>
-        </div>
-        <div className={styles.setupBlock}>
-          <StepList>
-            <span>Open Settings</span>
-            <span>Navigate to MCP Servers</span>
-            <span>Click Add Server</span>
-            <CopyRow label="Name" value="Anarix" monospace={false} />
-            <CopyRow label="Transport" value="Streamable HTTP" monospace={false} />
-            <CopyRow label="URL" value={MCP_SERVER_URL} />
-            <span>Save the server.</span>
-          </StepList>
-        </div>
-      </div>
+      )}
+
+      <Box
+        component="button"
+        onClick={() => setStep(3)}
+        sx={{
+          width: '100%',
+          bgcolor: '#77469b',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': { bgcolor: '#9551ab' },
+        }}
+      >
+        Continue
+      </Box>
     </div>
   );
 
-  const renderAuth = () => (
-    <div>
+  const renderStepThree = () => (
+    <div className={styles.stepContent}>
+      <Typography variant="h2" className={styles.stepTitle}>
+        Authentication
+      </Typography>
+      <Typography variant="body2" className={styles.stepSubtitle}>
+        Complete the login flow to connect {CLIENTS.find((c) => c.key === selectedClient)?.name}.
+      </Typography>
+
       <div className={styles.subSection}>
         <div className={styles.subSectionHeader}>
           <LockIcon size={18} weight="fill" />
@@ -367,14 +465,41 @@ export default function McpConnectDialog({
           ))}
         </ul>
       </div>
+
+      <Box
+        component="button"
+        onClick={() => setStep(4)}
+        sx={{
+          width: '100%',
+          bgcolor: '#77469b',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': { bgcolor: '#9551ab' },
+        }}
+      >
+        Continue
+      </Box>
     </div>
   );
 
-  const renderVerify = () => (
-    <div>
-      <Typography variant="body2" className={styles.intro}>
+  const renderStepFour = () => (
+    <div className={styles.stepContent}>
+      <Typography variant="h2" className={styles.stepTitle}>
+        Verify connection
+      </Typography>
+      <Typography variant="body2" className={styles.stepSubtitle}>
         Run the following prompts to confirm everything is working.
       </Typography>
+
       {VERIFY_PROMPTS.map((item) => (
         <VerifyPrompt key={item.title} title={item.title} prompt={item.prompt} />
       ))}
@@ -383,35 +508,29 @@ export default function McpConnectDialog({
         If all three prompts return results, your MCP connection is working
         correctly.
       </div>
-    </div>
-  );
 
-  const renderReference = () => (
-    <div>
-      <Typography variant="body2" className={styles.intro}>
-        Keep this as a quick copy-paste page.
-      </Typography>
-      <div className={styles.subSection}>
-        <div className={styles.subSectionHeader}>
-          <ChatCircleDotsIcon size={18} weight="fill" />
-          <Typography variant="body1" className={styles.subSectionTitle}>
-            Claude
-          </Typography>
-        </div>
-        <CopyRow label="Connector Name" value="JIVA" monospace={false} />
-        <CopyRow label="Remote MCP URL" value={MCP_SERVER_URL} />
-      </div>
-      <div className={styles.subSection}>
-        <div className={styles.subSectionHeader}>
-          <SparkleIcon size={18} weight="fill" />
-          <Typography variant="body1" className={styles.subSectionTitle}>
-            ChatGPT (Codex)
-          </Typography>
-        </div>
-        <CopyRow label="Server Name" value="Anarix" monospace={false} />
-        <CopyRow label="Transport" value="Streamable HTTP" monospace={false} />
-        <CopyRow label="Server URL" value={MCP_SERVER_URL} />
-      </div>
+      <Box
+        component="button"
+        onClick={handleDone}
+        sx={{
+          width: '100%',
+          bgcolor: status === 'verifying' ? '#d9d9d9' : '#77469b',
+          color: status === 'verifying' ? 'rgba(0,0,0,0.38)' : '#fff',
+          border: 'none',
+          borderRadius: '0.8rem',
+          px: '1rem',
+          py: '1rem',
+          fontSize: '1.4rem',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          cursor: status === 'verifying' ? 'not-allowed' : 'pointer',
+          textTransform: 'none',
+          transition: 'background 0.15s',
+          '&:hover': status === 'verifying' ? {} : { bgcolor: '#9551ab' },
+        }}
+      >
+        {status === 'verifying' ? 'Verifying…' : 'Done'}
+      </Box>
     </div>
   );
 
@@ -464,17 +583,7 @@ export default function McpConnectDialog({
         </div>
       );
     }
-    return (
-      <div className={styles.footer}>
-        <button
-          type="button"
-          className={styles.footerBtnPrimary}
-          onClick={handleDone}
-        >
-          Done
-        </button>
-      </div>
-    );
+    return null;
   };
 
   return (
@@ -507,38 +616,16 @@ export default function McpConnectDialog({
         </button>
       </DialogTitle>
 
-      <div className={styles.dialogBody}>
-        <div className={styles.tabList}>
-          {TABS.map((tab) => {
-            const TabIcon = tab.icon;
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                className={`${styles.tabItem} ${
-                  isActive ? styles.tabItemActive : ''
-                }`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                <TabIcon size={18} weight={isActive ? 'fill' : 'regular'} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+      {renderStepIndicator()}
 
-        <div className={styles.dialogBodyRight}>
-          <DialogContent className={styles.dialogContent}>
-            {activeTab === 'choose-client' && renderChooseClient()}
-            {activeTab === 'client-setup' && renderClientSetup()}
-            {activeTab === 'auth' && renderAuth()}
-            {activeTab === 'verify' && renderVerify()}
-            {activeTab === 'reference' && renderReference()}
-          </DialogContent>
-          {renderFooter()}
-        </div>
-      </div>
+      <DialogContent className={styles.dialogContent}>
+        {step === 1 && renderStepOne()}
+        {step === 2 && renderStepTwo()}
+        {step === 3 && renderStepThree()}
+        {step === 4 && renderStepFour()}
+      </DialogContent>
+
+      {renderFooter()}
     </Dialog>
   );
 }
