@@ -1,6 +1,5 @@
 import { LinkIcon, XIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   ClaudeLogo,
   GptLogo,
@@ -12,7 +11,6 @@ const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
 
 export default function DashboardBanner() {
   const [visible, setVisible] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const dismissed = sessionStorage.getItem(BANNER_STORAGE_KEY);
@@ -24,10 +22,6 @@ export default function DashboardBanner() {
   const handleDismiss = () => {
     sessionStorage.setItem(BANNER_STORAGE_KEY, 'true');
     setVisible(false);
-  };
-
-  const handleConnect = () => {
-    navigate('/settings/integrations');
   };
 
   if (!visible) {
@@ -64,18 +58,10 @@ export default function DashboardBanner() {
       </div>
 
       <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.learnBtn}
-          onClick={handleConnect}
-        >
+        <button type="button" className={styles.learnBtn}>
           See How It Works
         </button>
-        <button
-          type="button"
-          className={styles.connectBtn}
-          onClick={handleConnect}
-        >
+        <button type="button" className={styles.connectBtn}>
           Connect MCP
         </button>
       </div>

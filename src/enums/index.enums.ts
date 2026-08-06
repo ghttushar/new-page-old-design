@@ -37,7 +37,6 @@ export enum PageTitleEnum {
   RULES_CREATION = 'Rule Creation',
   APPLIED_RULES = 'Applied Rules',
   CONFIGURATION_WIZARD = 'Configuration Wizard',
-  INTEGRATIONS = 'Integrations',
   ALERTS = 'Signals',
 }
 
@@ -80,7 +79,6 @@ export enum BackendServiceNameEnum {
   JIVA_LLM = 'jiva-llm',
   CronWorker = 'cron-worker',
   TaskProcessor = 'task-processor',
-  Integrations = 'integrations',
   DlqProcessor = 'dlq-processor',
   D2C = 'd2c',
   All = 'all',

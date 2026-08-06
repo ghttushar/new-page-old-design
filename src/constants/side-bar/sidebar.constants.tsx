@@ -227,11 +227,6 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
           primaryText: 'Configuration',
           feature: FeaturesEnum.CONFIGURATION,
         },
-        {
-          key: FeatureRoutes.INTEGRATIONS,
-          primaryText: 'Integrations',
-          feature: FeaturesEnum.INTEGRATIONS,
-        },
       ],
       feature: FeaturesEnum.SETTINGS,
       icon: <UserCircleGearIcon className={styles.icon} />,

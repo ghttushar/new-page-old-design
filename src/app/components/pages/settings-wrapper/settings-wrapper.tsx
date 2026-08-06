@@ -15,7 +15,6 @@ import InvitesPage from './invites-page/invites-page';
 import SettingsPage from './settings-page/settings-page';
 import settingsWrapperStyles from './settings-wrapper.module.scss';
 import UsersPage from './users-page/users-page';
-import IntegrationsPage from './integrations-page/integrations-page';
 
 export default function SettingsWrapper() {
   const selectedUserAccountMapping =
@@ -75,10 +74,6 @@ export default function SettingsWrapper() {
         <Route
           path="/accounts/*"
           element={<PrivateRoute component={<SettingsPage />} />}
-        />
-        <Route
-          path="/integrations"
-          element={<PrivateRoute component={<IntegrationsPage />} />}
         />
         <Route path="*" element={<Navigate to="accounts" replace />} />
       </Routes>
