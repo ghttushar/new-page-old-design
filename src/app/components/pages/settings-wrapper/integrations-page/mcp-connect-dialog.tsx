@@ -212,11 +212,15 @@ function VerifyCard({
   title,
   desc,
   prompt,
+  visible,
+  index,
 }: {
   icon: React.ComponentType<{ size?: number; weight?: 'fill' }>;
   title: string;
   desc: string;
   prompt: string;
+  visible: boolean;
+  index: number;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -230,6 +234,10 @@ function VerifyCard({
       window.setTimeout(() => setCopied(false), 2000);
     });
   };
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <div
@@ -350,7 +358,7 @@ export default function McpConnectDialog({
                 }`}
               >
                 {isCompleted ? (
-                  <CheckIcon size={14} weight="bold" />
+                  <CheckIcon size={16} weight="bold" />
                 ) : (
                   <span>{num}</span>
                 )}
@@ -437,6 +445,11 @@ export default function McpConnectDialog({
       <Typography variant="body2" className={styles.stepSubtitle}>
         Follow the steps below to connect {selectedName}.
       </Typography>
+      {selectedClient === 'claude' && (
+        <Typography variant="body2" className={styles.stepHint}>
+          Choose the option that matches your account type.
+        </Typography>
+      )}
 
       {selectedClient === 'claude' ? (
         <>
@@ -540,7 +553,7 @@ export default function McpConnectDialog({
             </>,
             <>
               <span className={styles.timelinePromptLabel}>
-                Run this command:
+                Type this command in the chat:
               </span>
               <CodeBlock value={LOGIN_COMMAND} />
             </>,
@@ -584,97 +597,121 @@ export default function McpConnectDialog({
     </div>
   );
 
-  const renderStepFour = () => (
-    <div className={styles.stepContent}>
-      <Typography variant="h2" className={styles.stepTitle}>
-        Verify your connection
-      </Typography>
-      <Typography variant="body2" className={styles.stepSubtitle}>
-        Run these prompts in {selectedName} to confirm everything works.
-      </Typography>
+  const renderStepFour = () => {
+    const [visibleCards, setVisibleCards] = useState(1);
 
-      {VERIFY_CARDS.map((card) => (
-        <VerifyCard
-          key={card.id}
-          icon={card.icon}
-          title={card.title}
-          desc={card.desc}
-          prompt={card.prompt}
-        />
-      ))}
+    const handleCardAction = () => {
+      if (visibleCards < VERIFY_CARDS.length) {
+        setVisibleCards((v) => v + 1);
+      }
+    };
 
-      <div className={styles.infoCard}>
-        <LightbulbIcon size={18} weight="fill" />
-        <div>
-          <Typography variant="body1" className={styles.infoTitle}>
-            Your MCP connection is almost complete
-          </Typography>
-          <Typography variant="body2" className={styles.infoText}>
-            If all prompts return valid responses, your MCP connection is
-            complete. Click Done once you've verified the prompts execute
-            successfully.
-          </Typography>
-        </div>
-      </div>
+    return (
+      <div className={styles.stepContent}>
+        <Typography variant="h2" className={styles.stepTitle}>
+          Verify your connection
+        </Typography>
+        <Typography variant="body2" className={styles.stepSubtitle}>
+          Run these prompts in {selectedName} to confirm everything works.
+        </Typography>
 
-      {status === 'verifying' && (
-        <div className={styles.statusRow}>
-          <SpinnerGapIcon size={16} className={styles.spin} />
-          <span className={styles.statusVerifying}>Verifying connection…</span>
+        <div className={styles.infoCard}>
+          <LightbulbIcon size={18} weight="fill" />
+          <div>
+            <Typography variant="body1" className={styles.infoTitle}>
+              Your MCP connection is almost complete
+            </Typography>
+            <Typography variant="body2" className={styles.infoText}>
+              If all prompts return valid responses, your MCP connection is
+              complete. Click Done once you've verified the prompts execute
+              successfully.
+            </Typography>
+          </div>
         </div>
-      )}
-      {status === 'success' && (
-        <div className={styles.statusRow}>
-          <CheckCircleIcon size={16} color="#429488" weight="fill" />
-          <span className={styles.statusSuccess}>
-            MCP connected — your AI assistants are ready.
-          </span>
-        </div>
-      )}
-      {status === 'failed' && (
-        <div className={styles.statusRow}>
-          <XCircleIcon size={16} color="#ff0000" weight="fill" />
-          <span className={styles.statusError}>
-            Connection failed. Please try again.
-          </span>
-        </div>
-      )}
 
-      <button
-        type="button"
-        className={styles.backLink}
-        onClick={() => setStep((s) => s - 1)}
-      >
-        Back
-      </button>
-      {status === 'failed' ? (
-        <>
-          <button type="button" className={styles.contactLink} onClick={() => window.open(MCP_SUPPORT_EMAIL)}>
-            Contact support
+        {VERIFY_CARDS.map((card, i) => (
+          <VerifyCard
+            key={card.id}
+            icon={card.icon}
+            title={card.title}
+            desc={card.desc}
+            prompt={card.prompt}
+            visible={i < visibleCards}
+            index={i}
+          />
+        ))}
+
+        {visibleCards < VERIFY_CARDS.length && (
+          <button
+            type="button"
+            className={styles.backLink}
+            onClick={handleCardAction}
+          >
+            Show next prompt
           </button>
-          <button type="button" className={styles.primaryBtn} onClick={handleDone}>
-            Try again
+        )}
+
+        {status === 'verifying' && (
+          <div className={styles.statusRow}>
+            <SpinnerGapIcon size={16} className={styles.spin} />
+            <span className={styles.statusVerifying}>Verifying connection…</span>
+          </div>
+        )}
+        {status === 'success' && (
+          <div className={styles.statusRow}>
+            <CheckCircleIcon size={16} color="#429488" weight="fill" />
+            <span className={styles.statusSuccess}>
+              MCP connected — your AI assistants are ready.
+            </span>
+          </div>
+        )}
+        {status === 'failed' && (
+          <div className={styles.statusRow}>
+            <XCircleIcon size={16} color="#ff0000" weight="fill" />
+            <span className={styles.statusError}>
+              Connection failed. Please try again.
+            </span>
+          </div>
+        )}
+
+        <div className={styles.stickyFooter}>
+          <button
+            type="button"
+            className={styles.backLink}
+            onClick={() => setStep((s) => s - 1)}
+          >
+            Back
           </button>
-        </>
-      ) : (
-        <button
-          type="button"
-          className={styles.primaryBtn}
-          onClick={handlePrimary}
-          disabled={status === 'verifying'}
-        >
-          {status === 'verifying' ? (
+          {status === 'failed' ? (
             <>
-              <SpinnerGapIcon size={16} className={styles.spin} />
-              Verifying…
+              <button type="button" className={styles.contactLink} onClick={() => window.open(MCP_SUPPORT_EMAIL)}>
+                Contact support
+              </button>
+              <button type="button" className={styles.primaryBtn} onClick={handleDone}>
+                Try again
+              </button>
             </>
           ) : (
-            'Done'
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={handlePrimary}
+              disabled={status === 'verifying'}
+            >
+              {status === 'verifying' ? (
+                <>
+                  <SpinnerGapIcon size={16} className={styles.spin} />
+                  Verifying…
+                </>
+              ) : (
+                'Done'
+              )}
+            </button>
           )}
-        </button>
-      )}
-    </div>
-  );
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Dialog

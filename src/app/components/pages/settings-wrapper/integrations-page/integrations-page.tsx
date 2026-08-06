@@ -64,21 +64,19 @@ export default function IntegrationsPage() {
 
       <div className={styles.grid}>
         <div className={styles.card}>
-          <span className={`${styles.cardLogoWrap} ${styles.cardLogoJiva}`}>
-            <JivaJLogo size={24} />
-          </span>
-          <div className={styles.cardInfo}>
-            <div className={styles.cardTitleRow}>
-              <Typography variant="body1" className={styles.cardTitle}>
-                MCP
-              </Typography>
-              <span className={styles.badgeNew}>NEW</span>
-            </div>
-            <Typography variant="body2" className={styles.cardDesc}>
-              Connect Claude or ChatGPT to JIVA and unlock AI-powered
-              marketplace intelligence.
+          <div className={styles.cardTitleRow}>
+            <span className={`${styles.cardLogoWrap} ${styles.cardLogoJiva}`}>
+              <JivaJLogo size={20} />
+            </span>
+            <Typography variant="body1" className={styles.cardTitle}>
+              MCP
             </Typography>
+            <span className={styles.badgeNew}>NEW</span>
           </div>
+          <Typography variant="body2" className={styles.cardDesc}>
+            Connect Claude or ChatGPT to JIVA and unlock AI-powered
+            marketplace intelligence.
+          </Typography>
           <button
             type="button"
             className={styles.cardBtn}
@@ -94,19 +92,17 @@ export default function IntegrationsPage() {
         </div>
 
         <div className={styles.card}>
-          <span className={`${styles.cardLogoWrap} ${styles.cardLogoWa}`}>
-            <WhatsappLogo size={22} />
-          </span>
-          <div className={styles.cardInfo}>
-            <div className={styles.cardTitleRow}>
-              <Typography variant="body1" className={styles.cardTitle}>
-                WhatsApp
-              </Typography>
-            </div>
-            <Typography variant="body2" className={styles.cardDesc}>
-              Receive Anarix alerts and notifications on WhatsApp.
+          <div className={styles.cardTitleRow}>
+            <span className={`${styles.cardLogoWrap} ${styles.cardLogoWa}`}>
+              <WhatsappLogo size={18} />
+            </span>
+            <Typography variant="body1" className={styles.cardTitle}>
+              WhatsApp
             </Typography>
           </div>
+          <Typography variant="body2" className={styles.cardDesc}>
+            Receive Anarix alerts and notifications on WhatsApp.
+          </Typography>
           <button
             type="button"
             className={styles.cardBtn}
