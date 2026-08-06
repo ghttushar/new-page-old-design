@@ -46,7 +46,7 @@ export default function DashboardBanner() {
         </div>
         <span className={styles.chainLine} />
         <div className={styles.logoItem}>
-          <GptLogo size={28} />
+          <GptLogo size={32} />
         </div>
       </div>
 
