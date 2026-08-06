@@ -5,7 +5,9 @@ import { Typography } from '@mui/material';
 import { SpinnerGapIcon } from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 import {
-  JivaLogo,
+  ClaudeLogo,
+  GptLogo,
+  JivaJLogo,
   WhatsappLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import { getMcpConnected, subscribeMcpConnected } from './mcp-connection';
@@ -46,21 +48,31 @@ export default function IntegrationsPage() {
         Connect external services to extend JIVA.
       </Typography>
 
+      {mcpConnected && (
+        <div className={styles.connectedSection}>
+          <span className={styles.connectedLabel}>Connected</span>
+          <div className={styles.connectedIcons}>
+            <span className={styles.connectedIconWrap}>
+              <ClaudeLogo size={20} />
+            </span>
+            <span className={styles.connectedIconWrap}>
+              <GptLogo size={20} />
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className={styles.grid}>
         <div className={styles.card}>
           <span className={`${styles.cardLogoWrap} ${styles.cardLogoJiva}`}>
-            <JivaLogo size={24} />
+            <JivaJLogo size={24} />
           </span>
           <div className={styles.cardInfo}>
             <div className={styles.cardTitleRow}>
               <Typography variant="body1" className={styles.cardTitle}>
                 MCP
               </Typography>
-              {mcpConnected ? (
-                <span className={styles.badgeConnected}>CONNECTED</span>
-              ) : (
-                <span className={styles.badgeNew}>NEW</span>
-              )}
+              <span className={styles.badgeNew}>NEW</span>
             </div>
             <Typography variant="body2" className={styles.cardDesc}>
               Connect Claude or ChatGPT to JIVA and unlock AI-powered

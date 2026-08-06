@@ -23,9 +23,9 @@
   align-items: center;
   gap: 1.2rem;
   min-height: 10rem;
-  padding: 1.4rem;
-  border: 1px solid $border-color-4;
-  border-radius: 1.2rem;
+  padding: 1rem 3rem 3rem;
+  border: 1px solid rgba(119, 70, 155, 0.1);
+  border-radius: 1.6rem;
   background: $foreground-color;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -72,10 +72,10 @@
 }
 
 .cardTitle {
-  font-size: 1.6rem;
-  font-weight: 600;
-  line-height: 2.4rem;
-  color: $main-text;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 3.2rem;
+  color: #77469b;
   font-family: $font-family;
 }
 
@@ -136,10 +136,10 @@
 }
 
 .cardDesc {
-  font-size: 1.3rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: $sub-text-2;
+  font-size: 1.8rem;
+  font-weight: 200;
+  line-height: 2.8rem;
+  color: #464646;
   font-family: $font-family;
   margin: 0;
   display: -webkit-box;
@@ -199,4 +199,35 @@
   .grid {
     grid-template-columns: 1fr;
   }
+}
+
+.connectedSection {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.connectedLabel {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: $sub-text-2;
+  font-family: $font-family;
+}
+
+.connectedIcons {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.connectedIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background: $background-color-3;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
