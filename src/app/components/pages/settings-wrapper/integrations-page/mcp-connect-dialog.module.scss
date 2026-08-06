@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 3.2rem;
+  padding: 2.4rem;
   border-bottom: 1px solid $border-color-4;
   flex-shrink: 0;
 }
@@ -50,14 +50,14 @@
 .dialogTitle {
   font-size: 1.8rem;
   font-weight: 600;
-  line-height: 2.4rem;
+  line-height: 2.8rem;
   color: $main-text;
   font-family: $font-family;
 }
 
 .dialogSubtitle {
   display: block;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 400;
   line-height: 2rem;
   color: $sub-text-2;
@@ -104,20 +104,21 @@
 
 // ---------- Stepper ----------
 .stepIndicator {
-  display: flex;
-  align-items: flex-start;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   height: 7.2rem;
-  padding: 1.6rem 3.2rem 0;
+  padding: 1.2rem 3.2rem 0;
   border-bottom: 1px solid $border-color-4;
   flex-shrink: 0;
   box-sizing: border-box;
 }
 
-.stepItem {
+.stepCell {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
   min-width: 0;
 }
 
@@ -150,7 +151,7 @@
 }
 
 .stepLabel {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 500;
   line-height: 2rem;
   color: $sub-text-4;
@@ -169,13 +170,12 @@
 }
 
 .stepLine {
-  position: relative;
-  flex: 1;
-  align-self: flex-start;
+  position: absolute;
+  top: 2.9rem;
+  left: calc(50% + 1.8rem);
+  width: calc(100% - 3.6rem);
   height: 2px;
   background: $border-color-4;
-  margin-top: 1.7rem;
-  min-width: 4rem;
   overflow: hidden;
 
   &::after {
@@ -198,7 +198,7 @@
 .dialogContent {
   flex: 1;
   min-height: 0;
-  padding: 4rem !important;
+  padding: 3.2rem !important;
   overflow-y: auto;
 }
 
@@ -218,9 +218,9 @@
 }
 
 .stepTitle {
-  font-size: 3.6rem;
+  font-size: 3rem;
   font-weight: 700;
-  line-height: 4.4rem;
+  line-height: 3.6rem;
   letter-spacing: -0.02em;
   color: $main-text;
   font-family: $font-family;
@@ -228,9 +228,9 @@
 }
 
 .stepSubtitle {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 400;
-  line-height: 2.6rem;
+  line-height: 2.4rem;
   color: $sub-text-2;
   font-family: $font-family;
   margin: 0 0 3.2rem;
@@ -757,37 +757,37 @@
   overflow-wrap: anywhere;
 }
 
-.successCard {
+.infoCard {
   display: flex;
   align-items: flex-start;
   gap: 1.6rem;
-  background: #eafffc;
-  border: 1px solid #b8e6df;
-  border-radius: 2rem;
+  background: $primary-color-dropzone;
+  border: 1px solid $alt-primary-color;
+  border-radius: 1.6rem;
   padding: 2.4rem;
-  color: $positive-color;
   margin-top: 2.4rem;
 
   svg {
     flex-shrink: 0;
+    color: $primary-color;
     margin-top: 0.2rem;
   }
 }
 
-.successTitle {
+.infoTitle {
   font-size: 1.6rem;
   font-weight: 600;
   line-height: 2.4rem;
-  color: #256b62;
+  color: $main-text;
   font-family: $font-family;
   margin: 0 0 0.4rem;
 }
 
-.successText {
-  font-size: 1.4rem;
+.infoText {
+  font-size: 1.5rem;
   font-weight: 400;
-  line-height: 2.2rem;
-  color: #3d7a72;
+  line-height: 2.4rem;
+  color: $sub-text-2;
   font-family: $font-family;
   margin: 0;
 }
@@ -797,10 +797,10 @@
   display: flex;
   align-items: center;
   gap: 1.6rem;
-  padding: 2rem 3.2rem;
+  padding: 1.6rem 3.2rem;
   border-top: 1px solid $border-color-4;
   flex-shrink: 0;
-  min-height: 8.8rem;
+  min-height: 8rem;
   box-sizing: border-box;
 }
 

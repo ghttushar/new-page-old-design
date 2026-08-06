@@ -75,21 +75,21 @@ export default function DashboardBanner() {
             d="M76 34 C 70 84, 106 116, 148 132"
             fill="none"
             stroke="url(#flowGradClaude)"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
-            opacity="0.55"
+            opacity="0.6"
           />
           <path
             id="pathGpt"
             d="M244 34 C 250 84, 214 116, 172 132"
             fill="none"
             stroke="url(#flowGradGpt)"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
-            opacity="0.55"
+            opacity="0.6"
           />
 
-          <circle r="3.2" fill={PARTICLE_COLOR}>
+          <circle r="4" fill={PARTICLE_COLOR}>
             <animateMotion
               dur="3.6s"
               repeatCount="indefinite"
@@ -102,7 +102,7 @@ export default function DashboardBanner() {
               repeatCount="indefinite"
             />
           </circle>
-          <circle r="2.4" fill="#d97757">
+          <circle r="3" fill="#d97757">
             <animateMotion
               dur="3.6s"
               begin="1.2s"
@@ -117,7 +117,7 @@ export default function DashboardBanner() {
               repeatCount="indefinite"
             />
           </circle>
-          <circle r="3.2" fill={PARTICLE_COLOR}>
+          <circle r="4" fill={PARTICLE_COLOR}>
             <animateMotion
               dur="3.6s"
               repeatCount="indefinite"
@@ -130,7 +130,7 @@ export default function DashboardBanner() {
               repeatCount="indefinite"
             />
           </circle>
-          <circle r="2.4" fill="#10a37f">
+          <circle r="3" fill="#10a37f">
             <animateMotion
               dur="3.6s"
               begin="1.4s"
@@ -148,13 +148,13 @@ export default function DashboardBanner() {
         </svg>
 
         <div className={`${styles.node} ${styles.nodeClaude}`}>
-          <ClaudeLogo size={36} />
+          <ClaudeLogo size={44} />
         </div>
         <div className={`${styles.node} ${styles.nodeGpt}`}>
-          <GptLogo size={36} />
+          <GptLogo size={44} />
         </div>
         <div className={`${styles.node} ${styles.nodeJiva}`}>
-          <JivaLogo size={72} />
+          <JivaLogo size={88} />
         </div>
 
         <span className={`${styles.nodeLabel} ${styles.labelClaude}`}>Claude</span>

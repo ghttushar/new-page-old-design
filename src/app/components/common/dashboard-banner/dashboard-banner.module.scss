@@ -4,9 +4,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 4rem;
-  min-height: 20rem;
-  padding: 3.2rem 4rem;
+  gap: 3.2rem;
+  min-height: 24.8rem;
+  padding: 2.4rem;
   border: 1px solid $border-color-4;
   border-radius: 2.4rem;
   background: linear-gradient(135deg, #ffffff 0%, #fbf7ff 55%, #f4ecfd 100%);
@@ -17,18 +17,18 @@
 
 .closeBtn {
   position: absolute;
-  top: 1.6rem;
-  right: 1.6rem;
+  top: 1.2rem;
+  right: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.6rem;
-  height: 3.6rem;
-  min-width: 3.6rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  min-width: 3.2rem;
   background: transparent;
   border: none;
   color: $sub-text-4;
-  border-radius: 1rem;
+  border-radius: 0.8rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 
@@ -45,10 +45,9 @@
 
 .network {
   position: relative;
-  width: 32rem;
-  min-width: 32rem;
+  flex: 0 0 40%;
+  min-width: 0;
   height: 20rem;
-  flex-shrink: 0;
 }
 
 .networkSvg {
@@ -70,43 +69,45 @@
 
 .nodeClaude {
   top: 0;
-  left: 3.6rem;
-  width: 5rem;
-  height: 5rem;
+  left: 20%;
+  width: 6rem;
+  height: 6rem;
 }
 
 .nodeGpt {
   top: 0;
-  right: 3.6rem;
-  width: 5rem;
-  height: 5rem;
+  right: 20%;
+  width: 6rem;
+  height: 6rem;
 }
 
 .nodeJiva {
-  bottom: 0.6rem;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 9.6rem;
-  height: 9.6rem;
-  box-shadow: 0 0 0 8px rgba(119, 70, 155, 0.08), 0 12px 32px rgba(119, 70, 155, 0.25);
+  width: 11.2rem;
+  height: 11.2rem;
+  box-shadow: 0 0 0 8px rgba(119, 70, 155, 0.08),
+    0 12px 32px rgba(119, 70, 155, 0.25);
 }
 
 .nodeLabel {
   position: absolute;
-  top: 4.6rem;
-  font-size: 1.2rem;
-  font-weight: 600;
+  top: 5.6rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 2rem;
   color: $sub-text-2;
   font-family: $font-family;
   white-space: nowrap;
 }
 
 .labelClaude {
-  left: 2.2rem;
+  left: 14%;
 }
 
 .labelGpt {
-  right: 2.2rem;
+  right: 14%;
 }
 
 .textWrap {
@@ -118,9 +119,9 @@
 }
 
 .headline {
-  font-size: 4.8rem;
+  font-size: 4.2rem;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 4.8rem;
   letter-spacing: -0.03em;
   color: $main-text;
   font-family: $font-family;
@@ -133,13 +134,13 @@
 }
 
 .subline {
-  font-size: 1.8rem;
-  font-weight: 500;
-  line-height: 1.45;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 2.4rem;
   color: $sub-text-2;
   font-family: $font-family;
-  margin: 0 0 2.4rem;
-  max-width: 58rem;
+  margin: 0 0 2rem;
+  max-width: 52rem;
 }
 
 .actions {

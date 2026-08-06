@@ -4,6 +4,7 @@ import {
   CheckCircleIcon,
   CheckIcon,
   CopyIcon,
+  LightbulbIcon,
   LockIcon,
   SparkleIcon,
   SpinnerGapIcon,
@@ -335,31 +336,29 @@ export default function McpConnectDialog({
         const isCompleted = num < step;
         const isCurrent = num === step;
         return (
-          <React.Fragment key={label}>
-            <div className={styles.stepItem}>
-              <div
-                className={`${styles.stepCircle} ${
-                  isCompleted
-                    ? styles.stepCompleted
-                    : isCurrent
-                    ? styles.stepCurrent
-                    : ''
-                }`}
-              >
-                {isCompleted ? (
-                  <CheckIcon size={16} weight="bold" />
-                ) : (
-                  <span>{num}</span>
-                )}
-              </div>
-              <span
-                className={`${styles.stepLabel} ${
-                  isCurrent ? styles.stepLabelActive : ''
-                } ${isCompleted ? styles.stepLabelCompleted : ''}`}
-              >
-                {label}
-              </span>
+          <div key={label} className={styles.stepCell}>
+            <div
+              className={`${styles.stepCircle} ${
+                isCompleted
+                  ? styles.stepCompleted
+                  : isCurrent
+                  ? styles.stepCurrent
+                  : ''
+              }`}
+            >
+              {isCompleted ? (
+                <CheckIcon size={16} weight="bold" />
+              ) : (
+                <span>{num}</span>
+              )}
             </div>
+            <span
+              className={`${styles.stepLabel} ${
+                isCurrent ? styles.stepLabelActive : ''
+              } ${isCompleted ? styles.stepLabelCompleted : ''}`}
+            >
+              {label}
+            </span>
             {i < STEPS.length - 1 && (
               <div
                 className={`${styles.stepLine} ${
@@ -367,7 +366,7 @@ export default function McpConnectDialog({
                 }`}
               />
             )}
-          </React.Fragment>
+          </div>
         );
       })}
     </div>
@@ -574,13 +573,16 @@ export default function McpConnectDialog({
         />
       ))}
 
-      <div className={styles.successCard}>
-        <CheckCircleIcon size={28} weight="fill" />
+      <div className={styles.infoCard}>
+        <LightbulbIcon size={24} weight="fill" />
         <div>
-          <h4 className={styles.successTitle}>Your MCP connection is complete</h4>
-          <p className={styles.successText}>
-            If all prompts return valid responses, your MCP connection is
-            complete.
+          <h4 className={styles.infoTitle}>
+            Your MCP connection is almost complete
+          </h4>
+          <p className={styles.infoText}>
+            If all three prompts return valid responses, your MCP connection is
+            complete. Click Done after confirming the prompts have executed
+            successfully.
           </p>
         </div>
       </div>
@@ -658,7 +660,9 @@ export default function McpConnectDialog({
         <button
           type="button"
           className={styles.btnPrimary}
-          onClick={() => setStep((s) => Math.min(STEPS.length, s + 1))}
+          onClick={() =>
+            step < STEPS.length ? setStep((s) => s + 1) : handleDone()
+          }
         >
           {nextLabel}
         </button>
