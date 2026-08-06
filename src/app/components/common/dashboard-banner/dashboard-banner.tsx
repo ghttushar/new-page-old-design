@@ -130,21 +130,14 @@ export default function DashboardBanner() {
         </svg>
 
         <div className={`${styles.node} ${styles.nodeClaude}`}>
-          <ClaudeLogo size={28} />
+          <ClaudeLogo size={20} />
         </div>
         <div className={`${styles.node} ${styles.nodeGpt}`}>
-          <GptLogo size={28} />
+          <GptLogo size={20} />
         </div>
         <div className={`${styles.node} ${styles.nodeJiva}`}>
-          <JivaLogo size={56} />
+          <JivaLogo size={44} />
         </div>
-
-        <span className={`${styles.nodeLabel} ${styles.labelClaude}`}>
-          Claude
-        </span>
-        <span className={`${styles.nodeLabel} ${styles.labelGpt}`}>
-          ChatGPT
-        </span>
       </div>
 
       <div className={styles.textWrap}>
@@ -158,23 +151,24 @@ export default function DashboardBanner() {
           JIVA securely gives Claude and ChatGPT access to marketplace
           intelligence through MCP.
         </p>
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.connectBtn}
-            onClick={handleConnect}
-          >
-            Connect MCP
-          </button>
-          <button
-            type="button"
-            className={styles.learnBtn}
-            onClick={handleConnect}
-          >
-            Learn How It Works
-            <ArrowRightIcon size={16} weight="bold" />
-          </button>
-        </div>
+      </div>
+
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={styles.connectBtn}
+          onClick={handleConnect}
+        >
+          Connect MCP
+        </button>
+        <button
+          type="button"
+          className={styles.learnBtn}
+          onClick={handleConnect}
+        >
+          Learn How It Works
+          <ArrowRightIcon size={16} weight="bold" />
+        </button>
       </div>
     </div>
   );

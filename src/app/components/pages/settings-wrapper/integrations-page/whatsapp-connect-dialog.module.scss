@@ -1,8 +1,13 @@
 @import 'src/assets/styles/variables/variables.scss';
 
 .dialogPaper {
+  width: 100%;
+  height: 68rem;
   border-radius: 1.2rem;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: $foreground-color;
 }
 
 .dialogHeader {
@@ -58,7 +63,10 @@
 }
 
 .dialogContent {
+  flex: 1;
+  min-height: 0;
   padding: 0 !important;
+  overflow-y: auto;
 }
 
 // Step Indicator
@@ -135,7 +143,7 @@
 }
 
 .stepTitle {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: $main-text;
   font-family: $font-family;

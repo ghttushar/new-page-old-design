@@ -20,9 +20,10 @@
 
 .card {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 2rem;
+  align-items: center;
+  gap: 1.2rem;
+  min-height: 12rem;
+  padding: 1.6rem;
   border: 1px solid $border-color-4;
   border-radius: 1.2rem;
   background: $foreground-color;
@@ -39,12 +40,6 @@
   }
 }
 
-.cardTop {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.6rem;
-}
-
 .cardLogoWrap {
   display: flex;
   align-items: center;
@@ -52,54 +47,15 @@
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cardLogoJiva {
+  background: $primary-color-dropzone;
+}
+
+.cardLogoWa {
   background: #f0fdf4;
-  flex-shrink: 0;
-}
-
-.netIllustration {
-  position: relative;
-  width: 8.4rem;
-  height: 8.4rem;
-  flex-shrink: 0;
-}
-
-.netSvg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.netNode {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.netNodeClaude {
-  top: 0;
-  width: 3rem;
-  height: 3rem;
-}
-
-.netNodeJiva {
-  top: 2.6rem;
-  width: 4.8rem;
-  height: 4.8rem;
-  box-shadow: 0 0 0 5px rgba(119, 70, 155, 0.07),
-    0 4px 12px rgba(119, 70, 155, 0.18);
-}
-
-.netNodeGpt {
-  bottom: 0;
-  width: 3rem;
-  height: 3rem;
 }
 
 .cardInfo {
@@ -110,14 +66,14 @@
 .cardTitleRow {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 0.6rem;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
   flex-wrap: wrap;
 }
 
 .cardTitle {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
   line-height: 2.4rem;
   color: $main-text;
   font-family: $font-family;
@@ -166,22 +122,16 @@
 }
 
 .cardDesc {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.5;
   color: $sub-text-2;
   font-family: $font-family;
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.cardFooter {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1.6rem;
 }
 
 .cardBtn {
@@ -189,9 +139,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.8rem;
-  height: 4rem;
-  min-width: 12rem;
-  padding: 0 2rem;
+  height: 3.6rem;
+  min-width: 10rem;
+  padding: 0 1.6rem;
   background: $primary-color;
   color: $foreground-color;
   border: none;
@@ -202,6 +152,7 @@
   font-family: $font-family;
   cursor: pointer;
   text-transform: none;
+  flex-shrink: 0;
   transition: background 0.15s;
   box-shadow: 0 2px 8px rgba(119, 70, 155, 0.18);
 
