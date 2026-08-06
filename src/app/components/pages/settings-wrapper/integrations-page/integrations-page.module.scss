@@ -1,0 +1,227 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.page {
+  padding: 2.4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageSubtitle {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0 0 1.6rem;
+}
+
+// ---------- Connected row ----------
+
+.connectedRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.6rem;
+}
+
+.connectedLabel {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $positive-color;
+  font-family: $font-family;
+}
+
+.connectedIcons {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.connectedIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+}
+
+// ---------- Grid ----------
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ---------- Card ----------
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 2rem;
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 1.2rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: $primary-color-variant-1;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.cardConnected {
+  border-color: rgba($positive-color, 0.4);
+  background: rgba($positive-color, 0.02);
+
+  &:hover {
+    border-color: rgba($positive-color, 0.55);
+    box-shadow: 0 6px 16px rgba(66, 148, 136, 0.08);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.cardLogoTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+
+.tileJiva {
+  background: $primary-color-dropzone;
+}
+
+.tileWhatsapp {
+  background: #f0fdf4;
+}
+
+.cardHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 2rem;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0;
+}
+
+.newPill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $primary-color;
+  background: $primary-color-dropzone;
+  border: 1px solid $alt-primary-color;
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  font-family: $font-family;
+  line-height: 1.4rem;
+}
+
+.connectedPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $positive-color;
+  background: rgba($positive-color, 0.08);
+  border: 1px solid rgba($positive-color, 0.25);
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  font-family: $font-family;
+  line-height: 1.4rem;
+}
+
+.cardDesc {
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  height: 3.6rem;
+  width: 100%;
+  margin-top: auto;
+  background: $primary-color;
+  color: $foreground-color;
+  border: none;
+  border-radius: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  font-family: $font-family;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background: $primary-color-variant-1;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.cardBtnConnected {
+  background: $positive-color;
+
+  &:hover:not(:disabled) {
+    background: $positive-color;
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

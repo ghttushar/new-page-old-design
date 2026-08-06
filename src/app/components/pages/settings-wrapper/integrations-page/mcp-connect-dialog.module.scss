@@ -1,0 +1,806 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+// ---------- Shell ----------
+
+.dialogPaper {
+  width: 100%;
+  height: 68rem;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: $foreground-color;
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.6rem 2rem;
+  border-bottom: 1px solid $border-color-4;
+  flex-shrink: 0;
+}
+
+.dialogHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  min-width: 0;
+}
+
+.dialogIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  background: $primary-color-dropzone;
+  flex-shrink: 0;
+}
+
+.dialogTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 2rem;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0;
+}
+
+.dialogCaption {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0.2rem 0 0;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  min-width: 3.2rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.8rem;
+  color: $sub-text-4;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background: $background-color-3;
+    color: $main-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+// ---------- Stepper ----------
+
+.stepper {
+  display: flex;
+  align-items: center;
+  padding: 1.6rem 2rem;
+  border-bottom: 1px solid $border-color-4;
+  flex-shrink: 0;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 0 0 auto;
+}
+
+.stepCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: $font-family;
+  background: $background-color-2;
+  border: 1px solid $border-color-4;
+  color: $sub-text-2;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.stepCircleCompleted {
+  background: $primary-color;
+  border-color: $primary-color;
+  color: $foreground-color;
+}
+
+.stepCircleCurrent {
+  background: $primary-color;
+  border-color: $primary-color;
+  color: $foreground-color;
+  box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+}
+
+.stepLabel {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: $sub-text-4;
+  font-family: $font-family;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.stepLabelActive {
+  color: $primary-color;
+  font-weight: 600;
+}
+
+.stepLabelCompleted {
+  color: $sub-text-2;
+}
+
+.stepLine {
+  flex: 1;
+  height: 2px;
+  background: $border-color-4;
+  margin: 0 0.8rem;
+  margin-bottom: 2.4rem;
+  transition: background 0.2s ease;
+}
+
+.stepLineCompleted {
+  background: $primary-color;
+}
+
+// ---------- Content ----------
+
+.dialogContent {
+  flex: 1;
+  min-height: 0;
+  padding: 0 !important;
+  overflow-y: auto;
+}
+
+.stepContent {
+  padding: 2rem 2.4rem;
+}
+
+.stepTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.8rem;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0 0 0.4rem;
+}
+
+.stepSubtitle {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0 0 1.6rem;
+}
+
+// ---------- Step 1: client cards ----------
+
+.clientGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+@media (max-width: 480px) {
+  .clientGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.clientCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 1.2rem;
+  padding: 1.6rem;
+  cursor: pointer;
+  font-family: $font-family;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: $primary-color-variant-1;
+    box-shadow: 0 4px 12px rgba($primary-color, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.clientCardSelected {
+  border-color: $primary-color;
+  background: rgba($primary-color, 0.02);
+  box-shadow: 0 0 0 1px rgba($primary-color, 0.2);
+}
+
+.clientTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1.2rem;
+}
+
+.clientLogoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 1rem;
+  background: $background-color-3;
+}
+
+.clientRadio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid $border-color-2;
+  background: $foreground-color;
+  color: $foreground-color;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.clientCardSelected .clientRadio {
+  border-color: $primary-color;
+  background: $primary-color;
+}
+
+.clientName {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $main-text;
+  font-family: $font-family;
+  margin-bottom: 0.4rem;
+}
+
+.clientDesc {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $sub-text-2;
+  font-family: $font-family;
+  line-height: 1.5;
+  margin-bottom: 1.2rem;
+}
+
+.clientChips {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.clientChip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: $sub-text-2;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+  font-family: $font-family;
+}
+
+.clientCardSelected .clientChip {
+  color: $primary-color;
+  background: $primary-color-dropzone;
+  border-color: $alt-primary-color;
+}
+
+// ---------- Accordions ----------
+
+.accordionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.accordion {
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.accordionOpen {
+  border-color: $primary-color-variant-1;
+}
+
+.accordionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: $font-family;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: $hover-bg-color-2;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -2px;
+  }
+}
+
+.accordionTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.accordionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.8rem;
+  background: $primary-color-dropzone;
+  color: $primary-color;
+  flex-shrink: 0;
+}
+
+.accordionTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: $main-text;
+  font-family: $font-family;
+}
+
+.accordionChevron {
+  color: $sub-text-4;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.accordionOpen .accordionChevron {
+  transform: rotate(180deg);
+}
+
+.accordionBody {
+  padding: 0 1.6rem 1.6rem;
+}
+
+// ---------- Timeline ----------
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineItem {
+  display: flex;
+  align-items: stretch;
+  gap: 1.2rem;
+}
+
+.timelineRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.timelineNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: $primary-color-dropzone;
+  color: $primary-color;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: $font-family;
+  flex-shrink: 0;
+}
+
+.timelineLine {
+  width: 2px;
+  flex: 1;
+  min-height: 0.8rem;
+  background: $alt-primary-color;
+}
+
+.timelineBody {
+  flex: 1;
+  min-width: 0;
+  padding: 0.1rem 0 1.6rem;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.9rem;
+  color: $main-text;
+  font-family: $font-family;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.timelinePromptLabel {
+  display: block;
+  font-size: 1.2rem;
+  color: $sub-text-2;
+  margin-bottom: 0.6rem;
+}
+
+// ---------- Copy field ----------
+
+.copyField {
+  margin: 0.4rem 0;
+}
+
+.copyFieldLabel {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin-bottom: 0.4rem;
+}
+
+.copyFieldBox {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 4rem;
+  padding: 0 0.6rem 0 1.2rem;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: $primary-color;
+  }
+}
+
+.monoText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  color: $main-text;
+  overflow-wrap: anywhere;
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  min-width: 3rem;
+  color: $primary-color;
+  background: transparent;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: $primary-color-dropzone;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+// ---------- Code block ----------
+
+.codeBlock {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  background: #1f2937;
+  border-radius: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.codeBlockText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  color: #f3f4f6;
+  overflow-wrap: anywhere;
+}
+
+.codeCopyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  min-width: 3rem;
+  color: #d1d5db;
+  background: transparent;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
+
+// ---------- Auth step ----------
+
+.authCard {
+  background: $background-color-5;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  padding: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+.reauthNote {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0 0 0.8rem;
+}
+
+.bulletList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.bulletItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: $sub-text-2;
+  font-family: $font-family;
+}
+
+.bulletDot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: $primary-color;
+  flex-shrink: 0;
+}
+
+// ---------- Step 4: verify ----------
+
+.verifyList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 1.6rem;
+}
+
+.verifyCard {
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  padding: 1.2rem 1.6rem;
+}
+
+.verifyTop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.verifyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.8rem;
+  background: $primary-color-dropzone;
+  color: $primary-color;
+  flex-shrink: 0;
+}
+
+.verifyTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: $main-text;
+  font-family: $font-family;
+}
+
+.verifyPromptBox {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 4rem;
+  padding: 0 0.6rem 0 1.2rem;
+  background: $background-color-3;
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+}
+
+// ---------- Callout ----------
+
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  background: #fffbeb;
+  border: 1px solid rgba(#f1a03a, 0.35);
+  border-radius: 0.8rem;
+  padding: 1.6rem;
+
+  svg {
+    flex-shrink: 0;
+    color: #f1a03a;
+    margin-top: 0.2rem;
+  }
+}
+
+.calloutTitle {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: $main-text;
+  font-family: $font-family;
+  margin-bottom: 0.2rem;
+}
+
+.calloutText {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $sub-text-2;
+  font-family: $font-family;
+  line-height: 1.6;
+  margin: 0;
+}
+
+// ---------- Status ----------
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.6rem;
+  min-height: 2rem;
+}
+
+.statusSuccess {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $positive-color;
+  font-family: $font-family;
+}
+
+// ---------- Footer ----------
+
+.dialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 1.2rem 2rem;
+  border-top: 1px solid $border-color-4;
+  background: $foreground-color;
+  flex-shrink: 0;
+}
+
+.previousBtn {
+  background: none;
+  border: none;
+  color: $primary-color;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: $font-family;
+  cursor: pointer;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: $primary-color-dropzone;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.primaryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  width: 16rem;
+  height: 4rem;
+  background: $primary-color;
+  color: $foreground-color;
+  border: none;
+  border-radius: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: $font-family;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background: $primary-color-variant-1;
+  }
+
+  &:disabled {
+    background: $disable-color;
+    color: $default-disabled-text-color;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

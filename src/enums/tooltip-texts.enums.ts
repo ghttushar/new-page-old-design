@@ -269,6 +269,7 @@ export enum PAGE_TITLE_TOOLTIPS {
   RULES_CREATION = 'Rules Creation',
   APPLIED_RULES = 'Applied Rules',
   CONFIGURATION_WIZARD = 'Set global goals and mappings to optimize your campaigns automatically.',
+  INTEGRATIONS = 'Connect Claude or ChatGPT to JIVA to unlock AI-powered marketplace intelligence.',
 }
 
 export enum RULES_TOOLTIPS {
