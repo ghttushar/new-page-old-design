@@ -13,7 +13,6 @@ import { ISettingsAccount } from 'src/interfaces/settings.interface';
 import { useAuthSelector } from 'src/redux/auth-selector/auth-selector';
 import localStorageUtils from 'src/utils/local-storage/local-storage.utils';
 import OnboardingSelectMarketplace from '../../advertising-page/onboarding-page/onboarding-select-account-modal';
-import ConnectAccountStaticPage from '../../connect-account-static-page/connect-account-static-page';
 import AmazonSettingsProfileComponent from './amazon-setting-profile';
 import styles from './settings.module.scss';
 import WalmartSettingsProfileComponent from './walmart-setting-profile';
@@ -118,15 +117,9 @@ export default function SettingsPage() {
     );
   }, [marketplace]);
 
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-
   if (isLoading) return <LoaderWrapper />;
-  else {
-    if (!hasAccounts) {
-      return <ConnectAccountStaticPage />;
-    }
 
-    return (
+  return (
       <div className={styles.settingsComponent}>
         <OnboardingSelectMarketplace
           title={'Select Marketplace'}
@@ -181,5 +174,4 @@ export default function SettingsPage() {
         </div>
       </div>
     );
-  }
 }

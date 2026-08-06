@@ -1,11 +1,9 @@
 import { reportsAccessDenied } from '@/constants/empty-state.constants';
 import { FeatureRoutes, FeaturesEnum } from '@/enums/auth.enums';
-import { getAdvertisingAccountOptions } from '@/utils/marketplace-logo.utils';
 import navigationUtils from '@/utils/navigation/navigation.utils';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import localStorageUtils from 'src/utils/local-storage/local-storage.utils';
 import EmptyState from '../../common/empty-state/empty-state';
-import ConnectAccountStaticPage from '../connect-account-static-page/connect-account-static-page';
 import ReportsHomePage from './reports-home-page';
 import ReportsViewPage from './reports-view-page';
 
@@ -16,15 +14,6 @@ export function ReportsWrapper(props: ReportsWrapperProps) {
   const accountDetails = localStorageUtils.getAccountDetails();
   const selectedUserAccountMapping =
     localStorageUtils.getSelectedUserAccountMapping();
-
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-  const hasAdvertisingAccounts = !!getAdvertisingAccountOptions().length;
-
-  if (!hasAccounts || (hasAccounts && !hasAdvertisingAccounts)) {
-    return (
-      <ConnectAccountStaticPage customContent="Connect your account to access your performance reports." />
-    );
-  }
 
   if (
     !navigationUtils.canAccessFeature(

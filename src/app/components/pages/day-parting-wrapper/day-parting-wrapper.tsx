@@ -1,5 +1,4 @@
 import { MarketplaceEnum } from '@/enums/serp.enums';
-import { getAdvertisingAccountOptions } from '@/utils/marketplace-logo.utils';
 import navigationUtils from '@/utils/navigation/navigation.utils';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { dayPartingAccessDenied } from 'src/constants/empty-state.constants';
@@ -7,7 +6,6 @@ import { FeaturesEnum } from 'src/enums/auth.enums';
 import localStorageUtils from 'src/utils/local-storage/local-storage.utils';
 import EmptyState from '../../common/empty-state/empty-state';
 import PrivateRoute from '../../private-route/private-route';
-import ConnectAccountStaticPage from '../connect-account-static-page/connect-account-static-page';
 import DayPartingPage from './day-parting-page/day-parting-page';
 import styles from './day-parting-wrapper.module.scss';
 import HistoryChangesPage from './history-changes-page/history-changes-amazon-page';
@@ -22,13 +20,6 @@ export default function DayPartingWrapper() {
     localStorageUtils.getSelectedUserAccountMapping();
 
   const selectedMarketplace = localStorageUtils.getAdvertisingMarketplace();
-
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-  const hasAdvertisingAccounts = !!getAdvertisingAccountOptions().length;
-
-  if (!hasAccounts || (hasAccounts && !hasAdvertisingAccounts)) {
-    return <ConnectAccountStaticPage />;
-  }
 
   if (
     !navigationUtils.canAccessFeature(

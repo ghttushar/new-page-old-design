@@ -1,6 +1,5 @@
 import RulePageJivaPrompt from '@/app/components/page-components/rules-page-components/rule-page-jiva-prompt/rule-page-jiva-prompt';
 import RulesPageRuleTypes from '@/app/components/page-components/rules-page-components/rules-page-rule-types/rules-page-rule-types';
-import ConnectAccountStaticPage from '@/app/components/pages/connect-account-static-page/connect-account-static-page';
 import { JIVAPageIdEnum } from '@/enums/chatbot.enums';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
@@ -15,7 +14,6 @@ import {
   resetRuleState,
   selectSelectedRuleType,
 } from '@/redux/slices/rules/rules.slice';
-import localStorageUtils from '@/utils/local-storage/local-storage.utils';
 import { useEffect, useMemo } from 'react';
 import styles from '../../../rules-page.module.scss';
 
@@ -58,10 +56,6 @@ export default function RulesPageAgents() {
   useEffect(() => {
     dispatch(resetRuleState());
   }, [dispatch]);
-
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-
-  if (!hasAccounts) return <ConnectAccountStaticPage />;
 
   return (
     <div

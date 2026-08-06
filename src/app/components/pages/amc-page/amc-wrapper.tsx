@@ -21,7 +21,6 @@ import localStorageUtils from 'src/utils/local-storage/local-storage.utils';
 import EmptyState from '../../common/empty-state/empty-state';
 import LoaderWrapper from '../../common/loader-wrapper/loader-wrapper';
 import AmcRoute from '../../private-route/amc-route';
-import ConnectAccountStaticPage from '../connect-account-static-page/connect-account-static-page';
 import PageNotFound from '../page-not-found/page-not-found';
 import AMCHomeWrapper from './amc-home-wrapper/amc-home-wrapper';
 import AMCReportPage from './amc-report-page/amc-report-page';
@@ -81,12 +80,6 @@ export default function AmcWrapper() {
       }
     }
   }, [dispatch, isAmazonConnected]);
-
-  if (!isAmazonConnected) {
-    return (
-      <ConnectAccountStaticPage marketplaceSpecific={MarketplaceEnum.AMAZON} />
-    );
-  }
 
   if (selectedMarketplace !== MarketplaceEnum.AMAZON) {
     return <EmptyState {...amcNotConfiguredForMarketplace} />;

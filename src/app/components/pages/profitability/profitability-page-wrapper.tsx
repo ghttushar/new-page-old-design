@@ -2,11 +2,9 @@ import { profitabilityAccessDenied } from '@/constants/empty-state.constants';
 import { FeatureRoutes, FeaturesEnum } from '@/enums/auth.enums';
 import localStorageUtils from '@/utils/local-storage/local-storage.utils';
 import navigationUtils from '@/utils/navigation/navigation.utils';
-import accountUtils from '@/utils/settings/accounts/account.utils';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import EmptyState from '../../common/empty-state/empty-state';
 import PrivateRoute from '../../private-route/private-route';
-import ConnectAccountStaticPage from '../connect-account-static-page/connect-account-static-page';
 import ProfitabilityHomePageWrapper from './profitability-home-page-wrapper/profitability-home-page-wrapper';
 import { ProfitabilityPNLPageWrapper } from './profitability-pnl-page-wrapper/profitability-pnl-page-wrapper';
 import ProfitabilityTrendsPageWrapper from './profitability-trends-page-wrapper/profitability-trends-page-wrapper';
@@ -28,15 +26,6 @@ export default function ProfitabilityPageWrapper() {
         <EmptyState {...profitabilityAccessDenied} />;
       </div>
     );
-
-  const hasRequiredAccounts =
-    !!accountUtils.getEligibleProfitabilityAccounts().length;
-
-  if (!hasRequiredAccounts) {
-    return (
-      <ConnectAccountStaticPage customContent="Connect your Ads and Catalog accounts to get started." />
-    );
-  }
 
   return (
     <Routes>

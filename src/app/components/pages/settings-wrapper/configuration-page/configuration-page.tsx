@@ -4,7 +4,6 @@ import { ConfigurationTableTitlesEnum } from '@/enums/configurations.enum';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import useAdsAccountSubHeader from '@/hooks/use-ads-account-sub-header.hook';
-import localStorageUtils from '@/utils/local-storage/local-storage.utils';
 import { configurationUtils } from '@/utils/settings/configuration.utils';
 import { useMemo } from 'react';
 import {
@@ -14,7 +13,6 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
-import ConnectAccountStaticPage from '../../connect-account-static-page/connect-account-static-page';
 import {
   CONFIGURATION_STEP_OPTIONS,
   ConfigurationPageRouteEnum,
@@ -62,10 +60,6 @@ export default function ConfigurationPage() {
   const options = useMemo(() => {
     return CONFIGURATION_STEP_OPTIONS;
   }, []);
-
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-
-  if (!hasAccounts) return <ConnectAccountStaticPage />;
 
   return (
     <div className={styles.container}>

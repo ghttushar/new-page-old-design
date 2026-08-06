@@ -19,11 +19,9 @@ import rulesServices from '@/services/rules/rules.services';
 import { getUpdatedPagination } from '@/utils';
 import { getAccountPayloadDetails } from '@/utils/advertising.utils';
 import columnFilterUtils from '@/utils/column-filter.utils';
-import localStorageUtils from '@/utils/local-storage/local-storage.utils';
 import { getFormattedAppliedFiltersForAppliedRules } from '@/utils/rules.utils';
 import { PaginationState, SortingState } from '@tanstack/react-table';
 import { useEffect, useMemo, useState } from 'react';
-import ConnectAccountStaticPage from '../../../connect-account-static-page/connect-account-static-page';
 import RulesPageAppliedRules from './rules-page-applied-rules';
 
 export default function RulesPageAppliedRulesWrapper() {
@@ -113,9 +111,6 @@ export default function RulesPageAppliedRulesWrapper() {
     [fetchAppliedRules.isLoading, fetchAppliedRules.isRefetching]
   );
 
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-
-  if (!hasAccounts) return <ConnectAccountStaticPage />;
   return (
     <RulesPageAppliedRules
       data={appliedRules}

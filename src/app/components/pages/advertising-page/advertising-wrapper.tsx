@@ -22,7 +22,6 @@ import localStorageUtils from 'src/utils/local-storage/local-storage.utils';
 import { getAdvertisingAccountOptions } from 'src/utils/marketplace-logo.utils';
 import EmptyState from '../../common/empty-state/empty-state';
 import PrivateRoute from '../../private-route/private-route';
-import ConnectAccountStaticPage from '../connect-account-static-page/connect-account-static-page';
 import KeywordActionWrapper from '../keyword-actions-page/keyword-action-wrapper';
 import AdvertisingTypesWrapper from './advertising-types-wrapper';
 import AnalysisWrapper from './analysis-page/analysis-page-wrapper';
@@ -39,9 +38,6 @@ export function AdvertisingWrapper() {
     const advertisingAccountOptions = getAdvertisingAccountOptions();
     dispatch(setAdvertisingAccountOptions(advertisingAccountOptions));
   }, [dispatch]);
-
-  const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
-  const hasAdvertisingAccounts = !!getAdvertisingAccountOptions().length;
 
   const metaId = useMemo(
     () => advertisingAccount.value,
@@ -99,10 +95,6 @@ export function AdvertisingWrapper() {
       setIsTagListLoading(fetchTags.isLoading || fetchTags.isRefetching)
     );
   }, [dispatch, fetchTags.isLoading, fetchTags.isRefetching]);
-
-  if (!hasAccounts || (hasAccounts && !hasAdvertisingAccounts)) {
-    return <ConnectAccountStaticPage />;
-  }
 
   if (
     !navigationUtils.canAccessFeature(
