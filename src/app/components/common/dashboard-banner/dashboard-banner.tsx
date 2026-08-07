@@ -1,14 +1,12 @@
 import { XIcon } from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import NeuralVisual from './neural-visual';
 import styles from './dashboard-banner.module.scss';
 
 const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
 
 export default function DashboardBanner() {
   const [visible, setVisible] = useState(false);
-  const [active, setActive] = useState(false);
   const bannerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
@@ -51,8 +49,6 @@ export default function DashboardBanner() {
       ref={bannerRef}
       className={styles.banner}
       onPointerMove={handlePointerMove}
-      onPointerEnter={() => setActive(true)}
-      onPointerLeave={() => setActive(false)}
     >
       <span className={styles.shine} aria-hidden="true" />
 
@@ -67,6 +63,16 @@ export default function DashboardBanner() {
           Real marketplace intelligence through MCP. Available on Diamond and
           above.
         </p>
+      </div>
+
+      <div className={styles.statusChip}>
+        <span className={styles.statusDot} />
+        <div className={styles.statusText}>
+          <span className={styles.statusTitle}>MCP online</span>
+          <span className={styles.statusSub}>
+            Connect Claude or ChatGPT in minutes.
+          </span>
+        </div>
       </div>
 
       <div className={styles.actions}>
@@ -84,20 +90,6 @@ export default function DashboardBanner() {
         >
           Connect MCP
         </button>
-      </div>
-
-      <div
-        role="button"
-        tabIndex={0}
-        className={styles.neuralWrap}
-        onClick={handleConnect}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            handleConnect();
-          }
-        }}
-      >
-        <NeuralVisual active={active} />
       </div>
 
       <button
