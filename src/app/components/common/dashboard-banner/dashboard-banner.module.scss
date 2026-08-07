@@ -1,16 +1,76 @@
 @import 'src/assets/styles/variables/variables.scss';
 
 .banner {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1.6rem;
-  padding: 1.2rem 1.4rem;
+  padding: 1.2rem 1.4rem 1.2rem 1.4rem;
+  padding-right: 3.8rem;
   border: 1px solid $border-color-4;
   border-radius: 1rem;
   background: #f8f5ff;
   box-shadow: 0 2px 8px rgba(119, 70, 155, 0.06);
   margin: 0 0 1.6rem;
+  overflow: hidden;
+  animation: bannerRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at var(--sx, 30%) var(--sy, 40%),
+      rgba(149, 85, 234, 0.12),
+      transparent 55%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
 }
+
+@keyframes bannerRise {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---------- Shine sweep ----------
+
+.shine {
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 34%;
+  height: 240%;
+  transform: rotate(22deg) translateX(-160%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: shineSweep 4.5s ease-in-out infinite;
+}
+
+@keyframes shineSweep {
+  0% {
+    transform: rotate(22deg) translateX(-160%);
+  }
+  16%,
+  100% {
+    transform: rotate(22deg) translateX(420%);
+  }
+}
+
+// ---------- Text ----------
 
 .textWrap {
   flex: 1;
@@ -19,6 +79,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+  position: relative;
+  z-index: 1;
 }
 
 .headlineRow {
@@ -62,11 +124,15 @@
   margin: 0;
 }
 
+// ---------- Actions ----------
+
 .actions {
   display: flex;
   align-items: center;
   gap: 0.8rem;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .learnBtn {
@@ -111,10 +177,12 @@
   cursor: pointer;
   white-space: nowrap;
   box-shadow: 0 2px 6px rgba(119, 70, 155, 0.2);
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.15s;
+  animation: ctaPulse 2.4s ease-in-out infinite;
 
   &:hover {
     background: $primary-color-variant-1;
+    transform: translateY(-1px);
   }
 
   &:focus-visible {
@@ -123,7 +191,56 @@
   }
 }
 
+@keyframes ctaPulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 6px rgba(119, 70, 155, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 16px rgba(119, 70, 155, 0.5);
+  }
+}
+
+// ---------- Neural visual ----------
+
+.neuralWrap {
+  position: relative;
+  width: 21rem;
+  height: 11rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  z-index: 1;
+  will-change: transform;
+  transform: translate3d(
+    calc(var(--mx, 0) * -6px),
+    calc(var(--my, 0) * -6px),
+    0
+  );
+  transition: transform 0.15s ease-out;
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+    border-radius: 1rem;
+  }
+}
+
+.neuralCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 1rem;
+  pointer-events: none;
+}
+
+// ---------- Close ----------
+
 .closeBtn {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,7 +253,7 @@
   border-radius: 0.4rem;
   cursor: pointer;
   flex-shrink: 0;
-  margin-left: 0.2rem;
+  z-index: 2;
   transition: background 0.15s, color 0.15s;
 
   &:hover {
@@ -147,5 +264,33 @@
   &:focus-visible {
     outline: 2px solid $primary-color;
     outline-offset: 2px;
+  }
+}
+
+// ---------- Responsive ----------
+
+@media (max-width: 1100px) {
+  .neuralWrap {
+    width: 16rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .neuralWrap {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    animation: none;
+  }
+
+  .shine {
+    display: none;
+  }
+
+  .connectBtn {
+    animation: none;
   }
 }

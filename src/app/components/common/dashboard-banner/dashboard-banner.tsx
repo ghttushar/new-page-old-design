@@ -1,12 +1,15 @@
 import { XIcon } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NeuralVisual from './neural-visual';
 import styles from './dashboard-banner.module.scss';
 
 const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
 
 export default function DashboardBanner() {
   const [visible, setVisible] = useState(false);
+  const [active, setActive] = useState(false);
+  const bannerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,12 +28,34 @@ export default function DashboardBanner() {
     navigate('/settings/integrations');
   };
 
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = bannerRef.current;
+    if (!el) {
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    el.style.setProperty('--mx', nx.toFixed(3));
+    el.style.setProperty('--my', ny.toFixed(3));
+    el.style.setProperty('--sx', `${((nx + 1) * 50).toFixed(1)}%`);
+    el.style.setProperty('--sy', `${((ny + 1) * 50).toFixed(1)}%`);
+  };
+
   if (!visible) {
     return null;
   }
 
   return (
-    <div className={styles.banner}>
+    <div
+      ref={bannerRef}
+      className={styles.banner}
+      onPointerMove={handlePointerMove}
+      onPointerEnter={() => setActive(true)}
+      onPointerLeave={() => setActive(false)}
+    >
+      <span className={styles.shine} aria-hidden="true" />
+
       <div className={styles.textWrap}>
         <div className={styles.headlineRow}>
           <h2 className={styles.headline}>
@@ -59,6 +84,20 @@ export default function DashboardBanner() {
         >
           Connect MCP
         </button>
+      </div>
+
+      <div
+        role="button"
+        tabIndex={0}
+        className={styles.neuralWrap}
+        onClick={handleConnect}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleConnect();
+          }
+        }}
+      >
+        <NeuralVisual active={active} />
       </div>
 
       <button
