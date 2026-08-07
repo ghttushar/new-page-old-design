@@ -70,6 +70,84 @@
   }
 }
 
+// ---------- Logo cluster ----------
+
+.visualCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  height: 4rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  animation: clusterIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both 0.08s;
+}
+
+@keyframes clusterIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.visualItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: $primary-color-dropzone;
+  flex-shrink: 0;
+}
+
+.visualLink {
+  position: relative;
+  width: 1.4rem;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba($primary-color, 0.2),
+    rgba($primary-color-variant-1, 0.45)
+  );
+  flex-shrink: 0;
+}
+
+.signalDot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: $primary-color;
+  box-shadow: 0 0 0.5rem rgba($primary-color, 0.8);
+  transform: translate(-50%, -50%) translateX(-0.9rem);
+  animation: signalTravel 2.4s ease-in-out infinite alternate;
+}
+
+.signalDotOffset {
+  animation-delay: -1.2s;
+}
+
+@keyframes signalTravel {
+  0% {
+    transform: translate(-50%, -50%) translateX(-0.9rem);
+    opacity: 0.9;
+  }
+  45%,
+  55% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(0.9rem);
+    opacity: 0.9;
+  }
+}
+
 // ---------- Text ----------
 
 .textWrap {
@@ -246,5 +324,14 @@
 
   .connectBtn {
     animation: none;
+  }
+
+  .visualCluster {
+    animation: none;
+  }
+
+  .signalDot {
+    animation: none;
+    opacity: 0.7;
   }
 }

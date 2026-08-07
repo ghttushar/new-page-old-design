@@ -1,6 +1,11 @@
 import { XIcon } from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  ClaudeLogo,
+  GptLogo,
+  JivaJLogo,
+} from '@/app/components/common/integration-logos/integration-logos';
 import styles from './dashboard-banner.module.scss';
 
 const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
@@ -51,6 +56,24 @@ export default function DashboardBanner() {
       onPointerMove={handlePointerMove}
     >
       <span className={styles.shine} aria-hidden="true" />
+
+      <div className={styles.visualCluster} aria-hidden="true">
+        <span className={styles.visualItem}>
+          <JivaJLogo size={22} />
+        </span>
+        <span className={styles.visualLink}>
+          <span className={styles.signalDot} />
+        </span>
+        <span className={styles.visualItem}>
+          <ClaudeLogo size={24} />
+        </span>
+        <span className={styles.visualLink}>
+          <span className={`${styles.signalDot} ${styles.signalDotOffset}`} />
+        </span>
+        <span className={styles.visualItem}>
+          <GptLogo size={26} />
+        </span>
+      </div>
 
       <div className={styles.textWrap}>
         <div className={styles.headlineRow}>
