@@ -365,7 +365,7 @@ export default function McpConnectDialog({
     <div className={styles.stepContent}>
       <h2 className={styles.stepTitle}>Set up your client</h2>
       <p className={styles.stepSubtitle}>
-        Follow the steps below to connect {selectedName}.
+        Follow the steps below to connect <strong>{selectedName}</strong>.
       </p>
 
       {selectedClient === 'claude' ? (
@@ -459,7 +459,7 @@ export default function McpConnectDialog({
     <div className={styles.stepContent}>
       <h2 className={styles.stepTitle}>Authenticate</h2>
       <p className={styles.stepSubtitle}>
-        Authorize the connection to {selectedName}.
+        Authorize the connection to <strong>{selectedName}</strong>.
       </p>
 
       <div className={styles.authCard}>
@@ -503,7 +503,8 @@ export default function McpConnectDialog({
     <div className={styles.stepContent}>
       <h2 className={styles.stepTitle}>Verify connection</h2>
       <p className={styles.stepSubtitle}>
-        Run these prompts in {selectedName} to confirm everything works.
+        Run these prompts in <strong>{selectedName}</strong> to confirm
+        everything works.
       </p>
 
       <div className={styles.verifyList}>

@@ -189,6 +189,11 @@
   color: $sub-text-2;
   font-family: $font-family;
   margin: 0 0 1.6rem;
+
+  strong {
+    color: $main-text;
+    font-weight: 600;
+  }
 }
 
 // ---------- Step 1: client cards ----------
