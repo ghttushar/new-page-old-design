@@ -4,6 +4,8 @@ import useSubHeader from '@/hooks/use-sub-header.hook';
 import { CheckCircleIcon, SpinnerGapIcon } from '@phosphor-icons/react';
 import React, { useState } from 'react';
 import {
+  ChatGptFlowerLogo,
+  ClaudeLogo,
   JivaJLogo,
   WhatsappLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
@@ -41,10 +43,6 @@ export default function IntegrationsPage() {
 
   return (
     <div className={styles.page}>
-      <p className={styles.pageSubtitle}>
-        Connect external services to extend JIVA.
-      </p>
-
       <div className={styles.grid}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>
@@ -62,7 +60,8 @@ export default function IntegrationsPage() {
           </p>
           {mcpConnected && (
             <span className={styles.connectedPill}>
-              <CheckCircleIcon size={12} weight="fill" />
+              <ClaudeLogo size={14} />
+              <ChatGptFlowerLogo size={14} />
               Connected
             </span>
           )}

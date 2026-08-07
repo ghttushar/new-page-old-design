@@ -6,14 +6,6 @@
   flex-direction: column;
 }
 
-.pageSubtitle {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin: 0 0 1.6rem;
-}
-
 // ---------- Grid ----------
 
 .grid {
@@ -106,7 +98,10 @@
 .connectedPill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
+  width: 25%;
+  align-self: flex-start;
   font-size: 1rem;
   font-weight: 600;
   color: $positive-color;
