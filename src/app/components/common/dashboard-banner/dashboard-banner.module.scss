@@ -12,33 +12,6 @@
   margin: 0 0 1.6rem;
 }
 
-.logoChain {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  flex-shrink: 0;
-}
-
-.logoItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.chainLink {
-  color: $primary-color;
-  flex-shrink: 0;
-  opacity: 0.6;
-}
-
-.chainLine {
-  width: 1rem;
-  height: 2px;
-  background: $border-color-3;
-  flex-shrink: 0;
-}
-
 .textWrap {
   flex: 1;
   min-width: 0;

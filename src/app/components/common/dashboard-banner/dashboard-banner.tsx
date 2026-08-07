@@ -1,11 +1,6 @@
-import { LinkIcon, XIcon } from '@phosphor-icons/react';
+import { XIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ClaudeLogo,
-  GptLogo,
-  JivaJLogo,
-} from '@/app/components/common/integration-logos/integration-logos';
 import styles from './dashboard-banner.module.scss';
 
 const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
@@ -36,20 +31,6 @@ export default function DashboardBanner() {
 
   return (
     <div className={styles.banner}>
-      <div className={styles.logoChain} aria-hidden="true">
-        <div className={styles.logoItem}>
-          <JivaJLogo size={24} />
-        </div>
-        <LinkIcon size={14} className={styles.chainLink} />
-        <div className={styles.logoItem}>
-          <ClaudeLogo size={26} />
-        </div>
-        <span className={styles.chainLine} />
-        <div className={styles.logoItem}>
-          <GptLogo size={32} />
-        </div>
-      </div>
-
       <div className={styles.textWrap}>
         <div className={styles.headlineRow}>
           <h2 className={styles.headline}>

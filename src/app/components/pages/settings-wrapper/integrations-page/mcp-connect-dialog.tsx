@@ -35,21 +35,18 @@ const CLIENTS: {
   name: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   desc: string;
-  chips: string[];
 }[] = [
   {
     key: 'claude',
     name: 'Claude',
     icon: ClaudeLogo,
     desc: 'Anthropic\u2019s assistant in the web app, desktop, and Code.',
-    chips: ['Desktop', 'Web', 'Code'],
   },
   {
     key: 'codex',
     name: 'ChatGPT (Codex)',
     icon: GptLogo,
     desc: 'OpenAI\u2019s agentic coding environment.',
-    chips: ['Desktop', 'Projects', 'Codex'],
   },
 ];
 
@@ -357,13 +354,6 @@ export default function McpConnectDialog({
               </span>
               <span className={styles.clientName}>{client.name}</span>
               <span className={styles.clientDesc}>{client.desc}</span>
-              <span className={styles.clientChips}>
-                {client.chips.map((chip) => (
-                  <span key={chip} className={styles.clientChip}>
-                    {chip}
-                  </span>
-                ))}
-              </span>
             </button>
           );
         })}

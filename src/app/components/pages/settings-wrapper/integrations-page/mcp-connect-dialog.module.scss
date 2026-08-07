@@ -289,33 +289,6 @@
   margin-bottom: 1.2rem;
 }
 
-.clientChips {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: auto;
-  flex-wrap: wrap;
-}
-
-.clientChip {
-  display: inline-flex;
-  align-items: center;
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: $sub-text-2;
-  background: $background-color-3;
-  border: 1px solid $border-color-4;
-  border-radius: 999px;
-  padding: 0.2rem 0.8rem;
-  font-family: $font-family;
-}
-
-.clientCardSelected .clientChip {
-  color: $primary-color;
-  background: $primary-color-dropzone;
-  border-color: $alt-primary-color;
-}
-
 // ---------- Accordions ----------
 
 .accordionGroup {
