@@ -60,6 +60,41 @@ export function GptLogo({ size = 48, className }: { size?: number; className?: s
   );
 }
 
+export function ChatGptFlowerLogo({
+  size = 48,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      className={className}
+      role="img"
+      aria-label="ChatGPT"
+    >
+      <g
+        transform="translate(24,24)"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="-3" y="-17" width="6" height="24" rx="3" transform="rotate(0)" />
+        <rect x="-3" y="-17" width="6" height="24" rx="3" transform="rotate(60)" />
+        <rect x="-3" y="-17" width="6" height="24" rx="3" transform="rotate(120)" />
+        <rect x="-3" y="-17" width="6" height="24" rx="3" transform="rotate(180)" />
+        <rect x="-3" y="-17" width="6" height="24" rx="3" transform="rotate(240)" />
+        <rect x="-3" y="-17" width="6" height="24" rx="3" transform="rotate(300)" />
+      </g>
+    </svg>
+  );
+}
+
 export function ClaudeLogo({
   size = 48,
   className,

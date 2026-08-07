@@ -2,8 +2,8 @@ import { XIcon } from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  ChatGptFlowerLogo,
   ClaudeLogo,
-  GptLogo,
   JivaJLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './dashboard-banner.module.scss';
@@ -58,15 +58,15 @@ export default function DashboardBanner() {
       <span className={styles.shine} aria-hidden="true" />
 
       <div className={styles.visualCluster} aria-hidden="true">
-        <ClaudeLogo size={48} />
+        <ClaudeLogo size={36} />
         <span className={styles.visualLink}>
           <span className={styles.signalDot} />
         </span>
-        <JivaJLogo size={44} />
+        <JivaJLogo size={33} />
         <span className={styles.visualLink}>
           <span className={`${styles.signalDot} ${styles.signalDotOffset}`} />
         </span>
-        <GptLogo size={52} />
+        <ChatGptFlowerLogo size={39} />
       </div>
 
       <div className={styles.textWrap}>
