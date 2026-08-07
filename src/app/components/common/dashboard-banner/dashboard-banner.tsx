@@ -58,21 +58,15 @@ export default function DashboardBanner() {
       <span className={styles.shine} aria-hidden="true" />
 
       <div className={styles.visualCluster} aria-hidden="true">
-        <span className={styles.visualItem}>
-          <JivaJLogo size={22} />
-        </span>
+        <ClaudeLogo size={48} />
         <span className={styles.visualLink}>
           <span className={styles.signalDot} />
         </span>
-        <span className={styles.visualItem}>
-          <ClaudeLogo size={24} />
-        </span>
+        <JivaJLogo size={44} />
         <span className={styles.visualLink}>
           <span className={`${styles.signalDot} ${styles.signalDotOffset}`} />
         </span>
-        <span className={styles.visualItem}>
-          <GptLogo size={26} />
-        </span>
+        <GptLogo size={52} />
       </div>
 
       <div className={styles.textWrap}>

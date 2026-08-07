@@ -75,8 +75,7 @@
 .visualCluster {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  height: 4rem;
+  gap: 0.9rem;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
@@ -92,20 +91,9 @@
   }
 }
 
-.visualItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.4rem;
-  height: 3.4rem;
-  border-radius: 50%;
-  background: $primary-color-dropzone;
-  flex-shrink: 0;
-}
-
 .visualLink {
   position: relative;
-  width: 1.4rem;
+  width: 1.6rem;
   height: 2px;
   border-radius: 1px;
   background: linear-gradient(
