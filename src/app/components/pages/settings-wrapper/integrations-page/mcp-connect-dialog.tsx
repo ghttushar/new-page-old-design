@@ -17,8 +17,8 @@ import React, { useRef, useState } from 'react';
 import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
 import CanvasConfetti from '@/app/components/shared/canvas-confetti/canvas-confetti';
 import {
+  ChatGptFlowerLogo,
   ClaudeLogo,
-  GptLogo,
   JivaLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './mcp-connect-dialog.module.scss';
@@ -45,7 +45,7 @@ const CLIENTS: {
   {
     key: 'codex',
     name: 'ChatGPT (Codex)',
-    icon: GptLogo,
+    icon: ChatGptFlowerLogo,
     desc: 'OpenAI\u2019s agentic coding environment.',
   },
 ];
