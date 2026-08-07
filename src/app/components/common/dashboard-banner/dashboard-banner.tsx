@@ -65,16 +65,6 @@ export default function DashboardBanner() {
         </p>
       </div>
 
-      <div className={styles.statusChip}>
-        <span className={styles.statusDot} />
-        <div className={styles.statusText}>
-          <span className={styles.statusTitle}>MCP online</span>
-          <span className={styles.statusSub}>
-            Connect Claude or ChatGPT in minutes.
-          </span>
-        </div>
-      </div>
-
       <div className={styles.actions}>
         <button
           type="button"
