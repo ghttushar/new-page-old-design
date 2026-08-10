@@ -208,25 +208,27 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
             );
           })}
         </nav>
-        <input
-          className={styles.searchInput}
-          placeholder="Search signals, meetings, decisions…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <FilterSheet
-          value={filterState}
-          categories={railItems}
-          activeCategory={activeCategoryKey}
-          onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
-          onChange={(f) => {
-            setFilterState(f);
-            dispatch(setFilterSources([...f.sources]));
-            dispatch(setFilterDomains([...f.domains]));
-            dispatch(setFilterWindow(f.window));
-          }}
-          activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
-        />
+        <div className={styles.toolbarRight}>
+          <input
+            className={styles.searchInput}
+            placeholder="Search signals, meetings, decisions…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <FilterSheet
+            value={filterState}
+            categories={railItems}
+            activeCategory={activeCategoryKey}
+            onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
+            onChange={(f) => {
+              setFilterState(f);
+              dispatch(setFilterSources([...f.sources]));
+              dispatch(setFilterDomains([...f.domains]));
+              dispatch(setFilterWindow(f.window));
+            }}
+            activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
+          />
+        </div>
       </div>
 
       {/* Two-column layout */}

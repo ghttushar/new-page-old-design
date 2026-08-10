@@ -2,6 +2,7 @@ import { ArrowRight, WarningCircle, DotsThree } from '@phosphor-icons/react';
 import styles from './decision-card.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
 import { formatValue } from '@/utils/signals/valueFormat';
+import { timeAgo } from '@/utils/signals/timeAgo';
 import { SourcePill } from '../chips/source-pill';
 
 interface DecisionCardProps {
@@ -38,9 +39,12 @@ export function DecisionCard({ decision: d, selected, onSelect, onApprove }: Dec
         <button className={styles.reviewBtn} onClick={(e) => { e.stopPropagation(); onSelect(); }}>
           Review <ArrowRight size={12} weight="bold" />
         </button>
-        <button className={styles.menuBtn} onClick={(e) => e.stopPropagation()}>
-          <DotsThree size={16} weight="bold" />
-        </button>
+        <div className={styles.cardBottomRow}>
+          <span className={styles.cardTime}>{timeAgo(d.createdAt)}</span>
+          <button className={styles.menuBtn} onClick={(e) => e.stopPropagation()}>
+            <DotsThree size={16} weight="bold" />
+          </button>
+        </div>
       </div>
     </div>
   );

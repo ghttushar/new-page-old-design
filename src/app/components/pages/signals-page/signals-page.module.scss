@@ -26,6 +26,13 @@
   border: none;
 }
 
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: $spacing-10;
+  margin-left: auto;
+}
+
 .tab {
   display: flex;
   align-items: center;

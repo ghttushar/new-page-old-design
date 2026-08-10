@@ -142,3 +142,17 @@
     color: $main-text;
   }
 }
+
+.cardBottomRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.cardTime {
+  font-size: $font-size-9;
+  color: $sub-text-4;
+  white-space: nowrap;
+}
