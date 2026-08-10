@@ -89,7 +89,7 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
         onClick={() => setOpen((o) => !o)}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4, height: 28,
-          padding: '0 10px', borderRadius: 8, border: '1px solid #e1e4e8',
+          padding: '0 16px', borderRadius: 8, border: '1px solid #d0d3d9',
           background: '#fff', color: '#7c7c7c', fontSize: '1rem', cursor: 'pointer',
         }}
       >

@@ -78,11 +78,11 @@
 
 .searchInput {
   flex: 1;
-  max-width: 36rem;
+  max-width: 54rem;
   height: 2.6rem;
   padding: 0 1.2rem;
   border-radius: 0.8rem;
-  border: 1px solid rgba($border-color-4, 0.6);
+  border: 1px solid $border-color-4;
   font-size: $font-size-10;
   background: $foreground-color;
   color: $main-text;

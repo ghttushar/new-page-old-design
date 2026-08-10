@@ -13,7 +13,6 @@ import { AssignMenu } from './assign-menu';
 import { DiscussDrawer } from './discuss-drawer';
 import { InlineEmailCompose, type EmailDraft } from './inline/inline-email-compose';
 import { InlineDraftChat } from './inline/inline-draft-chat';
-import { SourcePill } from '../chips/source-pill';
 import { SnoozeMenu } from '../snooze-menu';
 import { ShareMenu } from '../share-menu';
 import type { SnoozeChoice } from '@/redux/slices/signals/signals.slice';
@@ -294,9 +293,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
         <div className={styles.headerBg} style={{ background: executed ? 'linear-gradient(to bottom, rgba(66,148,136,0.08), transparent)' : 'linear-gradient(to bottom, rgba(119,70,155,0.03), transparent)' }} />
         <div className={styles.headerContent}>
           <div className={styles.headerInfo}>
-            <div className={styles.headerPills}>
-              <SourcePill decision={d} size="sm" />
-            </div>
+            <div className={styles.title}>{d.insight}</div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}><X size={14} weight="bold" /></button>
         </div>
