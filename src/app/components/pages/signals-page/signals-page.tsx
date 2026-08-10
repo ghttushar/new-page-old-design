@@ -75,7 +75,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
     }
   }, [defaultSelectedDecisionId, dispatch]);
 
-  const [tab, setTab] = useState<AlertTabKey>('all');
+  const [tab, setTab] = useState<AlertTabKey>('unread');
   const [query, setQuery] = useState('');
   const [activeCategoryKey, setActiveCategoryKey] = useState<string | null>(null);
   const [filterState, setFilterState] = useState<FilterState>({
@@ -246,7 +246,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
             />
 
             {isEmpty ? (
-              <EmptyState variant={isSearchEmpty ? 'search' : tab === 'done' ? 'none' : 'needs_me'} />
+              <EmptyState variant={isSearchEmpty ? 'search' : tab === 'read' ? 'none' : 'needs_me'} />
             ) : isMeetingsTab ? (
               <div className={styles.meetingList}>
                 {meetingGroups.map((m) => (
