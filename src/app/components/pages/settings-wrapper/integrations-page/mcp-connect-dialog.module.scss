@@ -5,7 +5,7 @@
 .dialogPaper {
   width: 100%;
   height: 68rem;
-  border-radius: 1.2rem;
+  border-radius: 0.8rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -356,7 +356,7 @@
 }
 
 .accordionTitle {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;
@@ -425,7 +425,7 @@
   flex: 1;
   min-width: 0;
   padding: 0.1rem 0 1.6rem;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 400;
   line-height: 1.9rem;
   color: $main-text;
@@ -543,7 +543,7 @@
   transition: background 0.12s ease, color 0.12s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: $background-color-3;
     color: #ffffff;
   }
 
@@ -635,7 +635,7 @@
 }
 
 .verifyTitle {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: $main-text;
   font-family: $font-family;

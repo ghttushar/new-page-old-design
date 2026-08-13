@@ -209,7 +209,7 @@
   padding: 0 0.8rem;
   background: transparent;
   border: none;
-  color: $primary-color;
+  color: $main-text;
   font-family: $font-family;
   font-size: 1.3rem;
   font-weight: 600;
@@ -217,10 +217,10 @@
   cursor: pointer;
   border-radius: 0.6rem;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: color 0.15s;
 
   &:hover {
-    background: $primary-color-dropzone;
+    color: $primary-color;
   }
 
   &:focus-visible {
@@ -243,12 +243,11 @@
   cursor: pointer;
   white-space: nowrap;
   box-shadow: 0 2px 6px rgba(119, 70, 155, 0.2);
-  transition: background 0.15s, transform 0.15s;
+  transition: box-shadow 0.15s;
   animation: ctaPulse 2.4s ease-in-out infinite;
 
   &:hover {
-    background: $primary-color-variant-1;
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(119, 70, 155, 0.35);
   }
 
   &:focus-visible {

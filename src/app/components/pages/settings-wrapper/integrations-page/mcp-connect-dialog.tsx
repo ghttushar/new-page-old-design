@@ -19,7 +19,7 @@ import CanvasConfetti from '@/app/components/shared/canvas-confetti/canvas-confe
 import {
   ChatGptFlowerLogo,
   ClaudeLogo,
-  JivaLogo,
+  JivaJLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './mcp-connect-dialog.module.scss';
 
@@ -553,7 +553,7 @@ export default function McpConnectDialog({
       <div className={styles.dialogHeader}>
         <div className={styles.dialogHeaderLeft}>
           <span className={styles.dialogIconWrap}>
-            <JivaLogo size={22} />
+            <JivaJLogo size={22} />
           </span>
           <div>
             <h2 className={styles.dialogTitle}>Connect MCP</h2>
