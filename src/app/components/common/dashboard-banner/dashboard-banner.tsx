@@ -85,13 +85,6 @@ export default function DashboardBanner() {
       <div className={styles.actions}>
         <button
           type="button"
-          className={styles.learnBtn}
-          onClick={handleConnect}
-        >
-          See How It Works
-        </button>
-        <button
-          type="button"
           className={styles.connectBtn}
           onClick={handleConnect}
         >

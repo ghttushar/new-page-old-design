@@ -146,27 +146,6 @@ function CopyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CodeBlock({ value }: { value: string }) {
-  const { copied, copy } = useCopy();
-  return (
-    <div className={styles.codeBlock}>
-      <code className={styles.codeBlockText}>{value}</code>
-      <button
-        type="button"
-        className={styles.codeCopyBtn}
-        onClick={() => copy(value, 'Command copied')}
-        aria-label="Copy command"
-      >
-        {copied ? (
-          <CheckIcon size={14} weight="bold" />
-        ) : (
-          <CopyIcon size={14} />
-        )}
-      </button>
-    </div>
-  );
-}
-
 function Timeline({ items }: { items: React.ReactNode[] }) {
   return (
     <ol className={styles.timeline}>
@@ -467,10 +446,10 @@ export default function McpConnectDialog({
           items={[
             <>Open a new chat with {selectedName}.</>,
             <>
-              <span className={styles.timelinePromptLabel}>
-                Run the authentication command:
-              </span>
-              <CodeBlock value={LOGIN_COMMAND} />
+              <CopyField
+                label="Run the authentication command:"
+                value={LOGIN_COMMAND}
+              />
             </>,
             <>Click the generated login link.</>,
             <>Sign in using your JIVA account.</>,

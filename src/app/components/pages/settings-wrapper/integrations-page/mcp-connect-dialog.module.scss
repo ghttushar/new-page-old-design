@@ -436,13 +436,6 @@
   }
 }
 
-.timelinePromptLabel {
-  display: block;
-  font-size: 1.2rem;
-  color: $sub-text-2;
-  margin-bottom: 0.6rem;
-}
-
 // ---------- Copy field ----------
 
 .copyField {
@@ -451,7 +444,7 @@
 
 .copyFieldLabel {
   display: block;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 500;
   color: $sub-text-2;
   font-family: $font-family;
@@ -498,57 +491,11 @@
   transition: background 0.12s ease;
 
   &:hover {
-    background: $primary-color-dropzone;
+    background: $background-color-3;
   }
 
   &:focus-visible {
     outline: 2px solid $primary-color;
-    outline-offset: 2px;
-  }
-}
-
-// ---------- Code block ----------
-
-.codeBlock {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.2rem;
-  background: #1f2937;
-  border-radius: 0.8rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
-.codeBlockText {
-  flex: 1;
-  min-width: 0;
-  font-family: 'Courier New', monospace;
-  font-size: 1.2rem;
-  color: #f3f4f6;
-  overflow-wrap: anywhere;
-}
-
-.codeCopyBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  min-width: 3rem;
-  color: #d1d5db;
-  background: transparent;
-  border: none;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
-
-  &:hover {
-    background: $background-color-3;
-    color: #ffffff;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #ffffff;
     outline-offset: 2px;
   }
 }

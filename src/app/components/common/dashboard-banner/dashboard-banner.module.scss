@@ -201,34 +201,6 @@
   z-index: 1;
 }
 
-.learnBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  height: 3.2rem;
-  padding: 0 0.8rem;
-  background: transparent;
-  border: none;
-  color: $main-text;
-  font-family: $font-family;
-  font-size: 1.3rem;
-  font-weight: 600;
-  line-height: 2rem;
-  cursor: pointer;
-  border-radius: 0.6rem;
-  white-space: nowrap;
-  transition: color 0.15s;
-
-  &:hover {
-    color: $primary-color;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $primary-color;
-    outline-offset: 2px;
-  }
-}
-
 .connectBtn {
   height: 3.2rem;
   padding: 0 1.2rem;
