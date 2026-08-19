@@ -13,7 +13,7 @@ interface DiamondMascotProps {
   onClick?: () => void;
 }
 
-/** Static coral diamond — the Jiva (Aan) mascot shape. No state, no animation. */
+/** Static coral diamond with fixed eyes — the Jiva (Aan) chat mascot. No state, no animation. */
 export function DiamondMascot({
   size = 24,
   className,
@@ -21,6 +21,10 @@ export function DiamondMascot({
   onClick,
 }: DiamondMascotProps) {
   const big = size > 40;
+  const eyeSize = size * 0.16;
+  const eyeOffsetX = size * 0.18;
+  const eyeY = size * 0.04;
+
   return (
     <span
       aria-hidden
@@ -60,6 +64,34 @@ export function DiamondMascot({
           }}
         />
       </span>
+
+      {/* Eyes — always upright, fixed dots */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {[-1, 1].map((dir) => (
+          <span
+            key={`eye-${dir}`}
+            style={{
+              position: 'absolute',
+              left: `calc(50% + ${dir * eyeOffsetX}px)`,
+              top: `calc(50% + ${eyeY}px)`,
+              width: eyeSize,
+              height: eyeSize,
+              marginLeft: -eyeSize / 2,
+              marginTop: -eyeSize / 2,
+              borderRadius: '50%',
+              background: '#1a0608',
+            }}
+          />
+        ))}
+      </div>
     </span>
   );
 }
