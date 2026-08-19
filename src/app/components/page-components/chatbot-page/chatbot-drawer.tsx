@@ -1,5 +1,4 @@
 import { fancyScrollbar } from '@/assets/styles/scrollbar.styles';
-import { imageUrls } from '@/constants/assets/images.constants';
 import {
   CHATBOT_CLEAR_EVENT,
   SAMPLE_PROMPT_MAPPING,
@@ -30,7 +29,7 @@ import {
 } from '@phosphor-icons/react';
 import React, { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import ImgComponent from '../../common/img-component/img-component';
+import DiamondMascot from '../../common/diamond-mascot/diamond-mascot';
 import { drawerPaperProps } from '../../layout/side-bar/side-bar-styles';
 import ChatbotComponent from './chatbot-component';
 
@@ -179,24 +178,10 @@ export default function ChatbotDrawer() {
                       backgroundColor: 'white',
                     }}
                   >
-                    <ImgComponent
-                      imageURL={imageUrls.botIcon}
-                      alt="jiva-icon"
-                      customStyles={{
-                        height: '2.4rem',
-                        width: 'auto',
-                      }}
-                    />
+                    <DiamondMascot size={24} />
                   </div>
                 ) : (
-                  <ImgComponent
-                    imageURL={imageUrls.jivaIcon}
-                    alt="jiva-icon"
-                    customStyles={{
-                      height: '3rem',
-                      width: 'auto',
-                    }}
-                  />
+                  <DiamondMascot size={30} />
                 )}
                 {isViewingInsights === true && (
                   <span

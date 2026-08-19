@@ -16,10 +16,10 @@ import { Collapse, Dialog, DialogContent } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { showSuccessToastMessage } from 'src/redux/slices/notifications/toast-message.slice';
 import CanvasConfetti from '@/app/components/shared/canvas-confetti/canvas-confetti';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import {
   ChatGptFlowerLogo,
   ClaudeLogo,
-  JivaJLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './mcp-connect-dialog.module.scss';
 
@@ -532,7 +532,7 @@ export default function McpConnectDialog({
       <div className={styles.dialogHeader}>
         <div className={styles.dialogHeaderLeft}>
           <span className={styles.dialogIconWrap}>
-            <JivaJLogo size={22} />
+            <DiamondMascot size={22} />
           </span>
           <div>
             <h2 className={styles.dialogTitle}>Connect MCP</h2>

@@ -1,10 +1,10 @@
 import { XIcon } from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import {
   ChatGptFlowerLogo,
   ClaudeLogo,
-  JivaJLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import styles from './dashboard-banner.module.scss';
 
@@ -62,7 +62,7 @@ export default function DashboardBanner() {
         <span className={styles.visualLink}>
           <span className={styles.signalDot} />
         </span>
-        <JivaJLogo size={25} />
+        <DiamondMascot size={25} />
         <span className={styles.visualLink}>
           <span className={`${styles.signalDot} ${styles.signalDotOffset}`} />
         </span>

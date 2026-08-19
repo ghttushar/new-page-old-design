@@ -1,5 +1,4 @@
-import ImgComponent from '@/app/components/common/img-component/img-component';
-import { imageUrls } from '@/constants/assets/images.constants';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import { FeatureRoutes, FeaturesEnum } from '@/enums/auth.enums';
 import { IMenuItem } from '@/interfaces/side-bar/sidebar.interfaces';
 import {
@@ -42,7 +41,7 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
       primaryText: 'JIVA',
       icon: (
         <span className={styles.icon}>
-          <ImgComponent imageURL={imageUrls.botIcon} alt="JiVA" />
+          <DiamondMascot size={20} />
         </span>
       ),
       feature: FeaturesEnum.JIVA_CHATBOT,

@@ -1,8 +1,7 @@
-import ImgComponent from '@/app/components/common/img-component/img-component';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import PrimaryButton from '@/app/components/common/primary-button/primary-button';
 import Search from '@/app/components/common/search/search';
 import CustomEditLoader from '@/app/components/shared/custom-edit-loader/custom-edit-loader';
-import { imageUrls } from '@/constants/assets/images.constants';
 import { QueryKeyEnums } from '@/enums/query.enums';
 import { IChatbotHistoryMetadata } from '@/interfaces/chatbot.interface';
 import {
@@ -78,11 +77,7 @@ export default function ChatbotHistory({
       >
         <div className={styles.historySubContainer}>
           <div className={styles.menuButtonContainer}>
-            <ImgComponent
-              imageURL={imageUrls.jivaIcon}
-              alt="jiva-icon"
-              className={styles.jivaIcon}
-            />
+            <DiamondMascot size={20} className={styles.jivaIcon} />
             <SidebarSimpleIcon
               size={'1.5rem'}
               weight="bold"
@@ -138,11 +133,7 @@ export default function ChatbotHistory({
       >
         <div className={styles.collapsedToggleBtn} onClick={toggleSidebar}>
           <div className={styles.collapsedToggleBtnInner}>
-            <ImgComponent
-              imageURL={imageUrls.botIcon}
-              alt="bot-icon"
-              className={styles.botIcon}
-            />
+            <DiamondMascot size={20} className={styles.botIcon} />
           </div>
         </div>
 

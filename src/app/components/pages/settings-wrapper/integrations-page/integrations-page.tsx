@@ -3,10 +3,10 @@ import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import useSubHeader from '@/hooks/use-sub-header.hook';
 import { CheckCircleIcon, SpinnerGapIcon } from '@phosphor-icons/react';
 import React, { useState } from 'react';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import {
   ChatGptFlowerLogo,
   ClaudeLogo,
-  JivaJLogo,
   WhatsappLogo,
 } from '@/app/components/common/integration-logos/integration-logos';
 import McpConnectDialog from './mcp-connect-dialog';
@@ -47,7 +47,7 @@ export default function IntegrationsPage() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <span className={`${styles.cardLogoTile} ${styles.tileJiva}`}>
-              <JivaJLogo size={22} />
+              <DiamondMascot size={22} />
             </span>
             <div className={styles.cardHeading}>
               <h2 className={styles.cardTitle}>MCP</h2>
