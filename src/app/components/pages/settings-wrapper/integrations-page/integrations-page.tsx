@@ -51,7 +51,7 @@ export default function IntegrationsPage() {
             </span>
             <div className={styles.cardHeading}>
               <h2 className={styles.cardTitle}>MCP</h2>
-              {!mcpConnected && <span className={styles.newPill}>NEW</span>}
+              {!mcpConnected && <span className={styles.newPill}>New</span>}
             </div>
           </div>
           <p className={styles.cardDesc}>

@@ -5,7 +5,7 @@
 .dialogPaper {
   width: 100%;
   height: 68rem;
-  border-radius: 1.2rem;
+  border-radius: 0.8rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -72,8 +72,13 @@
   transition: background 0.12s ease, color 0.12s ease;
 
   &:hover {
-    background: $background-color-3;
-    color: $main-text;
+    background: $primary-color-dropzone;
+    color: $primary-color;
+  }
+
+  &:active {
+    background: $alt-primary-color;
+    color: $primary-color;
   }
 
   &:focus-visible {
@@ -688,6 +693,10 @@
 
   &:hover:not(:disabled) {
     background: $primary-color-variant-1;
+  }
+
+  &:active:not(:disabled) {
+    background: $primary-color-variant-2;
   }
 
   &:disabled {

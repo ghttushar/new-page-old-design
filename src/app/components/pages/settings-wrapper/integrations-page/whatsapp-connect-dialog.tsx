@@ -535,7 +535,10 @@ export default function WhatsAppConnectDialog({
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ className: styles.dialogPaper }}
+      PaperProps={{
+        className: styles.dialogPaper,
+        sx: { borderRadius: '0.8rem' },
+      }}
     >
       <div className={styles.dialogHeader}>
         <div className={styles.dialogHeaderLeft}>

@@ -74,7 +74,7 @@ export default function DashboardBanner() {
           <h2 className={styles.headline}>
             Connect Claude &amp; ChatGPT to JIVA
           </h2>
-          <span className={styles.badgeNew}>NEW</span>
+          <span className={styles.badgeNew}>New</span>
         </div>
         <p className={styles.subline}>
           Real marketplace intelligence through MCP. Available on Diamond and

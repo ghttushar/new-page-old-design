@@ -72,8 +72,13 @@
   transition: background 0.12s ease, color 0.12s ease;
 
   &:hover {
-    background: $background-color-3;
-    color: $main-text;
+    background: $primary-color-dropzone;
+    color: $primary-color;
+  }
+
+  &:active {
+    background: $alt-primary-color;
+    color: $primary-color;
   }
 
   &:focus-visible {
@@ -491,7 +496,11 @@
   transition: background 0.12s ease;
 
   &:hover {
-    background: $background-color-3;
+    background: $primary-color-dropzone;
+  }
+
+  &:active {
+    background: $alt-primary-color;
   }
 
   &:focus-visible {
@@ -708,6 +717,10 @@
 
   &:hover:not(:disabled) {
     background: $primary-color-variant-1;
+  }
+
+  &:active:not(:disabled) {
+    background: $primary-color-variant-2;
   }
 
   &:disabled {

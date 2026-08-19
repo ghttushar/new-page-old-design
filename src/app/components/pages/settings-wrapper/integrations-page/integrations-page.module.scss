@@ -85,7 +85,6 @@
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: $primary-color;
   background: $primary-color-dropzone;
   border: 1px solid $alt-primary-color;
@@ -100,7 +99,6 @@
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  width: 25%;
   align-self: flex-start;
   font-size: 1rem;
   font-weight: 600;
@@ -150,7 +148,13 @@
     background: $primary-color-variant-1;
   }
 
+  &:active:not(:disabled) {
+    background: $primary-color-variant-2;
+  }
+
   &:disabled {
+    background: $disable-color;
+    color: $default-disabled-text-color;
     cursor: not-allowed;
   }
 

@@ -169,13 +169,14 @@
 .badgeNew {
   display: inline-flex;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
   color: $primary-color;
   background: $primary-color-dropzone;
   border: 1px solid $alt-primary-color;
-  padding: 0.2rem 0.7rem;
-  border-radius: 0.5rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
   font-family: $font-family;
   line-height: 1.4rem;
   flex-shrink: 0;
