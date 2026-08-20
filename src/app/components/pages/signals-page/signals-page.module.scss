@@ -2,7 +2,7 @@
 
 .signalsPage {
   padding: $spacing-12;
-  height: 100%;
+  height: calc(100vh - 8rem);
   display: flex;
   flex-direction: column;
 }
@@ -78,7 +78,7 @@
 
 .searchInput {
   flex: 1;
-  max-width: 67.5rem;
+  max-width: 84.4rem;
   height: 3.2rem;
   padding: 0 1.2rem;
   border-radius: 0.8rem;
