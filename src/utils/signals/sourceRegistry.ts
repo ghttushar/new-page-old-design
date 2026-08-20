@@ -16,9 +16,9 @@ export const SOURCE_REGISTRY: Record<DecisionSource, SourceMeta> = {
   },
   aan: {
     key: 'aan',
-    label: 'Aan',
+    label: 'Jiva',
     icon: 'robot',
-    description: "My own inference",
+    description: 'My own inference',
   },
   meeting: {
     key: 'meeting',

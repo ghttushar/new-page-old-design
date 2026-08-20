@@ -16,12 +16,6 @@ export const EMPTY_FILTER: FilterState = {
   window: 'any',
 };
 
-interface CategoryItem {
-  key: string;
-  label: string;
-  count: number;
-}
-
 const DOMAINS: { key: DecisionDomain; label: string }[] = [
   { key: 'campaign', label: 'Advertising' },
   { key: 'retail', label: 'Retail / Listings' },
@@ -40,14 +34,12 @@ const WINDOWS: { key: FilterState['window']; label: string }[] = [
 
 interface Props {
   value: FilterState;
-  categories?: CategoryItem[];
   activeCategory?: string | null;
-  onCategoryChange?: (key: string) => void;
   onChange: (f: FilterState) => void;
   activeCount: number;
 }
 
-export function FilterSheet({ value, onChange, activeCount, categories = [], activeCategory, onCategoryChange }: Props) {
+export function FilterSheet({ value, onChange, activeCount, activeCategory }: Props) {
   const [draft, setDraft] = useState<FilterState>(value);
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -88,15 +80,15 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
         ref={btnRef}
         onClick={() => setOpen((o) => !o)}
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4, height: 28,
-          padding: '0 16px', borderRadius: 8, border: '1px solid #d0d3d9',
-          background: '#fff', color: '#7c7c7c', fontSize: '1rem', cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: 4, height: '3.2rem',
+          padding: '0 20px', borderRadius: 8, border: '1px solid #d0d3d9',
+          background: '#fff', color: '#7c7c7c', fontSize: '1.2rem', cursor: 'pointer',
         }}
       >
-        <Funnel size={14} /> Filter
+        <Funnel size={16} /> Filter
         {activeCategory && activeCategory !== '__all__' && (
           <span style={{ marginLeft: 2, borderRadius: 8, background: 'rgba(119,70,155,0.1)', color: '#77469b', fontSize: '0.85rem', fontWeight: 500, padding: '0 5px', lineHeight: '14px' }}>
-            {categories.find(c => c.key === activeCategory)?.label || activeCategory}
+            {activeCategory}
           </span>
         )}
         {activeCount > 0 && (
@@ -121,38 +113,6 @@ export function FilterSheet({ value, onChange, activeCount, categories = [], act
           </div>
 
           <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {categories.length > 0 && (
-              <section>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Category</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  <button
-                    onClick={() => onCategoryChange?.('__all__')}
-                    style={{
-                      padding: '4px 10px', borderRadius: 8, border: '1px solid #e1e4e8',
-                      background: (!activeCategory || activeCategory === '__all__') ? '#77469b' : 'transparent',
-                      color: (!activeCategory || activeCategory === '__all__') ? '#fff' : '#474747',
-                      fontSize: '1rem', cursor: 'pointer',
-                    }}
-                  >
-                    All
-                  </button>
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.key}
-                      onClick={() => onCategoryChange?.(cat.key)}
-                      style={{
-                        padding: '4px 10px', borderRadius: 8, border: '1px solid #e1e4e8',
-                        background: activeCategory === cat.key ? '#77469b' : 'transparent',
-                        color: activeCategory === cat.key ? '#fff' : '#474747',
-                        fontSize: '1rem', cursor: 'pointer',
-                      }}
-                    >
-                      {cat.label} · {cat.count}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
             <section>
               <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Source</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>

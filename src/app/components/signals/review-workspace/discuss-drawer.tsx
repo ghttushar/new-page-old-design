@@ -39,7 +39,7 @@ export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
           <Sparkle size={14} color="#77469b" />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#23272d' }}>Discuss with Aan</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#23272d' }}>Discuss with Jiva</div>
           <div style={{ fontSize: '1rem', color: '#7c7c7c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {decision?.insight || ''}
           </div>
@@ -76,7 +76,7 @@ export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-          placeholder="Ask Aan…"
+          placeholder="Ask Jiva…"
           style={{ flex: 1, height: 34, padding: '0 10px', borderRadius: 6, border: '1px solid #e1e4e8', fontSize: '1.1rem', outline: 'none' }}
         />
         <Button size="small" variant="contained" onClick={send} disabled={!text.trim()} sx={{ minWidth: 36, height: 34, background: '#77469b', '&:hover': { background: '#9551ab' } }}>

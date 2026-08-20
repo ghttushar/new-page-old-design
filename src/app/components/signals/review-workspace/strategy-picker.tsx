@@ -51,7 +51,7 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
                       autoFocus
                       value={customValue ?? ''}
                       onChange={(e) => onCustomChange?.(e.target.value)}
-                      placeholder="Type your instruction for Aan…"
+                      placeholder="Type your instruction for Jiva…"
                       style={{
                         display: 'block',
                         width: '100%',

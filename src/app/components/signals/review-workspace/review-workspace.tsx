@@ -58,7 +58,7 @@ Tushar`,
 
 const AAN_SEEDS: Record<string, { title: string; approveLabel: string; approveSuccess: string; draft: string }> = {
   'draft-ticket': {
-    title: 'Aan drafted this support ticket',
+    title: 'Jiva drafted this support ticket',
     approveLabel: 'Approve & file ticket',
     approveSuccess: 'Support ticket filed with Amazon Seller Support.',
     draft: `**Subject:** Reinstate advertising eligibility — ASIN [ASIN]
@@ -80,7 +80,7 @@ Thank you,
 Tushar`,
   },
   'review-cost': {
-    title: 'Aan analyzed your cost structure',
+    title: 'Jiva analyzed your cost structure',
     approveLabel: 'Approve & share findings',
     approveSuccess: 'Cost analysis shared.',
     draft: `Here's the cost analysis I found. Approve before I share:
@@ -211,7 +211,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           setInlineDraft({
             kind: 'chat',
             strategyTitle: selectedStrategy.title,
-            title: 'Aan received your instruction',
+            title: 'Jiva received your instruction',
             approveLabel: 'Approve & execute',
             approveSuccess: 'Custom instruction completed.',
             draft: text,
@@ -238,7 +238,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   function completeInlineDraft() {
     if (!inlineDraft) return;
     const strategyTitle = inlineDraft.strategyTitle;
-    const verifyMsg = inlineDraft.kind === 'email' ? 'Email sent. Aan is monitoring for a reply.' : 'Draft approved. Aan is tracking follow-up.';
+    const verifyMsg = inlineDraft.kind === 'email' ? 'Email sent. Jiva is monitoring for a reply.' : 'Draft approved. Jiva is tracking follow-up.';
     setInlineDraft(null);
     setTransitional(null);
     dispatch(approveDecision(d!.id));
@@ -491,7 +491,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                 </button>
               </div>
               <AssignMenu onAssign={(key, label) => {
-                if (label === 'Aan') dispatch(delegateToAan(d.id));
+                if (label === 'Jiva') dispatch(delegateToAan(d.id));
               }} />
               <button className={styles.footerBtnDanger} onClick={() => dispatch(rejectDecision(d.id))}><Prohibit size={14} /> Dismiss</button>
               <div className={styles.footerRight}>

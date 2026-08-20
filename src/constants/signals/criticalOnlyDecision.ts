@@ -27,7 +27,7 @@ export const CRITICAL_ONLY_DECISION: Decision = {
   ],
   steps: [
     { label: 'Review cost-to-Amazon terms & history', etaSec: 10, why: 'Understand current cost structure.' },
-    { label: 'Draft escalation email to Vendor Manager', etaSec: 8, why: 'Aan drafts the email for your approval.' },
+    { label: 'Draft escalation email to Vendor Manager', etaSec: 8, why: 'Jiva drafts the email for your approval.' },
     { label: 'Monitor warning status for 24 hours', etaSec: 5, why: 'Track if warning resolves or escalates.' },
   ],
   deepLink: { label: 'Open in Seller Central', href: '#' },

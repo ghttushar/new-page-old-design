@@ -39,7 +39,7 @@ export function InlineDraftChat({
     setTimeout(() => {
       setThread((t) => [...t, {
         role: 'aan',
-        text: "Got it — I've updated the draft above with that change. Review the latest version and approve when you're ready.",
+        text: 'Got it — I\'ve updated the draft above with that change. Review the latest version and approve when you\'re ready.',
         ts: Date.now(),
       }]);
     }, 500);
@@ -57,7 +57,7 @@ export function InlineDraftChat({
       <div className={styles.chatContainer}>
         <div ref={scrollRef} className={styles.chatScroll}>
           {thread.map((m, i) => (
-            <div key={i} className={m.role === 'user' ? styles.chatUser : styles.chatAan}>
+            <div key={i} className={m.role === 'user' ? styles.chatUser : styles.chatJiva}>
               <div className={m.role === 'user' ? styles.userBubble : styles.aanBubble}>
                 {m.text.split('\n').map((line, j) => <span key={j}>{line}<br /></span>)}
               </div>
@@ -78,7 +78,7 @@ export function InlineDraftChat({
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
             }}
-            placeholder="Ask Aan to revise the draft, or add more context…"
+            placeholder="Ask Jiva to revise the draft, or add more context…"
             className={styles.chatInput}
           />
           <div className={styles.chatActions}>

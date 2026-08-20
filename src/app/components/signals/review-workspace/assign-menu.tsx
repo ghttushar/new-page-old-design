@@ -3,7 +3,7 @@ import { UserPlus, Sparkle } from '@phosphor-icons/react';
 import { Button, Menu, MenuItem } from '@mui/material';
 
 const MEMBERS = [
-  { key: 'aan', label: 'Aan', role: 'AI', Icon: Sparkle },
+  { key: 'aan', label: 'Jiva', role: 'AI', Icon: Sparkle },
   { key: 'mike', label: 'Mike', role: 'Ops', Icon: UserPlus },
   { key: 'sarah', label: 'Sarah', role: 'Marketing', Icon: UserPlus },
   { key: 'dorothy', label: 'Dorothy', role: 'Buyer', Icon: UserPlus },

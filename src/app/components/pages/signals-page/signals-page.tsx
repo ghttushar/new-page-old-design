@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from './signals-page.module.scss';
-import { GreetingHeader } from '../../signals/greeting-header/greeting-header';
 import { DecisionCard } from '../../signals/decision-card/decision-card';
 import { ReviewWorkspace } from '../../signals/review-workspace/review-workspace';
 import { EmptyState } from '../../signals/empty-state/empty-state';
@@ -14,7 +13,6 @@ import { CRITICAL_ONLY_DECISION } from '@/constants/signals/criticalOnlyDecision
 import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
 import { categorize } from '@/utils/signals/categories';
 import { importanceScore } from '@/utils/signals/lifecycle';
-import { briefingFor } from '@/utils/signals/briefing';
 import {
   selectSelectedDecisionId,
   selectSelectedMeetingId,
@@ -84,7 +82,6 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
     window: 'any',
   });
 
-  const b = useMemo(() => briefingFor(activeDecisions), [activeDecisions]);
   const counts = useMemo(() => computeTabCounts(activeDecisions), [activeDecisions]);
   const pool = useMemo(() => filterByTab(activeDecisions, tab), [activeDecisions, tab]);
 
@@ -122,11 +119,6 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
   }, [allCategoryGroups, activeCategoryKey]);
   const meetingGroups = useMemo(() => groupByMeeting(filtered), [filtered]);
   const isMeetingsTab = tab === 'meetings';
-
-  const railItems = useMemo(
-    () => allCategoryGroups.map((c) => ({ key: c.key, label: c.label, count: c.items.length })),
-    [allCategoryGroups],
-  );
 
   const selectedDecision = useMemo(
     () => activeDecisions.find((d) => d.id === selectedDecisionId) ?? null,
@@ -182,9 +174,6 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
 
   return (
     <div className={styles.signalsPage}>
-      {/* Greeting */}
-      <GreetingHeader name="Tushar" briefing={b} />
-
       {/* Toolbar — spans above both columns */}
       <div className={styles.toolbar}>
         <nav className={styles.tabBar} role="tablist">
@@ -217,9 +206,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
           />
           <FilterSheet
             value={filterState}
-            categories={railItems}
             activeCategory={activeCategoryKey}
-            onCategoryChange={(k) => setActiveCategoryKey((prev) => (prev === k ? null : k))}
             onChange={(f) => {
               setFilterState(f);
               dispatch(setFilterSources([...f.sources]));

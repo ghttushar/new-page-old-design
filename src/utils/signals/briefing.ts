@@ -83,7 +83,7 @@ export function briefingFor(decisions: Decision[]): Briefing {
   const upcomingMeetings: UpcomingMeeting[] = [...meetingMap.values()].slice(0, 3);
 
   const aanActivity: string[] = inFlight.slice(0, 3).map((d) => {
-    if (d.status === 'with_aan') return `Aan is working on: ${d.insight}`;
+    if (d.status === 'with_aan') return `Jiva is working on: ${d.insight}`;
     return `Executing: ${d.insight}`;
   });
 
@@ -100,11 +100,11 @@ export function briefingFor(decisions: Decision[]): Briefing {
     return {
       slot,
       greeting: 'Good morning.',
-      dateline: "Here's everything that happened overnight.",
+      dateline: 'Here\'s everything that happened overnight.',
       bullets: [
         `${open.length} decisions waiting on you · ${fmtDollars(openValue)} of opportunity`,
         `${meetingCount} meeting${meetingCount === 1 ? '' : 's'} created action items`,
-        `Aan handled ${inFlight.length} low-risk automation${inFlight.length === 1 ? '' : 's'} while you slept`,
+        `Jiva handled ${inFlight.length} low-risk automation${inFlight.length === 1 ? '' : 's'} while you slept`,
       ],
       actionText: 'Start with the highest-value item',
       priorityAlerts,
@@ -117,7 +117,7 @@ export function briefingFor(decisions: Decision[]): Briefing {
     return {
       slot,
       greeting: 'Good afternoon.',
-      dateline: "Here's what's changed since this morning.",
+      dateline: 'Here\'s what\'s changed since this morning.',
       bullets: [
         `${completedToday.length} action${completedToday.length === 1 ? '' : 's'} completed · ${fmtDollars(revenueProtected)} protected`,
         `${open.length} still open · ${fmtDollars(openValue)} of opportunity remaining`,
@@ -134,13 +134,13 @@ export function briefingFor(decisions: Decision[]): Briefing {
     return {
       slot,
       greeting: 'Good evening.',
-      dateline: "Here's how the day went.",
+      dateline: 'Here\'s how the day went.',
       bullets: [
         `${completedToday.length} decisions completed · ${fmtDollars(revenueProtected)} protected today`,
         `${open.length} carry over to tomorrow`,
         `${meetingCount} meeting${meetingCount === 1 ? '' : 's'} still have follow-ups`,
       ],
-      actionText: "Review tomorrow's priorities",
+      actionText: 'Review tomorrow\'s priorities',
       priorityAlerts,
       upcomingMeetings,
       aanActivity,
@@ -150,7 +150,7 @@ export function briefingFor(decisions: Decision[]): Briefing {
 
   return {
     slot,
-    greeting: "Today's summary",
+    greeting: 'Today\'s summary',
     dateline: 'End of day recap.',
     bullets: [
       `Revenue protected: ${fmtDollars(revenueProtected)}`,

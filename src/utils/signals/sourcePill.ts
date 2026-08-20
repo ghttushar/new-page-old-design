@@ -28,7 +28,7 @@ export function sourcePillFor(d: Decision): SourcePill {
   if (s === 'slack') return { label: 'Slack', tone: 'slack', Icon: ChatCircle };
   if (s === 'teams') return { label: 'Teams', tone: 'teams', Icon: Users };
   if (s === 'email') return { label: 'Email', tone: 'email', Icon: Envelope };
-  if (s === 'aan') return { label: 'Aan', tone: 'aan', Icon: Sparkle };
+  if (s === 'aan') return { label: 'Jiva', tone: 'aan', Icon: Sparkle };
 
   const agent = guessAgent(d.sourceRef.label || d.insight);
   if (agent === 'Forecast') return { label: 'Forecast', tone: 'forecast', Icon: TrendUp };

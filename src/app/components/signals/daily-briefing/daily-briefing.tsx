@@ -79,7 +79,7 @@ export function DailyBriefing() {
         {b.aanActivity && b.aanActivity.length > 0 && (
           <div className={styles.section}>
             <div className={styles.sectionLabel}>
-              <Robot size={12} /> Aan activity
+              <Robot size={12} /> Jiva activity
             </div>
             <div className={styles.activityList}>
               {b.aanActivity.map((a, i) => (

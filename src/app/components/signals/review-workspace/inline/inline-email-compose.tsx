@@ -32,7 +32,7 @@ export function InlineEmailCompose({ initial, onCancel, onSent }: Props) {
     <div className={styles.inlineSection}>
       <div className={styles.inlineHeader}>
         <span className={styles.aanLabel}>
-          <Sparkle size={12} weight="fill" /> Aan drafted this email
+          <Sparkle size={12} weight="fill" /> Jiva drafted this email
         </span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button className={styles.copyBtn} onClick={() => navigator.clipboard.writeText(body)} title="Copy draft">

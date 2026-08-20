@@ -33,17 +33,17 @@ export function strategiesFor(d: Decision): Strategy[] {
         id: `${d.id}:recommended`,
         title: 'Escalate to Vendor Manager',
         detail:
-          'Aan drafts an email to the Vendor Manager notifying them about the cost-to-Amazon advertising eligibility warning — for your approval before it sends.',
+          'Jiva drafts an email to the Vendor Manager notifying them about the cost-to-Amazon advertising eligibility warning — for your approval before it sends.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
         confidence: 'high',
         risk: 'low',
         reversibility: 'reversible',
-        execution: 'opens Aan draft',
+        execution: 'opens Jiva draft',
         recommended: true,
         steps: [
-          { label: 'Aan drafts the VM escalation email in the side panel' },
+          { label: 'Jiva drafts the VM escalation email in the side panel' },
           { label: 'You review & approve before it sends' },
         ],
       },
@@ -51,16 +51,16 @@ export function strategiesFor(d: Decision): Strategy[] {
         id: `${d.id}:draft-ticket`,
         title: 'Draft Support Ticket',
         detail:
-          'Aan drafts a support ticket to Amazon Seller Support disputing the cost-to-Amazon flag — for your approval before it goes to Seller Support.',
+          'Jiva drafts a support ticket to Amazon Seller Support disputing the cost-to-Amazon flag — for your approval before it goes to Seller Support.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
         confidence: 'medium',
         risk: 'low',
         reversibility: 'reversible',
-        execution: 'opens Aan draft',
+        execution: 'opens Jiva draft',
         steps: [
-          { label: 'Aan drafts the support ticket in the side panel' },
+          { label: 'Jiva drafts the support ticket in the side panel' },
           { label: 'You review & approve before it is filed' },
         ],
       },
@@ -68,7 +68,7 @@ export function strategiesFor(d: Decision): Strategy[] {
         id: `${d.id}:wait`,
         title: 'Monitor & Recheck',
         detail:
-          'Aan will re-check the warning status with fresh data in 24 hours and surface any changes.',
+          'Jiva will re-check the warning status with fresh data in 24 hours and surface any changes.',
         valueCents: Math.round(d.valueCents * 0.25),
         valueKind: d.valueKind,
         cadence: d.cadence,
@@ -77,14 +77,14 @@ export function strategiesFor(d: Decision): Strategy[] {
         reversibility: 'reversible',
         execution: 'queued for 24h',
         steps: [
-          { label: 'Requeue for re-check', note: 'Aan will surface a refreshed recommendation.' },
+          { label: 'Requeue for re-check', note: 'Jiva will surface a refreshed recommendation.' },
         ],
       },
       {
         id: `${d.id}:custom`,
         title: 'Write your custom instruction',
         detail:
-          'Tell Aan exactly what you want — revise the draft, check a different angle, escalate differently, or anything else.',
+          'Tell Jiva exactly what you want — revise the draft, check a different angle, escalate differently, or anything else.',
         valueCents: d.valueCents,
         valueKind: d.valueKind,
         cadence: d.cadence,
@@ -94,7 +94,7 @@ export function strategiesFor(d: Decision): Strategy[] {
         execution: 'opens custom input',
         steps: [
           { label: 'You write the instruction' },
-          { label: 'Aan executes and reports back' },
+          { label: 'Jiva executes and reports back' },
         ],
       },
     ];
@@ -139,7 +139,7 @@ export function strategiesFor(d: Decision): Strategy[] {
   alternatives.push({
     id: `${d.id}:wait`,
     title: 'Wait until tomorrow',
-    detail: 'Delay execution; Aan will re-check with fresh data at 8am.',
+    detail: 'Delay execution; Jiva will re-check with fresh data at 8am.',
     valueCents: Math.round(d.valueCents * 0.25),
     valueKind: d.valueKind,
     cadence: d.cadence,
@@ -147,13 +147,13 @@ export function strategiesFor(d: Decision): Strategy[] {
     risk: 'low',
     reversibility: 'reversible',
     execution: 'queued for 8am',
-    steps: [{ label: 'Requeue for morning', note: 'Aan will surface a refreshed recommendation.' }],
+    steps: [{ label: 'Requeue for morning', note: 'Jiva will surface a refreshed recommendation.' }],
   });
 
   alternatives.push({
     id: `${d.id}:aan`,
-    title: 'Let Aan handle automatically',
-    detail: "Aan will execute inside its policy budget and only ping you if it needs a decision.",
+    title: 'Let Jiva handle automatically',
+    detail: 'Jiva will execute inside its policy budget and only ping you if it needs a decision.',
     valueCents: d.valueCents,
     valueKind: d.valueKind,
     cadence: d.cadence,
@@ -161,7 +161,7 @@ export function strategiesFor(d: Decision): Strategy[] {
     risk: 'low',
     reversibility: 'reversible',
     execution: 'immediate',
-    steps: [{ label: 'Aan executes within policy' }, { label: 'Notifies you only on exceptions' }],
+    steps: [{ label: 'Jiva executes within policy' }, { label: 'Notifies you only on exceptions' }],
   });
 
   return [primary, ...alternatives];

@@ -20,7 +20,7 @@
 .tabBar {
   display: flex;
   gap: 0.2rem;
-  padding: 0.3rem;
+  padding: 0.4rem;
   border-radius: 1rem;
   background: rgba($sub-text-4, 0.06);
   border: none;
@@ -37,12 +37,12 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  height: 2.4rem;
-  padding: 0 1rem;
+  height: 3.2rem;
+  padding: 0 1.4rem;
   border-radius: 0.8rem;
   border: none;
   background: none;
-  font-size: $font-size-10;
+  font-size: $font-size-12;
   cursor: pointer;
   transition: all 0.18s ease;
   color: $sub-text-3;
@@ -60,15 +60,15 @@
 }
 
 .tabCount {
-  font-size: $font-size-9;
+  font-size: $font-size-10;
   font-weight: $font-weight-600;
-  padding: 0 0.5rem;
+  padding: 0 0.6rem;
   border-radius: 999px;
   background: rgba($sub-text-4, 0.1);
   color: $sub-text-4;
-  min-width: 1.4rem;
+  min-width: 1.6rem;
   text-align: center;
-  line-height: 1.5rem;
+  line-height: 1.7rem;
 }
 
 .tabCountActive {
@@ -78,12 +78,12 @@
 
 .searchInput {
   flex: 1;
-  max-width: 54rem;
-  height: 2.6rem;
+  max-width: 67.5rem;
+  height: 3.2rem;
   padding: 0 1.2rem;
   border-radius: 0.8rem;
   border: 1px solid $border-color-4;
-  font-size: $font-size-10;
+  font-size: $font-size-12;
   background: $foreground-color;
   color: $main-text;
   outline: none;
