@@ -73,8 +73,6 @@ export default function IntegrationsPage() {
           >
             {connecting === 'mcp' ? (
               <SpinnerGapIcon size={16} className={styles.spin} />
-            ) : mcpConnected ? (
-              'Connected'
             ) : (
               'Connect'
             )}
@@ -107,8 +105,6 @@ export default function IntegrationsPage() {
           >
             {connecting === 'whatsapp' ? (
               <SpinnerGapIcon size={16} className={styles.spin} />
-            ) : whatsappConnected ? (
-              'Connected'
             ) : (
               'Connect'
             )}
