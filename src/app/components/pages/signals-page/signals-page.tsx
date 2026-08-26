@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
 import { DecisionCard } from '../../signals/decision-card/decision-card';
 import { ReviewWorkspace, ReviewErrorBoundary } from '../../signals/review-workspace/review-workspace';
@@ -223,36 +224,44 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
 
   return (
     <div className={styles.signalsPage}>
-      {/* Toolbar — spans above both columns */}
+      {/* Toolbar — two rows */}
       <div className={styles.toolbar}>
-        <nav className={styles.tabBar} role="tablist">
-          {ALERT_TABS.map((t) => {
-            const active = tab === t.key;
-            return (
-              <button
-                key={t.key}
-                role="tab"
-                aria-selected={active}
-                className={`${styles.tab} ${active ? styles.tabActive : ''}`}
-                onClick={() => setTab(t.key)}
-              >
-                {t.label}
-                {counts[t.key] > 0 && (
-                  <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
-                    {counts[t.key]}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-        <div className={styles.toolbarRight}>
-          <input
-            className={styles.searchInput}
-            placeholder="Search signals, meetings, decisions…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+        {/* Row 1: Tabs */}
+        <div className={styles.toolbarRow}>
+          <nav className={styles.tabBar} role="tablist">
+            {ALERT_TABS.map((t) => {
+              const active = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  role="tab"
+                  aria-selected={active}
+                  className={`${styles.tab} ${active ? styles.tabActive : ''}`}
+                  onClick={() => setTab(t.key)}
+                >
+                  {t.label}
+                  {counts[t.key] > 0 && (
+                    <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
+                      {counts[t.key]}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Row 2: Search + Filter */}
+        <div className={styles.toolbarRow}>
+          <div className={styles.searchWrap}>
+            <MagnifyingGlass size={16} className={styles.searchIcon} />
+            <input
+              className={styles.searchInput}
+              placeholder="Search signals, meetings, decisions…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
           <FilterSheet
             value={filterState}
             activeCategory={activeCategoryKey}

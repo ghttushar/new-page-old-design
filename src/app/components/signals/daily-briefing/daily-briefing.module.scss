@@ -9,203 +9,234 @@
   justify-content: flex-start;
   border-radius: 1.2rem;
   border: 1px solid rgba($border-color-4, 0.5);
-  background: linear-gradient(135deg, rgba(122,75,235,0.04), rgba(42,109,244,0.02));
+  background: $foreground-color;
   overflow: hidden;
-}
-
-.ambientGlow {
-  position: absolute;
-  top: -5rem;
-  right: -5rem;
-  width: 18rem;
-  height: 18rem;
-  border-radius: 50%;
-  background: rgba($primary-color, 0.06);
-  filter: blur(60px);
-  pointer-events: none;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -6rem;
-    left: -5rem;
-    width: 18rem;
-    height: 18rem;
-    border-radius: 50%;
-    background: rgba(#10b981, 0.04);
-    filter: blur(60px);
-  }
 }
 
 .content {
   position: relative;
-  padding: 2rem;
+  padding: $spacing-16;
   overflow-y: auto;
   flex: 1;
   @include thin-scrollbar();
 }
 
+// ---------- Header ----------
+
 .header {
-  margin-bottom: 1.6rem;
+  margin-bottom: $spacing-12;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  height: 1.5rem;
-  padding: 0 0.6rem;
+  height: 1.4rem;
+  padding: 0 0.5rem;
   border-radius: 1rem;
-  font-size: $font-size-9;
+  font-size: 0.75rem;
+  font-weight: $font-weight-500;
   background: rgba($primary-color, 0.08);
-  border: 1px solid rgba($primary-color, 0.2);
+  border: 1px solid rgba($primary-color, 0.18);
   color: $primary-color;
 }
 
 .greeting {
-  font-size: 2.2rem;
-  line-height: 1.1;
+  font-size: 1.5rem;
+  line-height: 1.2;
   font-weight: 600;
   color: $main-text;
-  margin-top: 0.8rem;
-  letter-spacing: -0.02em;
+  margin-top: $spacing-4;
+  letter-spacing: -0.01em;
 }
 
 .dateline {
-  font-size: $font-size-12;
+  font-size: $font-size-10;
   color: $sub-text-3;
-  margin-top: 0.2rem;
+  margin-top: 2px;
 }
 
-// ---------- Stat Cards ----------
+// ---------- Compact stat row ----------
 
-.statGrid {
+.statRow {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.8rem;
-  margin-bottom: 1.6rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: $spacing-12;
 }
 
-.statCard {
-  position: relative;
-  padding: 1rem 1rem 1rem 1.2rem;
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-left: 3px solid transparent;
-  transition: all 0.2s ease;
-  animation: statFadeIn 0.4s ease-out both;
-
-  &:nth-child(1) { animation-delay: 0s; }
-  &:nth-child(2) { animation-delay: 0.08s; }
-  &:nth-child(3) { animation-delay: 0.16s; }
-  &:nth-child(4) { animation-delay: 0.24s; }
+.statChip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.7rem;
+  background: rgba($sub-text-4, 0.04);
+  border: 1px solid rgba($border-color-4, 0.4);
+  transition: all 0.15s ease;
+  min-width: 0;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.75);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    background: rgba($sub-text-4, 0.08);
+    transform: translateY(-1px);
   }
 }
 
-@keyframes statFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+.statChipIcon {
+  flex-shrink: 0;
+}
+
+.statChipValue {
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .statCritical {
-  border-left-color: #ef4444;
-  .statIcon { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.15);
+  .statChipIcon { color: #ef4444; }
 }
 
 .statAtRisk {
-  border-left-color: #f59e0b;
-  .statIcon { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(245, 158, 11, 0.15);
+  .statChipIcon { color: #f59e0b; }
 }
 
 .statMeetings {
-  border-left-color: $primary-color;
-  .statIcon { color: $primary-color; background: rgba($primary-color, 0.1); }
+  background: rgba($primary-color, 0.06);
+  border-color: rgba($primary-color, 0.15);
+  .statChipIcon { color: $primary-color; }
 }
 
-.statCompleted {
-  border-left-color: #10b981;
-  .statIcon { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.statDone {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.15);
+  .statChipIcon { color: #10b981; }
 }
 
-.statIcon {
-  display: inline-flex;
+// ---------- Collapsible sections ----------
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+}
+
+.accordion {
+  border-radius: 0.8rem;
+  border: 1px solid rgba($border-color-4, 0.4);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.accordionOpen {
+  border-color: rgba($border-color-4, 0.7);
+}
+
+.accordionHeader {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 0.6rem;
-  margin-bottom: 0.5rem;
+  justify-content: space-between;
+  width: 100%;
+  padding: $spacing-4 $spacing-10;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: left;
+
+  &:hover {
+    background: rgba($sub-text-4, 0.04);
+  }
 }
 
-.statValue {
-  font-size: 2rem;
-  font-weight: 700;
+.accordionLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+  color: $sub-text-2;
+  font-size: $font-size-10;
+}
+
+.accordionOpen .accordionLeft {
   color: $main-text;
-  line-height: 1;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.02em;
 }
 
-.statLabel {
-  font-size: $font-size-9;
-  color: $sub-text-3;
-  margin-top: 0.2rem;
+.accordionLabel {
   font-weight: $font-weight-500;
 }
 
-// ---------- Sections ----------
-
-.section {
-  margin-top: 1.4rem;
-}
-
-.sectionLabel {
+.accordionCount {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: $font-size-9;
-  font-weight: $font-weight-600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: rgba($sub-text-4, 0.1);
   color: $sub-text-3;
-  margin-bottom: 0.6rem;
+  font-size: 0.7rem;
+  font-weight: $font-weight-600;
 }
+
+.accordionOpen .accordionCount {
+  background: rgba($primary-color, 0.1);
+  color: $primary-color;
+}
+
+.accordionChevron {
+  color: $sub-text-4;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.accordionChevronOpen {
+  transform: rotate(180deg);
+}
+
+.accordionBody {
+  padding: 0 $spacing-10 $spacing-8;
+  animation: accordionIn 0.15s ease-out;
+}
+
+@keyframes accordionIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ---------- Alert list ----------
 
 .alertList {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 4px;
 }
 
 .alertItem {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba($border-color-4, 0.4);
-  cursor: pointer;
-  transition: all 0.12s;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba($sub-text-4, 0.03);
+  transition: background 0.1s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: $primary-color;
-    box-shadow: 0 2px 8px rgba($primary-color, 0.08);
+    background: rgba($sub-text-4, 0.06);
   }
 }
 
 .alertDot {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.4rem;
+  height: 0.4rem;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -229,28 +260,24 @@
   display: block;
   font-size: $font-size-9;
   color: $sub-text-3;
-  margin-top: 0.1rem;
+  margin-top: 1px;
 }
 
-.alertArrow {
-  flex-shrink: 0;
-  color: $sub-text-4;
-}
+// ---------- Meeting list ----------
 
 .meetingList {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 3px;
 }
 
 .meetingItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba($border-color-4, 0.4);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba($sub-text-4, 0.03);
 }
 
 .meetingTitle {
@@ -264,16 +291,18 @@
   color: $sub-text-3;
 }
 
+// ---------- Activity list ----------
+
 .activityList {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 3px;
 }
 
 .activityItem {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: 0.4rem;
   font-size: $font-size-10;
   color: $sub-text-2;
   line-height: 1.4;
@@ -282,13 +311,13 @@
 .activityDot {
   flex-shrink: 0;
   margin-top: 0.35rem;
-  width: 0.35rem;
-  height: 0.35rem;
+  width: 0.3rem;
+  height: 0.3rem;
   border-radius: 50%;
   background: rgba(#10b981, 0.6);
 }
 
-// ---------- Morning-only sections ----------
+// ---------- Todo ----------
 
 .todoList {
   list-style: none;
@@ -296,26 +325,24 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 3px;
 }
 
 .todoItem {
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba($border-color-4, 0.4);
-  transition: all 0.12s;
+  border-radius: 0.6rem;
+  background: rgba($sub-text-4, 0.03);
+  transition: background 0.1s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: $primary-color;
+    background: rgba($sub-text-4, 0.06);
   }
 }
 
 .todoLabel {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.8rem;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
   cursor: pointer;
   width: 100%;
   font-size: $font-size-10;
@@ -323,8 +350,8 @@
 }
 
 .todoCheckbox {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1rem;
+  height: 1rem;
   accent-color: $primary-color;
   flex-shrink: 0;
 }
@@ -336,29 +363,24 @@
   font-weight: 500;
 }
 
+// ---------- Pending ----------
+
 .pendingList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 3px;
 }
 
 .pendingItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba($border-color-4, 0.4);
-  transition: all 0.12s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: $positive-color;
-  }
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba($sub-text-4, 0.03);
 }
 
 .pendingTask {
@@ -370,18 +392,18 @@
 .pendingMeta {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   font-size: $font-size-9;
   color: $sub-text-3;
 }
 
 .pendingSource {
-  padding: 0.1rem 0.4rem;
-  border-radius: 0.4rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.3rem;
   font-weight: 500;
-  background: rgba($primary-color, 0.1);
+  background: rgba($primary-color, 0.08);
   color: $primary-color;
-  font-size: $font-size-9;
+  font-size: 0.7rem;
 }
 
 .pendingSince {
@@ -389,36 +411,31 @@
   font-size: $font-size-9;
 }
 
+// ---------- Overnight ----------
+
 .overnightList {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 3px;
 }
 
 .overnightItem {
-  padding: 0.8rem 1rem;
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba($border-color-4, 0.4);
-  transition: all 0.12s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: $primary-color;
-  }
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba($sub-text-4, 0.03);
 }
 
 .overnightChange {
   font-size: $font-size-10;
-  font-weight: 500;
+  font-weight: $font-weight-500;
   color: $main-text;
-  margin-bottom: 0.2rem;
+  margin-bottom: 2px;
 }
 
 .overnightMeta {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.6rem;
   font-size: $font-size-9;
   color: $sub-text-3;
 }
@@ -429,35 +446,131 @@
 }
 
 .overnightType {
-  padding: 0.1rem 0.4rem;
-  border-radius: 0.4rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.3rem;
   font-weight: 500;
-  background: rgba($primary-color, 0.1);
+  background: rgba($primary-color, 0.08);
   color: $primary-color;
-  font-size: $font-size-9;
+  font-size: 0.7rem;
   text-transform: capitalize;
 }
 
-// ---------- Streak & Action ----------
+// ---------- Gamification footer ----------
 
-.streakBar {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 1.4rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba($border-color-4, 0.4);
-  font-size: $font-size-10;
-  color: $sub-text-2;
+.gamificationFooter {
+  margin-top: $spacing-12;
+  padding-top: $spacing-12;
+  border-top: 1px solid rgba($border-color-4, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
 }
 
-.actionText {
-  display: inline-flex;
+.revenueCard {
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin-top: 1.2rem;
-  font-size: $font-size-10;
+  gap: $spacing-8;
+  padding: $spacing-4 $spacing-10;
+  border-radius: 0.8rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(16, 185, 129, 0.02));
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.revenueIcon {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.revenueInfo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.revenueAmount {
+  font-size: $font-size-14;
+  font-weight: $font-weight-700;
+  color: #059669;
+}
+
+.revenueLabel {
+  font-size: $font-size-9;
   color: $sub-text-3;
+}
+
+.streakCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  padding: $spacing-4 $spacing-10;
+  border-radius: 0.8rem;
+  background: rgba($sub-text-4, 0.03);
+  border: 1px solid rgba($border-color-4, 0.4);
+}
+
+.streakIcon {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.streakDots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.streakDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba($sub-text-4, 0.15);
+  transition: all 0.15s;
+}
+
+.streakDotActive {
+  background: #f59e0b;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+.streakLabel {
+  font-size: $font-size-9;
+  color: $sub-text-2;
+  font-weight: $font-weight-500;
+}
+
+.weeklyCard {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: $spacing-4 $spacing-10;
+  border-radius: 0.8rem;
+  background: rgba($sub-text-4, 0.03);
+  border: 1px solid rgba($border-color-4, 0.4);
+}
+
+.weeklyStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 0 $spacing-4;
+}
+
+.weeklyValue {
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.weeklyLabel {
+  font-size: 0.7rem;
+  color: $sub-text-3;
+  margin-top: 1px;
+}
+
+.weeklyDivider {
+  width: 1px;
+  height: 2rem;
+  background: rgba($border-color-4, 0.6);
+  flex-shrink: 0;
 }

@@ -33,6 +33,20 @@ export interface OvernightChange {
   type: 'new_alert' | 'status_change' | 'value_change';
 }
 
+export interface StreakDay {
+  day: string;
+  label: string;
+  active: boolean;
+}
+
+export interface WeeklySummary {
+  totalDecisions: number;
+  resolvedCount: number;
+  revenueProtected: number;
+  avgResponseTime: string;
+  onTimeRate: number;
+}
+
 export interface Briefing {
   slot: BriefingSlot;
   greeting: string;
@@ -46,6 +60,10 @@ export interface Briefing {
   todoToday?: TodoItem[];
   pendingYesterday?: PendingItem[];
   overnightChanges?: OvernightChange[];
+  // Gamification
+  monthlyRevenueProtected?: number;
+  streakDays?: StreakDay[];
+  weeklySummary?: WeeklySummary;
 }
 
 function slotOf(hours = new Date().getHours()): BriefingSlot {
@@ -78,8 +96,14 @@ function formatDateForPending(ts: number): string {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
+function fmtDollars(cents: number): string {
+  const d = Math.abs(cents) / 100;
+  if (d < 1000) return `$${Math.round(d)}`;
+  if (d < 1_000_000) return `$${(d / 1000).toFixed(1)}k`;
+  return `$${(d / 1_000_000).toFixed(1)}M`;
+}
+
 function buildTodoToday(decisions: Decision[]): { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] {
-  const today = new Date().toDateString();
   const items: { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] = [];
 
   decisions.forEach((d) => {
@@ -88,17 +112,9 @@ function buildTodoToday(decisions: Decision[]): { task: string; from: 'meeting' 
     const updatedToday = new Date(d.updatedAt).toDateString() === new Date().toDateString();
 
     if (d.meetingRef && (createdToday || updatedToday)) {
-      items.push({
-        task: d.actionVerb || d.insight.slice(0, 60),
-        from: 'meeting',
-        due: 'EOD',
-      });
+      items.push({ task: d.actionVerb || d.insight.slice(0, 60), from: 'meeting', due: 'EOD' });
     } else if (createdToday || updatedToday) {
-      items.push({
-        task: d.actionVerb || d.insight.slice(0, 60),
-        from: 'alert',
-        due: 'EOD',
-      });
+      items.push({ task: d.actionVerb || d.insight.slice(0, 60), from: 'alert', due: 'EOD' });
     }
   });
 
@@ -110,7 +126,6 @@ function buildTodoToday(decisions: Decision[]): { task: string; from: 'meeting' 
 }
 
 function buildPendingYesterday(decisions: Decision[]): { task: string; from: 'meeting' | 'alert'; since: string }[] {
-  const yesterday = new Date(Date.now() - 24 * 3_600_000).toDateString();
   const items: { task: string; from: 'meeting' | 'alert'; since: string }[] = [];
 
   decisions.forEach((d) => {
@@ -137,28 +152,60 @@ function buildOvernightChanges(decisions: Decision[]): { change: string; impact:
     if (!isOvernight(d.createdAt) && !isOvernight(d.updatedAt)) return;
 
     if (isOvernight(d.createdAt)) {
-      items.push({
-        change: `New alert: ${d.insight}`,
-        impact: d.valueCaption || 'Pending review',
-        type: 'new_alert',
-      });
+      items.push({ change: `New alert: ${d.insight}`, impact: d.valueCaption || 'Pending review', type: 'new_alert' });
     } else if (isOvernight(d.updatedAt)) {
-      items.push({
-        change: `Status updated: ${d.insight.slice(0, 50)}`,
-        impact: `Status changed`,
-        type: 'status_change',
-      });
+      items.push({ change: `Status updated: ${d.insight.slice(0, 50)}`, impact: 'Status changed', type: 'status_change' });
     }
   });
 
   return items.slice(0, 5);
 }
 
-function fmtDollars(cents: number): string {
-  const d = Math.abs(cents) / 100;
-  if (d < 1000) return `$${Math.round(d)}`;
-  if (d < 1_000_000) return `$${(d / 1000).toFixed(1)}k`;
-  return `$${(d / 1_000_000).toFixed(1)}M`;
+function buildStreakDays(decisions: Decision[]): StreakDay[] {
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const today = new Date();
+  const todayDayIdx = (today.getDay() + 6) % 7;
+
+  const daysWithAction = new Set(
+    decisions
+      .filter((d) => d.status === 'completed' || d.status === 'rejected')
+      .map((d) => new Date(d.updatedAt).toDateString())
+  );
+
+  return dayNames.slice(0, todayDayIdx + 1).map((name, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (todayDayIdx - i));
+    return {
+      day: name,
+      label: i === todayDayIdx ? 'Today' : name,
+      active: daysWithAction.has(d.toDateString()),
+    };
+  });
+}
+
+function buildWeeklySummary(decisions: Decision[]): WeeklySummary {
+  const weekMs = 7 * 24 * 3_600_000;
+  const weekAgo = Date.now() - weekMs;
+
+  const weekDecisions = decisions.filter((d) => d.createdAt >= weekAgo || d.updatedAt >= weekAgo);
+  const resolved = weekDecisions.filter((d) => d.status === 'completed' || d.status === 'rejected');
+  const revenueProtected = resolved.reduce((n, d) => n + (d.valueKind === 'info' ? 0 : Math.abs(d.valueCents)), 0);
+
+  const responseTimes = resolved.map((d) => d.updatedAt - d.createdAt);
+  const avgMs = responseTimes.length > 0 ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0;
+  const avgHrs = avgMs / 3_600_000;
+  const avgResponseTime = avgHrs < 1 ? `${Math.round(avgHrs * 60)}m` : `${Math.round(avgHrs)}h`;
+
+  const onTime = resolved.filter((d) => (d.updatedAt - d.createdAt) < 24 * 3_600_000).length;
+  const onTimeRate = resolved.length > 0 ? Math.round((onTime / resolved.length) * 100) : 100;
+
+  return {
+    totalDecisions: weekDecisions.length,
+    resolvedCount: resolved.length,
+    revenueProtected,
+    avgResponseTime,
+    onTimeRate,
+  };
 }
 
 export function briefingFor(decisions: Decision[]): Briefing {
@@ -216,6 +263,16 @@ export function briefingFor(decisions: Decision[]): Briefing {
   ).size;
   const weeklyStreak = `${daysWithActivity} of 7 days with completed actions`;
 
+  // Monthly revenue protected
+  const monthMs = 30 * 24 * 3_600_000;
+  const monthlyRevenueProtected = decisions
+    .filter((d) => (d.status === 'completed' || d.status === 'rejected') && Date.now() - d.updatedAt < monthMs)
+    .reduce((n, d) => n + (d.valueKind === 'info' ? 0 : Math.abs(d.valueCents)), 0);
+
+  // Gamification data
+  const streakDays = buildStreakDays(decisions);
+  const weeklySummary = buildWeeklySummary(decisions);
+
   if (slot === 'morning') {
     return {
       slot,
@@ -234,6 +291,9 @@ export function briefingFor(decisions: Decision[]): Briefing {
       todoToday: buildTodoToday(decisions),
       pendingYesterday: buildPendingYesterday(decisions),
       overnightChanges: buildOvernightChanges(decisions),
+      monthlyRevenueProtected,
+      streakDays,
+      weeklySummary,
     };
   }
   if (slot === 'afternoon') {
@@ -251,6 +311,9 @@ export function briefingFor(decisions: Decision[]): Briefing {
       upcomingMeetings,
       aanActivity,
       weeklyStreak,
+      monthlyRevenueProtected,
+      streakDays,
+      weeklySummary,
     };
   }
   if (slot === 'evening') {
@@ -268,6 +331,9 @@ export function briefingFor(decisions: Decision[]): Briefing {
       upcomingMeetings,
       aanActivity,
       weeklyStreak,
+      monthlyRevenueProtected,
+      streakDays,
+      weeklySummary,
     };
   }
 
@@ -284,5 +350,8 @@ export function briefingFor(decisions: Decision[]): Briefing {
     upcomingMeetings,
     aanActivity,
     weeklyStreak,
+    monthlyRevenueProtected,
+    streakDays,
+    weeklySummary,
   };
 }
