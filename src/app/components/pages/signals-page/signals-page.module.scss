@@ -148,3 +148,41 @@
   from { opacity: 0; transform: translateX(8px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+// ---------- Time Bucket Sections ----------
+.timeBucketList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+}
+
+.timeBucketSection {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-8;
+}
+
+.timeBucketHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  padding: $spacing-4 $spacing-8;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: $sub-text-3;
+  background: rgba($sub-text-4, 0.04);
+  border-radius: 0.8rem;
+}
+
+.timeBucketItems {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}

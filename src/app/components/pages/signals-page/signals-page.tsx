@@ -9,7 +9,6 @@ import { BulkBar } from '../../signals/bulk-bar';
 import { FilterSheet, countActiveFilters, type FilterState } from '../../signals/filter-sheet';
 import { MeetingCard } from '../../signals/meeting-card';
 import { MeetingReviewView } from '../../signals/meeting-review-view';
-import { CRITICAL_ONLY_DECISION } from '@/constants/signals/criticalOnlyDecision';
 import { MOCK_DECISIONS } from '@/constants/signals/decisions.constants';
 import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
 import { categorize } from '@/utils/signals/categories';
@@ -37,6 +36,8 @@ interface MeetingGroup {
   signals: Decision[];
 }
 
+type TimeBucket = 'today' | 'yesterday' | 'this_week' | 'older';
+
 function groupByMeeting(list: Decision[]): MeetingGroup[] {
   const map = new Map<string, MeetingGroup>();
   for (const d of list) {
@@ -50,6 +51,51 @@ function groupByMeeting(list: Decision[]): MeetingGroup[] {
     g.signals.push(d);
   }
   return [...map.values()].sort((a, b) => b.signals.length - a.signals.length);
+}
+
+function getTimeBucket(ts: number): TimeBucket {
+  const now = Date.now();
+  const date = new Date(ts);
+  const today = new Date();
+  const yesterday = new Date(now - 86400000);
+  const weekAgo = new Date(now - 7 * 86400000);
+
+  if (date.toDateString() === today.toDateString()) return 'today';
+  if (date.toDateString() === yesterday.toDateString()) return 'yesterday';
+  if (ts >= weekAgo.getTime()) return 'this_week';
+  return 'older';
+}
+
+interface TimeBucketGroup {
+  bucket: TimeBucket;
+  label: string;
+  items: Decision[];
+}
+
+function groupByTimeBucket(list: Decision[]): TimeBucketGroup[] {
+  const bucketOrder: TimeBucket[] = ['today', 'yesterday', 'this_week', 'older'];
+  const bucketLabels: Record<TimeBucket, string> = {
+    today: 'Today',
+    yesterday: 'Yesterday',
+    this_week: 'This Week',
+    older: 'Older',
+  };
+
+  const buckets = new Map<TimeBucket, Decision[]>();
+  bucketOrder.forEach((b) => buckets.set(b, []));
+
+  for (const d of list) {
+    const bucket = getTimeBucket(d.createdAt);
+    buckets.get(bucket)!.push(d);
+  }
+
+  return bucketOrder
+    .filter((b) => buckets.get(b)!.length > 0)
+    .map((bucket) => ({
+      bucket,
+      label: bucketLabels[bucket],
+      items: buckets.get(bucket)!,
+    }));
 }
 
 interface SignalsPageProps {
@@ -168,6 +214,8 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
     return () => window.removeEventListener('keydown', onKey);
   }, [dispatch, selectedDecisionId, selectedMeetingId]);
 
+  // Group filtered alerts by time bucket for all tabs
+  const timeBucketGroups = useMemo(() => groupByTimeBucket(filtered), [filtered]);
   const total = isMeetingsTab ? meetingGroups.length : filtered.length;
   const isSearchEmpty = query.trim().length > 0 && total === 0;
   const isEmpty = total === 0;
@@ -249,19 +297,24 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
                 ))}
               </div>
             ) : (
-              categoryGroups.map((cat) => (
-                <div key={cat.key} className={styles.categorySection}>
-                  {cat.items.map((d: Decision) => (
-                    <DecisionCard
-                      key={d.id}
-                      decision={d}
-                      selected={selectedDecisionId === d.id}
-                      onSelect={() => handleSelectDecision(d.id)}
-                      onApprove={handleApprove}
-                    />
-                  ))}
-                </div>
-              ))
+              <div className={styles.timeBucketList}>
+                {timeBucketGroups.map((group) => (
+                  <div key={group.bucket} className={styles.timeBucketSection}>
+                    <div className={styles.timeBucketHeader}>{group.label}</div>
+                    <div className={styles.timeBucketItems}>
+                      {group.items.map((d: Decision) => (
+                        <DecisionCard
+                          key={d.id}
+                          decision={d}
+                          selected={selectedDecisionId === d.id}
+                          onSelect={() => handleSelectDecision(d.id)}
+                          onApprove={handleApprove}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
