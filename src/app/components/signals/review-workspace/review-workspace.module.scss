@@ -81,6 +81,27 @@
     }
   }
 
+  .backBtn {
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.8rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: $sub-text-3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s;
+    margin-right: $spacing-4;
+
+    &:hover {
+      background: rgba($primary-color, 0.08);
+      color: $primary-color;
+    }
+  }
+
   .section {
     margin-bottom: $spacing-20;
   }

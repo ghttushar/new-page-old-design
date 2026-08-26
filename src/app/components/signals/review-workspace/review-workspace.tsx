@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef, Component, type ReactNode } from 'react';
-import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise, CaretDown } from '@phosphor-icons/react';
+import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise, CaretDown, ArrowLeft } from '@phosphor-icons/react';
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
 import { strategiesFor } from '@/utils/signals/strategies';
@@ -22,6 +22,8 @@ interface Props {
   decisions?: Decision[];
   onClose: () => void;
   onOpenDecision?: (id: string) => void;
+  onBack?: () => void;
+  meetingBundleId?: string;
   defaultSummaryExpanded?: boolean;
 }
 
@@ -103,7 +105,7 @@ export class ReviewErrorBoundary extends Component<{ children: ReactNode; fallba
   render() { return this.state.hasError ? this.props.fallback : this.props.children; }
 }
 
-export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision, defaultSummaryExpanded }: Props) {
+export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision, onBack, meetingBundleId, defaultSummaryExpanded }: Props) {
   const dispatch = useDispatch();
   const [discuss, setDiscuss] = useState(false);
   const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | { kind: 'image'; strategyTitle: string } | null>(null);
@@ -308,6 +310,15 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
         <div className={styles.headerBg} style={{ background: executed ? 'linear-gradient(to bottom, rgba(66,148,136,0.08), transparent)' : 'linear-gradient(to bottom, rgba(119,70,155,0.03), transparent)' }} />
         <div className={styles.headerContent}>
           <div className={styles.headerInfo}>
+            {onBack && meetingBundleId && (
+              <button
+                className={styles.backBtn}
+                onClick={onBack}
+                aria-label="Back to meeting"
+              >
+                <ArrowLeft size={14} weight="bold" />
+              </button>
+            )}
             <div className={styles.title}>{d.insight}</div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}><X size={14} weight="bold" /></button>
@@ -465,7 +476,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                     actionVerb: d!.actionVerb,
                   }}
                   onCancel={() => setInlineDraft(null)}
-                  onComplete={completeInlineDraft}
                 />
               ) : (
                 <InlineDraftChat

@@ -14,6 +14,7 @@ import {
   Envelope,
   Check,
   CaretLeft,
+  Timer,
 } from '@phosphor-icons/react';
 import styles from './decision-card.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
@@ -34,6 +35,12 @@ const SNOOZE_MS: Record<string, number> = {
   tomorrow: 72000000,
   next_week: 604800000,
 };
+
+function actionDays(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = ((h << 5) - h + id.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 4) + 1;
+}
 
 export function DecisionCard({ decision: d, selected, onSelect, onApprove }: DecisionCardProps) {
   const dispatch = useDispatch();
@@ -81,6 +88,7 @@ export function DecisionCard({ decision: d, selected, onSelect, onApprove }: Dec
       <div className={styles.cardBody}>
         <div className={styles.valueHeadline}>{f.text}</div>
         <div className={styles.valueCaption}>{d.valueCaption}</div>
+        <div className={styles.actionDeadline}><Timer size={10} /> Take action within {actionDays(d.id)} days</div>
         <div className={styles.insight}>{d.insight}</div>
         <div className={styles.chipsRow}>
           <SourcePill decision={d} size="sm" />

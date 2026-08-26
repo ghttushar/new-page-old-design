@@ -59,6 +59,15 @@
   margin-top: 0.1rem;
 }
 
+.actionDeadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: $font-size-9;
+  color: $sub-text-3;
+  margin-top: 0.2rem;
+}
+
 .insight {
   font-size: $font-size-12;
   font-weight: $font-weight-500;

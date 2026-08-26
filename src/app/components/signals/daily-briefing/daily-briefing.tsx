@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { Sun, CloudSun, Moon, SunHorizon, Sparkle, WarningCircle, TrendUp, Robot, CalendarBlank, ArrowRight, CheckCircle, Clock, Moon as MoonIcon } from '@phosphor-icons/react';
+import { Sun, CloudSun, Moon, SunHorizon, Sparkle, WarningCircle, TrendUp, Robot, CalendarBlank, ArrowRight, CheckCircle, Clock, Moon as MoonIcon, Warning, CurrencyDollar, CalendarCheck, Lightning } from '@phosphor-icons/react';
 import styles from './daily-briefing.module.scss';
 import { selectDecisions } from '@/redux/slices/signals/signals.slice';
 import { briefingFor, type BriefingSlot, type PriorityAlert, type UpcomingMeeting, type TodoItem, type PendingItem, type OvernightChange } from '@/utils/signals/briefing';
@@ -11,34 +11,58 @@ const ICON_MAP: Record<BriefingSlot, typeof Sun | typeof CloudSun | typeof Moon 
   end_of_day: Moon,
 };
 
-const severityColor: Record<string, string> = {
-  critical: '#ff0000',
-  opportunity: '#77469b',
-  fyi: '#7c7c7c',
-};
+function fmtDollars(cents: number): string {
+  const d = Math.abs(cents) / 100;
+  if (d < 1000) return `$${Math.round(d)}`;
+  if (d < 1_000_000) return `$${(d / 1000).toFixed(1)}k`;
+  return `$${(d / 1_000_000).toFixed(1)}M`;
+}
 
 export function DailyBriefing() {
   const decisions = useSelector(selectDecisions);
   const b = briefingFor(decisions);
   const Icon = ICON_MAP[b.slot];
 
+  const open = decisions.filter((d) => d.status === 'open');
+  const criticalCount = open.filter((d) => d.severity === 'critical').length;
+  const atRiskValue = open.reduce((n, d) => n + (d.valueKind === 'at_risk' ? Math.abs(d.valueCents) : 0), 0);
+  const meetingCount = new Set(decisions.filter((d) => d.meetingRef).map((d) => d.meetingRef!.bundleId)).size;
+  const completedToday = decisions.filter((d) => (d.status === 'completed' || d.status === 'rejected') && new Date(d.updatedAt).toDateString() === new Date().toDateString()).length;
+
   return (
     <div className={styles.dailyBriefing}>
       <div className={styles.ambientGlow} />
       <div className={styles.content}>
-        <div className={styles.badge}>
-          <Icon size={12} weight="fill" /> Daily briefing
+        <div className={styles.header}>
+          <div className={styles.badge}>
+            <Icon size={12} weight="fill" /> Daily briefing
+          </div>
+          <h2 className={styles.greeting}>{b.greeting}</h2>
+          <p className={styles.dateline}>{b.dateline}</p>
         </div>
-        <h2 className={styles.greeting}>{b.greeting}</h2>
-        <p className={styles.dateline}>{b.dateline}</p>
-        <ul className={styles.bullets}>
-          {b.bullets.map((line, i) => (
-            <li key={i} className={styles.bullet}>
-              <span className={styles.dot} />
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
+
+        <div className={styles.statGrid}>
+          <div className={`${styles.statCard} ${styles.statCritical}`}>
+            <div className={styles.statIcon}><Warning size={18} weight="fill" /></div>
+            <div className={styles.statValue}>{criticalCount}</div>
+            <div className={styles.statLabel}>Critical alerts</div>
+          </div>
+          <div className={`${styles.statCard} ${styles.statAtRisk}`}>
+            <div className={styles.statIcon}><CurrencyDollar size={18} weight="fill" /></div>
+            <div className={styles.statValue}>{fmtDollars(atRiskValue)}</div>
+            <div className={styles.statLabel}>At risk</div>
+          </div>
+          <div className={`${styles.statCard} ${styles.statMeetings}`}>
+            <div className={styles.statIcon}><CalendarCheck size={18} weight="fill" /></div>
+            <div className={styles.statValue}>{meetingCount}</div>
+            <div className={styles.statLabel}>Meetings today</div>
+          </div>
+          <div className={`${styles.statCard} ${styles.statCompleted}`}>
+            <div className={styles.statIcon}><Lightning size={18} weight="fill" /></div>
+            <div className={styles.statValue}>{completedToday}</div>
+            <div className={styles.statLabel}>Completed</div>
+          </div>
+        </div>
 
         {b.priorityAlerts && b.priorityAlerts.length > 0 && (
           <div className={styles.section}>
@@ -48,7 +72,7 @@ export function DailyBriefing() {
             <div className={styles.alertList}>
               {b.priorityAlerts.map((a, i) => (
                 <div key={i} className={styles.alertItem}>
-                  <span className={styles.alertDot} style={{ background: severityColor[a.severity] || '#7c7c7c' }} />
+                  <span className={styles.alertDot} style={{ background: a.severity === 'critical' ? '#ff0000' : a.severity === 'opportunity' ? '#77469b' : '#7c7c7c' }} />
                   <div className={styles.alertInfo}>
                     <span className={styles.alertTitle}>{a.title}</span>
                     <span className={styles.alertMeta}>{a.value} · {a.verb}</span>
@@ -63,7 +87,7 @@ export function DailyBriefing() {
         {b.upcomingMeetings && b.upcomingMeetings.length > 0 && (
           <div className={styles.section}>
             <div className={styles.sectionLabel}>
-              <CalendarBlank size={12} /> Upcoming meetings
+              <CalendarBlank size={12} /> Meetings
             </div>
             <div className={styles.meetingList}>
               {b.upcomingMeetings.map((m, i) => (
@@ -89,15 +113,6 @@ export function DailyBriefing() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {b.weeklyStreak && (
-          <div className={styles.section}>
-            <div className={styles.sectionLabel}>
-              <TrendUp size={12} /> 7-day streak
-            </div>
-            <p className={styles.streakText}>{b.weeklyStreak}</p>
           </div>
         )}
 
@@ -155,6 +170,12 @@ export function DailyBriefing() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {b.weeklyStreak && (
+          <div className={styles.streakBar}>
+            <TrendUp size={12} /> {b.weeklyStreak}
           </div>
         )}
 

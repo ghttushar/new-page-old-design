@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { CalendarBlank, ArrowLeft } from '@phosphor-icons/react';
+import { useMemo, useState } from 'react';
+import { CalendarBlank, ArrowLeft, CaretDown, ChatText } from '@phosphor-icons/react';
 import type { Decision } from '@/constants/signals/decisions.constants';
 import { formatValue } from '@/utils/signals/valueFormat';
 import { SourcePill } from './chips/source-pill';
@@ -16,6 +16,14 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
   const alerts = useMemo(() => all.filter((d) => d.meetingRef?.bundleId === bundleId), [all, bundleId]);
   const totalCents = alerts.reduce((n, d) => n + (d.valueKind === 'info' ? 0 : Math.abs(d.valueCents)), 0);
   const totalStr = formatValue({ cents: totalCents, kind: 'gain' });
+  const [briefOpen, setBriefOpen] = useState(false);
+
+  const excerpts = useMemo(() =>
+    alerts
+      .filter((d) => d.meetingRef?.excerpt)
+      .map((d) => d.meetingRef!.excerpt),
+    [alerts],
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -54,6 +62,71 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
           {totalCents > 0 && <span><span style={{ fontWeight: 500, color: '#429488' }}>{totalStr.text}</span> aggregate impact</span>}
         </div>
       </section>
+
+      {excerpts.length > 0 && (
+        <section
+          style={{
+            borderRadius: 12,
+            border: '1px solid #e1e4e8',
+            background: '#fff',
+            overflow: 'hidden',
+          }}
+        >
+          <button
+            onClick={() => setBriefOpen(!briefOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              padding: '12px 16px',
+              border: 'none',
+              background: 'none',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: '#7c7c7c',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ChatText size={12} /> Meeting brief
+            </span>
+            <CaretDown
+              size={12}
+              style={{
+                transition: 'transform 0.2s',
+                transform: briefOpen ? 'rotate(180deg)' : 'rotate(0)',
+              }}
+            />
+          </button>
+          {briefOpen && (
+            <div style={{
+              padding: '0 16px 16px',
+              fontSize: '1.05rem',
+              color: '#474747',
+              lineHeight: 1.6,
+              borderTop: '1px solid #f0f0f0',
+            }}>
+              {excerpts.map((text, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: '10px 0',
+                    borderBottom: i < excerpts.length - 1 ? '1px solid #f0f0f0' : 'none',
+                    fontFamily: "'SF Mono', 'Consolas', monospace",
+                    fontSize: '0.95rem',
+                    color: '#555',
+                  }}
+                >
+                  {text}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section>
         <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>

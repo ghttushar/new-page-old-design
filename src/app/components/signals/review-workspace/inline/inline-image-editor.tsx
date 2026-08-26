@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Check, Sparkle, PaperPlaneTilt, DownloadSimple } from '@phosphor-icons/react';
+import { X, Sparkle, PaperPlaneTilt } from '@phosphor-icons/react';
 import { Button } from '@mui/material';
 import styles from './inline.module.scss';
 
@@ -18,7 +18,6 @@ interface InlineImageEditorProps {
     actionVerb: string;
   };
   onCancel: () => void;
-  onComplete: () => void;
 }
 
 const GENERATED_IMAGES = [
@@ -27,13 +26,7 @@ const GENERATED_IMAGES = [
   '/images/product-sunscreen-2.png',
 ];
 
-const INITIAL_PROMPTS = [
-  'Make the background pure white (#FFFFFF) and remove the mannequin. Keep the ghost mannequin shape so it still looks like someone is wearing it.',
-  'Add soft directional lighting from the top-left and a subtle ground shadow for depth.',
-  'Ensure the image is 2000×2000px, sRGB, under 10MB — ready for Amazon Seller Central upload.',
-];
-
-export function InlineImageEditor({ decision, onCancel, onComplete }: InlineImageEditorProps) {
+export function InlineImageEditor({ decision, onCancel }: InlineImageEditorProps) {
   const [thread, setThread] = useState<ThreadMsg[]>([]);
   const [input, setInput] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -83,13 +76,6 @@ export function InlineImageEditor({ decision, onCancel, onComplete }: InlineImag
     }, 800);
   }
 
-  function handleDownload() {
-    const link = document.createElement('a');
-    link.href = currentImage;
-    link.download = `compliant-image-${Date.now()}.jpg`;
-    link.click();
-  }
-
   return (
     <div className={styles.imageGenSection}>
       <div className={styles.inlineHeader}>
@@ -97,9 +83,6 @@ export function InlineImageEditor({ decision, onCancel, onComplete }: InlineImag
           <Sparkle size={12} weight="fill" /> Jiva generated a compliant image
         </span>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button className={styles.copyBtn} onClick={handleDownload} title="Download image">
-            <DownloadSimple size={14} />
-          </button>
           <button className={styles.cancelBtn} onClick={onCancel}><X size={12} /> Cancel</button>
         </div>
       </div>
@@ -140,14 +123,9 @@ export function InlineImageEditor({ decision, onCancel, onComplete }: InlineImag
           />
           <div className={styles.chatActions}>
             <span className={styles.chatHint}><Sparkle size={10} /> Enter to send · Shift+Enter for new line</span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <Button size="small" variant="text" onClick={send} disabled={!input.trim() || generating} sx={{ fontSize: '1.1rem', textTransform: 'none', gap: 0.5, color: '#7c7c7c' }}>
-                <PaperPlaneTilt size={12} /> Send
-              </Button>
-              <Button size="small" variant="contained" onClick={onComplete} disabled={generating} sx={{ fontSize: '1.1rem', textTransform: 'none', gap: 0.5, background: '#77469b', '&:hover': { background: '#9551ab' } }}>
-                <Check size={12} /> Approve & publish
-              </Button>
-            </div>
+            <Button size="small" variant="text" onClick={send} disabled={!input.trim() || generating} sx={{ fontSize: '1.1rem', textTransform: 'none', gap: 0.5, color: '#7c7c7c' }}>
+              <PaperPlaneTilt size={12} /> Send
+            </Button>
           </div>
         </div>
       </div>

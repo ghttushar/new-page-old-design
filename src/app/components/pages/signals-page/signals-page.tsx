@@ -335,6 +335,8 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
                 onOpenDecision={(id) => {
                   dispatch(setSelectedDecision(id));
                 }}
+                onBack={selectedDecision.meetingRef ? () => dispatch(setSelectedMeeting(selectedDecision.meetingRef!.bundleId)) : undefined}
+                meetingBundleId={selectedDecision.meetingRef?.bundleId}
                 defaultSummaryExpanded={defaultSummaryExpanded}
               />
             ) : selectedMeetingBundle ? (
