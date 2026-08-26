@@ -106,7 +106,7 @@ export class ReviewErrorBoundary extends Component<{ children: ReactNode; fallba
 export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision, defaultSummaryExpanded }: Props) {
   const dispatch = useDispatch();
   const [discuss, setDiscuss] = useState(false);
-  const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | null>(null);
+  const [inlineDraft, setInlineDraft] = useState<{ kind: 'email'; strategyTitle: string; draft: EmailDraft } | { kind: 'chat'; strategyTitle: string; title: string; approveLabel: string; approveSuccess: string; draft: string; showApprove?: boolean } | { kind: 'image'; strategyTitle: string } | null>(null);
   const [transitional, setTransitional] = useState<'loading-email' | 'loading-chat' | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const [summaryExpanded, setSummaryExpanded] = useState(defaultSummaryExpanded ?? false);
@@ -187,7 +187,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
     if (!d || !selectedStrategy || executed) return;
     const shortId = selectedStrategy.id.split(':').pop() ?? '';
 
-    const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'recommended' || shortId === 'draft-ticket' || shortId === 'review-cost' || shortId === 'custom';
+    const isInlineDraftAction = shortId === 'notify-vm' || shortId === 'recommended' || shortId === 'draft-ticket' || shortId === 'review-cost' || shortId === 'custom' || shortId === 'image-gen';
 
     if (isInlineDraftAction) {
       if (shortId === 'notify-vm' || shortId === 'recommended') {
@@ -224,6 +224,15 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
           });
           setTransitional(null);
         }, 600);
+      } else if (shortId === 'image-gen') {
+        setTransitional('loading-chat');
+        setTimeout(() => {
+          setInlineDraft({
+            kind: 'image',
+            strategyTitle: selectedStrategy.title,
+          });
+          setTransitional(null);
+        }, 600);
       }
       return;
     }
@@ -244,7 +253,7 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   function completeInlineDraft() {
     if (!inlineDraft) return;
     const strategyTitle = inlineDraft.strategyTitle;
-    const verifyMsg = inlineDraft.kind === 'email' ? 'Email sent. Jiva is monitoring for a reply.' : 'Draft approved. Jiva is tracking follow-up.';
+    const verifyMsg = inlineDraft.kind === 'email' ? 'Email sent. Jiva is monitoring for a reply.' : inlineDraft.kind === 'image' ? 'Image published to Seller Central. Jiva is monitoring re-indexing.' : 'Draft approved. Jiva is tracking follow-up.';
     setInlineDraft(null);
     setTransitional(null);
     dispatch(approveDecision(d!.id));
@@ -416,11 +425,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
               </div>
             )}
 
-            {/* Image Generation Editor - for non-compliant image alerts */}
-            {d && (d.id === 'd-image-gen-main-mannequin' || d.id === 'd-meet-staples-image' || d.actionVerb === 'Generate compliant image') && (
-              <InlineImageEditor decision={{ id: d.id, insight: d.insight, valueCaption: d.valueCaption, actionVerb: d.actionVerb }} />
-            )}
-
             {/* AI Summary (collapsible) */}
             {d.detailSections && d.detailSections.filter((s) => s.heading === 'AI Summary').length > 0 && (
               <div className={styles.collapsibleSection}>
@@ -447,11 +451,22 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
             {transitional ? (
               <div className={styles.transitionLoading}>
                 <div className={styles.loadingPulse} />
-                <span className={styles.loadingLabel}>Preparing {transitional === 'loading-email' ? 'email draft' : 'ticket draft'}…</span>
+                <span className={styles.loadingLabel}>Preparing {transitional === 'loading-email' ? 'email draft' : transitional === 'loading-chat' ? 'chat' : 'image generation'}…</span>
               </div>
             ) : inlineDraft ? (
               inlineDraft.kind === 'email' ? (
                 <InlineEmailCompose initial={inlineDraft.draft} onCancel={() => setInlineDraft(null)} onSent={completeInlineDraft} />
+              ) : inlineDraft.kind === 'image' ? (
+                <InlineImageEditor
+                  decision={{
+                    id: d!.id,
+                    insight: d!.insight,
+                    valueCaption: d!.valueCaption,
+                    actionVerb: d!.actionVerb,
+                  }}
+                  onCancel={() => setInlineDraft(null)}
+                  onComplete={completeInlineDraft}
+                />
               ) : (
                 <InlineDraftChat
                   title={inlineDraft.title}
@@ -471,17 +486,6 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
               </div>
             )}
 
-            {/* Image Generation Editor - shown when 'Generate compliant image' strategy is selected */}
-            {selectedStrategyId?.endsWith(':image-gen') && (
-              <InlineImageEditor
-                decision={{
-                  id: d.id,
-                  insight: d.insight,
-                  valueCaption: d.valueCaption,
-                  actionVerb: d.actionVerb,
-                }}
-              />
-            )}
           </>
         )}
       </div>
