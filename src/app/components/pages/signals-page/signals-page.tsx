@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from './signals-page.module.scss';
 import { DecisionCard } from '../../signals/decision-card/decision-card';
-import { ReviewWorkspace } from '../../signals/review-workspace/review-workspace';
+import { ReviewWorkspace, ReviewErrorBoundary } from '../../signals/review-workspace/review-workspace';
 import { EmptyState } from '../../signals/empty-state/empty-state';
 import { DailyBriefing } from '../../signals/daily-briefing/daily-briefing';
 import { BulkBar } from '../../signals/bulk-bar';
@@ -321,27 +321,34 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
 
         {/* Right: Workspace or Briefing */}
         <div className={`${styles.rightCol} ${selectedDecision || selectedMeetingBundle ? styles.rightColVisible : ''}`}>
-          {selectedDecision ? (
-            <ReviewWorkspace
-              decision={selectedDecision}
-              decisions={activeDecisions}
-              onClose={() => dispatch(setSelectedDecision(null))}
-              onOpenDecision={(id) => {
-                dispatch(setSelectedDecision(id));
-              }}
-              defaultSummaryExpanded={defaultSummaryExpanded}
-            />
-          ) : selectedMeetingBundle ? (
-            <MeetingReviewView
-              bundleId={selectedMeetingBundle.bundleId}
-              bundleTitle={selectedMeetingBundle.title}
-              all={activeDecisions}
-              onOpen={(id) => dispatch(setSelectedDecision(id))}
-              onBack={() => dispatch(setSelectedMeeting(null))}
-            />
-          ) : (
-            <DailyBriefing />
-          )}
+          <ReviewErrorBoundary fallback={
+            <div style={{ padding: 32, textAlign: 'center', color: '#7c7c7c' }}>
+              <p>Something went wrong loading this view.</p>
+              <button onClick={() => { dispatch(setSelectedDecision(null)); dispatch(setSelectedMeeting(null)); }} style={{ marginTop: 12, padding: '6px 16px', borderRadius: 8, border: '1px solid #e1e4e8', background: '#fff', cursor: 'pointer' }}>Go back</button>
+            </div>
+          }>
+            {selectedDecision ? (
+              <ReviewWorkspace
+                decision={selectedDecision}
+                decisions={activeDecisions}
+                onClose={() => dispatch(setSelectedDecision(null))}
+                onOpenDecision={(id) => {
+                  dispatch(setSelectedDecision(id));
+                }}
+                defaultSummaryExpanded={defaultSummaryExpanded}
+              />
+            ) : selectedMeetingBundle ? (
+              <MeetingReviewView
+                bundleId={selectedMeetingBundle.bundleId}
+                bundleTitle={selectedMeetingBundle.title}
+                all={activeDecisions}
+                onOpen={(id) => dispatch(setSelectedDecision(id))}
+                onBack={() => dispatch(setSelectedMeeting(null))}
+              />
+            ) : (
+              <DailyBriefing />
+            )}
+          </ReviewErrorBoundary>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, Component, type ReactNode } from 'react';
 import { X, Check, Prohibit, ArrowElbowDownLeft, ArrowCounterClockwise, CaretDown } from '@phosphor-icons/react';
 import styles from './review-workspace.module.scss';
 import type { Decision } from '@/constants/signals/decisions.constants';
@@ -96,6 +96,12 @@ Tushar`,
 Want me to proceed with the escalation, or would you like me to dig deeper into any specific aspect?`,
   },
 };
+
+export class ReviewErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
+}
 
 export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDecision, defaultSummaryExpanded }: Props) {
   const dispatch = useDispatch();

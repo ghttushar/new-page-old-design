@@ -54,6 +54,7 @@ export interface Decision {
 
 const HOUR = 60 * 60 * 1000;
 const MIN = 60 * 1000;
+const DAY = 86400000;
 const now = Date.now();
 
 function todayAt(hour: number, minute = 0): number {
@@ -66,7 +67,7 @@ export const MOCK_DECISIONS: Decision[] = [
   {
     id: 'd-realloc-winter',
     source: 'anarix',
-    sourceRef: { label: 'Campaign agent · Winter Push', ts: now - 45 * MIN },
+    sourceRef: { label: 'Campaign agent · Winter Push', ts: now - 2 * DAY - 3 * HOUR },
     valueCents: 482_000,
     valueKind: 'gain',
     cadence: 'monthly',
@@ -81,8 +82,8 @@ export const MOCK_DECISIONS: Decision[] = [
     domain: 'campaign',
     severity: 'critical',
     status: 'open',
-    createdAt: now - 45 * MIN,
-    updatedAt: now - 45 * MIN,
+    createdAt: now - 2 * DAY - 3 * HOUR,
+    updatedAt: now - 2 * DAY - 3 * HOUR,
     evidence: { kind: 'delta', delta: { beforeLabel: 'Winter TACoS', before: 25.4, afterLabel: 'Launch S4 TACoS', after: 12.1, unit: '%' } },
     steps: [
       { label: 'Pause Winter Push', etaSec: 4, why: 'Stops the bleed before the budget shift lands.' },
@@ -94,7 +95,7 @@ export const MOCK_DECISIONS: Decision[] = [
   {
     id: 'd-relist-skux',
     source: 'meeting',
-    sourceRef: { label: 'Staples QBR · Q4 Planning', ts: now - 2 * HOUR },
+    sourceRef: { label: 'Staples QBR · Q4 Planning', ts: now - 1 * DAY - 2 * HOUR },
     valueCents: 1_200_000,
     valueKind: 'at_risk',
     valueCaption: 'buyer commit at risk',
@@ -108,8 +109,8 @@ export const MOCK_DECISIONS: Decision[] = [
     domain: 'retail',
     severity: 'critical',
     status: 'open',
-    createdAt: now - 2 * HOUR,
-    updatedAt: now - 2 * HOUR,
+    createdAt: now - 1 * DAY - 2 * HOUR,
+    updatedAt: now - 1 * DAY - 2 * HOUR,
     meetingRef: {
       bundleId: 'mtg-staples-qbr',
       title: 'Staples QBR - Q4 Planning',
@@ -210,7 +211,7 @@ export const MOCK_DECISIONS: Decision[] = [
   {
     id: 'd-profit-margin',
     source: 'anarix',
-    sourceRef: { label: 'Profitability agent · margin report', ts: now - 3 * HOUR },
+    sourceRef: { label: 'Profitability agent · margin report', ts: now - 4 * DAY - 3 * HOUR },
     valueCents: 780_000,
     valueKind: 'gain',
     cadence: 'monthly',
@@ -223,8 +224,8 @@ export const MOCK_DECISIONS: Decision[] = [
     domain: 'profitability',
     severity: 'opportunity',
     status: 'open',
-    createdAt: now - 3 * HOUR,
-    updatedAt: now - 3 * HOUR,
+    createdAt: now - 4 * DAY - 3 * HOUR,
+    updatedAt: now - 4 * DAY - 3 * HOUR,
     evidence: { kind: 'delta', delta: { beforeLabel: 'Current margin', before: 399, afterLabel: 'Projected margin', after: 429, unit: '¢/unit' } },
     steps: [
       { label: 'Update price to $4.29', etaSec: 3, why: 'Sets the new price on Amazon.' },
@@ -335,7 +336,7 @@ export const MOCK_DECISIONS: Decision[] = [
   {
     id: 'd-walmart-expansion',
     source: 'meeting',
-    sourceRef: { label: 'Walmart QBR · Q4 planning', ts: now - 4 * HOUR },
+    sourceRef: { label: 'Walmart QBR · Q4 planning', ts: now - 3 * DAY - 4 * HOUR },
     valueCents: 2_400_000,
     valueKind: 'gain',
     cadence: 'monthly',
@@ -348,8 +349,8 @@ export const MOCK_DECISIONS: Decision[] = [
     domain: 'retail',
     severity: 'opportunity',
     status: 'open',
-    createdAt: now - 4 * HOUR,
-    updatedAt: now - 4 * HOUR,
+    createdAt: now - 3 * DAY - 4 * HOUR,
+    updatedAt: now - 3 * DAY - 4 * HOUR,
     meetingRef: {
       bundleId: 'mtg-walmart-qbr',
       title: 'Walmart QBR - Q4 Planning',

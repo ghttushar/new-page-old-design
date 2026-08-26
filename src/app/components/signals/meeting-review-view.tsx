@@ -12,7 +12,7 @@ interface Props {
   onBack?: () => void;
 }
 
-export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen }: Props) {
+export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }: Props) {
   const alerts = useMemo(() => all.filter((d) => d.meetingRef?.bundleId === bundleId), [all, bundleId]);
   const totalCents = alerts.reduce((n, d) => n + (d.valueKind === 'info' ? 0 : Math.abs(d.valueCents)), 0);
   const totalStr = formatValue({ cents: totalCents, kind: 'gain' });
