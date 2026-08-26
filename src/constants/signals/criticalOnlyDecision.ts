@@ -9,7 +9,7 @@ export const CRITICAL_ONLY_DECISION: Decision = {
   valueCents: 5658,
   valueKind: 'at_risk',
   cadence: 'monthly',
-  valueCaption: 'revenue at risk · Opportunity Window: 30 Days',
+  valueCaption: '$56.58 at risk · 30-day recovery window',
   valueBasis: 'Amazon flagged advertising eligibility with a warning on ASIN B0CH3HSSLZ (Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct) on 2026-07-18. The warning is still active as of 2026-07-22. The cause is vendor cost-to-Amazon being too high for Amazon to hit its target retail price, not a catalog or inventory issue.',
   insight: 'ASIN B0CH3HSSLZ · Crazy Cups Decaf Island Rum Coconut K-Cups, 22ct · advertising eligibility flagged with warning',
   insightDetail: 'Advertising eligibility flagged with warning on 2026-07-18. Status confirmed still open as of 2026-07-22 (ELIGIBLE_WITH_WARNING — not yet fully blocked). Vendor cost-to-Amazon is too high for Amazon to hit its target retail price. List price has stayed flat at $18.47 since the alert — no cost reduction submitted yet.',
@@ -34,7 +34,7 @@ export const CRITICAL_ONLY_DECISION: Decision = {
   detailSections: [
     {
       heading: 'Business Impact',
-      content: `Opportunity Window: 30 Days
+      content: `Recovery window: 30 days
 Estimated Units at Risk: ~3 units
 Estimated Revenue at Risk: $56.58
 Inventory Available: 81 Units (+148 on open PO)

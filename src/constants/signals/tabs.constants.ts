@@ -1,12 +1,13 @@
 import type { Decision } from './decisions.constants';
 
-export type AlertTabKey = 'unread' | 'meetings' | 'fyi' | 'read';
+export type AlertTabKey = 'unread' | 'meetings' | 'fyi' | 'read' | 'completed';
 
 export const ALERT_TABS: { key: AlertTabKey; label: string }[] = [
   { key: 'unread', label: 'Unread' },
   { key: 'meetings', label: 'From Meetings' },
   { key: 'fyi', label: 'FYI' },
   { key: 'read', label: 'Read' },
+  { key: 'completed', label: 'Completed' },
 ];
 
 function isDone(d: Decision): boolean {
@@ -30,6 +31,7 @@ export function filterByTab(all: Decision[], tab: AlertTabKey): Decision[] {
   if (tab === 'read') return all.filter(isDone);
   if (tab === 'meetings') return all.filter((d) => isMeeting(d) && !isDone(d));
   if (tab === 'fyi') return all.filter(isFyi);
+  if (tab === 'completed') return all.filter((d) => d.status === 'completed');
   return all.filter((d) => !isDone(d));
 }
 
@@ -39,5 +41,6 @@ export function computeTabCounts(all: Decision[]): Record<AlertTabKey, number> {
     meetings: filterByTab(all, 'meetings').length,
     fyi: filterByTab(all, 'fyi').length,
     read: filterByTab(all, 'read').length,
+    completed: filterByTab(all, 'completed').length,
   };
 }

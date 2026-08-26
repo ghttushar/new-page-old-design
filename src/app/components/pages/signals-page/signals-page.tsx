@@ -233,7 +233,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
             />
 
             {isEmpty ? (
-              <EmptyState variant={isSearchEmpty ? 'search' : tab === 'read' ? 'none' : 'needs_me'} />
+              <EmptyState variant={isSearchEmpty ? 'search' : tab === 'read' || tab === 'completed' ? 'none' : 'needs_me'} />
             ) : isMeetingsTab ? (
               <div className={styles.meetingList}>
                 {meetingGroups.map((m) => (
