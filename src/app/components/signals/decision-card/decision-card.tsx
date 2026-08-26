@@ -27,7 +27,6 @@ interface DecisionCardProps {
   decision: Decision;
   selected: boolean;
   onSelect: () => void;
-  onApprove?: (id: string) => void;
 }
 
 const SNOOZE_MS: Record<string, number> = {
@@ -42,7 +41,20 @@ function actionDays(id: string): number {
   return (Math.abs(h) % 4) + 1;
 }
 
-export function DecisionCard({ decision: d, selected, onSelect, onApprove }: DecisionCardProps) {
+const SEVERITY_CLASS: Record<string, string> = {
+  critical: styles.severityCritical,
+  opportunity: styles.severityOpportunity,
+  fyi: styles.severityFyi,
+};
+
+const VALUE_KIND_CLASS: Record<string, string> = {
+  at_risk: styles.valueAtRisk,
+  gain: styles.valueGain,
+  cost: styles.valueCost,
+  info: styles.valueInfo,
+};
+
+export function DecisionCard({ decision: d, selected, onSelect }: DecisionCardProps) {
   const dispatch = useDispatch();
   const isDone = d.status === 'completed' || d.status === 'rejected' || d.status === 'in_flight' || d.status === 'with_aan';
   const f = formatValue({ cents: d.valueCents, kind: d.valueKind, cadence: d.cadence });
@@ -81,12 +93,15 @@ export function DecisionCard({ decision: d, selected, onSelect, onApprove }: Dec
 
   return (
     <div
-      className={`${styles.decisionCard} ${selected ? styles.selected : ''} ${isDone ? styles.done : ''}`}
+      className={`${styles.decisionCard} ${selected ? styles.selected : ''} ${isDone ? styles.done : ''} ${SEVERITY_CLASS[d.severity] || ''}`}
       onClick={onSelect}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
     >
       {selected && <span className={styles.selectedBar} />}
       <div className={styles.cardBody}>
-        <div className={styles.valueHeadline}>{f.text}</div>
+        <div className={`${styles.valueHeadline} ${VALUE_KIND_CLASS[d.valueKind] || ''}`}>{f.text}</div>
         <div className={styles.valueCaption}>{d.valueCaption}</div>
         <div className={styles.actionDeadline}><Timer size={10} /> Take action within {actionDays(d.id)} days</div>
         <div className={styles.insight}>{d.insight}</div>

@@ -3,6 +3,7 @@ import { Funnel } from '@phosphor-icons/react';
 import type { DecisionSource } from '@/utils/signals/sourceRegistry';
 import { SOURCE_REGISTRY } from '@/utils/signals/sourceRegistry';
 import type { DecisionDomain } from '@/constants/signals/decisions.constants';
+import s from './filter-sheet.module.scss';
 
 export interface FilterState {
   sources: Set<DecisionSource>;
@@ -51,9 +52,17 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
     return n;
   };
 
-  const apply = () => { onChange(draft); setOpen(false); };
+  const apply = () => {
+    onChange(draft);
+    setOpen(false);
+  };
+
   const reset = () => {
-    const e = { ...EMPTY_FILTER, sources: new Set<DecisionSource>(), domains: new Set<DecisionDomain>() };
+    const e: FilterState = {
+      ...EMPTY_FILTER,
+      sources: new Set<DecisionSource>(),
+      domains: new Set<DecisionDomain>(),
+    };
     setDraft(e);
     onChange(e);
     setOpen(false);
@@ -62,7 +71,12 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node) && btnRef.current && !btnRef.current.contains(e.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(e.target as Node) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -75,109 +89,98 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
   }, [open, value]);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={s.wrapper}>
       <button
         ref={btnRef}
+        className={s.toggleBtn}
         onClick={() => setOpen((o) => !o)}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4, height: '3.2rem',
-          padding: '0 20px', borderRadius: 8, border: '1px solid #d0d3d9',
-          background: '#fff', color: '#7c7c7c', fontSize: '1.2rem', cursor: 'pointer',
-        }}
       >
         <Funnel size={16} /> Filter
         {activeCategory && activeCategory !== '__all__' && (
-          <span style={{ marginLeft: 2, borderRadius: 8, background: 'rgba(119,70,155,0.1)', color: '#77469b', fontSize: '0.85rem', fontWeight: 500, padding: '0 5px', lineHeight: '14px' }}>
-            {activeCategory}
-          </span>
+          <span className={s.badge}>{activeCategory}</span>
         )}
         {activeCount > 0 && (
-          <span style={{ marginLeft: 2, borderRadius: 999, background: '#77469b', color: '#fff', fontSize: '0.85rem', fontWeight: 600, padding: '0 5px', lineHeight: '14px' }}>
-            {activeCount}
-          </span>
+          <span className={s.count}>{activeCount}</span>
         )}
       </button>
 
       {open && (
-        <div
-          ref={panelRef}
-          style={{
-            position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 100,
-            width: 380, maxHeight: '70vh', overflow: 'auto',
-            background: '#fff', border: '1px solid #e1e4e8', borderRadius: 12,
-            boxShadow: '0 12px 40px -8px rgba(0,0,0,0.18)',
-          }}
-        >
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #e1e4e8' }}>
-            <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600, color: '#23272d' }}>Narrow the list</h3>
+        <div ref={panelRef} className={s.panel}>
+          <div className={s.panelHeader}>
+            <h3 className={s.panelTitle}>Narrow the list</h3>
           </div>
 
-          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className={s.panelBody}>
             <section>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Source</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                {Object.values(SOURCE_REGISTRY).map((s) => {
-                  const on = draft.sources.has(s.key);
+              <div className={s.sectionLabel}>Source</div>
+              <div className={s.checkboxGrid}>
+                {Object.values(SOURCE_REGISTRY).map((src) => {
+                  const on = draft.sources.has(src.key);
                   return (
-                    <button
-                      key={s.key}
-                      onClick={() => setDraft((d) => ({ ...d, sources: toggle(d.sources, s.key) }))}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 8,
-                        border: on ? '1px solid rgba(119,70,155,0.35)' : '1px solid #e1e4e8',
-                        background: on ? 'rgba(119,70,155,0.04)' : 'transparent',
-                        color: on ? '#77469b' : '#474747',
-                        fontSize: '1rem', cursor: 'pointer', textAlign: 'left',
-                      }}
+                    <label
+                      key={src.key}
+                      className={`${s.checkboxItem}${on ? ` ${s.active}` : ''}`}
                     >
-                      <span style={{ width: 14, height: 14, borderRadius: 3, border: on ? '2px solid #77469b' : '1px solid #d1d5db', background: on ? '#77469b' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {on && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+                      <input
+                        type="checkbox"
+                        className={s.hiddenInput}
+                        checked={on}
+                        onChange={() =>
+                          setDraft((d) => ({
+                            ...d,
+                            sources: toggle(d.sources, src.key),
+                          }))
+                        }
+                      />
+                      <span className={`${s.checkMark}${on ? ` ${s.active}` : ''}`}>
+                        {on && <span className={s.checkIcon}>✓</span>}
                       </span>
-                      {s.label}
-                    </button>
+                      {src.label}
+                    </label>
                   );
                 })}
               </div>
             </section>
 
             <section>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Area</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+              <div className={s.sectionLabel}>Area</div>
+              <div className={s.pillGrid}>
                 {DOMAINS.map((d) => {
                   const on = draft.domains.has(d.key);
                   return (
-                    <button
+                    <label
                       key={d.key}
-                      onClick={() => setDraft((s) => ({ ...s, domains: toggle(s.domains, d.key) }))}
-                      style={{
-                        padding: '5px 8px', borderRadius: 8,
-                        border: on ? '1px solid rgba(119,70,155,0.35)' : '1px solid #e1e4e8',
-                        background: on ? 'rgba(119,70,155,0.04)' : 'transparent',
-                        color: on ? '#77469b' : '#474747',
-                        fontSize: '1rem', cursor: 'pointer', textAlign: 'left',
-                      }}
+                      className={`${s.checkboxItem}${on ? ` ${s.active}` : ''}`}
                     >
+                      <input
+                        type="checkbox"
+                        className={s.hiddenInput}
+                        checked={on}
+                        onChange={() =>
+                          setDraft((s) => ({
+                            ...s,
+                            domains: toggle(s.domains, d.key),
+                          }))
+                        }
+                      />
+                      <span className={`${s.checkMark}${on ? ` ${s.active}` : ''}`}>
+                        {on && <span className={s.checkIcon}>✓</span>}
+                      </span>
                       {d.label}
-                    </button>
+                    </label>
                   );
                 })}
               </div>
             </section>
 
             <section>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Time window</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              <div className={s.sectionLabel}>Time window</div>
+              <div className={s.pillWrap}>
                 {WINDOWS.map((w) => (
                   <button
                     key={w.key}
+                    className={`${s.pill}${draft.window === w.key ? ` ${s.active}` : ''}`}
                     onClick={() => setDraft((d) => ({ ...d, window: w.key }))}
-                    style={{
-                      padding: '4px 10px', borderRadius: 8,
-                      border: draft.window === w.key ? '1px solid rgba(119,70,155,0.35)' : '1px solid #e1e4e8',
-                      background: draft.window === w.key ? 'rgba(119,70,155,0.04)' : 'transparent',
-                      color: draft.window === w.key ? '#77469b' : '#474747',
-                      fontSize: '1rem', cursor: 'pointer',
-                    }}
                   >
                     {w.label}
                   </button>
@@ -186,9 +189,13 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
             </section>
           </div>
 
-          <div style={{ padding: '12px 20px', borderTop: '1px solid #e1e4e8', display: 'flex', justifyContent: 'space-between' }}>
-            <button onClick={reset} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1rem', color: '#7c7c7c' }}>Reset</button>
-            <button onClick={apply} style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: '#77469b', color: '#fff', fontSize: '1rem', cursor: 'pointer' }}>Apply</button>
+          <div className={s.panelFooter}>
+            <button className={s.resetBtn} onClick={reset}>
+              Reset
+            </button>
+            <button className={s.applyBtn} onClick={apply}>
+              Apply
+            </button>
           </div>
         </div>
       )}

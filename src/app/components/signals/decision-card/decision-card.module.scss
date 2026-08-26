@@ -6,6 +6,7 @@
   gap: $spacing-12;
   background: $foreground-color;
   border: 1px solid transparent;
+  border-left: 3px solid transparent;
   border-radius: 1.2rem;
   padding: $spacing-12 $spacing-16;
   margin-bottom: $spacing-10;
@@ -15,12 +16,18 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
 
   &:hover {
-    border-color: transparent;
-    box-shadow: 0 4px 12px rgba($primary-color, 0.1), 0 1px 3px rgba($primary-color, 0.06);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba($primary-color, 0.1), 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 
   &.selected {
     border: 1px solid transparent;
+    border-left: 3px solid transparent;
     box-shadow: 0 0 0 1px rgba($primary-color, 0.25), 0 8px 24px rgba($primary-color, 0.12);
 
     .selectedBar {
@@ -40,6 +47,38 @@
   }
 }
 
+// ---------- Severity left-border accents ----------
+
+.severityCritical {
+  border-left-color: #ef4444;
+}
+
+.severityOpportunity {
+  border-left-color: $primary-color;
+}
+
+.severityFyi {
+  border-left-color: $sub-text-4;
+}
+
+// ---------- Value headline colors ----------
+
+.valueAtRisk {
+  color: #d97706;
+}
+
+.valueGain {
+  color: #059669;
+}
+
+.valueCost {
+  color: #ea580c;
+}
+
+.valueInfo {
+  color: $main-text;
+}
+
 .cardBody {
   flex: 1;
   min-width: 0;
@@ -51,6 +90,7 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   font-family: 'Inter', sans-serif;
+  transition: color 0.15s ease;
 }
 
 .valueCaption {
@@ -66,6 +106,9 @@
   font-size: $font-size-9;
   color: $sub-text-3;
   margin-top: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  background: rgba($sub-text-4, 0.06);
 }
 
 .insight {
@@ -124,12 +167,17 @@
   color: $foreground-color;
   border: none;
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: all 0.15s ease;
   white-space: nowrap;
 
   &:hover {
     background: $primary-color-variant-1;
     box-shadow: 0 2px 8px rgba($primary-color, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 

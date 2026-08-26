@@ -1,0 +1,250 @@
+@use '@/assets/styles/variables/variables' as *;
+
+.wrapper {
+  position: relative;
+}
+
+/* ── Toggle button ── */
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-4;
+  height: 3.2rem;
+  padding: 0 $spacing-20;
+  border-radius: 8px;
+  border: 1px solid $border-color-4;
+  background: $foreground-color;
+  color: $sub-text-3;
+  font-size: $font-size-12;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba($primary-color, 0.08);
+  }
+}
+
+.badge {
+  margin-left: $spacing-2;
+  border-radius: 8px;
+  background: rgba($primary-color, 0.1);
+  color: $primary-color;
+  font-size: $font-size-9;
+  font-weight: $font-weight-500;
+  padding: 0 5px;
+  line-height: 14px;
+}
+
+.count {
+  margin-left: $spacing-2;
+  border-radius: 999px;
+  background: $primary-color;
+  color: $foreground-color;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  padding: 0 5px;
+  line-height: 14px;
+}
+
+/* ── Panel ── */
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 100;
+  width: 100%;
+  max-width: 380px;
+  min-width: 280px;
+  max-height: 70vh;
+  overflow: auto;
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.18);
+
+  /* slide + fade animation */
+  opacity: 0;
+  transform: translateY(-8px);
+  animation: slideIn 0.18s ease forwards;
+
+  @media (max-width: 420px) {
+    right: -8px;
+  }
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panelHeader {
+  padding: $spacing-16 $spacing-20;
+  border-bottom: 1px solid $border-color-4;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: $font-size-12;
+  font-weight: $font-weight-600;
+  color: $main-text;
+}
+
+.panelBody {
+  padding: $spacing-16 $spacing-20;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-20;
+}
+
+/* ── Section headings ── */
+.sectionLabel {
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  color: $sub-text-3;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: $spacing-8;
+}
+
+/* ── Checkbox grid ── */
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+/* ── Individual checkbox item (used for Source) ── */
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid $border-color-4;
+  background: transparent;
+  color: $sub-text;
+  font-size: $font-size-10;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    border-color: rgba($primary-color, 0.25);
+    background: rgba($primary-color, 0.02);
+  }
+
+  &.active {
+    border-color: rgba($primary-color, 0.35);
+    background: rgba($primary-color, 0.04);
+    color: $primary-color;
+  }
+}
+
+/* hidden native checkbox — visually replaced */
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* custom check mark */
+.checkMark {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid $border-color-3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.12s ease, background 0.12s ease;
+
+  .checkboxItem.active & {
+    border-color: $primary-color;
+    background: $primary-color;
+  }
+}
+
+.checkIcon {
+  color: $foreground-color;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* ── Simple pill toggle (Area / Time window) ── */
+.pillGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.pillWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid $border-color-4;
+  background: transparent;
+  color: $sub-text;
+  font-size: $font-size-10;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    border-color: rgba($primary-color, 0.25);
+    background: rgba($primary-color, 0.02);
+  }
+
+  &.active {
+    border-color: rgba($primary-color, 0.35);
+    background: rgba($primary-color, 0.04);
+    color: $primary-color;
+  }
+}
+
+/* ── Footer ── */
+.panelFooter {
+  padding: $spacing-12 $spacing-20;
+  border-top: 1px solid $border-color-4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resetBtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: $font-size-10;
+  color: $sub-text-3;
+
+  &:hover {
+    color: $primary-color;
+  }
+}
+
+.applyBtn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  background: $primary-color;
+  color: $foreground-color;
+  font-size: $font-size-10;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: $primary-color-variant-1;
+  }
+}
