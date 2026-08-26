@@ -225,6 +225,19 @@
   color: $main-text;
 }
 
+.sourceIcon {
+  display: flex;
+  align-items: center;
+  color: $sub-text-3;
+}
+
+.priorityDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 // ---------- Segmented time control ----------
 
 .segmentedControl {

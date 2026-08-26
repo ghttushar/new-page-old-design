@@ -27,6 +27,7 @@ import {
   clearSelection,
   setFilterSources,
   setFilterDomains,
+  setFilterPriorities,
   setFilterWindow,
 } from '@/redux/slices/signals/signals.slice';
 import type { Decision } from '@/constants/signals/decisions.constants';
@@ -127,6 +128,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
   const [filterState, setFilterState] = useState<FilterState>({
     sources: new Set(),
     domains: new Set(),
+    priorities: new Set(),
     window: 'any',
   });
 
@@ -148,6 +150,9 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
     }
     if (filterState.domains.size > 0) {
       result = result.filter((d) => filterState.domains.has(d.domain));
+    }
+    if (filterState.priorities.size > 0) {
+      result = result.filter((d) => filterState.priorities.has(d.severity));
     }
     if (filterState.window !== 'any') {
       const now = Date.now();
@@ -269,6 +274,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
               setFilterState(f);
               dispatch(setFilterSources([...f.sources]));
               dispatch(setFilterDomains([...f.domains]));
+              dispatch(setFilterPriorities([...f.priorities]));
               dispatch(setFilterWindow(f.window));
             }}
             activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}

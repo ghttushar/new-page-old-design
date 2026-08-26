@@ -34,7 +34,7 @@
   height: 1.4rem;
   padding: 0 0.5rem;
   border-radius: 1rem;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: $font-weight-500;
   background: rgba($primary-color, 0.08);
   border: 1px solid rgba($primary-color, 0.18);
@@ -42,7 +42,7 @@
 }
 
 .greeting {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   line-height: 1.2;
   font-weight: 600;
   color: $main-text;
@@ -51,9 +51,89 @@
 }
 
 .dateline {
-  font-size: $font-size-10;
+  font-size: 1.1rem;
   color: $sub-text-3;
   margin-top: 2px;
+}
+
+// ---------- Revenue card ----------
+
+.revenueCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  padding: $spacing-10 $spacing-12;
+  margin-bottom: $spacing-8;
+  border-radius: 0.8rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.revenueIcon {
+  color: #10b981;
+  flex-shrink: 0;
+  size: 20px;
+}
+
+.revenueInfo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.revenueAmount {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #059669;
+  line-height: 1;
+}
+
+.revenueLabel {
+  font-size: 1rem;
+  color: $sub-text-2;
+}
+
+// ---------- Streak card ----------
+
+.streakCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  padding: $spacing-4 $spacing-10;
+  margin-bottom: $spacing-8;
+  border-radius: 0.8rem;
+  background: rgba($sub-text-4, 0.03);
+  border: 1px solid rgba($border-color-4, 0.4);
+}
+
+.streakIcon {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.streakDots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.streakDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba($sub-text-4, 0.15);
+  transition: all 0.15s;
+}
+
+.streakDotActive {
+  background: #f59e0b;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+.streakLabel {
+  font-size: 1rem;
+  color: $sub-text-2;
+  font-weight: $font-weight-500;
 }
 
 // ---------- Compact stat row ----------
@@ -87,7 +167,7 @@
 }
 
 .statChipValue {
-  font-size: $font-size-12;
+  font-size: 1.3rem;
   font-weight: $font-weight-700;
   color: $main-text;
   font-family: 'Inter', sans-serif;
@@ -122,6 +202,11 @@
 }
 
 // ---------- Collapsible sections ----------
+
+.sectionLabel {
+  font-size: 1rem;
+  color: $sub-text-2;
+}
 
 .sections {
   display: flex;
@@ -162,7 +247,7 @@
   align-items: center;
   gap: $spacing-4;
   color: $sub-text-2;
-  font-size: $font-size-10;
+  font-size: 1.1rem;
 }
 
 .accordionOpen .accordionLeft {
@@ -183,7 +268,7 @@
   border-radius: 999px;
   background: rgba($sub-text-4, 0.1);
   color: $sub-text-3;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: $font-weight-600;
 }
 
@@ -248,7 +333,7 @@
 
 .alertTitle {
   display: block;
-  font-size: $font-size-10;
+  font-size: 1.15rem;
   font-weight: $font-weight-500;
   color: $main-text;
   white-space: nowrap;
@@ -258,7 +343,7 @@
 
 .alertMeta {
   display: block;
-  font-size: $font-size-9;
+  font-size: 1rem;
   color: $sub-text-3;
   margin-top: 1px;
 }
@@ -281,13 +366,13 @@
 }
 
 .meetingTitle {
-  font-size: $font-size-10;
+  font-size: 1.1rem;
   font-weight: $font-weight-500;
   color: $main-text;
 }
 
 .meetingCount {
-  font-size: $font-size-9;
+  font-size: 1rem;
   color: $sub-text-3;
 }
 
@@ -303,7 +388,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
-  font-size: $font-size-10;
+  font-size: 1.1rem;
   color: $sub-text-2;
   line-height: 1.4;
 }
@@ -345,7 +430,7 @@
   padding: 0.4rem 0.6rem;
   cursor: pointer;
   width: 100%;
-  font-size: $font-size-10;
+  font-size: 1.1rem;
   color: $main-text;
 }
 
@@ -358,7 +443,7 @@
 
 .todoDue {
   margin-left: auto;
-  font-size: $font-size-9;
+  font-size: 1rem;
   color: $sub-text-3;
   font-weight: 500;
 }
@@ -384,7 +469,7 @@
 }
 
 .pendingTask {
-  font-size: $font-size-10;
+  font-size: 1.1rem;
   color: $main-text;
   flex: 1;
 }
@@ -393,7 +478,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: $font-size-9;
+  font-size: 1rem;
   color: $sub-text-3;
 }
 
@@ -403,12 +488,12 @@
   font-weight: 500;
   background: rgba($primary-color, 0.08);
   color: $primary-color;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 .pendingSince {
   color: $sub-text-3;
-  font-size: $font-size-9;
+  font-size: 1rem;
 }
 
 // ---------- Overnight ----------
@@ -426,7 +511,7 @@
 }
 
 .overnightChange {
-  font-size: $font-size-10;
+  font-size: 1.1rem;
   font-weight: $font-weight-500;
   color: $main-text;
   margin-bottom: 2px;
@@ -436,7 +521,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: $font-size-9;
+  font-size: 1rem;
   color: $sub-text-3;
 }
 
@@ -451,126 +536,6 @@
   font-weight: 500;
   background: rgba($primary-color, 0.08);
   color: $primary-color;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   text-transform: capitalize;
-}
-
-// ---------- Gamification footer ----------
-
-.gamificationFooter {
-  margin-top: $spacing-12;
-  padding-top: $spacing-12;
-  border-top: 1px solid rgba($border-color-4, 0.5);
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-4;
-}
-
-.revenueCard {
-  display: flex;
-  align-items: center;
-  gap: $spacing-8;
-  padding: $spacing-4 $spacing-10;
-  border-radius: 0.8rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(16, 185, 129, 0.02));
-  border: 1px solid rgba(16, 185, 129, 0.15);
-}
-
-.revenueIcon {
-  color: #10b981;
-  flex-shrink: 0;
-}
-
-.revenueInfo {
-  display: flex;
-  align-items: baseline;
-  gap: 0.3rem;
-}
-
-.revenueAmount {
-  font-size: $font-size-14;
-  font-weight: $font-weight-700;
-  color: #059669;
-}
-
-.revenueLabel {
-  font-size: $font-size-9;
-  color: $sub-text-3;
-}
-
-.streakCard {
-  display: flex;
-  align-items: center;
-  gap: $spacing-8;
-  padding: $spacing-4 $spacing-10;
-  border-radius: 0.8rem;
-  background: rgba($sub-text-4, 0.03);
-  border: 1px solid rgba($border-color-4, 0.4);
-}
-
-.streakIcon {
-  color: #f59e0b;
-  flex-shrink: 0;
-}
-
-.streakDots {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.streakDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba($sub-text-4, 0.15);
-  transition: all 0.15s;
-}
-
-.streakDotActive {
-  background: #f59e0b;
-  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
-}
-
-.streakLabel {
-  font-size: $font-size-9;
-  color: $sub-text-2;
-  font-weight: $font-weight-500;
-}
-
-.weeklyCard {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: $spacing-4 $spacing-10;
-  border-radius: 0.8rem;
-  background: rgba($sub-text-4, 0.03);
-  border: 1px solid rgba($border-color-4, 0.4);
-}
-
-.weeklyStat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  padding: 0 $spacing-4;
-}
-
-.weeklyValue {
-  font-size: $font-size-12;
-  font-weight: $font-weight-700;
-  color: $main-text;
-}
-
-.weeklyLabel {
-  font-size: 0.7rem;
-  color: $sub-text-3;
-  margin-top: 1px;
-}
-
-.weeklyDivider {
-  width: 1px;
-  height: 2rem;
-  background: rgba($border-color-4, 0.6);
-  flex-shrink: 0;
 }

@@ -85,6 +85,36 @@ export function DailyBriefing() {
           <p className={styles.dateline}>{b.dateline}</p>
         </div>
 
+        {/* Revenue protected — prominent */}
+        {b.monthlyRevenueProtected !== undefined && b.monthlyRevenueProtected > 0 && (
+          <div className={styles.revenueCard}>
+            <TrendUp size={20} weight="fill" className={styles.revenueIcon} />
+            <div className={styles.revenueInfo}>
+              <span className={styles.revenueAmount}>{fmtDollars(b.monthlyRevenueProtected)}</span>
+              <span className={styles.revenueLabel}>protected this month</span>
+            </div>
+          </div>
+        )}
+
+        {/* Streak dots */}
+        {b.streakDays && b.streakDays.length > 0 && (
+          <div className={styles.streakCard}>
+            <Flame size={14} weight="fill" className={styles.streakIcon} />
+            <div className={styles.streakDots}>
+              {b.streakDays.map((day, i) => (
+                <div
+                  key={i}
+                  className={`${styles.streakDot} ${day.active ? styles.streakDotActive : ''}`}
+                  title={`${day.label}${day.active ? ' ✓' : ''}`}
+                />
+              ))}
+            </div>
+            <span className={styles.streakLabel}>
+              {b.streakDays.filter((d) => d.active).length} day streak
+            </span>
+          </div>
+        )}
+
         {/* Compact stat row — 4 in one row */}
         <div className={styles.statRow}>
           <div className={`${styles.statChip} ${styles.statCritical}`}>
@@ -221,59 +251,6 @@ export function DailyBriefing() {
                 ))}
               </div>
             </CollapsibleSection>
-          )}
-        </div>
-
-        {/* Gamification footer */}
-        <div className={styles.gamificationFooter}>
-          {/* Revenue protected */}
-          {b.monthlyRevenueProtected !== undefined && b.monthlyRevenueProtected > 0 && (
-            <div className={styles.revenueCard}>
-              <TrendUp size={14} weight="fill" className={styles.revenueIcon} />
-              <div className={styles.revenueInfo}>
-                <span className={styles.revenueAmount}>{fmtDollars(b.monthlyRevenueProtected)}</span>
-                <span className={styles.revenueLabel}>protected this month</span>
-              </div>
-            </div>
-          )}
-
-          {/* Streak */}
-          {b.streakDays && b.streakDays.length > 0 && (
-            <div className={styles.streakCard}>
-              <Flame size={14} weight="fill" className={styles.streakIcon} />
-              <div className={styles.streakDots}>
-                {b.streakDays.map((day, i) => (
-                  <div
-                    key={i}
-                    className={`${styles.streakDot} ${day.active ? styles.streakDotActive : ''}`}
-                    title={`${day.label}${day.active ? ' ✓' : ''}`}
-                  />
-                ))}
-              </div>
-              <span className={styles.streakLabel}>
-                {b.streakDays.filter((d) => d.active).length} day streak
-              </span>
-            </div>
-          )}
-
-          {/* Weekly summary */}
-          {b.weeklySummary && (
-            <div className={styles.weeklyCard}>
-              <div className={styles.weeklyStat}>
-                <span className={styles.weeklyValue}>{b.weeklySummary.resolvedCount}</span>
-                <span className={styles.weeklyLabel}>resolved</span>
-              </div>
-              <div className={styles.weeklyDivider} />
-              <div className={styles.weeklyStat}>
-                <span className={styles.weeklyValue}>{fmtDollars(b.weeklySummary.revenueProtected)}</span>
-                <span className={styles.weeklyLabel}>protected</span>
-              </div>
-              <div className={styles.weeklyDivider} />
-              <div className={styles.weeklyStat}>
-                <span className={styles.weeklyValue}>{b.weeklySummary.onTimeRate}%</span>
-                <span className={styles.weeklyLabel}>on-time</span>
-              </div>
-            </div>
           )}
         </div>
       </div>

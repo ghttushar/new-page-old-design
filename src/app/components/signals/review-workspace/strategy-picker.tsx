@@ -1,4 +1,5 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { PencilSimple } from '@phosphor-icons/react';
 import type { Strategy } from '@/utils/signals/strategies';
 import styles from './strategy-picker.module.scss';
 
@@ -13,6 +14,17 @@ interface Props {
 
 export function StrategyPicker({ strategies, selectedId, onSelect, customValue, onCustomChange, onCustomSubmit }: Props) {
   const listRef = useRef<HTMLUListElement>(null);
+  const [showCustomFor, setShowCustomFor] = useState<Record<string, boolean>>({});
+
+  const handleToggleCustom = useCallback((id: string) => {
+    setShowCustomFor((prev) => {
+      const isOpen = prev[id];
+      if (isOpen) return { ...prev, [id]: false };
+      const next: Record<string, boolean> = {};
+      next[id] = true;
+      return next;
+    });
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLUListElement>) => {
@@ -63,11 +75,13 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
       {strategies.map((s) => {
         const active = s.id === selectedId;
         const isCustom = s.id.endsWith(':custom');
+        const customVisible = showCustomFor[s.id] && active && !isCustom;
 
         const btnClass = [
           styles.optionBtn,
           active && styles.optionBtnActive,
           active && isCustom && styles.optionBtnCustomActive,
+          active && customVisible && styles.optionBtnCustomActive,
         ]
           .filter(Boolean)
           .join(' ');
@@ -111,7 +125,41 @@ export function StrategyPicker({ strategies, selectedId, onSelect, customValue, 
                       }}
                     />
                   ) : (
-                    <div className={styles.detail}>{s.detail}</div>
+                    <>
+                      <div className={styles.detail}>{s.detail}</div>
+                      {!isCustom && (
+                        <button
+                          type="button"
+                          className={styles.customLink}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleCustom(s.id);
+                            if (!active) onSelect(s.id);
+                          }}
+                        >
+                          <PencilSimple size="0.85rem" weight="regular" />
+                          Write custom instruction
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {customVisible && (
+                    <div className={styles.customInputWrap}>
+                      <input
+                        autoFocus
+                        value={customValue ?? ''}
+                        onChange={(e) => onCustomChange?.(e.target.value)}
+                        placeholder="Type your instruction for Jiva…"
+                        className={styles.customInput}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey && customValue?.trim()) {
+                            e.preventDefault();
+                            onCustomSubmit?.();
+                          }
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

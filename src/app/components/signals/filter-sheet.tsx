@@ -1,19 +1,30 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Check, Funnel } from '@phosphor-icons/react';
+import { X, Check, Funnel, Lightning, Robot, CalendarBlank, ChatCircle, Users, Envelope } from '@phosphor-icons/react';
 import type { DecisionSource } from '@/utils/signals/sourceRegistry';
 import { SOURCE_REGISTRY } from '@/utils/signals/sourceRegistry';
-import type { DecisionDomain } from '@/constants/signals/decisions.constants';
+import type { DecisionDomain, DecisionSeverity } from '@/constants/signals/decisions.constants';
 import s from './filter-sheet.module.scss';
+
+const SOURCE_ICONS: Record<DecisionSource, React.ReactNode> = {
+  anarix: <Lightning size={14} weight="fill" />,
+  aan: <Robot size={14} weight="fill" />,
+  meeting: <CalendarBlank size={14} weight="fill" />,
+  slack: <ChatCircle size={14} weight="fill" />,
+  teams: <Users size={14} weight="fill" />,
+  email: <Envelope size={14} weight="fill" />,
+};
 
 export interface FilterState {
   sources: Set<DecisionSource>;
   domains: Set<DecisionDomain>;
+  priorities: Set<DecisionSeverity>;
   window: 'any' | 'today' | 'yesterday' | 'week';
 }
 
 export const EMPTY_FILTER: FilterState = {
   sources: new Set(),
   domains: new Set(),
+  priorities: new Set(),
   window: 'any',
 };
 
@@ -24,6 +35,12 @@ const DOMAINS: { key: DecisionDomain; label: string }[] = [
   { key: 'inventory', label: 'Inventory' },
   { key: 'cs', label: 'Customer service' },
   { key: 'buyer', label: 'Buyer / Accounts' },
+];
+
+const PRIORITIES: { key: DecisionSeverity; label: string; color: string }[] = [
+  { key: 'critical', label: 'Critical', color: '#ef4444' },
+  { key: 'opportunity', label: 'Opportunity', color: '#77469b' },
+  { key: 'fyi', label: 'FYI', color: '#7c7c7c' },
 ];
 
 const WINDOWS: { key: FilterState['window']; label: string }[] = [
@@ -62,6 +79,7 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
       ...EMPTY_FILTER,
       sources: new Set<DecisionSource>(),
       domains: new Set<DecisionDomain>(),
+      priorities: new Set<DecisionSeverity>(),
     };
     setDraft(e);
     onChange(e);
@@ -145,6 +163,7 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
                     <span className={`${s.checkMark} ${on ? s.checkMarkActive : ''}`}>
                       {on && <Check size={10} weight="bold" />}
                     </span>
+                    <span className={s.sourceIcon}>{SOURCE_ICONS[src.key]}</span>
                     <span className={s.checkboxLabel}>{src.label}</span>
                   </label>
                 );
@@ -188,6 +207,29 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
 
           <div className={s.divider} />
 
+          {/* Priority */}
+          <section className={s.section}>
+            <div className={s.sectionLabel}>Priority</div>
+            <div className={s.checkboxList}>
+              {PRIORITIES.map((p) => {
+                const on = draft.priorities.has(p.key);
+                return (
+                  <label key={p.key} className={`${s.checkboxItem} ${on ? s.checkboxItemActive : ''}`}>
+                    <input type="checkbox" className={s.hiddenInput} checked={on}
+                      onChange={() => setDraft(d => ({ ...d, priorities: toggle(d.priorities, p.key) }))} />
+                    <span className={`${s.checkMark} ${on ? s.checkMarkActive : ''}`}>
+                      {on && <Check size={10} weight="bold" />}
+                    </span>
+                    <span className={s.priorityDot} style={{ background: p.color }} />
+                    <span className={s.checkboxLabel}>{p.label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </section>
+
+          <div className={s.divider} />
+
           {/* Time window */}
           <section className={s.section}>
             <div className={s.sectionLabel}>Time window</div>
@@ -215,5 +257,5 @@ export function FilterSheet({ value, onChange, activeCount, activeCategory }: Pr
 }
 
 export function countActiveFilters(f: FilterState): number {
-  return f.sources.size + f.domains.size + (f.window !== 'any' ? 1 : 0);
+  return f.sources.size + f.domains.size + f.priorities.size + (f.window !== 'any' ? 1 : 0);
 }

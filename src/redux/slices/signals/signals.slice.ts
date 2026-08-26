@@ -23,6 +23,7 @@ export interface SignalsState {
   selectedIds: string[];
   filterSources: string[];
   filterDomains: string[];
+  filterPriorities: string[];
   filterWindow: 'any' | 'today' | 'yesterday' | 'week';
   /** Undo bookkeeping — remembers previous status so we can roll back within 30s. */
   _undoMap: Record<string, { prevStatus: DecisionStatus; timerId: ReturnType<typeof setTimeout> }>;
@@ -39,6 +40,7 @@ const initialState: SignalsState = {
   selectedIds: [],
   filterSources: [],
   filterDomains: [],
+  filterPriorities: [],
   filterWindow: 'any',
   _undoMap: {},
 };
@@ -97,6 +99,9 @@ export const SignalsSlice = createSlice({
     },
     setFilterDomains: (state, action: PayloadAction<string[]>) => {
       state.filterDomains = action.payload;
+    },
+    setFilterPriorities: (state, action: PayloadAction<string[]>) => {
+      state.filterPriorities = action.payload;
     },
     setFilterWindow: (state, action: PayloadAction<'any' | 'today' | 'yesterday' | 'week'>) => {
       state.filterWindow = action.payload;
@@ -163,6 +168,7 @@ export const {
   clearSelection,
   setFilterSources,
   setFilterDomains,
+  setFilterPriorities,
   setFilterWindow,
   approveDecision,
   rejectDecision,
@@ -184,6 +190,7 @@ export const selectActiveCategoryKey = (state: IRootState) => state.signals.acti
 export const selectSelectedIds = (state: IRootState) => state.signals.selectedIds;
 export const selectFilterSources = (state: IRootState) => state.signals.filterSources;
 export const selectFilterDomains = (state: IRootState) => state.signals.filterDomains;
+export const selectFilterPriorities = (state: IRootState) => state.signals.filterPriorities;
 export const selectFilterWindow = (state: IRootState) => state.signals.filterWindow;
 
 const signalsReducer = SignalsSlice.reducer;
