@@ -13,14 +13,17 @@
   width: 100%;
   text-align: left;
   border-radius: 1rem;
-  border: none;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
   background: transparent;
-  padding: $spacing-10 $spacing-16;
+  padding: $spacing-12 $spacing-16;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 
   &:hover {
     background: rgba($primary-color, 0.03);
+    border-color: rgba($border-color-4, 0.5);
+    border-left-color: transparent;
   }
 
   &:focus-visible {
@@ -30,15 +33,17 @@
 }
 
 .optionBtnActive {
-  background: rgba($primary-color-tint-1, 0.8);
+  background: rgba($primary-color, 0.06);
+  border-color: rgba($primary-color, 0.2);
+  border-left-color: $primary-color;
 
   &:hover {
-    background: rgba($primary-color-tint-1, 0.9);
+    background: rgba($primary-color, 0.10);
   }
 }
 
 .optionBtnCustomActive {
-  padding: $spacing-10 $spacing-16 $spacing-16;
+  padding: $spacing-12 $spacing-16 $spacing-16;
 }
 
 .row {
@@ -48,7 +53,7 @@
 }
 
 .radio {
-  margin-top: 0.3rem;
+  margin-top: 0.25rem;
   width: 1.6rem;
   height: 1.6rem;
   border-radius: 50%;
@@ -57,11 +62,25 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border 0.15s;
+  transition: all 0.15s ease;
+
+  &::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: $primary-color;
+    transition: all 0.15s ease;
+  }
 }
 
 .radioActive {
-  border: 5px solid $primary-color;
+  border-color: $primary-color;
+
+  &::after {
+    width: 8px;
+    height: 8px;
+  }
 }
 
 .content {
@@ -92,9 +111,9 @@
 }
 
 .detail {
-  margin-top: 0.3rem;
+  margin-top: $spacing-4;
   font-size: $font-size-10;
-  line-height: 1.5;
+  line-height: 1.6;
   color: $sub-text-2;
 }
 

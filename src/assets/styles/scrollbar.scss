@@ -78,3 +78,39 @@ $scrollbar-thumb-end-color: #c0c0c0;
     width: auto; // Ensures the vertical scrollbar is not affected
   }
 }
+
+// ---------- Thin scrollbar for modern panels ----------
+
+$thin-scrollbar-width: 4px;
+
+@mixin thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+  &::-webkit-scrollbar {
+    width: $thin-scrollbar-width;
+    height: $thin-scrollbar-width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+    transition: background 0.2s;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.28);
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}

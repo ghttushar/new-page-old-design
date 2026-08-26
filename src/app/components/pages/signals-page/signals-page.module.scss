@@ -1,4 +1,5 @@
 @import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/scrollbar.scss';
 
 .signalsPage {
   padding: $spacing-12;
@@ -122,6 +123,7 @@
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  @include thin-scrollbar();
 }
 
 .categorySection {
@@ -138,6 +140,7 @@
   min-height: 0;
   overflow-y: auto;
   height: 100%;
+  @include thin-scrollbar();
 }
 
 .rightColVisible {

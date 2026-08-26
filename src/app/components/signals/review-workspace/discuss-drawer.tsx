@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, PaperPlaneTilt, Sparkle } from '@phosphor-icons/react';
 import { Drawer, Button } from '@mui/material';
 import type { Decision } from '@/constants/signals/decisions.constants';
+import styles from './discuss-drawer.module.scss';
 
 interface Msg {
   who: 'user' | 'aan';
@@ -103,7 +104,7 @@ export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
         </button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className={styles.chatScroll}>
         {msgs.length === 0 && !typing && (
           <div style={{ fontSize: '1.1rem', color: '#9a9a9a', textAlign: 'center', padding: '24px 0' }}>
             Ask me anything about this decision — assumptions, tradeoffs, alternatives, or evidence.

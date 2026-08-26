@@ -1,0 +1,12 @@
+@import 'src/assets/styles/variables/variables.scss';
+@import 'src/assets/styles/scrollbar.scss';
+
+.chatScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-10 $spacing-12;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-8;
+  @include thin-scrollbar();
+}
