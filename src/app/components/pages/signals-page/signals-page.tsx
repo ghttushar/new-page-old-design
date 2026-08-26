@@ -284,6 +284,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
               bundleTitle={selectedMeetingBundle.title}
               all={activeDecisions}
               onOpen={(id) => dispatch(setSelectedDecision(id))}
+              onBack={() => dispatch(setSelectedMeeting(null))}
             />
           ) : (
             <DailyBriefing />

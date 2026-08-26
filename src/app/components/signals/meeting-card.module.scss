@@ -1,0 +1,85 @@
+.hostTooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #7c7c7c;
+  cursor: help;
+  transition: all 0.12s;
+
+  &:hover {
+    background: rgba(119, 70, 155, 0.1);
+    color: #77469b;
+  }
+}
+
+.tooltipContent {
+  position: fixed;
+  z-index: 1000;
+  min-width: 180px;
+  max-width: 280px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  animation: tooltipFadeIn 0.15s ease-out;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.attendeeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  color: #23272d;
+  border-bottom: 1px solid #f0f1f3;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  span:first-child {
+    font-weight: 500;
+    color: #23272d;
+  }
+
+  span:last-child {
+    font-size: 0.8rem;
+    color: #7c7c7c;
+    font-style: italic;
+  }
+}
+
+.hostTooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #7c7c7c;
+  cursor: help;
+  transition: all 0.12s;
+
+  &:hover {
+    background: rgba(119, 70, 155, 0.1);
+    color: #77469b;
+  }
+}

@@ -164,5 +164,25 @@ export function strategiesFor(d: Decision): Strategy[] {
     steps: [{ label: 'Jiva executes within policy' }, { label: 'Notifies you only on exceptions' }],
   });
 
+  if (d.actionVerb === 'Generate compliant image') {
+    alternatives.push({
+      id: `${d.id}:image-gen`,
+      title: 'Generate compliant image',
+      detail: 'Jiva generates 3 compliant image variants (pure white background, no mannequin). You select, edit, and publish directly to Seller Central.',
+      valueCents: d.valueCents,
+      valueKind: d.valueKind,
+      cadence: d.cadence,
+      confidence: 'high',
+      risk: 'low',
+      reversibility: 'reversible',
+      execution: 'opens image editor',
+      steps: [
+        { label: 'Jiva generates 3 compliant variants (pure white, no mannequin)' },
+        { label: 'You select, edit prompt if needed, and approve' },
+        { label: 'Upload to Seller Central → verify re-indexing in 30-60 min' },
+      ],
+    });
+  }
+
   return [primary, ...alternatives];
 }

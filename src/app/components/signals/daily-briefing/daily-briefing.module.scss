@@ -242,3 +242,153 @@
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba($border-color-4, 0.4);
 }
+
+// ---------- Morning-only sections ----------
+
+.todoList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.todoItem {
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba($border-color-4, 0.4);
+  transition: all 0.12s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: $primary-color;
+  }
+}
+
+.todoLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  width: 100%;
+  font-size: $font-size-10;
+  color: $main-text;
+}
+
+.todoCheckbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: $primary-color;
+  flex-shrink: 0;
+}
+
+.todoDue {
+  margin-left: auto;
+  font-size: $font-size-9;
+  color: $sub-text-3;
+  font-weight: 500;
+}
+
+.pendingList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pendingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba($border-color-4, 0.4);
+  transition: all 0.12s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: $positive-color;
+  }
+}
+
+.pendingTask {
+  font-size: $font-size-10;
+  color: $main-text;
+  flex: 1;
+}
+
+.pendingMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: $font-size-9;
+  color: $sub-text-3;
+}
+
+.pendingSource {
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.4rem;
+  font-weight: 500;
+  background: rgba($primary-color, 0.1);
+  color: $primary-color;
+  font-size: $font-size-9;
+}
+
+.pendingSince {
+  color: $sub-text-3;
+  font-size: $font-size-9;
+}
+
+.overnightList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.overnightItem {
+  padding: 0.8rem 1rem;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba($border-color-4, 0.4);
+  transition: all 0.12s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: $primary-color;
+  }
+}
+
+.overnightChange {
+  font-size: $font-size-10;
+  font-weight: 500;
+  color: $main-text;
+  margin-bottom: 0.2rem;
+}
+
+.overnightMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: $font-size-9;
+  color: $sub-text-3;
+}
+
+.overnightImpact {
+  font-weight: 500;
+  color: $sub-text-2;
+}
+
+.overnightType {
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.4rem;
+  font-weight: 500;
+  background: rgba($primary-color, 0.1);
+  color: $primary-color;
+  font-size: $font-size-9;
+  text-transform: capitalize;
+}

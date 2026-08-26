@@ -8,7 +8,6 @@ import { relationshipsFor } from '@/utils/signals/relationships';
 import { useDispatch } from 'react-redux';
 import { approveDecision, delegateToAan, rejectDecision, snoozeDecision, rollbackDecision } from '@/redux/slices/signals/signals.slice';
 import { StrategyPicker } from './strategy-picker';
-import { RelatedDecisionChip } from './related-decision-chip';
 import { AssignMenu } from './assign-menu';
 import { DiscussDrawer } from './discuss-drawer';
 import { InlineEmailCompose, type EmailDraft } from './inline/inline-email-compose';
@@ -466,18 +465,16 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
               </div>
             )}
 
-            {/* Related signals */}
-            {relationships.length > 0 && (
-              <div className={styles.accordions}>
-                <div className={styles.accordionHeader}>Related signals · {relationships.length}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {relationships.map((r) => {
-                    const other = allDecisions.find((x) => x.id === r.otherId);
-                    if (!other) return null;
-                    return <RelatedDecisionChip key={r.otherId + r.type} decision={other} type={r.type} onOpen={(id) => onOpenDecision?.(id)} />;
-                  })}
-                </div>
-              </div>
+            {/* Image Generation Editor - shown when 'Generate compliant image' strategy is selected */}
+            {selectedStrategyId?.endsWith(':image-gen') && (
+              <InlineImageEditor
+                decision={{
+                  id: d.id,
+                  insight: d.insight,
+                  valueCaption: d.valueCaption,
+                  actionVerb: d.actionVerb,
+                }}
+              />
             )}
           </>
         )}

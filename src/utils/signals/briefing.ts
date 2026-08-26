@@ -15,6 +15,24 @@ export interface UpcomingMeeting {
   signalCount: number;
 }
 
+export interface TodoItem {
+  task: string;
+  from: 'meeting' | 'alert' | 'manual';
+  due?: string;
+}
+
+export interface PendingItem {
+  task: string;
+  from: 'meeting' | 'alert';
+  since: string;
+}
+
+export interface OvernightChange {
+  change: string;
+  impact: string;
+  type: 'new_alert' | 'status_change' | 'value_change';
+}
+
 export interface Briefing {
   slot: BriefingSlot;
   greeting: string;
@@ -25,6 +43,9 @@ export interface Briefing {
   upcomingMeetings?: UpcomingMeeting[];
   aanActivity?: string[];
   weeklyStreak?: string;
+  todoToday?: TodoItem[];
+  pendingYesterday?: PendingItem[];
+  overnightChanges?: OvernightChange[];
 }
 
 function slotOf(hours = new Date().getHours()): BriefingSlot {
@@ -32,6 +53,105 @@ function slotOf(hours = new Date().getHours()): BriefingSlot {
   if (hours < 17) return 'afternoon';
   if (hours < 20) return 'evening';
   return 'end_of_day';
+}
+
+function formatTimeAgo(ts: number): string {
+  const diff = Date.now() - ts;
+  const hrs = diff / 3_600_000;
+  if (hrs < 1) return `${Math.max(1, Math.round(diff / 60_000))}m ago`;
+  if (hrs < 24) return `${Math.round(hrs)}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
+function isOvernight(ts: number): boolean {
+  const date = new Date(ts);
+  const hrs = date.getHours();
+  return hrs >= 0 && hrs < 6;
+}
+
+function formatDateForPending(ts: number): string {
+  const date = new Date(ts);
+  const today = new Date();
+  const yesterday = new Date(today.getTime() - 24 * 3_600_000);
+  if (ts > Date.now() - 24 * 3_600_000) return 'Today';
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return `${date.getMonth() + 1}/${date.getDate()}`;
+}
+
+function buildTodoToday(decisions: Decision[]): { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] {
+  const today = new Date().toDateString();
+  const items: { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] = [];
+
+  decisions.forEach((d) => {
+    if (d.status !== 'open') return;
+    const createdToday = new Date(d.createdAt).toDateString() === new Date().toDateString();
+    const updatedToday = new Date(d.updatedAt).toDateString() === new Date().toDateString();
+
+    if (d.meetingRef && (createdToday || updatedToday)) {
+      items.push({
+        task: d.actionVerb || d.insight.slice(0, 60),
+        from: 'meeting',
+        due: 'EOD',
+      });
+    } else if (createdToday || updatedToday) {
+      items.push({
+        task: d.actionVerb || d.insight.slice(0, 60),
+        from: 'alert',
+        due: 'EOD',
+      });
+    }
+  });
+
+  if (items.length === 0) {
+    items.push({ task: 'Review open decisions and prioritize', from: 'manual', due: 'EOD' });
+  }
+
+  return items.slice(0, 5);
+}
+
+function buildPendingYesterday(decisions: Decision[]): { task: string; from: 'meeting' | 'alert'; since: string }[] {
+  const yesterday = new Date(Date.now() - 24 * 3_600_000).toDateString();
+  const items: { task: string; from: 'meeting' | 'alert'; since: string }[] = [];
+
+  decisions.forEach((d) => {
+    if (d.status !== 'open') return;
+    const updatedYesterday = new Date(d.updatedAt).toDateString() === new Date(Date.now() - 24 * 3_600_000).toDateString();
+    const createdBeforeYesterday = new Date(d.createdAt).toDateString() < new Date().toDateString();
+
+    if (updatedYesterday || (d.meetingRef && new Date(d.createdAt).toDateString() <= new Date(Date.now() - 24 * 3_600_000).toDateString())) {
+      items.push({
+        task: d.actionVerb || d.insight.slice(0, 60),
+        from: d.meetingRef ? 'meeting' : 'alert',
+        since: formatDateForPending(d.updatedAt),
+      });
+    }
+  });
+
+  return items.slice(0, 5);
+}
+
+function buildOvernightChanges(decisions: Decision[]): { change: string; impact: string; type: 'new_alert' | 'status_change' | 'value_change' }[] {
+  const items: { change: string; impact: string; type: 'new_alert' | 'status_change' | 'value_change' }[] = [];
+
+  decisions.forEach((d) => {
+    if (!isOvernight(d.createdAt) && !isOvernight(d.updatedAt)) return;
+
+    if (isOvernight(d.createdAt)) {
+      items.push({
+        change: `New alert: ${d.insight}`,
+        impact: d.valueCaption || 'Pending review',
+        type: 'new_alert',
+      });
+    } else if (isOvernight(d.updatedAt)) {
+      items.push({
+        change: `Status updated: ${d.insight.slice(0, 50)}`,
+        impact: `Status changed`,
+        type: 'status_change',
+      });
+    }
+  });
+
+  return items.slice(0, 5);
 }
 
 function fmtDollars(cents: number): string {
@@ -111,6 +231,9 @@ export function briefingFor(decisions: Decision[]): Briefing {
       upcomingMeetings,
       aanActivity,
       weeklyStreak,
+      todoToday: buildTodoToday(decisions),
+      pendingYesterday: buildPendingYesterday(decisions),
+      overnightChanges: buildOvernightChanges(decisions),
     };
   }
   if (slot === 'afternoon') {
