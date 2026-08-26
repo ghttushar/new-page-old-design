@@ -2,10 +2,10 @@ export type ValueKind = 'gain' | 'cost' | 'at_risk' | 'info';
 export type Cadence = 'one_time' | 'daily' | 'weekly' | 'monthly';
 
 const CADENCE_SUFFIX: Record<Cadence, string> = {
-  one_time: '1×',
-  daily: '/d',
-  weekly: '/wk',
-  monthly: '/mo',
+  one_time: '',
+  daily: '',
+  weekly: '',
+  monthly: '',
 };
 
 function formatMoney(absCents: number): string {
@@ -48,12 +48,10 @@ export function formatValue(input: {
     };
   }
 
-  const sign = kind === 'gain' ? '+' : '−';
-  const suffix = cadence ? ` ${CADENCE_SUFFIX[cadence]}` : '';
   return {
-    text: `${sign} ${money}${suffix}`,
+    text: money,
     kind,
-    ariaLabel: `${kind === 'gain' ? 'Gain' : 'Cost'} ${money}${suffix}`,
+    ariaLabel: `${kind === 'gain' ? 'Gain' : 'Cost'} ${money}`,
   };
 }
 

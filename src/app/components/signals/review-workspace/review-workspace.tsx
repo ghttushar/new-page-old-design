@@ -13,6 +13,7 @@ import { AssignMenu } from './assign-menu';
 import { DiscussDrawer } from './discuss-drawer';
 import { InlineEmailCompose, type EmailDraft } from './inline/inline-email-compose';
 import { InlineDraftChat } from './inline/inline-draft-chat';
+import { InlineImageEditor } from './inline/inline-image-editor';
 import { SnoozeMenu } from '../snooze-menu';
 import { ShareMenu } from '../share-menu';
 import type { SnoozeChoice } from '@/redux/slices/signals/signals.slice';
@@ -408,6 +409,11 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
                     </div>
                   ))}
               </div>
+            )}
+
+            {/* Image Generation Editor - for non-compliant image alerts */}
+            {d && (d.id === 'd-image-gen-main-mannequin' || d.id === 'd-meet-staples-image' || d.actionVerb === 'Generate compliant image') && (
+              <InlineImageEditor decision={{ id: d.id, insight: d.insight, valueCaption: d.valueCaption, actionVerb: d.actionVerb }} />
             )}
 
             {/* AI Summary (collapsible) */}

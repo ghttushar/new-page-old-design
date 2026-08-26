@@ -243,3 +243,238 @@
   font-size: $font-size-9;
   color: $sub-text-3;
 }
+
+// ---------- Image Editor ----------
+
+.imageEditor {
+  border-radius: 1.2rem;
+  border: 1px solid rgba($primary-color, 0.2);
+  background: $foreground-color;
+  overflow: hidden;
+  animation: inlineFadeIn 0.35s ease-out;
+}
+
+.imageCanvas {
+  position: relative;
+  background: #f5f6f7;
+  min-height: 24rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.imageCanvasSelected {
+  outline: 2px solid $primary-color;
+  outline-offset: -2px;
+}
+
+.imagePlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-8;
+  color: $sub-text-3;
+  text-align: center;
+  padding: $spacing-16;
+}
+
+.placeholderIcon {
+  width: 6rem;
+  height: 6rem;
+  color: $sub-text-4;
+}
+
+.placeholderText {
+  font-size: $font-size-10;
+  color: $sub-text-3;
+  max-width: 24rem;
+  line-height: 1.4;
+}
+
+.nonCompliantBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: rgba($error-color, 0.1);
+  color: $error-color;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.variantsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-8;
+  padding: $spacing-12;
+}
+
+.variantCard {
+  position: relative;
+  border-radius: 0.8rem;
+  border: 1px solid rgba($border-color-4, 0.6);
+  background: $foreground-color;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: 0 4px 12px rgba($primary-color, 0.08);
+  }
+
+  &.selected {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px $primary-color, 0 4px 12px rgba($primary-color, 0.12);
+  }
+}
+
+.variantImage {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #f5f6f7;
+}
+
+.variantOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 1;
+
+  .variantCard:hover &,
+  .variantCard.selected & {
+    opacity: 1;
+  }
+}
+
+.variantCheck {
+  width: 2.4rem;
+  height: 2.4rem;
+  color: $foreground-color;
+}
+
+.variantLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-4 $spacing-8;
+  font-size: $font-size-9;
+  font-weight: $font-weight-500;
+  color: $foreground-color;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+}
+
+.imageToolbar {
+  position: absolute;
+  top: $spacing-8;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-4;
+  padding: $spacing-4 $spacing-8;
+  border-radius: 999px;
+  background: $foreground-color;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba($border-color-4, 0.4);
+  z-index: 10;
+  animation: toolbarFadeIn 0.15s ease-out;
+  pointer-events: auto;
+}
+
+@keyframes toolbarFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.toolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: $sub-text-3;
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: $icon-background-color;
+    color: $primary-color;
+  }
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 1.2rem;
+  background: rgba($border-color-4, 0.4);
+  margin: 0 $spacing-2;
+}
+
+.imageInputArea {
+  border-top: 1px solid rgba($border-color-4, 0.4);
+  padding: $spacing-8;
+  background: rgba($background-color, 0.2);
+}
+
+.describeInput {
+  width: 100%;
+  min-height: 4rem;
+  border: 1px solid rgba($border-color-4, 0.4);
+  border-radius: 0.8rem;
+  padding: $spacing-8 $spacing-10;
+  font-size: $font-size-10;
+  font-family: $font-family;
+  color: $main-text;
+  background: $foreground-color;
+  resize: none;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: $sub-text-4;
+  }
+
+  &:focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.12);
+  }
+}
+
+.imageActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-8;
+  padding-top: $spacing-8;
+  border-top: 1px solid rgba($border-color-4, 0.4);
+}
+
+.imageHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: $font-size-9;
+  color: $sub-text-3;
+}
+
+.imageActionsRight {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+}

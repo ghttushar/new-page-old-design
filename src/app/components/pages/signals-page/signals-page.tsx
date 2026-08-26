@@ -10,6 +10,7 @@ import { FilterSheet, countActiveFilters, type FilterState } from '../../signals
 import { MeetingCard } from '../../signals/meeting-card';
 import { MeetingReviewView } from '../../signals/meeting-review-view';
 import { CRITICAL_ONLY_DECISION } from '@/constants/signals/criticalOnlyDecision';
+import { MOCK_DECISIONS } from '@/constants/signals/decisions.constants';
 import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
 import { categorize } from '@/utils/signals/categories';
 import { importanceScore } from '@/utils/signals/lifecycle';
@@ -63,7 +64,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
   const selectedIds = useSelector(selectSelectedIds);
 
   const activeDecisions = useMemo<Decision[]>(
-    () => [CRITICAL_ONLY_DECISION],
+    () => MOCK_DECISIONS,
     [],
   );
 
