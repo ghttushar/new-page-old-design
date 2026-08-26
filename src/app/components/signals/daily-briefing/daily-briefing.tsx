@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { Sun, CloudSun, Moon, SunHorizon, Warning, CurrencyDollar, CalendarCheck, Lightning, WarningCircle, CalendarBlank, Robot, CheckCircle, Clock, Moon as MoonIcon, TrendUp, CaretDown, Flame } from '@phosphor-icons/react';
+import { Sun, CloudSun, Moon, SunHorizon, Warning, CurrencyDollar, CalendarCheck, Lightning, WarningCircle, CalendarBlank, Robot, CheckCircle, Clock, Moon as MoonIcon, TrendUp, CaretDown, Flame, Plus } from '@phosphor-icons/react';
 import styles from './daily-briefing.module.scss';
 import { selectDecisions } from '@/redux/slices/signals/signals.slice';
 import { briefingFor, type BriefingSlot } from '@/utils/signals/briefing';
@@ -24,12 +24,14 @@ function CollapsibleSection({
   label,
   count,
   defaultOpen = false,
+  action,
   children,
 }: {
   icon: React.ReactNode;
   label: string;
   count?: number;
   defaultOpen?: boolean;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -48,10 +50,13 @@ function CollapsibleSection({
             <span className={styles.accordionCount}>{count}</span>
           )}
         </span>
-        <CaretDown
-          size={14}
-          className={`${styles.accordionChevron} ${open ? styles.accordionChevronOpen : ''}`}
-        />
+        <span className={styles.accordionRight}>
+          {action && <span className={styles.accordionAction} onClick={(e) => e.stopPropagation()}>{action}</span>}
+          <CaretDown
+            size={14}
+            className={`${styles.accordionChevron} ${open ? styles.accordionChevronOpen : ''}`}
+          />
+        </span>
       </button>
       {open && (
         <div className={styles.accordionBody}>
@@ -72,6 +77,24 @@ export function DailyBriefing() {
   const atRiskValue = open.reduce((n, d) => n + (d.valueKind === 'at_risk' ? Math.abs(d.valueCents) : 0), 0);
   const meetingCount = new Set(decisions.filter((d) => d.meetingRef).map((d) => d.meetingRef!.bundleId)).size;
   const completedToday = decisions.filter((d) => (d.status === 'completed' || d.status === 'rejected') && new Date(d.updatedAt).toDateString() === new Date().toDateString()).length;
+
+  // Todo items with local state for adding new items
+  const [todoItems, setTodoItems] = useState(
+    () => b.todoToday?.map((t) => ({ ...t, done: false })) ?? []
+  );
+  const [newTodoText, setNewTodoText] = useState('');
+  const [showNewTodo, setShowNewTodo] = useState(false);
+
+  const addTodo = useCallback(() => {
+    if (!newTodoText.trim()) return;
+    setTodoItems((prev) => [...prev, { task: newTodoText.trim(), from: 'manual' as const, due: 'EOD', done: false }]);
+    setNewTodoText('');
+    setShowNewTodo(false);
+  }, [newTodoText]);
+
+  const toggleTodo = useCallback((idx: number) => {
+    setTodoItems((prev) => prev.map((t, i) => i === idx ? { ...t, done: !t.done } : t));
+  }, []);
 
   return (
     <div className={styles.dailyBriefing}>
@@ -157,6 +180,49 @@ export function DailyBriefing() {
             </div>
           </CollapsibleSection>
 
+          {/* Todo today — with + button, after Priority alerts */}
+          <CollapsibleSection
+            icon={<CheckCircle size={13} weight="fill" />}
+            label="Todo today"
+            count={todoItems.length}
+            defaultOpen={true}
+            action={
+              <button
+                className={styles.addTodoBtn}
+                onClick={() => setShowNewTodo(!showNewTodo)}
+                title="Add todo item"
+              >
+                <Plus size={12} weight="bold" />
+              </button>
+            }
+          >
+            {showNewTodo && (
+              <div className={styles.newTodoRow}>
+                <input
+                  autoFocus
+                  value={newTodoText}
+                  onChange={(e) => setNewTodoText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') addTodo(); if (e.key === 'Escape') setShowNewTodo(false); }}
+                  placeholder="Add a task…"
+                  className={styles.newTodoInput}
+                />
+                <button className={styles.newTodoAdd} onClick={addTodo}>Add</button>
+                <button className={styles.newTodoCancel} onClick={() => setShowNewTodo(false)}>×</button>
+              </div>
+            )}
+            <ul className={styles.todoList}>
+              {todoItems.map((t, i) => (
+                <li key={i} className={`${styles.todoItem} ${t.done ? styles.todoDone : ''}`}>
+                  <label className={styles.todoLabel}>
+                    <input type="checkbox" className={styles.todoCheckbox} checked={t.done} onChange={() => toggleTodo(i)} />
+                    <span className={t.done ? styles.todoTextDone : ''}>{t.task}</span>
+                    {t.due && <span className={styles.todoDue}>{t.due}</span>}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </CollapsibleSection>
+
           {/* Meetings */}
           <CollapsibleSection
             icon={<CalendarBlank size={13} weight="fill" />}
@@ -188,28 +254,6 @@ export function DailyBriefing() {
               ))}
             </div>
           </CollapsibleSection>
-
-          {/* Todo today (morning only) */}
-          {b.slot === 'morning' && b.todoToday && b.todoToday.length > 0 && (
-            <CollapsibleSection
-              icon={<CheckCircle size={13} weight="fill" />}
-              label="Todo today"
-              count={b.todoToday.length}
-              defaultOpen={true}
-            >
-              <ul className={styles.todoList}>
-                {b.todoToday.map((t, i) => (
-                  <li key={i} className={styles.todoItem}>
-                    <label className={styles.todoLabel}>
-                      <input type="checkbox" className={styles.todoCheckbox} />
-                      <span>{t.task}</span>
-                      {t.due && <span className={styles.todoDue}>{t.due}</span>}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </CollapsibleSection>
-          )}
 
           {/* Pending from yesterday (morning only) */}
           {b.slot === 'morning' && b.pendingYesterday && b.pendingYesterday.length > 0 && (
