@@ -1,4 +1,5 @@
 import type { Decision } from '@/constants/signals/decisions.constants';
+import { MOCK_MEETING_BUNDLES } from '@/constants/signals/mockMeetings';
 import { formatValue } from './valueFormat';
 
 export type BriefingSlot = 'morning' | 'afternoon' | 'evening' | 'end_of_day';
@@ -252,7 +253,15 @@ export function briefingFor(decisions: Decision[]): Briefing {
     if (existing) existing.signalCount++;
     else meetingMap.set(d.meetingRef.bundleId, { bundleId: d.meetingRef.bundleId, title: d.meetingRef.title, signalCount: 1 });
   }
-  const upcomingMeetings: UpcomingMeeting[] = [...meetingMap.values()].slice(0, 3);
+
+  const todayStr = new Date().toDateString();
+  for (const bundle of MOCK_MEETING_BUNDLES) {
+    if (new Date(bundle.ts).toDateString() !== todayStr) continue;
+    if (meetingMap.has(bundle.id)) continue;
+    meetingMap.set(bundle.id, { bundleId: bundle.id, title: bundle.title, signalCount: 0 });
+  }
+
+  const upcomingMeetings: UpcomingMeeting[] = [...meetingMap.values()].slice(0, 5);
 
   const aanActivity: string[] = inFlight.slice(0, 3).map((d) => {
     if (d.status === 'with_aan') return `Jiva is working on: ${d.insight}`;

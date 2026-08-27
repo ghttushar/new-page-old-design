@@ -187,7 +187,9 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
   const selectedMeetingBundle = useMemo(() => {
     if (!selectedMeetingId) return null;
     const first = activeDecisions.find((d) => d.meetingRef?.bundleId === selectedMeetingId);
-    return first ? { bundleId: selectedMeetingId, title: first.meetingRef!.title } : null;
+    if (first) return { bundleId: selectedMeetingId, title: first.meetingRef!.title };
+    const bundle = MOCK_MEETING_BUNDLES.find((b) => b.id === selectedMeetingId);
+    return bundle ? { bundleId: bundle.id, title: bundle.title } : null;
   }, [activeDecisions, selectedMeetingId]);
 
   const handleSelectDecision = useCallback((id: string) => {
