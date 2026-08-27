@@ -229,64 +229,64 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
 
   return (
     <div className={styles.signalsPage}>
-      {/* Toolbar — two rows */}
-      <div className={styles.toolbar}>
-        {/* Row 1: Tabs */}
-        <div className={styles.toolbarRow}>
-          <nav className={styles.tabBar} role="tablist">
-            {ALERT_TABS.map((t) => {
-              const active = tab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  role="tab"
-                  aria-selected={active}
-                  className={`${styles.tab} ${active ? styles.tabActive : ''}`}
-                  onClick={() => setTab(t.key)}
-                >
-                  {t.label}
-                  {counts[t.key] > 0 && (
-                    <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
-                      {counts[t.key]}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Row 2: Search + Filter */}
-        <div className={styles.toolbarRow}>
-          <div className={styles.searchWrap}>
-            <MagnifyingGlass size={16} className={styles.searchIcon} />
-            <input
-              className={styles.searchInput}
-              placeholder="Search signals, meetings, decisions…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
-          <FilterSheet
-            value={filterState}
-            activeCategory={activeCategoryKey}
-            onChange={(f) => {
-              setFilterState(f);
-              dispatch(setFilterSources([...f.sources]));
-              dispatch(setFilterDomains([...f.domains]));
-              dispatch(setFilterPriorities([...f.priorities]));
-              dispatch(setFilterWindow(f.window));
-            }}
-            activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
-          />
-        </div>
-      </div>
-
       {/* Two-column layout */}
       <div className={styles.layout}>
-        {/* Left: Queue */}
-        <div className={styles.centerCol}>
-          <div className={styles.queueScroll}>
+        {/* Left: Toolbar + Queue */}
+        <div className={styles.leftCol}>
+          <div className={styles.toolbar}>
+            {/* Row 1: Tabs */}
+            <div className={styles.toolbarRow}>
+              <nav className={styles.tabBar} role="tablist">
+                {ALERT_TABS.map((t) => {
+                  const active = tab === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      role="tab"
+                      aria-selected={active}
+                      className={`${styles.tab} ${active ? styles.tabActive : ''}`}
+                      onClick={() => setTab(t.key)}
+                    >
+                      {t.label}
+                      {counts[t.key] > 0 && (
+                        <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
+                          {counts[t.key]}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Row 2: Search + Filter */}
+            <div className={styles.toolbarRow}>
+              <div className={styles.searchWrap}>
+                <MagnifyingGlass size={16} className={styles.searchIcon} />
+                <input
+                  className={styles.searchInput}
+                  placeholder="Search signals, meetings, decisions…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+              <FilterSheet
+                value={filterState}
+                activeCategory={activeCategoryKey}
+                onChange={(f) => {
+                  setFilterState(f);
+                  dispatch(setFilterSources([...f.sources]));
+                  dispatch(setFilterDomains([...f.domains]));
+                  dispatch(setFilterPriorities([...f.priorities]));
+                  dispatch(setFilterWindow(f.window));
+                }}
+                activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
+              />
+            </div>
+          </div>
+
+          <div className={styles.centerCol}>
+            <div className={styles.queueScroll}>
             <BulkBar
               selectedIds={selectedIds}
               decisions={filtered}
@@ -332,6 +332,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {/* Right: Workspace or Briefing */}
