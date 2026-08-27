@@ -27,6 +27,31 @@
   margin-bottom: $spacing-12;
 }
 
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-4;
+}
+
+.dateTime {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+}
+
+.dateText {
+  font-size: 1rem;
+  color: $sub-text-3;
+  font-weight: $font-weight-500;
+}
+
+.timeText {
+  font-size: 1rem;
+  color: $sub-text-4;
+  font-variant-numeric: tabular-nums;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -147,8 +172,9 @@
 
 .statChip {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
   padding: 0.5rem 0.6rem;
   border-radius: 0.7rem;
   background: rgba($sub-text-4, 0.04);
@@ -175,6 +201,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.statChipLabel {
+  font-size: 0.8rem;
+  color: $sub-text-3;
+  font-weight: $font-weight-400;
+  line-height: 1;
 }
 
 .statCritical {
@@ -554,6 +590,128 @@
   &:hover {
     color: $main-text;
   }
+}
+
+// ---------- View toggle ----------
+
+.viewToggle {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 0.7rem;
+  background: rgba($sub-text-4, 0.06);
+  margin-bottom: $spacing-10;
+}
+
+.viewToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+  justify-content: center;
+  height: 2.4rem;
+  padding: 0 0.8rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: none;
+  font-size: $font-size-10;
+  font-weight: $font-weight-500;
+  color: $sub-text-3;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: $main-text;
+    background: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.viewToggleBtnActive {
+  background: $foreground-color;
+  color: $main-text;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: $font-weight-600;
+}
+
+// ---------- Weekly view ----------
+
+.weeklyView {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+}
+
+.weeklyStatRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-8;
+}
+
+.weeklyStatCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: $spacing-10 $spacing-12;
+  border-radius: 0.8rem;
+  background: rgba($sub-text-4, 0.04);
+  border: 1px solid rgba($border-color-4, 0.4);
+}
+
+.weeklyStatValue {
+  font-size: 1.8rem;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.weeklyStatLabel {
+  font-size: $font-size-10;
+  color: $sub-text-3;
+}
+
+.weeklyOnTimeCard {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  padding: $spacing-12;
+  border-radius: 0.8rem;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.weeklyOnTimeValue {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #059669;
+  line-height: 1;
+}
+
+.weeklyOnTimeLabel {
+  font-size: $font-size-10;
+  color: $sub-text-2;
+}
+
+.weeklyProgressBar {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba($sub-text-4, 0.1);
+  overflow: hidden;
+}
+
+.weeklyProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.5s ease;
+}
+
+.weeklyNote {
+  font-size: $font-size-10;
+  color: $sub-text-4;
+  text-align: center;
+  padding: $spacing-8 0;
+  font-style: italic;
 }
 
 // ---------- Pending ----------

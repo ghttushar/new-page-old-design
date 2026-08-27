@@ -38,6 +38,7 @@ const ToastMessage: React.FC<IToastMessageProps> = ({
   description,
   errData,
   type,
+  customIcon,
   totalCount,
   currentIndex,
   hovered,
@@ -68,6 +69,7 @@ const ToastMessage: React.FC<IToastMessageProps> = ({
   };
 
   const toastIcon = (): React.ReactNode => {
+    if (customIcon) return customIcon;
     if (type === TOAST_MESSAGE_TYPES.SUCCESS) {
       return <CheckCircleIcon color="#26C26F" size={32} weight="fill" />;
     } else if (type === TOAST_MESSAGE_TYPES.ERROR) {

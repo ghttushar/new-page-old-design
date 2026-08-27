@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { IErrorResultDetails } from '@/interfaces/service.interface';
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { TOAST_AUTO_CLEAR_TIME } from 'src/constants';
@@ -11,6 +12,7 @@ export interface IToastMessageState {
   type: TOAST_MESSAGE_TYPES;
   autoClear?: boolean;
   autoClearTime?: number; // in milliseconds
+  customIcon?: ReactNode;
 }
 
 export interface IToastMessageSlice {

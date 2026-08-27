@@ -122,6 +122,20 @@ function buildTodoToday(decisions: Decision[]): { task: string; from: 'meeting' 
     items.push({ task: 'Review open decisions and prioritize', from: 'manual', due: 'EOD' });
   }
 
+  const staticTodos: { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] = [
+    { task: 'Review Q4 ad spend allocation', from: 'manual', due: 'EOD' },
+    { task: 'Follow up with supply chain on restock ETA', from: 'meeting', due: 'EOD' },
+    { task: 'Approve Black Friday creative assets', from: 'alert', due: 'EOD' },
+    { task: 'Check competitor pricing changes on Walmart', from: 'manual', due: 'EOD' },
+  ];
+
+  for (const s of staticTodos) {
+    if (items.length >= 5) break;
+    if (!items.some((existing) => existing.task === s.task)) {
+      items.push(s);
+    }
+  }
+
   return items.slice(0, 5);
 }
 
