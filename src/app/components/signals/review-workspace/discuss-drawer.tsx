@@ -11,7 +11,8 @@ interface Msg {
 }
 
 interface Props {
-  decision: Decision | null;
+  decision?: Decision | null;
+  taskContext?: { title: string; owner?: string; domain?: string };
   open: boolean;
   onOpenChange: (o: boolean) => void;
 }
@@ -58,11 +59,13 @@ function TypingIndicator() {
   );
 }
 
-export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
+export function DiscussDrawer({ decision, taskContext, open, onOpenChange }: Props) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState('');
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const contextTitle = taskContext?.title || decision?.insight || '';
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,18 +73,23 @@ export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
 
   const send = () => {
     const t = text.trim();
-    if (!t || !decision) return;
+    if (!t) return;
     const user: Msg = { who: 'user', text: t, ts: Date.now() };
     setMsgs((m) => [...m, user]);
     setText('');
     setTyping(true);
 
     setTimeout(() => {
-      const aan: Msg = {
-        who: 'aan',
-        text: `Got it. I'll factor that in when I re-check ${decision.sourceRef.label} — the recommendation still holds on today's data.`,
-        ts: Date.now(),
-      };
+      let responseText: string;
+      if (taskContext) {
+        const ownerPart = taskContext.owner ? ` I'll loop in ${taskContext.owner}` : '';
+        responseText = `On it! I'm working on "${taskContext.title}"${ownerPart}. I'll have an update for you shortly.`;
+      } else if (decision) {
+        responseText = `Got it. I'll factor that in when I re-check ${decision.sourceRef.label} — the recommendation still holds on today's data.`;
+      } else {
+        responseText = 'Got it. I\'ll look into that and get back to you.';
+      }
+      const aan: Msg = { who: 'aan', text: responseText, ts: Date.now() };
       setMsgs((m) => [...m, aan]);
       setTyping(false);
     }, 500);
@@ -96,7 +104,7 @@ export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#23272d' }}>Discuss with Jiva</div>
           <div style={{ fontSize: '1rem', color: '#7c7c7c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {decision?.insight || ''}
+            {contextTitle}
           </div>
         </div>
         <button onClick={() => onOpenChange(false)} style={{ width: 26, height: 26, borderRadius: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7c7c7c' }}>
@@ -107,7 +115,7 @@ export function DiscussDrawer({ decision, open, onOpenChange }: Props) {
       <div className={styles.chatScroll}>
         {msgs.length === 0 && !typing && (
           <div style={{ fontSize: '1.1rem', color: '#9a9a9a', textAlign: 'center', padding: '24px 0' }}>
-            Ask me anything about this decision — assumptions, tradeoffs, alternatives, or evidence.
+            {taskContext ? 'Ask me anything about this task — how to approach it, who to involve, or what to prioritize.' : 'Ask me anything about this decision — assumptions, tradeoffs, alternatives, or evidence.'}
           </div>
         )}
         {msgs.map((m, i) => (

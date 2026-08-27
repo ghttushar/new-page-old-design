@@ -11,6 +11,7 @@ import { FilterSheet, countActiveFilters, type FilterState } from '../../signals
 import { MeetingCard } from '../../signals/meeting-card';
 import { MeetingReviewView } from '../../signals/meeting-review-view';
 import { MOCK_DECISIONS } from '@/constants/signals/decisions.constants';
+import { MOCK_MEETING_BUNDLES } from '@/constants/signals/mockMeetings';
 import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
 import { categorize } from '@/utils/signals/categories';
 import { importanceScore } from '@/utils/signals/lifecycle';
@@ -42,6 +43,11 @@ type TimeBucket = 'today' | 'yesterday' | 'this_week' | 'older';
 
 function groupByMeeting(list: Decision[]): MeetingGroup[] {
   const map = new Map<string, MeetingGroup>();
+
+  for (const bundle of MOCK_MEETING_BUNDLES) {
+    map.set(bundle.id, { bundleId: bundle.id, title: bundle.title, signals: [] });
+  }
+
   for (const d of list) {
     const ref = d.meetingRef;
     if (!ref) continue;
@@ -364,7 +370,7 @@ export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId 
                 onBack={() => dispatch(setSelectedMeeting(null))}
               />
             ) : (
-              <DailyBriefing />
+              <DailyBriefing onMeetingSelect={(id) => dispatch(setSelectedMeeting(id))} />
             )}
           </ReviewErrorBoundary>
         </div>

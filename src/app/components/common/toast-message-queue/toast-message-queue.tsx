@@ -180,6 +180,7 @@ export function ToastMessageQueue() {
             description={item.description}
             errData={item.errData}
             type={item.type}
+            customIcon={item.customIcon}
             closeToast={() => close(index)}
             totalCount={totalCount}
             currentIndex={index + 1}

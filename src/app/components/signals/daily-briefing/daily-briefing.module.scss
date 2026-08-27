@@ -411,6 +411,17 @@
   padding: 0.4rem 0.6rem;
   border-radius: 0.6rem;
   background: rgba($sub-text-4, 0.03);
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover {
+    background: rgba($primary-color, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -2px;
+  }
 }
 
 .meetingTitle {

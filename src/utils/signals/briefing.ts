@@ -11,6 +11,7 @@ export interface PriorityAlert {
 }
 
 export interface UpcomingMeeting {
+  bundleId: string;
   title: string;
   signalCount: number;
 }
@@ -104,37 +105,27 @@ function fmtDollars(cents: number): string {
 }
 
 function buildTodoToday(decisions: Decision[]): { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] {
-  const items: { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] = [];
-
-  decisions.forEach((d) => {
-    if (d.status !== 'open') return;
-    const createdToday = new Date(d.createdAt).toDateString() === new Date().toDateString();
-    const updatedToday = new Date(d.updatedAt).toDateString() === new Date().toDateString();
-
-    if (d.meetingRef && (createdToday || updatedToday)) {
-      items.push({ task: d.actionVerb || d.insight.slice(0, 60), from: 'meeting', due: 'EOD' });
-    } else if (createdToday || updatedToday) {
-      items.push({ task: d.actionVerb || d.insight.slice(0, 60), from: 'alert', due: 'EOD' });
-    }
-  });
-
-  if (items.length === 0) {
-    items.push({ task: 'Review open decisions and prioritize', from: 'manual', due: 'EOD' });
-  }
-
   const staticTodos: { task: string; from: 'meeting' | 'alert' | 'manual'; due?: string }[] = [
     { task: 'Review Q4 ad spend allocation', from: 'manual', due: 'EOD' },
     { task: 'Follow up with supply chain on restock ETA', from: 'meeting', due: 'EOD' },
     { task: 'Approve Black Friday creative assets', from: 'alert', due: 'EOD' },
     { task: 'Check competitor pricing changes on Walmart', from: 'manual', due: 'EOD' },
+    { task: 'Circulate meeting recap to internal Slack', from: 'manual', due: 'EOD' },
   ];
 
-  for (const s of staticTodos) {
-    if (items.length >= 5) break;
-    if (!items.some((existing) => existing.task === s.task)) {
-      items.push(s);
+  const items = [...staticTodos];
+
+  decisions.forEach((d) => {
+    if (items.length >= 5) return;
+    if (d.status !== 'open') return;
+    const createdToday = new Date(d.createdAt).toDateString() === new Date().toDateString();
+    const updatedToday = new Date(d.updatedAt).toDateString() === new Date().toDateString();
+    if (!createdToday && !updatedToday) return;
+    const task = d.actionVerb || d.insight.slice(0, 60);
+    if (!items.some((existing) => existing.task === task)) {
+      items.push({ task, from: d.meetingRef ? 'meeting' : 'alert', due: 'EOD' });
     }
-  }
+  });
 
   return items.slice(0, 5);
 }
@@ -254,12 +245,12 @@ export function briefingFor(decisions: Decision[]): Briefing {
       return { title: d.insight, value: val.text, verb: d.actionVerb, severity: d.severity };
     });
 
-  const meetingMap = new Map<string, { title: string; signalCount: number }>();
+  const meetingMap = new Map<string, { bundleId: string; title: string; signalCount: number }>();
   for (const d of decisions) {
     if (!d.meetingRef) continue;
     const existing = meetingMap.get(d.meetingRef.bundleId);
     if (existing) existing.signalCount++;
-    else meetingMap.set(d.meetingRef.bundleId, { title: d.meetingRef.title, signalCount: 1 });
+    else meetingMap.set(d.meetingRef.bundleId, { bundleId: d.meetingRef.bundleId, title: d.meetingRef.title, signalCount: 1 });
   }
   const upcomingMeetings: UpcomingMeeting[] = [...meetingMap.values()].slice(0, 3);
 

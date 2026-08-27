@@ -85,7 +85,7 @@ function CollapsibleSection({
   );
 }
 
-export function DailyBriefing() {
+export function DailyBriefing({ onMeetingSelect }: { onMeetingSelect?: (bundleId: string) => void } = {}) {
   const decisions = useSelector(selectDecisions);
   const dispatch = useAppDispatch();
   const b = briefingFor(decisions);
@@ -286,7 +286,14 @@ export function DailyBriefing() {
               >
                 <div className={styles.meetingList}>
                   {b.upcomingMeetings?.map((m, i) => (
-                    <div key={i} className={styles.meetingItem}>
+                    <div
+                      key={i}
+                      className={styles.meetingItem}
+                      onClick={() => onMeetingSelect?.(m.bundleId)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter') onMeetingSelect?.(m.bundleId); }}
+                    >
                       <span className={styles.meetingTitle}>{m.title}</span>
                       <span className={styles.meetingCount}>{m.signalCount} signal{m.signalCount === 1 ? '' : 's'}</span>
                     </div>
