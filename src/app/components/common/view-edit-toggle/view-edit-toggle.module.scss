@@ -5,10 +5,10 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: $foreground-color;
-  border: 0.5px solid $border-color-3;
-  border-radius: 0.8rem;
-  padding: 1rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.8rem 0;
 
   .buttonsContainer {
     height: 100%;

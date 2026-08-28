@@ -47,7 +47,9 @@ export default function AdvertisingNavigationBar(
               className={
                 item.isDisabled || isTableLoading
                   ? styles.disabledContainerItems
-                  : styles.notDisabledContainerItems
+                  : `${styles.notDisabledContainerItems} ${
+                      selectedOption.value === item.value ? styles.activeTab : ''
+                    }`
               }
             >
               <Button
@@ -62,7 +64,7 @@ export default function AdvertisingNavigationBar(
                   fontWeight:
                     selectedOption.value === item.value ? '700' : '500',
                   textTransform: 'none',
-                  fontSize: '1.2rem',
+                  fontSize: '1.1rem',
                 }}
                 disableRipple
                 disabled={item.isDisabled || isTableLoading}

@@ -19,3 +19,10 @@
     align-items: center;
   }
 }
+
+.performanceOverviewTitle {
+  font-weight: $font-weight-700;
+  font-size: 1.4rem;
+  color: $main-text;
+  margin-bottom: $spacing-4;
+}

@@ -6,14 +6,17 @@
   align-items: center;
   justify-content: space-evenly;
   width: 100%;
-  margin-bottom: 1rem;
-  background-color: white;
-  border: 0.1rem solid $stoke-color-1;
+  margin-bottom: $spacing-12;
+  background-color: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 1rem;
+  padding: $spacing-12;
 
   h5 {
-    font-size: $font-size-14;
-    font-weight: 700;
-    color: #000;
+    font-size: $font-size-12;
+    font-weight: $font-weight-500;
+    color: $sub-text-2;
+    text-transform: capitalize;
   }
 
   .brandTitle {
@@ -30,7 +33,7 @@
 }
 
 .vl {
-  border-left: 0.1rem solid $stoke-color-1;
+  border-left: 1px solid $border-color-4;
   height: 4rem;
 }
 

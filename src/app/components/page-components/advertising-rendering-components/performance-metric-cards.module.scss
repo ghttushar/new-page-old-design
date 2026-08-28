@@ -1,0 +1,105 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.metricCardsRow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: $spacing-12;
+  margin-bottom: $spacing-16;
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: $spacing-12 $spacing-16;
+  border-radius: 1rem;
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $border-color-3;
+  }
+}
+
+.metricCardSelected {
+  background: $main-text;
+  border-color: $main-text;
+
+  .metricLabel {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .metricInfoIcon {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .metricTrend {
+    color: #86efac;
+    background: rgba(134, 239, 172, 0.12);
+  }
+
+  .metricValue {
+    color: $foreground-color;
+  }
+
+  .metricSubtitle {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.metricCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.metricLabel {
+  font-size: $font-size-12;
+  font-weight: $font-weight-500;
+  color: $sub-text-2;
+  font-family: $font-family;
+}
+
+.metricInfoIcon {
+  font-size: 1rem;
+  color: $sub-text-4;
+  cursor: help;
+}
+
+.metricTrend {
+  margin-left: auto;
+  font-size: $font-size-9;
+  font-weight: $font-weight-600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  font-family: $font-family;
+}
+
+.trendUp {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+}
+
+.trendDown {
+  color: $error-color;
+  background: rgba(255, 0, 0, 0.08);
+}
+
+.metricValue {
+  font-size: 2.4rem;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  font-family: $font-family;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.metricSubtitle {
+  font-size: $font-size-9;
+  color: $sub-text-3;
+  font-family: $font-family;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

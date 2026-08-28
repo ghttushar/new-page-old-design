@@ -6,32 +6,68 @@
   width: 100%;
   background-color: $foreground-color;
   border: 0.1rem solid $stoke-color-1;
-  padding: 0.5rem 2rem;
+  padding: 0 $spacing-16;
 
   .containerItem {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-around;
+    gap: $spacing-4;
 
     .notDisabledContainerItems {
       cursor: pointer;
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
       .containerItemButton {
-        margin-right: 2rem;
+        height: 3.6rem;
+        min-width: auto;
+        padding: 0 $spacing-12;
+        border-radius: 0;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background-color: transparent;
+          transition: background-color 0.15s ease;
+        }
 
         &:hover {
-          background-color: $foreground-color;
+          background-color: transparent;
+        }
+      }
+
+      &.activeTab .containerItemButton {
+        color: $primary-color !important;
+        font-weight: $font-weight-700 !important;
+
+        &::after {
+          background-color: $primary-color;
         }
       }
     }
 
     .disabledContainerItems {
       cursor: not-allowed;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
       .containerItemButton {
-        margin-right: 2rem;
+        height: 3.6rem;
+        min-width: auto;
+        padding: 0 $spacing-12;
+        border-radius: 0;
 
         &:hover {
-          background-color: $foreground-color;
+          background-color: transparent;
         }
       }
     }

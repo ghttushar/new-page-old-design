@@ -508,6 +508,7 @@ const SubNavItem: React.FC<ISubNavItemProps> = ({
   selectedSubNavTitle,
   disabled,
 }) => {
+  const isActive = selectedSubNavTitle === item.value;
   return (
     <p
       onClick={() => {
@@ -516,11 +517,14 @@ const SubNavItem: React.FC<ISubNavItemProps> = ({
       }}
       style={{
         color: !disabled
-          ? selectedSubNavTitle === item.value
+          ? isActive
             ? '#77469b'
             : '#000'
           : 'rgba(0, 0, 0, 0.26)',
-        fontWeight: selectedSubNavTitle === item.value ? '700' : '500',
+        fontWeight: isActive ? '700' : '500',
+        borderBottom: isActive ? '2px solid #77469b' : '2px solid transparent',
+        paddingBottom: '0.6rem',
+        cursor: disabled ? 'not-allowed' : 'pointer',
       }}
     >
       {item.label}

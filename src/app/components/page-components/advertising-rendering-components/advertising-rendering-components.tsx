@@ -122,7 +122,7 @@ import AdvertisingPageSubHeader from '../advertising-page-sub-header/advertising
 import TableHeader from '../advertising-table-header/advertising-table-header';
 import PerformanceGraphWrapper from '../performance-graph/performance-graph-wrapper';
 import PerformanceTableWrapper from '../performance-table/performance-table-wrapper';
-import PerformanceBox from '../performance/performance';
+import PerformanceMetricCards from './performance-metric-cards';
 import WalmartBrandProfile from '../walmart-brand-assets/walmart-brand-assets';
 import styles from './advertising-rendering-components.module.scss';
 
@@ -658,17 +658,7 @@ export default function AdvertisingRenderingComponents<T>({
         }}
       />
 
-      <PerformanceBox
-        metricsData={advertisingMetricsData}
-        filters={performanceFilters}
-        isMetricsLoading={isMetricsLoading}
-        performanceMetrics={performanceSelectedMetrics}
-        performanceMetricsOptions={performanceMetricsOptions}
-        handlePerformanceMetricsChange={handlePerformanceDropdownChange}
-        handleInitialPerformanceMetricsChange={
-          handleInitialPerformanceDropdownChange
-        }
-      />
+      <PerformanceMetricCards />
 
       {hideGraph !== true && (
         <PerformanceGraphWrapper

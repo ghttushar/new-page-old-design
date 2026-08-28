@@ -10,6 +10,7 @@
   padding: 1.5rem 1.5rem 1rem;
   background-color: $foreground-color;
   border: 1px solid $stoke-color-1;
+  border-radius: 1rem;
 
   .performanceSkeletonContainer {
     width: 100%;
@@ -45,7 +46,7 @@
       align-items: center;
 
       h5 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 600;
       }
     }

@@ -171,7 +171,7 @@ export default function SubHeaderOptions({
           selected={filters.frequency}
           onSelect={handleFrequencyChange}
           width={'10rem'}
-          height="3.2rem"
+          height="3rem"
           dropShadow={true}
         />
         <CustomDateRangePickerWrapper
@@ -180,12 +180,12 @@ export default function SubHeaderOptions({
           setCustomDateRange={handleSetCustomDateRangeForModal}
           rangeOptions={options.range}
           dropShadow={true}
-          height="3.2rem"
+          height="3rem"
           enableStorage={true}
         />
 
         <PrimaryButton
-          height="3.2rem"
+          height="3rem"
           width="6rem"
           buttonText={'Run'}
           buttonFunction={handleRun}

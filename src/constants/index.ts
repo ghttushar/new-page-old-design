@@ -229,11 +229,11 @@ export const customRangeFilterOption: IDropdownItem<Range> = {
 };
 
 export const performanceGraphColors = [
-  '#77469b',
-  '#0085ff',
-  '#14c9c9',
+  '#22c55e',
+  '#ef4444',
+  '#eab308',
+  '#3b82f6',
   '#ff9c06',
-  '#ff0000',
   '#ff66b2',
   '#009688',
 ];

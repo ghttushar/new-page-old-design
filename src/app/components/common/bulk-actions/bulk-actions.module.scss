@@ -6,8 +6,10 @@
   align-items: center;
   width: 100%;
   background-color: $foreground-color;
-  padding: 0 0.5rem;
-  margin: 0 1rem;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  padding: $spacing-8 $spacing-12;
+  margin: $spacing-4 0;
 
   .countContainer {
     display: flex;
@@ -17,13 +19,13 @@
 
     .countText {
       color: $border-color-2;
-      font-size: 1.1rem;
-      font-weight: 400;
+      font-size: 1rem;
+      font-weight: $font-weight-500;
       letter-spacing: -2%;
 
       .countNumber {
         color: $primary-color;
-        font-weight: 600;
+        font-weight: $font-weight-700;
       }
     }
   }
@@ -36,8 +38,8 @@
 
     .bulkActionsText {
       color: #000;
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-size: 1rem;
+      font-weight: $font-weight-500;
       letter-spacing: -0.36px;
       opacity: 0.4;
       margin-right: 0.5rem;

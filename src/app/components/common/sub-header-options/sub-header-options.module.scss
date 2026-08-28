@@ -3,18 +3,17 @@
 .container {
   display: flex;
   width: 100%;
-  background-color: #f3f5fa;
+  background-color: transparent;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: $spacing-8;
 
   .title {
     h3 {
-      font-weight: 700;
-      font-size: 1.6rem;
-      color: #464646;
-      margin-top: 1rem;
+      font-weight: $font-weight-700;
+      font-size: 1.4rem;
+      color: $main-text;
       line-height: 3.3rem;
       letter-spacing: 0.4px;
     }
@@ -22,7 +21,7 @@
 
   .options {
     display: flex;
-    gap: 0.8rem;
-    align-items: flex-end;
+    gap: $spacing-8;
+    align-items: center;
   }
 }

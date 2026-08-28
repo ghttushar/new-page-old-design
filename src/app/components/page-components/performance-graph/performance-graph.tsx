@@ -196,8 +196,10 @@ export function PerformanceGraph({
         },
         labels: {
           usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 16,
           font: {
-            size: 12,
+            size: 11,
             family: 'Inter, sans-serif',
           },
         },
