@@ -191,22 +191,22 @@ export function DailyBriefing({ onMeetingSelect }: { onMeetingSelect?: (bundleId
 
             {/* Compact stat row — 4 in one row with labels */}
             <div className={styles.statRow}>
-              <div className={`${styles.statChip} ${styles.statCritical}`}>
+              <div className={styles.statChip}>
                 <Warning size={14} weight="fill" className={styles.statChipIcon} />
                 <span className={styles.statChipValue}>{criticalCount}</span>
                 <span className={styles.statChipLabel}>Critical</span>
               </div>
-              <div className={`${styles.statChip} ${styles.statAtRisk}`}>
+              <div className={styles.statChip}>
                 <CurrencyDollar size={14} weight="fill" className={styles.statChipIcon} />
                 <span className={styles.statChipValue}>{fmtDollars(atRiskValue)}</span>
                 <span className={styles.statChipLabel}>At risk</span>
               </div>
-              <div className={`${styles.statChip} ${styles.statMeetings}`}>
+              <div className={styles.statChip}>
                 <CalendarCheck size={14} weight="fill" className={styles.statChipIcon} />
                 <span className={styles.statChipValue}>{meetingCount}</span>
                 <span className={styles.statChipLabel}>Meetings</span>
               </div>
-              <div className={`${styles.statChip} ${styles.statDone}`}>
+              <div className={styles.statChip}>
                 <Lightning size={14} weight="fill" className={styles.statChipIcon} />
                 <span className={styles.statChipValue}>{completedToday}</span>
                 <span className={styles.statChipLabel}>Done today</span>
@@ -225,7 +225,7 @@ export function DailyBriefing({ onMeetingSelect }: { onMeetingSelect?: (bundleId
                 <div className={styles.alertList}>
                   {b.priorityAlerts?.map((a, i) => (
                     <div key={i} className={styles.alertItem}>
-                      <span className={styles.alertDot} style={{ background: a.severity === 'critical' ? '#ff0000' : a.severity === 'opportunity' ? '#77469b' : '#7c7c7c' }} />
+                      <span className={styles.alertDot} />
                       <div className={styles.alertInfo}>
                         <span className={styles.alertTitle}>{a.title}</span>
                         <span className={styles.alertMeta}>{a.value} · {a.verb}</span>

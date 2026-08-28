@@ -59,7 +59,7 @@
   height: 1.4rem;
   padding: 0 0.5rem;
   border-radius: 1rem;
-  font-size: 0.85rem;
+  font-size: $font-size-9;
   font-weight: $font-weight-500;
   background: rgba($primary-color, 0.08);
   border: 1px solid rgba($primary-color, 0.18);
@@ -69,7 +69,7 @@
 .greeting {
   font-size: 1.6rem;
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: $font-weight-600;
   color: $main-text;
   margin-top: $spacing-4;
   letter-spacing: -0.01em;
@@ -90,12 +90,12 @@
   padding: $spacing-10 $spacing-12;
   margin-bottom: $spacing-8;
   border-radius: 0.8rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba($sub-text-4, 0.03);
+  border: 1px solid rgba($border-color-4, 0.4);
 }
 
 .revenueIcon {
-  color: #10b981;
+  color: $sub-text-3;
   flex-shrink: 0;
   size: 20px;
 }
@@ -108,8 +108,8 @@
 
 .revenueAmount {
   font-size: 2.4rem;
-  font-weight: 700;
-  color: #059669;
+  font-weight: $font-weight-700;
+  color: $main-text;
   line-height: 1;
 }
 
@@ -132,7 +132,7 @@
 }
 
 .streakIcon {
-  color: #f59e0b;
+  color: $sub-text-3;
   flex-shrink: 0;
 }
 
@@ -151,8 +151,7 @@
 }
 
 .streakDotActive {
-  background: #f59e0b;
-  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+  background: $sub-text-3;
 }
 
 .streakLabel {
@@ -213,29 +212,7 @@
   line-height: 1;
 }
 
-.statCritical {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.15);
-  .statChipIcon { color: #ef4444; }
-}
-
-.statAtRisk {
-  background: rgba(245, 158, 11, 0.06);
-  border-color: rgba(245, 158, 11, 0.15);
-  .statChipIcon { color: #f59e0b; }
-}
-
-.statMeetings {
-  background: rgba($primary-color, 0.06);
-  border-color: rgba($primary-color, 0.15);
-  .statChipIcon { color: $primary-color; }
-}
-
-.statDone {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.15);
-  .statChipIcon { color: #10b981; }
-}
+// Stat chips use neutral styling — semantic meaning from labels, not color
 
 // ---------- Collapsible sections ----------
 
@@ -372,6 +349,7 @@
   height: 0.4rem;
   border-radius: 50%;
   flex-shrink: 0;
+  background: $sub-text-3;
 }
 
 .alertInfo {
@@ -458,7 +436,7 @@
   width: 0.3rem;
   height: 0.3rem;
   border-radius: 50%;
-  background: rgba(#10b981, 0.6);
+  background: rgba($sub-text-3, 0.5);
 }
 
 // ---------- Todo ----------
@@ -504,7 +482,7 @@
   margin-left: auto;
   font-size: 1rem;
   color: $sub-text-3;
-  font-weight: 500;
+  font-weight: $font-weight-500;
 }
 
 .todoDone {
@@ -687,14 +665,14 @@
   gap: $spacing-4;
   padding: $spacing-12;
   border-radius: 0.8rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: rgba($sub-text-4, 0.03);
+  border: 1px solid rgba($border-color-4, 0.4);
 }
 
 .weeklyOnTimeValue {
   font-size: 2.4rem;
-  font-weight: 700;
-  color: #059669;
+  font-weight: $font-weight-700;
+  color: $main-text;
   line-height: 1;
 }
 
@@ -713,7 +691,7 @@
 .weeklyProgressFill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: $sub-text-3;
   transition: width 0.5s ease;
 }
 
@@ -762,7 +740,7 @@
 .pendingSource {
   padding: 0.1rem 0.3rem;
   border-radius: 0.3rem;
-  font-weight: 500;
+  font-weight: $font-weight-500;
   background: rgba($primary-color, 0.08);
   color: $primary-color;
   font-size: 0.8rem;
@@ -803,14 +781,14 @@
 }
 
 .overnightImpact {
-  font-weight: 500;
+  font-weight: $font-weight-500;
   color: $sub-text-2;
 }
 
 .overnightType {
   padding: 0.1rem 0.3rem;
   border-radius: 0.3rem;
-  font-weight: 500;
+  font-weight: $font-weight-500;
   background: rgba($primary-color, 0.08);
   color: $primary-color;
   font-size: 0.8rem;

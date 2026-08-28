@@ -33,7 +33,7 @@
     inset: 0 0 auto 0;
     height: 8rem;
     transition: background 0.5s;
-    background: linear-gradient(90deg, rgba(122,75,235,0.05), rgba(42,109,244,0.03));
+    background: rgba($background-color, 0.3);
   }
 
   .headerContent {
@@ -156,8 +156,8 @@
     align-items: baseline;
     gap: $spacing-8;
     border-radius: 1rem;
-    border-left: 3px solid $alert-color;
-    background: rgba($alert-color, 0.04);
+    border-left: 3px solid $border-color-4;
+    background: rgba($sub-text-4, 0.03);
     padding: $spacing-12 $spacing-16;
     margin-bottom: $spacing-12;
   }
@@ -171,7 +171,7 @@
   .valueAmount {
     font-size: 2rem;
     font-weight: $font-weight-700;
-    color: $alert-color;
+    color: $main-text;
     letter-spacing: -0.02em;
     line-height: 1;
   }
@@ -237,7 +237,7 @@
   .detailHeading {
     font-size: $font-size-10;
     font-weight: $font-weight-600;
-    color: $primary-color;
+    color: $sub-text-2;
     margin-bottom: $spacing-4;
   }
 
@@ -302,7 +302,7 @@
     background: rgba($background-color, 0.3);
     font-size: $font-size-10;
     font-weight: $font-weight-600;
-    color: $primary-color;
+    color: $sub-text-2;
     cursor: pointer;
     text-align: left;
     transition: background 0.12s;

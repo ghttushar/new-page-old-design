@@ -14,7 +14,7 @@ export function ExecutionPlan({ strategy }: Props) {
             {i + 1}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '1.15rem', color: '#23272d' }}>{step.label}</div>
+            <div style={{ fontSize: '1.2rem', color: '#23272d' }}>{step.label}</div>
             {step.note && <div style={{ fontSize: '1rem', color: '#7c7c7c', marginTop: 2 }}>{step.note}</div>}
           </div>
         </li>

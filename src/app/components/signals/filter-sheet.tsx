@@ -38,8 +38,8 @@ const DOMAINS: { key: DecisionDomain; label: string }[] = [
 ];
 
 const PRIORITIES: { key: DecisionSeverity; label: string; color: string }[] = [
-  { key: 'critical', label: 'Critical', color: '#ef4444' },
-  { key: 'opportunity', label: 'Opportunity', color: '#77469b' },
+  { key: 'critical', label: 'Critical', color: '#7c7c7c' },
+  { key: 'opportunity', label: 'Opportunity', color: '#7c7c7c' },
   { key: 'fyi', label: 'FYI', color: '#7c7c7c' },
 ];
 

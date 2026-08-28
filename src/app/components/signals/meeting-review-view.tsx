@@ -73,7 +73,7 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
         <h2 style={{ marginTop: 6, fontSize: '2rem', fontWeight: 600, color: '#23272d', lineHeight: 1.2 }}>{bundleTitle}</h2>
 
         {/* Time + Duration */}
-        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12, fontSize: '1.05rem', color: '#7c7c7c' }}>
+        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12, fontSize: '1rem', color: '#7c7c7c' }}>
           {bundle && (
             <>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -85,7 +85,7 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
           )}
           <span>·</span>
           <span><span style={{ fontWeight: 500, color: '#474747' }}>{alerts.length}</span> alerts generated</span>
-          {totalCents > 0 && <span><span style={{ fontWeight: 500, color: '#429488' }}>{totalStr.text}</span> impact</span>}
+          {totalCents > 0 && <span><span style={{ fontWeight: 500, color: '#23272d' }}>{totalStr.text}</span> impact</span>}
         </div>
 
         {/* Attendees */}
@@ -101,14 +101,14 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
                   padding: '2px 8px', borderRadius: 999,
                   background: a.name === 'You Own' ? 'rgba(119,70,155,0.1)' : 'rgba(0,0,0,0.04)',
                   border: a.name === 'You Own' ? '1px solid rgba(119,70,155,0.25)' : '1px solid transparent',
-                  fontSize: '0.85rem', fontWeight: 500,
+                  fontSize: '0.9rem', fontWeight: 500,
                   color: a.name === 'You Own' ? '#77469b' : '#474747',
                   cursor: 'default',
                 }}
               >
                 <span style={{
                   width: 18, height: 18, borderRadius: '50%',
-                  background: a.name === 'You Own' ? '#77469b' : '#d4d4d8',
+                  background: a.name === 'You Own' ? '#77469b' : '#d1d5db',
                   color: '#fff', fontSize: '0.65rem', fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -139,19 +139,19 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
             <CaretDown size={12} style={{ transition: 'transform 0.2s', transform: briefOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
           </button>
           {briefOpen && (
-            <div style={{ padding: '0 16px 16px', borderTop: '1px solid #f0f0f0' }}>
+            <div style={{ padding: '0 16px 16px', borderTop: '1px solid #e1e4e8' }}>
               {bundle.summary && (
-                <div style={{ padding: '10px 0', fontSize: '1.05rem', color: '#474747', lineHeight: 1.6, borderBottom: '1px solid #f0f0f0' }}>
+                <div style={{ padding: '10px 0', fontSize: '1rem', color: '#474747', lineHeight: 1.6, borderBottom: '1px solid #e1e4e8' }}>
                   <span style={{ fontWeight: 600, color: '#23272d' }}>Summary: </span>{bundle.summary}
                 </div>
               )}
               {bundle.transcriptExcerpt && (
                 <div style={{ padding: '10px 0' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Transcript</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Transcript</div>
                   {bundle.transcriptExcerpt.split('\n').map((line, i) => (
                     <div key={i} style={{
                       padding: '6px 10px', marginBottom: 4, borderRadius: 6,
-                      background: '#f9f9fa', fontSize: '0.95rem', color: '#555',
+                      background: '#f6f6f7', fontSize: '0.95rem', color: '#474747',
                       fontFamily: "'SF Mono', 'Consolas', monospace",
                       lineHeight: 1.5,
                     }}>
@@ -162,13 +162,13 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
               )}
               {excerpts.length > 0 && (
                 <div style={{ paddingTop: 10 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Alert excerpts</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#7c7c7c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Alert excerpts</div>
                   {excerpts.map((text, i) => (
                     <div key={i} style={{
                       padding: '8px 10px', marginBottom: 4, borderRadius: 6,
-                      background: '#f9f9fa', fontSize: '0.95rem', color: '#555',
+                      background: '#f6f6f7', fontSize: '0.95rem', color: '#474747',
                       fontFamily: "'SF Mono', 'Consolas', monospace", lineHeight: 1.5,
-                      borderBottom: i < excerpts.length - 1 ? '1px solid #f0f0f0' : 'none',
+                      borderBottom: i < excerpts.length - 1 ? '1px solid #e1e4e8' : 'none',
                     }}>
                       {text}
                     </div>
@@ -206,13 +206,13 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
             <CaretDown size={12} style={{ transition: 'transform 0.2s', transform: prepOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
           </button>
           {prepOpen && (
-            <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #f0f0f0' }}>
+            <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #e1e4e8' }}>
               {openTasks.map((t) => (
                 <MeetingPrepItem key={t.id} task={t} onAskJiva={setDrawerTask} />
               ))}
               {doneTasks.length > 0 && (
                 <>
-                  <div style={{ fontSize: '0.8rem', color: '#b0b0b0', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4, marginBottom: -4 }}>Completed</div>
+                  <div style={{ fontSize: '0.8rem', color: '#9a9a9a', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4, marginBottom: -4 }}>Completed</div>
                   {doneTasks.map((t) => (
                     <MeetingPrepItem key={t.id} task={t} onAskJiva={setDrawerTask} />
                   ))}
@@ -240,12 +240,12 @@ export function MeetingReviewView({ bundleId, bundleTitle, all, onOpen, onBack }
                     display: 'grid', gridTemplateColumns: '110px 1fr auto', alignItems: 'center', gap: 12,
                     padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid #e1e4e8', transition: 'background 0.12s',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#f9f9fa'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#f6f6f7'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
                   <div style={{
                     fontSize: '1.3rem', fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                    color: d.valueKind === 'gain' ? '#429488' : d.valueKind === 'cost' ? '#f1a03a' : d.valueKind === 'at_risk' ? '#d97706' : '#23272d',
+                    color: '#23272d',
                   }}>
                     {val.text}
                   </div>

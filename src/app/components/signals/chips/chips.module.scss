@@ -24,21 +24,21 @@
 }
 
 .toneGain {
-  color: $positive-color;
-  background: rgba($positive-color, 0.08);
-  border: 1px solid rgba($positive-color, 0.2);
+  color: $sub-text-2;
+  background: rgba($sub-text-4, 0.08);
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneCost {
-  color: $alert-color;
-  background: rgba($alert-color, 0.08);
-  border: 1px solid rgba($alert-color, 0.2);
+  color: $sub-text-2;
+  background: rgba($sub-text-4, 0.08);
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneAtRisk {
-  color: #d97706;
-  background: rgba(#d97706, 0.08);
-  border: 1px solid rgba(#d97706, 0.2);
+  color: $sub-text-2;
+  background: rgba($sub-text-4, 0.08);
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneInfo {
@@ -75,9 +75,9 @@
 }
 
 .toneAmazon {
-  background: rgba(#ff9900, 0.08);
-  color: #b36a00;
-  border: 1px solid rgba(#ff9900, 0.2);
+  background: rgba($sub-text-4, 0.08);
+  color: $sub-text-2;
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneAgent {
@@ -87,21 +87,21 @@
 }
 
 .toneMeeting {
-  background: rgba(#8b5cf6, 0.08);
-  color: #7c3aed;
-  border: 1px solid rgba(#8b5cf6, 0.2);
+  background: rgba($sub-text-4, 0.08);
+  color: $sub-text-2;
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneSlack {
-  background: rgba(#611f69, 0.08);
-  color: #611f69;
-  border: 1px solid rgba(#611f69, 0.2);
+  background: rgba($sub-text-4, 0.08);
+  color: $sub-text-2;
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneTeams {
-  background: rgba(#5059c9, 0.08);
-  color: #5059c9;
-  border: 1px solid rgba(#5059c9, 0.2);
+  background: rgba($sub-text-4, 0.08);
+  color: $sub-text-2;
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneEmail {
@@ -111,9 +111,9 @@
 }
 
 .toneForecast {
-  background: rgba(#10b981, 0.08);
-  color: #059669;
-  border: 1px solid rgba(#10b981, 0.2);
+  background: rgba($sub-text-4, 0.08);
+  color: $sub-text-2;
+  border: 1px solid rgba($sub-text-4, 0.15);
 }
 
 .toneAan {

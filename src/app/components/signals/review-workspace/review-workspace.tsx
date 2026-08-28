@@ -304,10 +304,10 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
   const progressPct = ((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100;
 
   return (
-    <div ref={rootRef} className={styles.reviewWorkspace} style={executed ? { boxShadow: 'inset 0 0 0 1px rgba(66,148,136,0.35), 0 0 40px -10px rgba(66,148,136,0.45)' } : {}}>
+    <div ref={rootRef} className={styles.reviewWorkspace}>
       {/* Header */}
       <div className={styles.header}>
-        <div className={styles.headerBg} style={{ background: executed ? 'linear-gradient(to bottom, rgba(66,148,136,0.08), transparent)' : 'linear-gradient(to bottom, rgba(119,70,155,0.03), transparent)' }} />
+        <div className={styles.headerBg} />
         <div className={styles.headerContent}>
           <div className={styles.headerInfo}>
             {onBack && meetingBundleId && (
@@ -329,9 +329,9 @@ export function ReviewWorkspace({ decision: d, decisions = [], onClose, onOpenDe
       <div className={styles.body}>
         {executed ? (
           <div className={styles.executedState}>
-            <div className={styles.progressRing} style={{ background: `conic-gradient(#429488 ${progressPct}%, #e1e4e8 0)` }}>
+            <div className={styles.progressRing} style={{ background: `conic-gradient(#9a9a9a ${progressPct}%, #e1e4e8 0)` }}>
               <div className={styles.progressRingInner}>
-                <Check size={32} weight="bold" color="#429488" />
+                <Check size={32} weight="bold" color="#7c7c7c" />
               </div>
             </div>
             <div className={styles.executedTitle}>Executed: {executed.strategyTitle}</div>

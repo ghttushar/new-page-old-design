@@ -9,9 +9,9 @@ interface Props {
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; Icon: typeof CheckCircle }> = {
   open: { color: '#77469b', bg: 'rgba(119,70,155,0.08)', label: 'Open', Icon: Clock },
-  completed: { color: '#10b981', bg: 'rgba(16,185,129,0.08)', label: 'Done', Icon: CheckCircle },
-  with_aan: { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', label: 'In progress', Icon: Clock },
-  not_completed: { color: '#7c7c7c', bg: 'rgba(124,124,124,0.08)', label: 'Skipped', Icon: Clock },
+  completed: { color: '#9a9a9a', bg: 'rgba(154,154,154,0.08)', label: 'Done', Icon: CheckCircle },
+  with_aan: { color: '#9a9a9a', bg: 'rgba(154,154,154,0.08)', label: 'In progress', Icon: Clock },
+  not_completed: { color: '#9a9a9a', bg: 'rgba(154,154,154,0.08)', label: 'Skipped', Icon: Clock },
 };
 
 export function MeetingPrepItem({ task, onAskJiva }: Props) {
@@ -27,12 +27,12 @@ export function MeetingPrepItem({ task, onAskJiva }: Props) {
       gap: 12,
       padding: '10px 14px',
       borderRadius: 8,
-      border: '1px solid #e8e8ec',
+      border: '1px solid #e1e4e8',
       background: '#fff',
       transition: 'border-color 0.15s, box-shadow 0.15s',
     }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(119,70,155,0.3)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(119,70,155,0.06)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e8e8ec'; e.currentTarget.style.boxShadow = 'none'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e1e4e8'; e.currentTarget.style.boxShadow = 'none'; }}
     >
       <span style={{
         width: 8,
@@ -48,7 +48,7 @@ export function MeetingPrepItem({ task, onAskJiva }: Props) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
           {task.owner && (
-            <span style={{ fontSize: '0.85rem', color: '#7c7c7c' }}>
+            <span style={{ fontSize: '0.9rem', color: '#7c7c7c' }}>
               {task.owner}
             </span>
           )}
@@ -65,10 +65,10 @@ export function MeetingPrepItem({ task, onAskJiva }: Props) {
           </span>
           {val.text !== 'Info' && (
             <span style={{
-              fontSize: '0.85rem',
+              fontSize: '0.9rem',
               fontWeight: 600,
               fontFamily: "'Inter', sans-serif",
-              color: task.valueKind === 'gain' ? '#429488' : task.valueKind === 'cost' ? '#f1a03a' : task.valueKind === 'at_risk' ? '#d97706' : '#7c7c7c',
+              color: '#23272d',
             }}>
               {val.text}
             </span>
@@ -87,7 +87,7 @@ export function MeetingPrepItem({ task, onAskJiva }: Props) {
             border: '1px solid rgba(119,70,155,0.25)',
             background: 'rgba(119,70,155,0.04)',
             color: '#77469b',
-            fontSize: '0.85rem',
+            fontSize: '0.9rem',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.15s',
