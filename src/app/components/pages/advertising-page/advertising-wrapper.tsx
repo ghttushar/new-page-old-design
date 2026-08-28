@@ -96,19 +96,20 @@ export function AdvertisingWrapper() {
     );
   }, [dispatch, fetchTags.isLoading, fetchTags.isRefetching]);
 
-  if (
-    !navigationUtils.canAccessFeature(
-      accountDetails,
-      selectedUserAccountMapping,
-      FeaturesEnum.ADVERTISING
-    ) ||
-    !advertisingAccount
-  )
-    return (
-      <div className="center-wrapper">
-        <EmptyState {...advertisingAccessDenied} />;
-      </div>
-    );
+  // Auth gate bypassed for frontend prototype
+  // if (
+  //   !navigationUtils.canAccessFeature(
+  //     accountDetails,
+  //     selectedUserAccountMapping,
+  //     FeaturesEnum.ADVERTISING
+  //   ) ||
+  //   !advertisingAccount
+  // )
+  //   return (
+  //     <div className="center-wrapper">
+  //       <EmptyState {...advertisingAccessDenied} />;
+  //     </div>
+  //   );
 
   return (
     <Routes>
