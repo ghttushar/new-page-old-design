@@ -25,6 +25,11 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useCallback, useEffect, useState } from 'react';
 import { spAccountPerformanceOptions } from 'src/constants/advertising-filter.constants';
 import {
+  MOCK_CAMPAIGNS,
+  MOCK_GRAPH_DATA,
+  MOCK_METRICS_DATA,
+} from 'src/constants/advertising/mock-advertising-data';
+import {
   AmazonAdvertisingTableTypesEnum,
   SpAccountLevelTitles,
 } from 'src/enums/advertising.enums';
@@ -416,61 +421,64 @@ export default function AdvertisingAccountLevelCampaign() {
     dispatch(setInitialState([]));
     dispatch(setEditState([]));
 
-    if (fetchCampaigns.data) {
-      let data = fetchCampaigns.data.data.data.data;
-      data = data.map((row) => {
+    const _initialColumns = getInitialColumnsByNavTitle(
+      SpAccountLevelTitles.CAMPAIGNS
+    );
+    const filteredColumns = columnFilterUtils.getStoredColumnFilters(
+      SpAccountLevelTitles.CAMPAIGNS
+    );
+    setInitialColumns(
+      _initialColumns as Array<ColumnDef<ISPAdvertisingData>>
+    );
+    setSelectedColumns(
+      filteredColumns as Array<ColumnDef<ISPAdvertisingData>>
+    );
+
+    let data: ICampaign[];
+
+    if (fetchCampaigns.data?.data?.data?.data?.length) {
+      data = fetchCampaigns.data.data.data.data.map((row) => {
         const id = `${row.campaignId}`;
-        return {
-          id,
-          ...row,
-        };
+        return { id, ...row };
       });
-
-      const _initialColumns = getInitialColumnsByNavTitle(
-        SpAccountLevelTitles.CAMPAIGNS
-      );
-      const filteredColumns = columnFilterUtils.getStoredColumnFilters(
-        SpAccountLevelTitles.CAMPAIGNS
-      );
-      setInitialColumns(
-        _initialColumns as Array<ColumnDef<ISPAdvertisingData>>
-      );
-      setSelectedColumns(
-        filteredColumns as Array<ColumnDef<ISPAdvertisingData>>
-      );
-
-      dispatch(setInitialState(data as ISPAdvertisingData[]));
-      const updatedData = getErrorEditState(
-        data,
-        advErrors
-      ) as ISPAdvertisingData[];
-      setFilteredState(updatedData);
-      dispatch(setEditState(updatedData));
-      dispatch(setAdvertisingErrorDetails(null));
-
-      const totalRows = fetchCampaigns.data.data.data.pagination.totalItems;
-      setTotalRowCount(parseInt(totalRows as string));
+    } else {
+      data = MOCK_CAMPAIGNS;
     }
+
+    dispatch(setInitialState(data as ISPAdvertisingData[]));
+    const updatedData = getErrorEditState(
+      data,
+      advErrors
+    ) as ISPAdvertisingData[];
+    setFilteredState(updatedData);
+    dispatch(setEditState(updatedData));
+    dispatch(setAdvertisingErrorDetails(null));
+
+    const totalRows = fetchCampaigns.data?.data?.data?.pagination?.totalItems ?? data.length;
+    setTotalRowCount(parseInt(totalRows as string));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchCampaigns.data, dispatch]);
 
   useEffect(() => {
-    setAdvertisingGraphData([]);
-    setMinMaxDates([]);
-
-    if (fetchPerformanceGraph.data) {
+    if (
+      fetchPerformanceGraph.data?.data?.data?.graphData?.length
+    ) {
       setAdvertisingGraphData(
-        fetchPerformanceGraph.data.data.data?.graphData ?? []
+        fetchPerformanceGraph.data.data.data.graphData
       );
       setMinMaxDates(fetchPerformanceGraph.data.data.data?.maxMinDate);
+    } else {
+      setAdvertisingGraphData(MOCK_GRAPH_DATA);
+      setMinMaxDates([]);
     }
   }, [fetchPerformanceGraph.data]);
 
   useEffect(() => {
-    setAdvertisingMetricsData(null);
-
-    if (fetchPerformanceMetrics.data) {
+    if (fetchPerformanceMetrics.data?.data?.data) {
       setAdvertisingMetricsData(fetchPerformanceMetrics.data.data.data);
+    } else {
+      setAdvertisingMetricsData(MOCK_METRICS_DATA);
     }
   }, [fetchPerformanceMetrics.data]);
 
