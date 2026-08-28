@@ -107,6 +107,25 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+class ViewEditToggleBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
 import { useNavigate } from 'react-router-dom';
 import AddedFiltersTab from '../../common/added-filters-tab/added-filters-tab';
 import CustomBreadcrumbs from '../../common/breadcrumb/breadcrumb';
@@ -117,6 +136,8 @@ import SubHeaderOptions from '../../common/sub-header-options/sub-header-options
 import TableEmptyState from '../../common/table-empty-state/table-empty-state';
 import { ITabData } from '../../common/tabs-select/tabs-select';
 import ViewEditToggleAdvertisingWrapper from '../../common/view-edit-toggle/view-edit-toggle-wrappers/view-edit-toggle-advertising-wrapper';
+import ViewEditToggle from '../../common/view-edit-toggle/view-edit-toggle';
+import BulkUploadAction from '../../common/bulk-actions/bulk-upload-action/bulk-upload-action';
 import BulkUploadWarningBanner from '../../common/bulk-actions/bulk-upload-action/bulk-upload-warning-banner';
 import AdvertisingNavigationBar from '../advertising-navigation-bar/advertising-navigation-bar';
 import AdvertisingPageSubHeader from '../advertising-page-sub-header/advertising-page-sub-header';
@@ -726,42 +747,34 @@ export default function AdvertisingRenderingComponents<T>({
         selectedAdGroup={selectedAdGroup}
       />
 
-      {getIsViewEditRequired(
-        selectedAdvertisingNavTitle as AdvertisingTitlesEnum
-      ) === true &&
-        setFilteredTableData !== undefined && (
-          <ViewEditToggleAdvertisingWrapper
-            tabValue={editAccessFilters.editAccess}
-            tabData={editAccessOptions.editAccess}
-            onTabChange={handleViewEditTabChange}
-            buttonsDisabled={
-              getComparisonDetails(initialState, editState).size < 1
-            }
-            toggleButtonDisabled={disableViewEditToggle(
-              selectedAdvertisingNavTitle as AdvertisingTitlesEnum,
-              selectedCampaign
-            )}
-            toggleButtonDisableReason={
-              disableViewEditToggle(
-                selectedAdvertisingNavTitle as AdvertisingTitlesEnum,
-                selectedCampaign
-              )
-                ? `Either campaign's automation status is paused or the selected campaign is not part of any rule yet.`
-                : ''
-            }
-            handleCancelClick={handleCancelClick}
-            handleSaveClick={handleSaveClick}
-            setTableData={setFilteredTableData}
-            title={selectedAdvertisingNavTitle}
-            selectedTargetingType={selectedTargetingType}
-            selectedCampaign={selectedCampaign}
-            selectedAdGroup={selectedAdGroup}
-            totalItems={totalRowCount ?? 0}
-            exportData={exportData}
-            handleDownload={handleDownload}
-            exportFilename={exportFileTitle}
-          />
-        )}
+      {setFilteredTableData && (
+        <ViewEditToggle
+          tabValue={editAccessFilters.editAccess}
+          tabData={editAccessOptions.editAccess}
+          handleTabChange={(_event, value) => handleViewEditTabChange(value)}
+          toggleDisabled={false}
+          showEditControls={true}
+          buttonsDisabled={getComparisonDetails(initialState, editState).size < 1}
+          handleCancelClick={handleCancelClick}
+          handleSaveClick={handleSaveClick}
+          isSaveDisabled={false}
+          isBulkActionsVisible={true}
+          bulkActions={handleDownload ? [{
+            key: 'bulkUpload' as any,
+            node: (
+              <BulkUploadAction
+                setTableData={setFilteredTableData}
+                marketplace={(advertisingAccount.marketplace as MarketplaceEnum) || MarketplaceEnum.AMAZON}
+                exportData={exportData ?? []}
+                handleDownload={handleDownload}
+                filename={exportFileTitle ?? 'campaign-data'}
+                title={selectedAdvertisingNavTitle}
+              />
+            ),
+          }] : []}
+          totalItems={totalRowCount ?? 0}
+        />
+      )}
 
       {getIsViewEditRequired(
         selectedAdvertisingNavTitle as AdvertisingTitlesEnum

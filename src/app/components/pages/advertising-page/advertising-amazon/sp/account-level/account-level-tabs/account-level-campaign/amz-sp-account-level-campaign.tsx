@@ -94,7 +94,9 @@ export default function AdvertisingAccountLevelCampaign() {
   >(MOCK_GRAPH_DATA);
   const [advertisingMetricsData, setAdvertisingMetricsData] =
     useState<IPerformanceMetrics | null>(MOCK_METRICS_DATA);
-  const [minMaxDates, setMinMaxDates] = useState<IMinMaxDateRange[]>([]);
+  const [minMaxDates, setMinMaxDates] = useState<IMinMaxDateRange[]>([
+    { min_date: '2026-09-02', max_date: '2026-09-08' },
+  ]);
   const [totalRowCount, setTotalRowCount] = useState<number>(MOCK_CAMPAIGNS.length);
   const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
   const [openSaveModal, setOpenSaveModal] = useState<boolean>(false);
