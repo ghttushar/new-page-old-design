@@ -117,6 +117,7 @@ import SubHeaderOptions from '../../common/sub-header-options/sub-header-options
 import TableEmptyState from '../../common/table-empty-state/table-empty-state';
 import { ITabData } from '../../common/tabs-select/tabs-select';
 import ViewEditToggleAdvertisingWrapper from '../../common/view-edit-toggle/view-edit-toggle-wrappers/view-edit-toggle-advertising-wrapper';
+import BulkUploadWarningBanner from '../../common/bulk-actions/bulk-upload-action/bulk-upload-warning-banner';
 import AdvertisingNavigationBar from '../advertising-navigation-bar/advertising-navigation-bar';
 import AdvertisingPageSubHeader from '../advertising-page-sub-header/advertising-page-sub-header';
 import TableHeader from '../advertising-table-header/advertising-table-header';
@@ -756,7 +757,17 @@ export default function AdvertisingRenderingComponents<T>({
             selectedCampaign={selectedCampaign}
             selectedAdGroup={selectedAdGroup}
             totalItems={totalRowCount ?? 0}
+            exportData={exportData}
+            handleDownload={handleDownload}
+            exportFilename={exportFileTitle}
           />
+        )}
+
+      {getIsViewEditRequired(
+        selectedAdvertisingNavTitle as AdvertisingTitlesEnum
+      ) === true &&
+        editAccessFilters.editAccess.value === EditAccessValues.Edit && (
+          <BulkUploadWarningBanner />
         )}
 
       {!(

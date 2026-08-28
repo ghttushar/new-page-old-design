@@ -42,6 +42,7 @@ import {
   checkIsWalmartCampaign,
   checkIsWalmartKT,
 } from 'src/utils/advertising.utils';
+import BulkUploadAction from 'src/app/components/common/bulk-actions/bulk-upload-action/bulk-upload-action';
 import { ITabData } from '../../tabs-select/tabs-select';
 import ViewEditToggle from '../view-edit-toggle';
 
@@ -73,6 +74,11 @@ interface IViewEditToggleAdvertisingWrapperProps extends IEditBulkActionProp {
     | null
     | undefined;
   totalItems: number | string;
+  exportData?: unknown[];
+  handleDownload?: (
+    isAllDownload: boolean
+  ) => Promise<Record<string, unknown>[]>;
+  exportFilename?: string;
 }
 
 export default function ViewEditToggleAdvertisingWrapper({
@@ -90,6 +96,9 @@ export default function ViewEditToggleAdvertisingWrapper({
   selectedCampaign,
   selectedAdGroup,
   totalItems,
+  exportData,
+  handleDownload,
+  exportFilename,
 }: IViewEditToggleAdvertisingWrapperProps) {
   const dailyBudgetLimitErr = useAppSelector(selectDailyBudgetLimitErr);
   const totalBudgetLimitErr = useAppSelector(selectTotalBudgetLimitErr);
@@ -128,16 +137,40 @@ export default function ViewEditToggleAdvertisingWrapper({
     ]
   );
 
-  const bulkActions: IBulkAction[] = useMemo(
-    () =>
-      ADVERTISING_BULK_ACTION_RULES.filter((rule) =>
-        rule.isVisible(bulkActionContext)
-      ).map((rule) => ({
-        key: rule.key,
-        node: rule.render(bulkActionContext, setTableData),
-      })),
-    [bulkActionContext, setTableData]
-  );
+  const bulkActions: IBulkAction[] = useMemo(() => {
+    const ruleActions = ADVERTISING_BULK_ACTION_RULES.filter((rule) =>
+      rule.isVisible(bulkActionContext)
+    ).map((rule) => ({
+      key: rule.key,
+      node: rule.render(bulkActionContext, setTableData),
+    }));
+
+    if (handleDownload) {
+      ruleActions.push({
+        key: 'bulkUpload' as any,
+        node: (
+          <BulkUploadAction
+            setTableData={setTableData}
+            marketplace={selectedMarketplace}
+            exportData={exportData ?? []}
+            handleDownload={handleDownload}
+            filename={exportFilename ?? 'campaign-data'}
+            title={title}
+          />
+        ),
+      });
+    }
+
+    return ruleActions;
+  }, [
+    bulkActionContext,
+    setTableData,
+    handleDownload,
+    exportData,
+    exportFilename,
+    title,
+    selectedMarketplace,
+  ]);
 
   const isBulkActionsVisible = useMemo(
     () => title !== WalmartSBCampaignLevelTitles.BRANDS,

@@ -1,0 +1,37 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-8;
+  padding: $spacing-8 $spacing-12;
+  margin: $spacing-4 0 $spacing-8;
+  background-color: #fef9e7;
+  border: 1px solid #f0d060;
+  border-radius: 0.6rem;
+  width: 100%;
+}
+
+.bannerIcon {
+  color: #d4a017;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.bannerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.bannerTitle {
+  font-size: 0.9rem;
+  font-weight: $font-weight-600;
+  color: #92710a;
+}
+
+.bannerText {
+  font-size: 0.85rem;
+  color: #a68b2a;
+  line-height: 1.4;
+}

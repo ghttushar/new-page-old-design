@@ -14,4 +14,5 @@ export enum BulkActionKeyEnum {
   PAGE_TYPE_BID_MULTIPLIER = 'pageTypeBidMultiplier',
   PLATFORM_BID_MULTIPLIER = 'platformBidMultiplier',
   BID = 'bid',
+  BULK_UPLOAD = 'bulkUpload',
 }

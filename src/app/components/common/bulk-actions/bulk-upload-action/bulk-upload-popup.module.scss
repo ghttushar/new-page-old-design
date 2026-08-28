@@ -1,0 +1,181 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.popupContainer {
+  .dialogTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-16 $spacing-20;
+    border-bottom: 1px solid $border-color-4;
+
+    .titleText {
+      font-size: 1.4rem;
+      font-weight: $font-weight-700;
+      color: $main-text;
+    }
+
+    .closeButton {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: $spacing-4;
+      border-radius: 0.4rem;
+      background: none;
+      border: none;
+      color: $sub-text-2;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: $main-text;
+      }
+    }
+  }
+
+  .dialogContent {
+    padding: $spacing-20;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-16;
+  }
+
+  .description {
+    font-size: 1rem;
+    color: $sub-text-1;
+    line-height: 1.5;
+  }
+
+  .downloadSection {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-8;
+
+    .downloadLabel {
+      font-size: 1rem;
+      font-weight: $font-weight-600;
+      color: $main-text;
+    }
+
+    .downloadButtons {
+      display: flex;
+      gap: $spacing-8;
+    }
+  }
+
+  .disclaimer {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-4;
+    padding: $spacing-8 $spacing-12;
+    background-color: $background-color;
+    border-radius: 0.6rem;
+    border: 1px solid $border-color-4;
+
+    .disclaimerTitle {
+      font-size: 0.9rem;
+      font-weight: $font-weight-600;
+      color: $sub-text-1;
+    }
+
+    .disclaimerText {
+      font-size: 0.85rem;
+      color: $sub-text-2;
+      line-height: 1.4;
+    }
+  }
+
+  .uploadArea {
+    border: 2px dashed $border-color-3;
+    border-radius: 0.8rem;
+    padding: $spacing-20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-8;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    min-height: 12rem;
+
+    &:hover {
+      border-color: $primary-color;
+      background-color: rgba($primary-color, 0.02);
+    }
+
+    &.uploadAreaActive {
+      border-color: $primary-color;
+      background-color: rgba($primary-color, 0.04);
+    }
+
+    .uploadIcon {
+      color: $sub-text-4;
+    }
+
+    .uploadText {
+      font-size: 1rem;
+      color: $sub-text-1;
+      text-align: center;
+
+      .uploadLink {
+        color: $primary-color;
+        font-weight: $font-weight-600;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    }
+
+    .uploadHint {
+      font-size: 0.85rem;
+      color: $sub-text-4;
+    }
+  }
+
+  .filePreview {
+    display: flex;
+    align-items: center;
+    gap: $spacing-8;
+    padding: $spacing-8 $spacing-12;
+    background-color: $background-color;
+    border: 1px solid $border-color-4;
+    border-radius: 0.6rem;
+
+    .fileName {
+      font-size: 0.95rem;
+      color: $main-text;
+      font-weight: $font-weight-500;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fileSize {
+      font-size: 0.85rem;
+      color: $sub-text-2;
+    }
+
+    .removeFile {
+      cursor: pointer;
+      color: $sub-text-4;
+      display: flex;
+      align-items: center;
+      padding: $spacing-4;
+      border-radius: 0.4rem;
+      background: none;
+      border: none;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: $error-color;
+      }
+    }
+  }
+
+  .dialogActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-8;
+    padding: $spacing-12 $spacing-20;
+    border-top: 1px solid $border-color-4;
+  }
+}
