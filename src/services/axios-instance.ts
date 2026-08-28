@@ -221,10 +221,13 @@ class ResponseInterceptor {
     try {
       if (error.code === 'ERR_CANCELED') return;
 
+      // Skip 401 toast for frontend prototype (no valid auth token)
+      if (error.response?.status === 401) {
+        return Promise.reject(error);
+      }
+
       const toastMessage = ErrorHandler.createToastMessage(error);
       store.dispatch(showToastMessage(toastMessage));
-
-
 
       return Promise.reject(error);
     } catch (e) {
