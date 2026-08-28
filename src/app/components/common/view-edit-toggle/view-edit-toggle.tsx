@@ -54,7 +54,7 @@ export default function ViewEditToggle({
         disableReason={disableReason}
       />
 
-      {showEditControls && (
+      {isBulkActionsVisible && (
         <BulkActions
           isVisible={isBulkActionsVisible}
           actions={bulkActions}
@@ -63,7 +63,7 @@ export default function ViewEditToggle({
         />
       )}
 
-      {showEditControls && !hideSaveCancelButtons && (
+      {!hideSaveCancelButtons && (
         <div
           className={`${styles.buttonsContainer} ${
             buttonsDisabled ? styles.disabled : ''

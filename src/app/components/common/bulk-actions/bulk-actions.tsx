@@ -39,7 +39,6 @@ export default function BulkActions({
   };
 
   return (
-    editAccessFilters.editAccess.value === EditAccessValues.Edit &&
     isVisible && (
       <div className={styles.container}>
         <div className={styles.countContainer}>
