@@ -1,6 +1,6 @@
 import { IDropdownItem } from '@/app/components/common/dropdown/dropdown';
 import { CountryCodeEnum } from '@/enums/advertising.enums';
-import { Range } from '@/enums/serp.enums';
+import { MarketplaceEnum, Range } from '@/enums/serp.enums';
 import { ENV_VARIABLES } from './env.constants';
 
 // Not export because we don't want this to be used directly
@@ -50,6 +50,7 @@ export const REVIEW_ANALYSIS_BASE_URL =
 export const EMPTY_ACCOUNT: IDropdownItem<string> = {
   label: 'Select Account',
   value: '',
+  marketplace: MarketplaceEnum.AMAZON,
 };
 
 //OLD ADVERTISING BASE URLs

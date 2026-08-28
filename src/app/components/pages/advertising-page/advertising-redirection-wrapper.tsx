@@ -12,10 +12,10 @@ const AdvertisingRedirectionWrapper = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    const url = getMarketplaceUrl(
-      advertisingAccount.marketplace as MarketplaceEnum,
-      advHeaderFilters.adType.value
-    );
+    const marketplace =
+      (advertisingAccount.marketplace as MarketplaceEnum) ||
+      MarketplaceEnum.AMAZON;
+    const url = getMarketplaceUrl(marketplace, advHeaderFilters.adType.value);
     navigate(url);
   }, [advHeaderFilters.adType.value, advertisingAccount.marketplace, navigate]);
 

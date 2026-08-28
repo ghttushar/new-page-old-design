@@ -37,19 +37,20 @@ export default function AdvertisingTypesWrapper() {
   const location = useLocation();
 
   useEffect(() => {
-    const marketplace = advertisingAccount.marketplace as MarketplaceEnum;
+    const marketplace =
+      (advertisingAccount.marketplace as MarketplaceEnum) ||
+      MarketplaceEnum.AMAZON;
     const urlPattern =
       /\/advertising\/campaign-manager\/(amazon|walmart)\/(sp|sb|sd|sv|all)/;
     const testUrl = location.pathname;
     const match = testUrl.match(urlPattern);
     if (match) {
-      const marketplace = match[1];
       const adType = match[2];
       const payload = {
         marketplace: advertisingAccount,
         adType: getSelectedAdTypeByMarketplace(
           adType,
-          advertisingAccount.marketplace as MarketplaceEnum
+          marketplace
         ),
       };
       dispatch(setAdvertisingHeaderFilters(payload));
@@ -58,7 +59,7 @@ export default function AdvertisingTypesWrapper() {
         marketplace: advertisingAccount,
         adType: getSelectedAdTypeByMarketplace(
           AdType.All,
-          advertisingAccount.marketplace as MarketplaceEnum
+          marketplace
         ),
       };
       dispatch(setAdvertisingHeaderFilters(payload));
@@ -68,10 +69,7 @@ export default function AdvertisingTypesWrapper() {
     }
   }, [advertisingAccount, dispatch, location.pathname, navigate]);
 
-  // TODO: Remove
-  if (advHeaderFilters.adType.value === AdType.NONE) {
-    return <h1>Ad Type Not Selected</h1>;
-  }
+  // AdType check removed for frontend prototype — useEffect handles redirect
 
   return (
     <div className={styles.Container}>
