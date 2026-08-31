@@ -762,12 +762,12 @@ export default function AdvertisingRenderingComponents<T>({
           tabData={editAccessOptions.editAccess}
           handleTabChange={(_event, value) => handleViewEditTabChange(value)}
           toggleDisabled={false}
-          showEditControls={true}
+          showEditControls={editAccessFilters.editAccess.value === EditAccessValues.Edit}
           buttonsDisabled={getComparisonDetails(initialState, editState).size < 1}
           handleCancelClick={handleCancelClick}
           handleSaveClick={handleSaveClick}
           isSaveDisabled={false}
-          isBulkActionsVisible={true}
+          isBulkActionsVisible={editAccessFilters.editAccess.value === EditAccessValues.Edit}
           bulkActions={[
             {
               key: 'active',

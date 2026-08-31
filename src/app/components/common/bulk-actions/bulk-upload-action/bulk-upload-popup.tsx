@@ -2,6 +2,7 @@ import { MarketplaceEnum } from '@/enums/serp.enums';
 import { getCSVDownload } from '@/utils';
 import {
   CheckCircleIcon,
+  DownloadSimpleIcon,
   FileCsvIcon,
   UploadIcon,
   XCircleIcon,
@@ -157,7 +158,7 @@ export default function BulkUploadPopup({
     <Dialog
       open={isOpen}
       onClose={handleCancel}
-      maxWidth="sm"
+      maxWidth="lg"
       fullWidth
       className={styles.popupContainer}
     >
@@ -181,14 +182,16 @@ export default function BulkUploadPopup({
             <SecondaryButton
               buttonText="Download All"
               buttonFunction={handleDownloadAll}
-              isButtonIconRequired={false}
+              isButtonIconRequired={true}
+              buttonIcon={<DownloadSimpleIcon size={16} weight="bold" />}
               height="3rem"
               disabled={false}
             />
             <SecondaryButton
               buttonText="Download with Filters"
               buttonFunction={handleDownloadWithFilters}
-              isButtonIconRequired={false}
+              isButtonIconRequired={true}
+              buttonIcon={<DownloadSimpleIcon size={16} weight="bold" />}
               height="3rem"
               disabled={false}
             />

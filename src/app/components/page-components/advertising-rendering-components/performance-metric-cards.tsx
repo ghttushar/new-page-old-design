@@ -20,11 +20,10 @@ export default function PerformanceMetricCards() {
   return (
     <div className={styles.metricCardsRow}>
       {MOCK_METRICS.map((card, i) => {
-        const isSelected = i === MOCK_METRICS.length - 1;
         return (
           <div
             key={i}
-            className={`${styles.metricCard} ${isSelected ? styles.metricCardSelected : ''}`}
+            className={styles.metricCard}
           >
             <div className={styles.metricCardHeader}>
               <span className={styles.metricLabel}>{card.label}</span>
