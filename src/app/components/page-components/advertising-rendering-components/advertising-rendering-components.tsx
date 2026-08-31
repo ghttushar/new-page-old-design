@@ -107,6 +107,15 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  PlayCircleIcon,
+  PauseCircleIcon,
+  TagIcon,
+  Calendar,
+  CurrencyDollar,
+  UploadIcon,
+} from '@phosphor-icons/react';
+import TextButton from '../../common/text-button/text-button';
 
 class ViewEditToggleBoundary extends React.Component<
   { children: React.ReactNode },
@@ -759,19 +768,91 @@ export default function AdvertisingRenderingComponents<T>({
           handleSaveClick={handleSaveClick}
           isSaveDisabled={false}
           isBulkActionsVisible={true}
-          bulkActions={handleDownload ? [{
-            key: 'bulkUpload' as any,
-            node: (
-              <BulkUploadAction
-                setTableData={setFilteredTableData}
-                marketplace={(advertisingAccount.marketplace as MarketplaceEnum) || MarketplaceEnum.AMAZON}
-                exportData={exportData ?? []}
-                handleDownload={handleDownload}
-                filename={exportFileTitle ?? 'campaign-data'}
-                title={selectedAdvertisingNavTitle}
-              />
-            ),
-          }] : []}
+          bulkActions={[
+            {
+              key: 'active',
+              node: (
+                <TextButton
+                  label="Active"
+                  buttonStartIcon={<PlayCircleIcon size={16} color="#77469B" weight="bold" />}
+                  customStyles={{ fontSize: '1rem' }}
+                  isNewDesign={true}
+                />
+              ),
+            },
+            {
+              key: 'pause',
+              node: (
+                <TextButton
+                  label="Pause"
+                  buttonStartIcon={<PauseCircleIcon size={16} color="#77469B" weight="bold" />}
+                  customStyles={{ fontSize: '1rem' }}
+                  isNewDesign={true}
+                />
+              ),
+            },
+            {
+              key: 'tag',
+              node: (
+                <TextButton
+                  label="Tag"
+                  buttonStartIcon={<TagIcon size={16} color="#77469B" weight="bold" />}
+                  customStyles={{ fontSize: '1rem' }}
+                  isNewDesign={true}
+                />
+              ),
+            },
+            {
+              key: 'endDate',
+              node: (
+                <TextButton
+                  label="End Date"
+                  buttonStartIcon={<Calendar size={16} color="#77469B" weight="bold" />}
+                  customStyles={{ fontSize: '1rem' }}
+                  isNewDesign={true}
+                />
+              ),
+            },
+            {
+              key: 'dailyBudget',
+              node: (
+                <TextButton
+                  label="Daily Budget"
+                  buttonStartIcon={<CurrencyDollar size={16} color="#77469B" weight="bold" />}
+                  customStyles={{ fontSize: '1rem' }}
+                  isNewDesign={true}
+                />
+              ),
+            },
+            {
+              key: 'totalBudget',
+              node: (
+                <TextButton
+                  label="Total Budget"
+                  buttonStartIcon={<CurrencyDollar size={16} color="#77469B" weight="bold" />}
+                  customStyles={{ fontSize: '1rem' }}
+                  isNewDesign={true}
+                />
+              ),
+            },
+            ...(handleDownload
+              ? [
+                  {
+                    key: 'upload',
+                    node: (
+                      <BulkUploadAction
+                        setTableData={setFilteredTableData}
+                        marketplace={(advertisingAccount.marketplace as MarketplaceEnum) || MarketplaceEnum.AMAZON}
+                        exportData={exportData ?? []}
+                        handleDownload={handleDownload}
+                        filename={exportFileTitle ?? 'campaign-data'}
+                        title={selectedAdvertisingNavTitle}
+                      />
+                    ),
+                  },
+                ]
+              : []),
+          ]}
           totalItems={totalRowCount ?? 0}
         />
       )}
