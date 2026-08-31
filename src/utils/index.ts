@@ -3189,14 +3189,15 @@ export const buildQueryKeyWithAccountIds = (
 };
 
 export const shouldShowHeader = (pathname: string) => {
-  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance');
+  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance') && !pathname.startsWith('/popup-preview');
 };
 
 export const shouldShowSidebar = (pathname: string) => {
   return (
     !pathname.startsWith(ONBOARDING_CONNECTING_PAGE) &&
     !pathname.startsWith('/user') &&
-    !pathname.startsWith('/maintenance')
+    !pathname.startsWith('/maintenance') &&
+    !pathname.startsWith('/popup-preview')
   );
 };
 export const getRedirectURLByWMTClientType = (

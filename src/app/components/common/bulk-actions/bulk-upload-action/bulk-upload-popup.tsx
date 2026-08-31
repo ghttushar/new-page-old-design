@@ -158,8 +158,9 @@ export default function BulkUploadPopup({
     <Dialog
       open={isOpen}
       onClose={handleCancel}
-      maxWidth="lg"
+      maxWidth="md"
       fullWidth
+      sx={{ '& .MuiDialog-paper': { minHeight: '70vh' } }}
       className={styles.popupContainer}
     >
       <DialogTitle className={styles.dialogTitle}>

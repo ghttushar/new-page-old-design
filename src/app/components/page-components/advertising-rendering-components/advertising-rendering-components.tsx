@@ -763,6 +763,7 @@ export default function AdvertisingRenderingComponents<T>({
           handleTabChange={(_event, value) => handleViewEditTabChange(value)}
           toggleDisabled={false}
           showEditControls={editAccessFilters.editAccess.value === EditAccessValues.Edit}
+          hideSaveCancelButtons={editAccessFilters.editAccess.value !== EditAccessValues.Edit}
           buttonsDisabled={getComparisonDetails(initialState, editState).size < 1}
           handleCancelClick={handleCancelClick}
           handleSaveClick={handleSaveClick}

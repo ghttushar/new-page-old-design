@@ -30,6 +30,7 @@ import BidderDashboardWrapper from '../../pages/bidder-dashboard-page/bidder-das
 import CatalogPageRoutes from '../../pages/catalog-page/catalog-wrapper';
 import CustomTablePage from '../../pages/custom-table-page/custom-table-page';
 import JivaPage from '../../pages/jiva-page/jiva-page';
+import PopupPreviewPage from '../../pages/popup-preview/popup-preview';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
 import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
 import MaintenancePage from '../../pages/maintenance-page/maintenance-page';
@@ -234,6 +235,7 @@ export default function DesktopView() {
               <Route path="/signals" element={<SignalsPageWrapper />} />
               <Route path="/signal/:id" element={<PrivateRoute component={<SignalDetailWrapper />} />} />
               <Route path="/maintenance" element={<MaintenancePage />} />
+              <Route path="/popup-preview" element={<PopupPreviewPage />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>

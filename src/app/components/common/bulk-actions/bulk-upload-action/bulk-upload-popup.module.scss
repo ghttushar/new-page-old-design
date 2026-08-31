@@ -9,7 +9,7 @@
     border-bottom: 1px solid $border-color-4;
 
     .titleText {
-      font-size: 1.4rem;
+      font-size: 1.8rem;
       font-weight: $font-weight-700;
       color: $main-text;
     }
@@ -36,11 +36,11 @@
     padding: $spacing-20;
     display: flex;
     flex-direction: column;
-    gap: $spacing-16;
+    gap: $spacing-20;
   }
 
   .description {
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: $sub-text-1;
     line-height: 1.5;
   }
@@ -55,7 +55,7 @@
     border: 1px solid $border-color-4;
 
     .downloadLabel {
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-weight: $font-weight-600;
       color: $main-text;
     }
@@ -76,13 +76,13 @@
     border: 1px solid $border-color-4;
 
     .disclaimerTitle {
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       font-weight: $font-weight-600;
       color: $sub-text-1;
     }
 
     .disclaimerText {
-      font-size: 0.85rem;
+      font-size: 1rem;
       color: $sub-text-2;
       line-height: 1.4;
     }
@@ -99,7 +99,7 @@
     gap: $spacing-8;
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease;
-    min-height: 12rem;
+    min-height: 16rem;
 
     &:hover {
       border-color: $primary-color;
@@ -116,7 +116,7 @@
     }
 
     .uploadText {
-      font-size: 1rem;
+      font-size: 1.2rem;
       color: $sub-text-1;
       text-align: center;
 
@@ -129,7 +129,7 @@
     }
 
     .uploadHint {
-      font-size: 0.85rem;
+      font-size: 1rem;
       color: $sub-text-4;
     }
   }
@@ -144,7 +144,7 @@
     border-radius: 0.6rem;
 
     .fileName {
-      font-size: 0.95rem;
+      font-size: 1.1rem;
       color: $main-text;
       font-weight: $font-weight-500;
       flex: 1;
@@ -154,7 +154,7 @@
     }
 
     .fileSize {
-      font-size: 0.85rem;
+      font-size: 1rem;
       color: $sub-text-2;
     }
 
