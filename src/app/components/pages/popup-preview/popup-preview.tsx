@@ -1,4 +1,3 @@
-import BulkUploadAction from '../../common/bulk-actions/bulk-upload-action/bulk-upload-action';
 import BulkUploadPopup from '../../common/bulk-actions/bulk-upload-action/bulk-upload-popup';
 
 const MOCK_DATA = [
@@ -17,7 +16,7 @@ export default function PopupPreviewPage() {
         isOpen={true}
         onClose={() => {}}
         exportData={MOCK_DATA}
-        handleDownload={async () => MOCK_DATA}
+        handleDownload={async (_isAllDownload: boolean) => MOCK_DATA}
         filename="campaign-data"
         title="Campaign Manager"
         marketplace="amazon"
