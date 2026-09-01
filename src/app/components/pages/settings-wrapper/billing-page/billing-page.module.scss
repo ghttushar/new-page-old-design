@@ -24,6 +24,19 @@
   line-height: 1.2;
 }
 
+.betaTag {
+  font-size: 1rem;
+  font-weight: $font-weight-600;
+  color: $primary-color;
+  background: $primary-color-dropzone;
+  border: 1px solid $alt-primary-color;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+}
+
 .pageSubtitle {
   font-size: 1.2rem;
   font-weight: $font-weight-500;
@@ -266,14 +279,8 @@
 .invoicesToolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.2rem;
-}
-
-.toolbarActions {
-  display: flex;
-  align-items: center;
   gap: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 // ---------- Search Input ----------

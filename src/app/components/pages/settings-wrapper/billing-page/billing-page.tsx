@@ -1,6 +1,3 @@
-import { PageTitleEnum } from '@/enums/index.enums';
-import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
-import useSubHeader from '@/hooks/use-sub-header.hook';
 import {
   CaretDownIcon,
   CheckCircleIcon,
@@ -250,7 +247,6 @@ function PlanCard({
 }
 
 export default function BillingPage() {
-  useSubHeader(PageTitleEnum.BILLING, PAGE_TITLE_TOOLTIPS.BILLING);
   const [searchText, setSearchText] = useState('');
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
@@ -265,8 +261,8 @@ export default function BillingPage() {
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Plans & Billing</h1>
-        <p className={styles.pageSubtitle}>Manage your subscription and view billing history</p>
+        <h1 className={styles.pageTitle}>Plans & Billing<span className={styles.betaTag}>Beta</span></h1>
+        <p className={styles.pageSubtitle}>Manage your subscription plans, payment methods, and billing history.</p>
       </div>
 
       <div className={styles.activePlansSection}>
@@ -283,26 +279,24 @@ export default function BillingPage() {
       </div>
 
       <div className={styles.invoicesSection}>
+        <h3 className={styles.sectionTitle}>Invoices</h3>
         <div className={styles.invoicesToolbar}>
-          <h3 className={styles.sectionTitle}>Invoices</h3>
-          <div className={styles.toolbarActions}>
-            <div className={styles.searchInput}>
-              <MagnifyingGlassIcon size={14} weight="bold" className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search Invoice Number"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className={styles.searchField}
-              />
-            </div>
-            <SecondaryButton
-              buttonText="Manage Payment Method"
-              isButtonIconRequired={false}
-              height="3.4rem"
-              disabled={false}
+          <div className={styles.searchInput}>
+            <MagnifyingGlassIcon size={14} weight="bold" className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="Search Invoice Number"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className={styles.searchField}
             />
           </div>
+          <SecondaryButton
+            buttonText="Manage Payment Method"
+            isButtonIconRequired={false}
+            height="3.4rem"
+            disabled={false}
+          />
         </div>
 
         <div className={styles.tableWrapper}>
