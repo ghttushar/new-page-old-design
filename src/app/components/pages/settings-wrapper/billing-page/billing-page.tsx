@@ -2,7 +2,6 @@ import {
   CheckCircleIcon,
   ArrowSquareOutIcon,
   MagnifyingGlassIcon,
-  CheckIcon,
   CreditCardIcon,
   CalendarDotsIcon,
   ShieldCheckIcon,
@@ -17,10 +16,6 @@ import PrimaryButton from '@/app/components/common/primary-button/primary-button
 import CustomTableWrapper from '@/app/components/shared/custom-table-wrapper/custom-table-wrapper';
 import styles from './billing-page.module.scss';
 
-interface PlanFeature {
-  label: string;
-}
-
 interface BillingPlan {
   id: string;
   name: string;
@@ -28,7 +23,6 @@ interface BillingPlan {
   price: string;
   renewsOn: string;
   status: string;
-  features: PlanFeature[];
   paymentLastFour: string;
   paymentBrand: string;
   nextBilling: string;
@@ -50,14 +44,6 @@ const MOCK_PLANS: BillingPlan[] = [
     price: '$0/month',
     renewsOn: 'May 30, 2027',
     status: 'Active',
-    features: [
-      { label: '50,000 API calls/month' },
-      { label: '10 team members' },
-      { label: 'Basic analytics dashboard' },
-      { label: 'Email support (48h response)' },
-      { label: '1 GB data storage' },
-      { label: 'Standard integrations' },
-    ],
     paymentLastFour: '4242',
     paymentBrand: 'Visa',
     nextBilling: 'May 30, 2027',
@@ -69,14 +55,6 @@ const MOCK_PLANS: BillingPlan[] = [
     price: '$49/month',
     renewsOn: 'Jun 15, 2026',
     status: 'Active',
-    features: [
-      { label: '200,000 API calls/month' },
-      { label: '25 team members' },
-      { label: 'Advanced analytics & reports' },
-      { label: 'Priority email support (24h response)' },
-      { label: '10 GB data storage' },
-      { label: 'All integrations + API access' },
-    ],
     paymentLastFour: '8812',
     paymentBrand: 'Mastercard',
     nextBilling: 'Jun 15, 2026',
@@ -180,19 +158,6 @@ function PlanCard({ plan }: { plan: BillingPlan }) {
       </div>
 
       <div className={styles.planCardExpandedContent}>
-        <div className={styles.expandedGrid}>
-          <div className={styles.expandedSection}>
-            <h4 className={styles.expandedSectionTitle}>Plan Features</h4>
-            <ul className={styles.featureList}>
-              {plan.features.map((feature, i) => (
-                <li key={i} className={styles.featureItem}>
-                  <CheckIcon size={14} weight="bold" className={styles.featureCheck} />
-                  <span>{feature.label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           <div className={styles.expandedSection}>
             <h4 className={styles.expandedSectionTitle}>Billing Details</h4>
             <div className={styles.billingDetailRows}>
@@ -220,7 +185,6 @@ function PlanCard({ plan }: { plan: BillingPlan }) {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );

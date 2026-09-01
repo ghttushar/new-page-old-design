@@ -145,18 +145,6 @@
   padding: 2rem 2.4rem;
 }
 
-.expandedGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.4rem;
-}
-
-@media (max-width: 768px) {
-  .expandedGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .expandedSection {
   display: flex;
   flex-direction: column;
@@ -169,30 +157,6 @@
   color: $main-text;
   font-family: $font-family;
   margin: 0;
-}
-
-.featureList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.featureItem {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  font-size: 1.1rem;
-  font-weight: $font-weight-500;
-  color: $sub-text-1;
-  font-family: $font-family;
-}
-
-.featureCheck {
-  color: $positive-color;
-  flex-shrink: 0;
 }
 
 .billingDetailRows {
