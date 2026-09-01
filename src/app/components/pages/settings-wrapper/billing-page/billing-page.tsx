@@ -1,5 +1,4 @@
 import {
-  CaretDownIcon,
   CheckCircleIcon,
   ArrowSquareOutIcon,
   MagnifyingGlassIcon,
@@ -8,9 +7,11 @@ import {
   CalendarDotsIcon,
   ShieldCheckIcon,
 } from '@phosphor-icons/react';
-import { Collapse } from '@mui/material';
 import { ColumnDef } from '@tanstack/react-table';
 import { useState } from 'react';
+import { PageTitleEnum } from '@/enums/index.enums';
+import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
+import useSubHeader from '@/hooks/use-sub-header.hook';
 import SecondaryButton from '@/app/components/common/secondary-button/secondary-button';
 import PrimaryButton from '@/app/components/common/primary-button/primary-button';
 import CustomTableWrapper from '@/app/components/shared/custom-table-wrapper/custom-table-wrapper';
@@ -152,17 +153,9 @@ function getInvoiceColumns(): ColumnDef<Invoice>[] {
   ];
 }
 
-function PlanCard({
-  plan,
-  defaultExpanded,
-}: {
-  plan: BillingPlan;
-  defaultExpanded?: boolean;
-}) {
-  const [expanded, setExpanded] = useState(defaultExpanded ?? false);
-
+function PlanCard({ plan }: { plan: BillingPlan }) {
   return (
-    <div className={`${styles.planCard} ${expanded ? styles.planCardExpanded : ''}`}>
+    <div className={styles.planCard}>
       <div className={styles.planCardHeader}>
         <div className={styles.planCardInfo}>
           <span className={styles.cardLabel}>CURRENT PLAN</span>
@@ -183,70 +176,58 @@ function PlanCard({
             isButtonIconRequired={true}
             buttonIcon={<ArrowSquareOutIcon size={16} weight="bold" />}
           />
-          <button
-            type="button"
-            className={styles.expandBtn}
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? 'Show less' : 'view details'}
-            <CaretDownIcon
-              size={14}
-              className={`${styles.expandChevron} ${expanded ? styles.expandChevronOpen : ''}`}
-            />
-          </button>
         </div>
       </div>
 
-      <Collapse in={expanded}>
-        <div className={styles.planCardExpandedContent}>
-          <div className={styles.expandedGrid}>
-            <div className={styles.expandedSection}>
-              <h4 className={styles.expandedSectionTitle}>Plan Features</h4>
-              <ul className={styles.featureList}>
-                {plan.features.map((feature, i) => (
-                  <li key={i} className={styles.featureItem}>
-                    <CheckIcon size={14} weight="bold" className={styles.featureCheck} />
-                    <span>{feature.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      <div className={styles.planCardExpandedContent}>
+        <div className={styles.expandedGrid}>
+          <div className={styles.expandedSection}>
+            <h4 className={styles.expandedSectionTitle}>Plan Features</h4>
+            <ul className={styles.featureList}>
+              {plan.features.map((feature, i) => (
+                <li key={i} className={styles.featureItem}>
+                  <CheckIcon size={14} weight="bold" className={styles.featureCheck} />
+                  <span>{feature.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            <div className={styles.expandedSection}>
-              <h4 className={styles.expandedSectionTitle}>Billing Details</h4>
-              <div className={styles.billingDetailRows}>
-                <div className={styles.billingDetailRow}>
-                  <CreditCardIcon size={16} className={styles.billingDetailIcon} />
-                  <span className={styles.billingDetailLabel}>Payment Method</span>
-                  <span className={styles.billingDetailValue}>
-                    {plan.paymentBrand} •••• {plan.paymentLastFour}
+          <div className={styles.expandedSection}>
+            <h4 className={styles.expandedSectionTitle}>Billing Details</h4>
+            <div className={styles.billingDetailRows}>
+              <div className={styles.billingDetailRow}>
+                <CreditCardIcon size={16} className={styles.billingDetailIcon} />
+                <span className={styles.billingDetailLabel}>Payment Method</span>
+                <span className={styles.billingDetailValue}>
+                  {plan.paymentBrand} •••• {plan.paymentLastFour}
+                </span>
+              </div>
+              <div className={styles.billingDetailRow}>
+                <CalendarDotsIcon size={16} className={styles.billingDetailIcon} />
+                <span className={styles.billingDetailLabel}>Next Billing Date</span>
+                <span className={styles.billingDetailValue}>{plan.nextBilling}</span>
+              </div>
+              <div className={styles.billingDetailRow}>
+                <ShieldCheckIcon size={16} className={styles.billingDetailIcon} />
+                <span className={styles.billingDetailLabel}>Status</span>
+                <span className={styles.billingDetailValue}>
+                  <span className={styles.activePill}>
+                    <CheckCircleIcon size={12} weight="fill" />
+                    {plan.status}
                   </span>
-                </div>
-                <div className={styles.billingDetailRow}>
-                  <CalendarDotsIcon size={16} className={styles.billingDetailIcon} />
-                  <span className={styles.billingDetailLabel}>Next Billing Date</span>
-                  <span className={styles.billingDetailValue}>{plan.nextBilling}</span>
-                </div>
-                <div className={styles.billingDetailRow}>
-                  <ShieldCheckIcon size={16} className={styles.billingDetailIcon} />
-                  <span className={styles.billingDetailLabel}>Status</span>
-                  <span className={styles.billingDetailValue}>
-                    <span className={styles.activePill}>
-                      <CheckCircleIcon size={12} weight="fill" />
-                      {plan.status}
-                    </span>
-                  </span>
-                </div>
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </Collapse>
+      </div>
     </div>
   );
 }
 
 export default function BillingPage() {
+  useSubHeader(PageTitleEnum.BILLING, PAGE_TITLE_TOOLTIPS.BILLING);
   const [searchText, setSearchText] = useState('');
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
@@ -269,11 +250,7 @@ export default function BillingPage() {
         <h3 className={styles.sectionTitle}>Active Plans</h3>
         <div className={styles.planCardsList}>
           {MOCK_PLANS.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              defaultExpanded={plan.id === 'trial'}
-            />
+            <PlanCard key={plan.id} plan={plan} />
           ))}
         </div>
       </div>

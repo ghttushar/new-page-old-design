@@ -63,9 +63,15 @@
 }
 
 .planCardsList {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6rem;
+}
+
+@media (max-width: 900px) {
+  .planCardsList {
+    grid-template-columns: 1fr;
+  }
 }
 
 // ---------- Plan Card ----------
@@ -78,10 +84,6 @@
   border-radius: 1.2rem;
   overflow: hidden;
   transition: border-color 0.15s ease;
-}
-
-.planCardExpanded {
-  border-color: $primary-color-variant-1;
 }
 
 .planCardHeader {
@@ -134,35 +136,6 @@
   align-items: center;
   gap: 1rem;
   flex-shrink: 0;
-}
-
-.expandBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 1rem;
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: $font-weight-600;
-  color: $primary-color;
-  font-family: $font-family;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-  white-space: nowrap;
-
-  &:hover {
-    opacity: 0.8;
-  }
-}
-
-.expandChevron {
-  transition: transform 0.2s ease;
-  color: $primary-color;
-}
-
-.expandChevronOpen {
-  transform: rotate(180deg);
 }
 
 // ---------- Expanded Content ----------
@@ -279,6 +252,7 @@
 .invoicesToolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.2rem;
 }
