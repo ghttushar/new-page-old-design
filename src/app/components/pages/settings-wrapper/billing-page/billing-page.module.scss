@@ -7,37 +7,82 @@
   gap: 2.4rem;
 }
 
-// ---------- Top Grid (2 columns) ----------
+// ---------- Page Header ----------
 
-.topGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-@media (max-width: 900px) {
-  .topGrid {
-    grid-template-columns: 1fr;
-  }
+.pageTitle {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0;
+  line-height: 1.2;
 }
 
-// ---------- Shared Card Styles ----------
+.pageSubtitle {
+  font-size: 1.2rem;
+  font-weight: $font-weight-500;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0;
+}
 
-.currentPlanCard,
-.paymentMethodCard {
+// ---------- Section Titles ----------
+
+.sectionTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0 0 1.2rem;
+}
+
+// ---------- Active Plans Section ----------
+
+.activePlansSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.planCardsList {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  padding: 2.4rem;
+}
+
+// ---------- Plan Card ----------
+
+.planCard {
+  display: flex;
+  flex-direction: column;
   background: $foreground-color;
   border: 1px solid $border-color-4;
   border-radius: 1.2rem;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
 }
 
-.cardHeader {
+.planCardExpanded {
+  border-color: $primary-color-variant-1;
+}
+
+.planCardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 2rem 2.4rem;
+  gap: 1.6rem;
+}
+
+.planCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .cardLabel {
@@ -48,7 +93,153 @@
   font-family: $font-family;
 }
 
-// ---------- Current Plan Card ----------
+.planNameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+}
+
+.planName {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.planDetailsInline {
+  font-size: 1.2rem;
+  font-weight: $font-weight-500;
+  color: $sub-text-2;
+  font-family: $font-family;
+}
+
+.planCardActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: $font-weight-600;
+  color: $primary-color;
+  font-family: $font-family;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.expandChevron {
+  transition: transform 0.2s ease;
+  color: $primary-color;
+}
+
+.expandChevronOpen {
+  transform: rotate(180deg);
+}
+
+// ---------- Expanded Content ----------
+
+.planCardExpandedContent {
+  border-top: 1px solid $border-color-4;
+  padding: 2rem 2.4rem;
+}
+
+.expandedGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.4rem;
+}
+
+@media (max-width: 768px) {
+  .expandedGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.expandedSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.expandedSectionTitle {
+  font-size: 1.2rem;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.1rem;
+  font-weight: $font-weight-500;
+  color: $sub-text-1;
+  font-family: $font-family;
+}
+
+.featureCheck {
+  color: $positive-color;
+  flex-shrink: 0;
+}
+
+.billingDetailRows {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.billingDetailRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.billingDetailIcon {
+  color: $sub-text-3;
+  flex-shrink: 0;
+}
+
+.billingDetailLabel {
+  font-size: 1.1rem;
+  font-weight: $font-weight-500;
+  color: $sub-text-2;
+  font-family: $font-family;
+  min-width: 12rem;
+}
+
+.billingDetailValue {
+  font-size: 1.1rem;
+  font-weight: $font-weight-600;
+  color: $main-text;
+  font-family: $font-family;
+}
 
 .activePill {
   display: inline-flex;
@@ -65,161 +256,65 @@
   line-height: 1.4rem;
 }
 
-.planName {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: $main-text;
-  font-family: $font-family;
-  margin: 0;
-  line-height: 1.2;
-}
+// ---------- Invoices Section ----------
 
-.planDetails {
-  font-size: 1.2rem;
-  font-weight: $font-weight-500;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.planActions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.8rem;
-}
-
-.viewPlansLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0;
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: $font-weight-600;
-  color: $primary-color;
-  font-family: $font-family;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-  margin-left: auto;
-
-  &:hover {
-    opacity: 0.8;
-  }
-}
-
-// ---------- Payment Method Card ----------
-
-.editBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 1rem;
-  background: none;
-  border: 1px solid $border-color-4;
-  border-radius: 0.6rem;
-  font-size: 1.1rem;
-  font-weight: $font-weight-500;
-  color: $sub-text-1;
-  font-family: $font-family;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    border-color: $primary-color;
-    color: $primary-color;
-  }
-}
-
-.cardInfo {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-}
-
-.cardBrandIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 4.8rem;
-  height: 3.2rem;
-  border-radius: 0.6rem;
-  background: $background-color;
-  border: 1px solid $border-color-4;
-  color: $sub-text-2;
-}
-
-.cardDetails {
+.invoicesSection {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
 }
 
-.cardNumber {
-  font-size: 1.4rem;
-  font-weight: $font-weight-700;
-  color: $main-text;
-  font-family: $font-family;
-  letter-spacing: 0.04em;
-}
-
-.cardMeta {
-  font-size: 1.1rem;
-  font-weight: $font-weight-500;
-  color: $sub-text-2;
-  font-family: $font-family;
-}
-
-.divider {
-  height: 1px;
-  background: $border-color-4;
-  margin: 0.4rem 0;
-}
-
-.autoRenewRow {
+.invoicesToolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.2rem;
+  margin-bottom: 1.2rem;
 }
 
-.autoRenewInfo {
+.toolbarActions {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 1rem;
 }
 
-.autoRenewLabel {
-  font-size: 1.2rem;
-  font-weight: $font-weight-600;
-  color: $main-text;
-  font-family: $font-family;
+// ---------- Search Input ----------
+
+.searchInput {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.autoRenewDesc {
-  font-size: 1rem;
+.searchIcon {
+  position: absolute;
+  left: 1.2rem;
+  color: $sub-text-3;
+  pointer-events: none;
+}
+
+.searchField {
+  height: 3.4rem;
+  padding: 0 1.2rem 0 3.4rem;
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+  font-size: 1.1rem;
   font-weight: $font-weight-500;
-  color: $sub-text-2;
-  font-family: $font-family;
-}
-
-// ---------- Billing History ----------
-
-.billingHistory {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
-
-.sectionTitle {
-  font-size: 1.6rem;
-  font-weight: 700;
   color: $main-text;
   font-family: $font-family;
-  margin: 0;
+  background: $foreground-color;
+  outline: none;
+  width: 28rem;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: $sub-text-3;
+  }
+
+  &:focus {
+    border-color: $primary-color;
+  }
 }
+
+// ---------- Table ----------
 
 .tableWrapper {
   background: $foreground-color;
@@ -227,8 +322,6 @@
   border-radius: 1.2rem;
   overflow: hidden;
 }
-
-// ---------- Table Styles ----------
 
 .tableHeader {
   font-size: 1rem;
@@ -286,6 +379,8 @@
   background: none;
   border-radius: 0.6rem;
   color: $sub-text-2;
+  font-size: 1.4rem;
+  font-weight: $font-weight-700;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 
@@ -293,120 +388,4 @@
     background: $background-color;
     color: $primary-color;
   }
-}
-
-// ---------- Payment Dialog ----------
-
-.paymentOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.paymentDialog {
-  background: $foreground-color;
-  border-radius: 1.2rem;
-  width: 48rem;
-  max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-
-.dialogTitle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.6rem 2rem;
-  border-bottom: 1px solid $border-color-4;
-
-  h3 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: $main-text;
-    font-family: $font-family;
-    margin: 0;
-  }
-}
-
-.dialogClose {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.8rem;
-  height: 2.8rem;
-  border: none;
-  background: none;
-  font-size: 2rem;
-  color: $sub-text-2;
-  cursor: pointer;
-  border-radius: 0.4rem;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: $main-text;
-  }
-}
-
-.dialogContent {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
-}
-
-.dialogDesc {
-  font-size: 1.2rem;
-  color: $sub-text-2;
-  font-family: $font-family;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.dialogCardOption {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  padding: 1.6rem;
-  border: 1px solid $border-color-4;
-  border-radius: 0.8rem;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-
-  &:hover {
-    border-color: $primary-color;
-  }
-
-  svg {
-    color: $primary-color;
-  }
-}
-
-.dialogCardOptionTitle {
-  display: block;
-  font-size: 1.2rem;
-  font-weight: $font-weight-600;
-  color: $main-text;
-  font-family: $font-family;
-}
-
-.dialogCardOptionDesc {
-  display: block;
-  font-size: 1rem;
-  color: $sub-text-2;
-  font-family: $font-family;
-  margin-top: 0.2rem;
-}
-
-.dialogActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  padding: 1.2rem 2rem;
-  border-top: 1px solid $border-color-4;
 }
