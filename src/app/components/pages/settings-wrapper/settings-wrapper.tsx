@@ -16,6 +16,7 @@ import SettingsPage from './settings-page/settings-page';
 import settingsWrapperStyles from './settings-wrapper.module.scss';
 import UsersPage from './users-page/users-page';
 import IntegrationsPage from './integrations-page/integrations-page';
+import BillingPage from './billing-page/billing-page';
 
 export default function SettingsWrapper() {
   const selectedUserAccountMapping =
@@ -79,6 +80,10 @@ export default function SettingsWrapper() {
         <Route
           path="/integrations"
           element={<PrivateRoute component={<IntegrationsPage />} />}
+        />
+        <Route
+          path="/billing"
+          element={<PrivateRoute component={<BillingPage />} />}
         />
         <Route path="*" element={<Navigate to="accounts" replace />} />
       </Routes>

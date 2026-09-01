@@ -231,6 +231,11 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
           primaryText: 'Integrations',
           feature: FeaturesEnum.INTEGRATIONS,
         },
+        {
+          key: FeatureRoutes.BILLING,
+          primaryText: 'Plans & Billing',
+          feature: FeaturesEnum.BILLING,
+        },
       ],
       feature: FeaturesEnum.SETTINGS,
       icon: <UserCircleGearIcon className={styles.icon} />,

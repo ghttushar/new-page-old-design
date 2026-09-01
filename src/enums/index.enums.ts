@@ -38,6 +38,7 @@ export enum PageTitleEnum {
   APPLIED_RULES = 'Applied Rules',
   CONFIGURATION_WIZARD = 'Configuration Wizard',
   INTEGRATIONS = 'Integrations',
+  BILLING = 'Plans & Billing',
   ALERTS = 'Signals',
 }
 
