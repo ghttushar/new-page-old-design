@@ -2,8 +2,8 @@
 @import 'src/assets/styles/scrollbar.scss';
 
 .signalsPage {
-  padding: $spacing-4 0;
-  height: calc(100vh - 4rem);
+  padding: $spacing-8;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }

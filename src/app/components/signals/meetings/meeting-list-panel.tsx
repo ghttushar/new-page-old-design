@@ -10,7 +10,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
   const [meetTab, setMeetTab] = useState<'upcoming' | 'done'>('upcoming');
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+    <div style={{ flex: '0 0 35%', maxWidth: '35%', height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 10, flex: 'none' }}>
         <div style={{ padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>Search meetings, accounts, attendees</div>
         <div style={{ display: 'flex', gap: 7 }}>
