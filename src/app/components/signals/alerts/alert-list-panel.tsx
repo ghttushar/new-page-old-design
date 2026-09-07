@@ -52,7 +52,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert }: Props) {
   };
 
   return (
-    <div style={{ width: 460, flex: 'none', height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
+    <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
         <div style={{ display: 'flex', gap: 7, position: 'relative' }}>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search alerts, ASINs, campaigns" style={{ padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', width: 330 }} />

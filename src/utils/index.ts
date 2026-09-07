@@ -3189,7 +3189,7 @@ export const buildQueryKeyWithAccountIds = (
 };
 
 export const shouldShowHeader = (pathname: string) => {
-  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance') && !pathname.startsWith('/popup-preview');
+  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance') && !pathname.startsWith('/popup-preview') && !pathname.startsWith('/signals') && !pathname.startsWith('/signal');
 };
 
 export const shouldShowSidebar = (pathname: string) => {
