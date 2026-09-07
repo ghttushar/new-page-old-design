@@ -33,12 +33,12 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
       {/* Left column */}
       <div style={{ flex: 1, minWidth: 0, height: '100%', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Summary card */}
-        <div style={{ background: 'transparent', padding: '20px 22px' }}>
+        <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: '20px 22px' }}>
           <div style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{formatHeaderDate()} · {formatHeaderTime()}</div>
           <div style={{ font: '600 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>Three things need you before 11, and $18,420 is sitting on them.</div>
 
           {/* 4-column stat grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'transparent', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
             <StatCell topBorder="#b3453f" label="Critical alerts" icon={<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#b3453f" strokeWidth="1.4" /><path d="M8 5v3.5l2 1.2" stroke="#b3453f" strokeWidth="1.4" strokeLinecap="round" /></svg>} value="3" sub="of 12 today" />
             <StatCell topBorder="#b3453f" label="At risk" icon={<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 13l4-5 3 3 5-7" stroke="#b3453f" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>} value="$18,420" valueColor="#b3453f" sub="30-day window" />
             <StatCell topBorder="#3f7d6a" label="Verified gain" icon={<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="#3f7d6a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>} value="$6,200" valueColor="#3f7d6a" sub="this week" />
@@ -46,7 +46,7 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
           </div>
 
           {/* 5-column stat grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 1, background: 'transparent', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
             <MiniStat label="Opportunities" value="$9,400" valueColor="#a8763f" sub="2 open" />
             <MiniStat label="Actions in flight" value="2" sub="running now" />
             <MiniStat label="Applied this week" value="6" valueColor="#3f7d6a" sub="verified & unverified" />
@@ -191,7 +191,7 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
 
 function StatCell({ topBorder, label, icon, value, valueColor, sub }: { topBorder: string; label: string; icon: React.ReactNode; value: string; valueColor?: string; sub: string }) {
   return (
-    <div style={{ background: 'transparent', padding: 14, borderTop: `3px solid ${topBorder}` }}>
+    <div style={{ background: '#fff', padding: 14, borderTop: `3px solid ${topBorder}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{icon}{label}</div>
       <div style={{ font: '600 20px/1 Inter,sans-serif', color: valueColor || '#23272d', marginTop: 8 }}>{value}</div>
       <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{sub}</div>
@@ -201,7 +201,7 @@ function StatCell({ topBorder, label, icon, value, valueColor, sub }: { topBorde
 
 function MiniStat({ label, value, valueColor, sub }: { label: string; value: string; valueColor?: string; sub: string }) {
   return (
-    <div style={{ background: 'transparent', padding: 14 }}>
+    <div style={{ background: '#fff', padding: 14 }}>
       <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{label}</div>
       <div style={{ font: '600 20px/1 Inter,sans-serif', color: valueColor || '#23272d', marginTop: 8 }}>{value}</div>
       <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{sub}</div>

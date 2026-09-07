@@ -156,7 +156,7 @@ function AlertRow({ al, selected, onSelect, menuFor, setMenuFor, menuMode, setMe
 }) {
   const isOpen = menuFor === al.id;
   return (
-    <div style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1' }}>
+    <div style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1' }}>
       <span onClick={(e) => { e.stopPropagation(); setMenuFor(isOpen ? null : al.id); setMenuMode('main'); }} style={{ position: 'absolute', right: 12, top: 12, padding: '2px 6px', font: '700 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>⋯</span>
       <div onClick={onSelect}>
         <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{money(al.valueNum)}</span>

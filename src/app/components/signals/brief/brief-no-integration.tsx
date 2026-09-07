@@ -24,13 +24,13 @@ export function BriefNoIntegration({ onAlertClick }: Props) {
   return (
     <div style={{ height: '100%', display: 'flex', gap: 16 }}>
       <div style={{ flex: 1, minWidth: 0, height: '100%', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ background: 'transparent', padding: '20px 22px' }}>
+        <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: '20px 22px' }}>
           <div style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{formatHeaderDate()} · {formatHeaderTime()}</div>
           <div style={{ font: '600 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>Three alerts need you. $18,420 at risk across two accounts.</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'transparent', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
-            <div style={{ background: 'transparent', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Critical alerts</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#23272d', marginTop: 8 }}>3</div></div>
-            <div style={{ background: 'transparent', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>At risk</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#b3453f', marginTop: 8 }}>$18,420</div></div>
-            <div style={{ background: 'transparent', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Verified gain</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#3f7d6a', marginTop: 8 }}>$6,200</div></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
+            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Critical alerts</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#23272d', marginTop: 8 }}>3</div></div>
+            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>At risk</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#b3453f', marginTop: 8 }}>$18,420</div></div>
+            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Verified gain</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#3f7d6a', marginTop: 8 }}>$6,200</div></div>
           </div>
         </div>
 
