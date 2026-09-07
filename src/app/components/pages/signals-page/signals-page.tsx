@@ -1,380 +1,230 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { useState, useEffect, useCallback } from 'react';
+import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
-import { DecisionCard } from '../../signals/decision-card/decision-card';
-import { ReviewWorkspace, ReviewErrorBoundary } from '../../signals/review-workspace/review-workspace';
-import { EmptyState } from '../../signals/empty-state/empty-state';
-import { DailyBriefing } from '../../signals/daily-briefing/daily-briefing';
-import { BulkBar } from '../../signals/bulk-bar';
-import { FilterSheet, countActiveFilters, type FilterState } from '../../signals/filter-sheet';
-import { MeetingCard } from '../../signals/meeting-card';
-import { MeetingReviewView } from '../../signals/meeting-review-view';
-import { MOCK_DECISIONS } from '@/constants/signals/decisions.constants';
-import { MOCK_MEETING_BUNDLES } from '@/constants/signals/mockMeetings';
-import { ALERT_TABS, filterByTab, computeTabCounts, type AlertTabKey } from '@/constants/signals/tabs.constants';
-import { categorize } from '@/utils/signals/categories';
-import { importanceScore } from '@/utils/signals/lifecycle';
-import {
-  selectSelectedDecisionId,
-  selectSelectedMeetingId,
-  selectSelectedIds,
-  setSelectedDecision,
-  setSelectedMeeting,
-  approveDecision,
-  rejectDecision,
-  delegateToAan,
-  bulkApprove,
-  clearSelection,
-  setFilterSources,
-  setFilterDomains,
-  setFilterPriorities,
-  setFilterWindow,
-} from '@/redux/slices/signals/signals.slice';
-import type { Decision } from '@/constants/signals/decisions.constants';
+import { SIGNAL_TABS, type SignalTabKey, type BriefState } from '@/constants/signals/tabs.constants';
+import { BriefFull } from '../../signals/brief/brief-full';
+import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
+import { BriefOnboard } from '../../signals/brief/brief-onboard';
+import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
+import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
+import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
+import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
+import { MeetingPrep } from '../../signals/meetings/meeting-prep';
+import { MeetingPresentation } from '../../signals/meetings/meeting-presentation';
+import { MeetingMOM } from '../../signals/meetings/meeting-mom';
+import { WorkStation } from '../../signals/work-station/work-station';
+import { CalendarPopover } from '../../signals/common/calendar-popover';
+import { PROTOTYPE_ALERTS, type PrototypeAlert } from '@/constants/signals/prototype-data';
 
-interface MeetingGroup {
-  bundleId: string;
-  title: string;
-  signals: Decision[];
-}
+type MeetingScreen = 'list' | 'detail' | 'prep' | 'presentation' | 'mom';
 
-type TimeBucket = 'today' | 'yesterday' | 'this_week' | 'older';
+export function SignalsPage() {
+  const [activeTab, setActiveTab] = useState<SignalTabKey>('brief');
+  const [briefState, setBriefState] = useState<BriefState>('full');
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
+  const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
+  const [meetingScreen, setMeetingScreen] = useState<MeetingScreen>('list');
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [rangeLabel, setRangeLabel] = useState('Today · 1 Nov');
+  const [briefFullSubScreen, setBriefFullSubScreen] = useState<'main' | 'nudge'>('main');
+  const [alertPhase, setAlertPhase] = useState<'view' | 'executing' | 'report' | 'genReview'>('view');
+  const [execProgress, setExecProgress] = useState(0);
+  const [itemsModalOpen, setItemsModalOpen] = useState(false);
 
-function groupByMeeting(list: Decision[]): MeetingGroup[] {
-  const map = new Map<string, MeetingGroup>();
+  const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
 
-  for (const bundle of MOCK_MEETING_BUNDLES) {
-    map.set(bundle.id, { bundleId: bundle.id, title: bundle.title, signals: [] });
-  }
+  const goTab = useCallback((tab: SignalTabKey) => {
+    setActiveTab(tab);
+    setSelectedAlertId(null);
+    setSelectedMeetingId(null);
+    setMeetingScreen('list');
+    setAlertPhase('view');
+    setBriefFullSubScreen('main');
+  }, []);
 
-  for (const d of list) {
-    const ref = d.meetingRef;
-    if (!ref) continue;
-    let g = map.get(ref.bundleId);
-    if (!g) {
-      g = { bundleId: ref.bundleId, title: ref.title, signals: [] };
-      map.set(ref.bundleId, g);
-    }
-    g.signals.push(d);
-  }
-  return [...map.values()].sort((a, b) => b.signals.length - a.signals.length);
-}
+  const openAlert = useCallback((id: string) => {
+    setActiveTab('alerts');
+    setSelectedAlertId(id);
+    setAlertPhase('view');
+  }, []);
 
-function getTimeBucket(ts: number): TimeBucket {
-  const now = Date.now();
-  const date = new Date(ts);
-  const today = new Date();
-  const yesterday = new Date(now - 86400000);
-  const weekAgo = new Date(now - 7 * 86400000);
+  const openMeeting = useCallback((id: string) => {
+    setSelectedMeetingId(id);
+    setMeetingScreen('detail');
+  }, []);
 
-  if (date.toDateString() === today.toDateString()) return 'today';
-  if (date.toDateString() === yesterday.toDateString()) return 'yesterday';
-  if (ts >= weekAgo.getTime()) return 'this_week';
-  return 'older';
-}
-
-interface TimeBucketGroup {
-  bucket: TimeBucket;
-  label: string;
-  items: Decision[];
-}
-
-function groupByTimeBucket(list: Decision[]): TimeBucketGroup[] {
-  const bucketOrder: TimeBucket[] = ['today', 'yesterday', 'this_week', 'older'];
-  const bucketLabels: Record<TimeBucket, string> = {
-    today: 'Today',
-    yesterday: 'Yesterday',
-    this_week: 'This Week',
-    older: 'Older',
-  };
-
-  const buckets = new Map<TimeBucket, Decision[]>();
-  bucketOrder.forEach((b) => buckets.set(b, []));
-
-  for (const d of list) {
-    const bucket = getTimeBucket(d.createdAt);
-    buckets.get(bucket)!.push(d);
-  }
-
-  return bucketOrder
-    .filter((b) => buckets.get(b)!.length > 0)
-    .map((bucket) => ({
-      bucket,
-      label: bucketLabels[bucket],
-      items: buckets.get(bucket)!,
-    }));
-}
-
-interface SignalsPageProps {
-  defaultSummaryExpanded?: boolean;
-  defaultSelectedDecisionId?: string;
-}
-
-export function SignalsPage({ defaultSummaryExpanded, defaultSelectedDecisionId }: SignalsPageProps = {}) {
-  const dispatch = useDispatch();
-  const selectedDecisionId = useSelector(selectSelectedDecisionId);
-  const selectedMeetingId = useSelector(selectSelectedMeetingId);
-  const selectedIds = useSelector(selectSelectedIds);
-
-  const activeDecisions = useMemo<Decision[]>(
-    () => MOCK_DECISIONS,
-    [],
-  );
-
-  useEffect(() => {
-    if (defaultSelectedDecisionId) {
-      dispatch(setSelectedDecision(defaultSelectedDecisionId));
-    }
-  }, [defaultSelectedDecisionId, dispatch]);
-
-  const [tab, setTab] = useState<AlertTabKey>('unread');
-  const [query, setQuery] = useState('');
-  const [activeCategoryKey, setActiveCategoryKey] = useState<string | null>(null);
-  const [filterState, setFilterState] = useState<FilterState>({
-    sources: new Set(),
-    domains: new Set(),
-    priorities: new Set(),
-    window: 'any',
-  });
-
-  const counts = useMemo(() => computeTabCounts(activeDecisions), [activeDecisions]);
-  const pool = useMemo(() => filterByTab(activeDecisions, tab), [activeDecisions, tab]);
-
-  const filtered = useMemo(() => {
-    let result = pool;
-
-    const q = query.trim().toLowerCase();
-    if (q) {
-      result = result.filter((d) =>
-        `${d.insight} ${d.sourceRef.label} ${d.domain}`.toLowerCase().includes(q)
-      );
-    }
-
-    if (filterState.sources.size > 0) {
-      result = result.filter((d) => filterState.sources.has(d.source));
-    }
-    if (filterState.domains.size > 0) {
-      result = result.filter((d) => filterState.domains.has(d.domain));
-    }
-    if (filterState.priorities.size > 0) {
-      result = result.filter((d) => filterState.priorities.has(d.severity));
-    }
-    if (filterState.window !== 'any') {
-      const now = Date.now();
-      const day = 86400000;
-      const earliest = filterState.window === 'today' ? now - day : filterState.window === 'yesterday' ? now - 2 * day : now - 7 * day;
-      result = result.filter((d) => d.createdAt >= earliest);
-    }
-
-    return result.sort((a, b) => importanceScore(b) - importanceScore(a));
-  }, [pool, query, filterState]);
-
-  const allCategoryGroups = useMemo(() => categorize(tab, filtered), [tab, filtered]);
-  const categoryGroups = useMemo(() => {
-    if (!activeCategoryKey || activeCategoryKey === '__all__') return allCategoryGroups;
-    const only = allCategoryGroups.find((c) => c.key === activeCategoryKey);
-    return only ? [only] : allCategoryGroups;
-  }, [allCategoryGroups, activeCategoryKey]);
-  const meetingGroups = useMemo(() => groupByMeeting(filtered), [filtered]);
-  const isMeetingsTab = tab === 'meetings';
-
-  const selectedDecision = useMemo(
-    () => activeDecisions.find((d) => d.id === selectedDecisionId) ?? null,
-    [activeDecisions, selectedDecisionId],
-  );
-
-  const selectedMeetingBundle = useMemo(() => {
-    if (!selectedMeetingId) return null;
-    const first = activeDecisions.find((d) => d.meetingRef?.bundleId === selectedMeetingId);
-    if (first) return { bundleId: selectedMeetingId, title: first.meetingRef!.title };
-    const bundle = MOCK_MEETING_BUNDLES.find((b) => b.id === selectedMeetingId);
-    return bundle ? { bundleId: bundle.id, title: bundle.title } : null;
-  }, [activeDecisions, selectedMeetingId]);
-
-  const handleSelectDecision = useCallback((id: string) => {
-    dispatch(setSelectedDecision(id));
-  }, [dispatch]);
-
-  const handleSelectMeeting = useCallback((bundleId: string) => {
-    dispatch(setSelectedMeeting(bundleId));
-  }, [dispatch]);
-
-  const handleApprove = useCallback((id: string) => {
-    dispatch(approveDecision(id));
-  }, [dispatch]);
-
-  const handleBulkApprove = useCallback((ids: string[]) => {
-    dispatch(bulkApprove(ids));
-  }, [dispatch]);
-
-  const handleBulkDelegate = useCallback((ids: string[]) => {
-    ids.forEach((id) => dispatch(delegateToAan(id)));
-  }, [dispatch]);
-
-  const handleBulkDismiss = useCallback((ids: string[]) => {
-    ids.forEach((id) => dispatch(rejectDecision(id)));
-  }, [dispatch]);
+  const handleExecute = useCallback(() => {
+    setAlertPhase('executing');
+    setExecProgress(0);
+    const timer = setInterval(() => {
+      setExecProgress((prev) => {
+        const next = Math.min(100, prev + 20);
+        if (next >= 100) clearInterval(timer);
+        return next;
+      });
+    }, 650);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (selectedDecisionId) dispatch(setSelectedDecision(null));
-        else if (selectedMeetingId) dispatch(setSelectedMeeting(null));
-        else dispatch(clearSelection());
+        if (calendarOpen) setCalendarOpen(false);
+        else if (selectedAlertId) setSelectedAlertId(null);
+        else if (selectedMeetingId) {
+          setSelectedMeetingId(null);
+          setMeetingScreen('list');
+        }
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [dispatch, selectedDecisionId, selectedMeetingId]);
+  }, [calendarOpen, selectedAlertId, selectedMeetingId]);
 
-  // Group filtered alerts by time bucket for all tabs
-  const timeBucketGroups = useMemo(() => groupByTimeBucket(filtered), [filtered]);
-  const total = isMeetingsTab ? meetingGroups.length : filtered.length;
-  const isSearchEmpty = query.trim().length > 0 && total === 0;
-  const isEmpty = total === 0;
-  const filterActiveCount = countActiveFilters(filterState);
+  const renderBrief = () => {
+    switch (briefState) {
+      case 'full':
+        return (
+          <BriefFull
+            onAlertClick={openAlert}
+            onMeetingClick={() => { goTab('meetings'); }}
+            subScreen={briefFullSubScreen}
+            onNudgeOpen={() => setBriefFullSubScreen('nudge')}
+            onNudgeClose={() => setBriefFullSubScreen('main')}
+            onScopeChange={() => {}}
+          />
+        );
+      case 'nointeg':
+        return <BriefNoIntegration onAlertClick={openAlert} />;
+      case 'onboard':
+        return <BriefOnboard onComplete={() => setBriefState('full')} onSkip={() => setBriefState('nointeg')} />;
+    }
+  };
+
+  const renderAlerts = () => (
+    <div style={{ display: 'flex', gap: 16, height: '100%' }}>
+      <AlertListPanel
+        selectedAlertId={selectedAlertId}
+        onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
+      />
+      <AlertDetailPanel
+        alert={selectedAlert}
+        phase={alertPhase}
+        execProgress={execProgress}
+        onExecute={handleExecute}
+        onViewReport={() => setAlertPhase('report')}
+        onBackToAlerts={() => setAlertPhase('view')}
+        onGenReview={() => setAlertPhase('genReview')}
+        onApproveGenReview={handleExecute}
+        onOpenItems={() => setItemsModalOpen(true)}
+        itemsModalOpen={itemsModalOpen}
+        onCloseItems={() => setItemsModalOpen(false)}
+      />
+    </div>
+  );
+
+  const renderMeetings = () => {
+    switch (meetingScreen) {
+      case 'detail':
+        return (
+          <div style={{ display: 'flex', gap: 16, height: '100%' }}>
+            <MeetingListPanel
+              selectedMeetingId={selectedMeetingId}
+              onSelectMeeting={openMeeting}
+            />
+            <MeetingDetailPanel
+              meetingId={selectedMeetingId}
+              onOpenAlert={openAlert}
+              onPrepare={() => setMeetingScreen('prep')}
+              onBack={() => { setMeetingScreen('list'); setSelectedMeetingId(null); }}
+              onOpenMOM={() => setMeetingScreen('mom')}
+            />
+          </div>
+        );
+      case 'prep':
+        return (
+          <MeetingPrep
+            onBack={() => setMeetingScreen('detail')}
+            onCreatePresentation={() => setMeetingScreen('presentation')}
+          />
+        );
+      case 'presentation':
+        return (
+          <MeetingPresentation
+            onBack={() => setMeetingScreen('prep')}
+          />
+        );
+      case 'mom':
+        return (
+          <MeetingMOM
+            onBackToMeetings={() => { goTab('meetings'); setSelectedMeetingId(null); setMeetingScreen('list'); }}
+            onGoWorkstation={() => goTab('workstation')}
+          />
+        );
+      default:
+        return (
+          <div style={{ display: 'flex', gap: 16, height: '100%' }}>
+            <MeetingListPanel
+              selectedMeetingId={selectedMeetingId}
+              onSelectMeeting={openMeeting}
+            />
+            <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10 }}>
+              <div style={{ textAlign: 'center', maxWidth: 340 }}>
+                <div style={{ font: '600 15px/1.4 Inter,sans-serif', color: '#23272d' }}>Select a meeting</div>
+                <div style={{ font: '400 13px/1.7 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Agenda, account study, linked alerts and preparation open here. Completed meetings open their minutes instead.</div>
+              </div>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  const tabContent = () => {
+    switch (activeTab) {
+      case 'brief': return renderBrief();
+      case 'alerts': return renderAlerts();
+      case 'meetings': return renderMeetings();
+      case 'workstation': return <WorkStation />;
+    }
+  };
 
   return (
     <div className={styles.signalsPage}>
-      {/* Two-column layout */}
-      <div className={styles.layout}>
-        {/* Left: Toolbar + Queue */}
-        <div className={styles.leftCol}>
-          <div className={styles.toolbar}>
-            {/* Row 1: Tabs */}
-            <div className={styles.toolbarRow}>
-              <nav className={styles.tabBar} role="tablist">
-                {ALERT_TABS.map((t) => {
-                  const active = tab === t.key;
-                  return (
-                    <button
-                      key={t.key}
-                      role="tab"
-                      aria-selected={active}
-                      className={`${styles.tab} ${active ? styles.tabActive : ''}`}
-                      onClick={() => setTab(t.key)}
-                    >
-                      {t.label}
-                      {counts[t.key] > 0 && (
-                        <span className={`${styles.tabCount} ${active ? styles.tabCountActive : ''}`}>
-                          {counts[t.key]}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Row 2: Search + Filter */}
-            <div className={styles.toolbarRow}>
-              <div className={styles.searchWrap}>
-                <MagnifyingGlass size={16} className={styles.searchIcon} />
-                <input
-                  className={styles.searchInput}
-                  placeholder="Search signals, meetings, decisions…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-              </div>
-              <FilterSheet
-                value={filterState}
-                activeCategory={activeCategoryKey}
-                onChange={(f) => {
-                  setFilterState(f);
-                  dispatch(setFilterSources([...f.sources]));
-                  dispatch(setFilterDomains([...f.domains]));
-                  dispatch(setFilterPriorities([...f.priorities]));
-                  dispatch(setFilterWindow(f.window));
-                }}
-                activeCount={filterActiveCount + (activeCategoryKey && activeCategoryKey !== '__all__' ? 1 : 0)}
+      <div className={styles.header}>
+        <span className={styles.headerTitle}>Signals</span>
+        <div className={styles.headerRight}>
+          <span style={{ position: 'relative' }}>
+            <button className={styles.dateRangeBtn} onClick={() => setCalendarOpen(!calendarOpen)}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10.5" rx="1.5" stroke="#5f3880" strokeWidth="1.4" /><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="#5f3880" strokeWidth="1.4" strokeLinecap="round" /></svg>
+              {rangeLabel}
+              <CaretDown size={9} color="#5f3880" weight="bold" />
+            </button>
+            {calendarOpen && (
+              <CalendarPopover
+                onToday={() => { setRangeLabel('Today · 1 Nov'); setCalendarOpen(false); }}
+                onThisWeek={() => { setRangeLabel('This week · 26 Oct – 1 Nov'); setCalendarOpen(false); }}
+                onClose={() => setCalendarOpen(false)}
               />
-            </div>
-          </div>
-
-          <div className={styles.centerCol}>
-            <div className={styles.queueScroll}>
-            <BulkBar
-              selectedIds={selectedIds}
-              decisions={filtered}
-              onClear={() => dispatch(clearSelection())}
-              onBulkApprove={handleBulkApprove}
-              onBulkDelegate={handleBulkDelegate}
-              onBulkDismiss={handleBulkDismiss}
-            />
-
-            {isEmpty ? (
-              <EmptyState variant={isSearchEmpty ? 'search' : tab === 'read' || tab === 'completed' ? 'none' : 'needs_me'} />
-            ) : isMeetingsTab ? (
-              <div className={styles.meetingList}>
-                {meetingGroups.map((m) => (
-                  <MeetingCard
-                    key={m.bundleId}
-                    bundleId={m.bundleId}
-                    title={m.title}
-                    signals={m.signals}
-                    selected={selectedMeetingId === m.bundleId}
-                    onSelect={() => handleSelectMeeting(m.bundleId)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className={styles.timeBucketList}>
-                {timeBucketGroups.map((group) => (
-                  <div key={group.bucket} className={styles.timeBucketSection}>
-                    <div className={styles.timeBucketHeader}>{group.label}</div>
-                    <div className={styles.timeBucketItems}>
-                      {group.items.map((d: Decision) => (
-                        <DecisionCard
-                          key={d.id}
-                          decision={d}
-                          selected={selectedDecisionId === d.id}
-                          onSelect={() => handleSelectDecision(d.id)}
-                          onApprove={handleApprove}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
             )}
-          </div>
+          </span>
+          <div className={styles.avatarCircle} />
         </div>
-        </div>
+      </div>
 
-        {/* Right: Workspace or Briefing */}
-        <div className={`${styles.rightCol} ${selectedDecision || selectedMeetingBundle ? styles.rightColVisible : ''}`}>
-          <ReviewErrorBoundary fallback={
-            <div style={{ padding: 32, textAlign: 'center', color: '#7c7c7c' }}>
-              <p>Something went wrong loading this view.</p>
-              <button onClick={() => { dispatch(setSelectedDecision(null)); dispatch(setSelectedMeeting(null)); }} style={{ marginTop: 12, padding: '6px 16px', borderRadius: 8, border: '1px solid #e1e4e8', background: '#fff', cursor: 'pointer' }}>Go back</button>
-            </div>
-          }>
-            {selectedDecision ? (
-              <ReviewWorkspace
-                decision={selectedDecision}
-                decisions={activeDecisions}
-                onClose={() => dispatch(setSelectedDecision(null))}
-                onOpenDecision={(id) => {
-                  dispatch(setSelectedDecision(id));
-                }}
-                onBack={selectedDecision.meetingRef ? () => dispatch(setSelectedMeeting(selectedDecision.meetingRef!.bundleId)) : undefined}
-                meetingBundleId={selectedDecision.meetingRef?.bundleId}
-                defaultSummaryExpanded={defaultSummaryExpanded}
-              />
-            ) : selectedMeetingBundle ? (
-              <MeetingReviewView
-                bundleId={selectedMeetingBundle.bundleId}
-                bundleTitle={selectedMeetingBundle.title}
-                all={activeDecisions}
-                onOpen={(id) => dispatch(setSelectedDecision(id))}
-                onBack={() => dispatch(setSelectedMeeting(null))}
-              />
-            ) : (
-              <DailyBriefing onMeetingSelect={(id) => dispatch(setSelectedMeeting(id))} />
-            )}
-          </ReviewErrorBoundary>
+      <nav className={styles.tabBar}>
+        {SIGNAL_TABS.map((t) => (
+          <button
+            key={t.key}
+            className={`${styles.tab} ${activeTab === t.key ? styles.tabActive : ''}`}
+            onClick={() => goTab(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className={styles.content}>
+        <div className={styles.tabContent}>
+          {tabContent()}
         </div>
       </div>
     </div>
