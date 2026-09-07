@@ -4,9 +4,11 @@ import { PROTOTYPE_ALERTS, type PrototypeAlert, type AlertDay } from '@/constant
 interface Props {
   selectedAlertId: string | null;
   onSelectAlert: (id: string) => void;
+  loggedActionsCount?: number;
+  onOpenActionItems?: () => void;
 }
 
-export function AlertListPanel({ selectedAlertId, onSelectAlert }: Props) {
+export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCount = 0, onOpenActionItems }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -61,6 +63,12 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert }: Props) {
             Filter{filterCount ? ` (${filterCount})` : ''}
           </span>
         </div>
+        {onOpenActionItems && (
+          <span onClick={onOpenActionItems} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', alignSelf: 'flex-start' }}>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M3 8h10M3 11.5h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+            Action items{loggedActionsCount ? ` (${loggedActionsCount})` : ''}
+          </span>
+        )}
         {filterOpen && (
           <div style={{ position: 'absolute', left: 16, top: 56, width: 270, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.16)', padding: 14, zIndex: 30, maxHeight: 440, overflowY: 'auto' }}>
             <FilterSection label="Impact value">
@@ -74,7 +82,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert }: Props) {
               </div>
             </FilterSection>
             <FilterSection label="Category">
-              {['Catalog', 'Inventory', 'Advertising', 'Profitability'].map((k) => (
+              {['Catalog', 'Inventory', 'Advertising', 'Profitability', 'Compliance', 'Operations', 'Billing', 'Reviews'].map((k) => (
                 <div key={k} onClick={() => toggleCategory(k)} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
                   <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: categoryFilters[k] ? '#77469b' : '#fff', flex: 'none' }} />
                   <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
@@ -161,7 +169,7 @@ function AlertRow({ al, selected, onSelect, menuFor, setMenuFor, menuMode, setMe
       <div onClick={onSelect}>
         <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{money(al.valueNum)}</span>
         <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: 4 }}>{al.impactStr} · {al.category} agent{al.itemsCount > 1 ? ` · ${al.itemsBreakdown}` : ''}</div>
-        <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 20 }}>{al.title}</div>
+        <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{al.title}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 11, flexWrap: 'wrap' }}>
         <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>

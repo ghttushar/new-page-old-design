@@ -1,6 +1,11 @@
 import { useState } from 'react';
-import type { PrototypeAlert, AlertOption } from '@/constants/signals/prototype-data';
+import type { PrototypeAlert, AlertOption, LoggedActionItem } from '@/constants/signals/prototype-data';
+import { ACTION_TYPES, type ActionType } from '@/constants/signals/action-types.constants';
+
+const GENERIC_SEND_UPDATE = ACTION_TYPES.find((a) => a.id === 'send-report-update')!;
 import { ItemsModal } from './items-modal';
+import { ActionPicker } from './action-picker';
+import { ComposeMail } from './compose-mail';
 
 interface Props {
   alert: PrototypeAlert | null;
@@ -14,15 +19,18 @@ interface Props {
   onOpenItems: () => void;
   itemsModalOpen: boolean;
   onCloseItems: () => void;
+  onLogAction: (item: LoggedActionItem) => void;
 }
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [otherText, setOtherText] = useState('');
+  const [actionPickerOpen, setActionPickerOpen] = useState(false);
+  const [emailFor, setEmailFor] = useState<ActionType | null>(null);
+  const [lastLogged, setLastLogged] = useState<{ label: string; sent: boolean } | null>(null);
 
   if (!sel) {
     return (
@@ -37,6 +45,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
     );
   }
 
+  const mappedActionType = sel.mappedActionTypeId ? ACTION_TYPES.find((a) => a.id === sel.mappedActionTypeId) : undefined;
+
   const money = (n: number) => {
     const abs = Math.abs(n);
     const sign = n < 0 ? '−$' : '+$';
@@ -50,13 +60,14 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
 
   const executeLabel = pickedOption
     ? pickedOption.kind === 'GENERATIVE' ? 'Generate & review'
-      : pickedOption.isMeetingAsk ? 'Log for meeting'
-      : pickedOption.isOther ? 'Save my action'
+      : pickedOption.isMeetingAsk ? 'Choose action type'
+      : pickedOption.isOther ? 'Choose action type'
       : `Execute: ${pickedOption.label}`
     : 'Execute';
 
   const handleExecute = () => {
     if (pickedOption?.kind === 'GENERATIVE') { onGenReview(); return; }
+    if (pickedOption?.isMeetingAsk || pickedOption?.isOther) { setActionPickerOpen(true); return; }
     onExecute();
   };
 
@@ -205,8 +216,13 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
 
           {/* Strategy picker */}
           <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
-            <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f2f4' }}>
+            <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
               <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Choose your strategy</span>
+              {mappedActionType && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1.5 Inter,sans-serif', color: '#5f3880' }}>
+                  ◆ Recommended action type: {mappedActionType.label}
+                </span>
+              )}
             </div>
             {sel.options.map((o) => (
               <div key={o.id} onClick={() => { setSelectedOptionId(o.id); }} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
@@ -223,11 +239,13 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                       <span>Confidence <strong style={{ font: '600 11px Inter,sans-serif', color: '#464646' }}>{o.confidence}%</strong></span>
                     </div>
                   )}
-                  {o.isOther && optId === o.id && (
-                    <textarea value={otherText} onChange={(e) => setOtherText(e.target.value)} placeholder="Describe what should happen instead…" style={{ width: '100%', marginTop: 9, padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#464646', resize: 'vertical' as const, minHeight: 52, outline: 'none' }} />
-                  )}
-                  {o.isMeetingAsk && (
-                    <span style={{ display: 'inline-block', marginTop: 8, padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b' }}>Add to meeting</span>
+                  {(o.isOther || o.isMeetingAsk) && optId === o.id && (
+                    <span
+                      onClick={(e) => { e.stopPropagation(); setActionPickerOpen(true); }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, padding: '8px 13px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: '#fff' }}
+                    >
+                      Choose action type <span style={{ color: '#77469b' }}>→</span>
+                    </span>
                   )}
                 </div>
               </div>
@@ -278,8 +296,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             {detailMenu === 'share' && (
               <div style={{ position: 'absolute', left: 0, bottom: 38, width: 180, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 70, textAlign: 'left' }}>
                 <div style={{ padding: '6px 10px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Share via</div>
-                <div style={{ padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>✉ Email</div>
-                <div style={{ padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>▦ Workspace · Nutrabay</div>
+                <div onClick={() => { setDetailMenu(null); setEmailFor(GENERIC_SEND_UPDATE); }} style={{ padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>✉ Email</div>
+                <div style={{ padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>▦ Workspace · {sel.account}</div>
               </div>
             )}
           </span>
@@ -306,6 +324,63 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
       </div>
 
       {itemsModalOpen && <ItemsModal items={sel.items} itemCount={sel.itemsCount} breakdown={sel.itemsBreakdown} onClose={onCloseItems} />}
+
+      {actionPickerOpen && (
+        <ActionPicker
+          alert={sel}
+          initialSearch={mappedActionType?.label}
+          onClose={() => setActionPickerOpen(false)}
+          onRequestEmail={(actionType) => { setActionPickerOpen(false); setEmailFor(actionType); }}
+          onSave={(actionType, note, dueDate, assignee) => {
+            onLogAction({
+              id: `log-${Date.now()}`,
+              alertId: sel.id,
+              alertTitle: sel.title,
+              account: sel.account,
+              actionTypeId: actionType.id,
+              actionTypeLabel: actionType.label,
+              note,
+              dueDate: dueDate || undefined,
+              assignee: assignee || undefined,
+              status: 'logged',
+              createdAt: Date.now(),
+            });
+            setActionPickerOpen(false);
+            setLastLogged({ label: actionType.label, sent: false });
+            window.setTimeout(() => setLastLogged(null), 3200);
+          }}
+        />
+      )}
+
+      {emailFor && (
+        <ComposeMail
+          alert={sel}
+          actionType={emailFor}
+          onClose={() => setEmailFor(null)}
+          onSend={({ subject }) => {
+            onLogAction({
+              id: `log-${Date.now()}`,
+              alertId: sel.id,
+              alertTitle: sel.title,
+              account: sel.account,
+              actionTypeId: emailFor.id,
+              actionTypeLabel: emailFor.label,
+              note: `Emailed: ${subject}`,
+              status: 'sent',
+              createdAt: Date.now(),
+            });
+            setLastLogged({ label: emailFor.label, sent: true });
+            window.setTimeout(() => setLastLogged(null), 3200);
+          }}
+        />
+      )}
+
+      {lastLogged && (
+        <div style={{ position: 'fixed', right: 24, bottom: 24, padding: '12px 16px', borderRadius: 9, background: '#23272d', color: '#fff', font: '500 12px/1.4 Inter,sans-serif', boxShadow: '0 12px 28px rgba(20,24,33,.28)', zIndex: 250, display: 'flex', alignItems: 'center', gap: 9 }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#8fd9bd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          {lastLogged.sent ? `Sent: ${lastLogged.label}` : `Logged: ${lastLogged.label}`}
+        </div>
+      )}
     </div>
   );
 }

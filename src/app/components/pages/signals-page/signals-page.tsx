@@ -7,6 +7,7 @@ import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
 import { BriefOnboard } from '../../signals/brief/brief-onboard';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
 import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
+import { ActionItemsModal } from '../../signals/alerts/action-items-modal';
 import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
 import { MeetingPrep } from '../../signals/meetings/meeting-prep';
@@ -14,7 +15,7 @@ import { MeetingPresentation } from '../../signals/meetings/meeting-presentation
 import { MeetingMOM } from '../../signals/meetings/meeting-mom';
 import { WorkStation } from '../../signals/work-station/work-station';
 import { CalendarPopover } from '../../signals/common/calendar-popover';
-import { PROTOTYPE_ALERTS, type PrototypeAlert } from '@/constants/signals/prototype-data';
+import { PROTOTYPE_ALERTS, type PrototypeAlert, type LoggedActionItem } from '@/constants/signals/prototype-data';
 
 type MeetingScreen = 'list' | 'detail' | 'prep' | 'presentation' | 'mom';
 
@@ -30,8 +31,14 @@ export function SignalsPage() {
   const [alertPhase, setAlertPhase] = useState<'view' | 'executing' | 'report' | 'genReview'>('view');
   const [execProgress, setExecProgress] = useState(0);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
+  const [loggedActions, setLoggedActions] = useState<LoggedActionItem[]>([]);
+  const [actionItemsModalOpen, setActionItemsModalOpen] = useState(false);
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
+
+  const logAction = useCallback((item: LoggedActionItem) => {
+    setLoggedActions((prev) => [item, ...prev]);
+  }, []);
 
   const goTab = useCallback((tab: SignalTabKey) => {
     setActiveTab(tab);
@@ -105,6 +112,8 @@ export function SignalsPage() {
       <AlertListPanel
         selectedAlertId={selectedAlertId}
         onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
+        loggedActionsCount={loggedActions.length}
+        onOpenActionItems={() => setActionItemsModalOpen(true)}
       />
       <AlertDetailPanel
         alert={selectedAlert}
@@ -118,7 +127,15 @@ export function SignalsPage() {
         onOpenItems={() => setItemsModalOpen(true)}
         itemsModalOpen={itemsModalOpen}
         onCloseItems={() => setItemsModalOpen(false)}
+        onLogAction={logAction}
       />
+      {actionItemsModalOpen && (
+        <ActionItemsModal
+          items={loggedActions}
+          onClose={() => setActionItemsModalOpen(false)}
+          onOpenAlert={(id) => { setActionItemsModalOpen(false); openAlert(id); }}
+        />
+      )}
     </div>
   );
 
