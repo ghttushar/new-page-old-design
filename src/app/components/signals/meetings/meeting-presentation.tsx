@@ -5,7 +5,7 @@ interface Props {
 export function MeetingPresentation({ onBack }: Props) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', display: 'flex', justifyContent: 'center', paddingTop: 18 }}>
-      <div style={{ width: 820 }}>
+      <div style={{ maxWidth: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <span onClick={onBack} style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Back to preparation</span>
           <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>· Generated report</span>

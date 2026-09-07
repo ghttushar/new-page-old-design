@@ -10,7 +10,7 @@ export function BriefOnboard({ onComplete, onSkip }: Props) {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
-      <div style={{ width: 720 }}>
+      <div style={{ maxWidth: '100%' }}>
         <div style={{ font: '600 22px/1.35 Inter,sans-serif', color: '#23272d' }}>Let's set up your brief</div>
         <div style={{ font: '400 14px/1.7 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Four things, about five minutes. You can start with alerts only and add the rest later — each one switches on a section of the brief.</div>
 

@@ -23,7 +23,7 @@ function formatHeaderTime(): string {
 export function BriefNoIntegration({ onAlertClick }: Props) {
   return (
     <div style={{ height: '100%', display: 'flex', gap: 16 }}>
-      <div style={{ width: 840, flex: 'none', height: '100%', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ flex: 1, minWidth: 0, height: '100%', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: '20px 22px' }}>
           <div style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{formatHeaderDate()} · {formatHeaderTime()}</div>
           <div style={{ font: '600 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>Three alerts need you. $18,420 at risk across two accounts.</div>
@@ -53,7 +53,7 @@ export function BriefNoIntegration({ onAlertClick }: Props) {
         </div>
       </div>
 
-      <div style={{ width: 438, flex: 'none', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ flex: '0 0 38%', maxWidth: '38%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ background: '#fff', border: '1px dashed #cfd4dc', borderRadius: 10, padding: 20 }}>
           <div style={{ font: '600 13px/1.4 Inter,sans-serif', color: '#23272d' }}>Meetings are switched off</div>
           <div style={{ font: '400 12px/1.7 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Connect a calendar and the meeting bot and Signals will club these alerts under the call they belong to, prepare the deck, and write the minutes afterwards.</div>

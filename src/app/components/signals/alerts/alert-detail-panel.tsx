@@ -27,7 +27,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   if (!sel) {
     return (
       <div style={{ flex: 1, minWidth: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center', maxWidth: 300 }}>
             <div style={{ font: '600 14px/1.4 Inter,sans-serif', color: '#23272d' }}>Select an alert</div>
             <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7 }}>The reasoning, impact and recommended strategy open here.</div>
@@ -63,7 +63,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   if (phase === 'executing') {
     return (
       <div style={{ flex: 1, minWidth: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ width: 480 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: execProgress >= 100 ? '#3f7d6a' : '#a8763f' }} />

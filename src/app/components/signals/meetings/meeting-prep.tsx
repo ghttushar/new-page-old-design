@@ -8,7 +8,7 @@ interface Props {
 export function MeetingPrep({ onBack, onCreatePresentation }: Props) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', display: 'flex', justifyContent: 'center', paddingTop: 18 }}>
-      <div style={{ width: 900 }}>
+      <div style={{ maxWidth: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <span onClick={onBack} style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Back to meeting</span>
           <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>· Nutrabay Weekly review, today 10:30</span>

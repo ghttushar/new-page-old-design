@@ -8,7 +8,7 @@ interface Props {
 export function MeetingMOM({ onBackToMeetings, onGoWorkstation }: Props) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', display: 'flex', justifyContent: 'center', paddingTop: 18 }}>
-      <div style={{ width: 820 }}>
+      <div style={{ maxWidth: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <span onClick={onBackToMeetings} style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>All meetings</span>
           <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>· Minutes</span>

@@ -42,7 +42,7 @@ export function WorkStation() {
       </div>
 
       {/* Right — Goals + Actions */}
-      <div style={{ width: 520, flex: 'none', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ flex: '0 0 38%', maxWidth: '38%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Account goals */}
         <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: '18px 20px' }}>
           <div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d' }}>Account goals</div>

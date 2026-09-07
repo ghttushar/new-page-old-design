@@ -30,8 +30,8 @@ function formatHeaderTime(): string {
 export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen, onNudgeClose }: Props) {
   return (
     <div style={{ height: '100%', display: 'flex', gap: 16 }}>
-      {/* Left column — 840px */}
-      <div style={{ width: 840, flex: 'none', height: '100%', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Left column */}
+      <div style={{ flex: 1, minWidth: 0, height: '100%', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Summary card */}
         <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: '20px 22px' }}>
           <div style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{formatHeaderDate()} · {formatHeaderTime()}</div>
@@ -115,8 +115,8 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
         </CardSection>
       </div>
 
-      {/* Right column — 438px */}
-      <div style={{ width: 438, flex: 'none', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Right column */}
+      <div style={{ flex: '0 0 38%', maxWidth: '38%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Engagement */}
         <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: 18 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
@@ -168,7 +168,7 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
 
       {/* Nudge dialog */}
       {subScreen === 'nudge' && (
-        <div style={{ width: 400, flex: 'none', height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: 20, overflowY: 'auto' }}>
+        <div style={{ flex: '0 0 30%', maxWidth: '30%', height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: 20, overflowY: 'auto' }}>
           <div style={{ font: '600 14px/1 Inter,sans-serif', color: '#23272d' }}>Nudge Ritvik on Slack</div>
           <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 9 }}>This alert has been open three days. Sending a nudge does not act on the AM's behalf — it only sends the message below.</div>
           <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, padding: 14, marginTop: 14, background: '#fafbfd' }}>
