@@ -1,6 +1,13 @@
 export type AlertPriority = 'High' | 'Medium' | 'Low';
 export type AlertDay = 'today' | 'yesterday';
 export type MpBrand = 'amazon' | 'walmart';
+export type AlertSource = 'anarix' | 'jiva' | 'meeting' | 'email' | 'slack' | 'workspace';
+
+export interface AssigneeOption {
+  id: string;
+  name: string;
+  role: string;
+}
 
 export interface AlertItem {
   name: string;
@@ -19,6 +26,8 @@ export interface AlertOption {
   recommended?: boolean;
   isOther?: boolean;
   isMeetingAsk?: boolean;
+  /** For GENERATIVE options: what kind of content gets generated — drives which studio opens (text diff vs. image chat). Defaults to 'text'. */
+  generates?: 'text' | 'image';
 }
 
 /** An action a user has committed to from an alert's strategy picker — logged via the action-type picker, and either sent as an email or tracked as a task. */
@@ -72,6 +81,17 @@ export interface PrototypeAlert {
   options: AlertOption[];
   /** id into ACTION_TYPES — the action type recommended for this alert's reason, per the alert-reasoning spec. */
   mappedActionTypeId?: string;
+  /** Where this alert originated (for the source icon). Defaults to 'anarix' (agent-detected) when omitted. Not to be confused with `source`, the provenance text shown under Business Impact. */
+  originType?: AlertSource;
+  /** Tooltip detail for the origin icon — email sender, workspace name, meeting name, etc. */
+  originDetail?: string;
+  /** Tooltip detail for the "repeated" icon, e.g. "3rd day running". */
+  repeatedLabel?: string;
+  /** People this alert can be assigned to. Falls back to DEFAULT_ASSIGNEES when omitted. */
+  assignees?: AssigneeOption[];
+  /** Extra marketplaces beyond `mpBrand`, for the multi-marketplace icon layouts. */
+  mpBrands?: MpBrand[];
+  /** How the marketplace glyph(s) render — a design exploration across a few demo cards. Defaults to 'plain'. */
 }
 
 export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
@@ -91,6 +111,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     account: 'Nutrabay',
     category: 'Catalog',
     repeated: true,
+    repeatedLabel: '3rd day running',
     hasMeeting: true,
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 6 hrs',
@@ -118,6 +139,11 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
       { id: 'o2', kind: 'GENERATIVE', label: 'Rewrite bullets with the winning keyword set', desc: 'Higher ceiling, less certain — you review and edit before publishing.', expected: '+$8,400', confidence: 71 },
       { id: 'o3', kind: 'PROCESS', label: 'Ask the client for a PIM approval gate', desc: 'Prevents recurrence rather than fixing today. Becomes a discussion point.', isMeetingAsk: true },
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action — tracked and measured the same way.', isOther: true },
+    ],
+    assignees: [
+      { id: 'mike', name: 'Mike Torres', role: 'Ops' },
+      { id: 'priya', name: 'Priya Nair', role: 'Client' },
+      { id: 'self', name: 'Myself', role: 'You' },
     ],
   },
   {
@@ -161,6 +187,18 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
       { id: 'o2', kind: 'INSTRUCTIVE', label: 'Add the three keywords to exact-match targeting instead', desc: 'Buys traffic rather than earning it — faster, but costs spend.', expected: '+$2,100', confidence: 84 },
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action — tracked and measured the same way.', isOther: true },
     ],
+    assignees: [
+      { id: 'mike', name: 'Mike Torres', role: 'Ops' },
+      { id: 'sarah', name: 'Sarah Kim', role: 'Marketing' },
+      { id: 'priya', name: 'Priya Nair', role: 'Client' },
+      { id: 'self', name: 'Myself', role: 'You' },
+      { id: 'rahul', name: 'Rahul Mehta', role: 'Catalog' },
+      { id: 'ananya', name: 'Ananya Iyer', role: 'Advertising' },
+      { id: 'jiva', name: '✦ Jiva', role: 'AI' },
+      { id: 'devesh', name: 'Devesh Rao', role: 'Ops' },
+      { id: 'lena', name: 'Lena Fischer', role: 'Client' },
+      { id: 'arjun', name: 'Arjun Verma', role: 'Advertising' },
+    ],
   },
   {
     id: 'a3',
@@ -173,6 +211,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     title: 'Inventory reorder on three SKUs came back verified',
     impactStr: 'Verified gain',
     mpBrand: 'amazon',
+    mpBrands: ['amazon', 'walmart'],
     mpColor: '#e78a2e',
     mpCountry: 'US',
     account: 'Nutrabay',
@@ -202,6 +241,34 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     options: [
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Log a follow-up action on this alert.', isOther: true },
     ],
+    assignees: [
+      { id: 'mike', name: 'Mike Torres', role: 'Ops' },
+      { id: 'sarah', name: 'Sarah Kim', role: 'Marketing' },
+      { id: 'priya', name: 'Priya Nair', role: 'Client' },
+      { id: 'self', name: 'Myself', role: 'You' },
+      { id: 'rahul', name: 'Rahul Mehta', role: 'Catalog' },
+      { id: 'ananya', name: 'Ananya Iyer', role: 'Advertising' },
+      { id: 'jiva', name: '✦ Jiva', role: 'AI' },
+      { id: 'devesh', name: 'Devesh Rao', role: 'Ops' },
+      { id: 'lena', name: 'Lena Fischer', role: 'Client' },
+      { id: 'arjun', name: 'Arjun Verma', role: 'Advertising' },
+      { id: 'neha', name: 'Neha Kapoor', role: 'Inventory' },
+      { id: 'tom', name: 'Tom Bennett', role: 'Profitability' },
+      { id: 'sara', name: 'Sara Ahmed', role: 'Compliance' },
+      { id: 'vikram', name: 'Vikram Shah', role: 'Catalog' },
+      { id: 'chloe', name: 'Chloe Martin', role: 'Client' },
+      { id: 'karan', name: 'Karan Malhotra', role: 'Ops' },
+      { id: 'megan', name: 'Megan Clarke', role: 'Marketing' },
+      { id: 'divya', name: 'Divya Reddy', role: 'Advertising' },
+      { id: 'oliver', name: 'Oliver James', role: 'Finance' },
+      { id: 'ritu', name: 'Ritu Sharma', role: 'Client' },
+      { id: 'sam', name: 'Sam Okafor', role: 'Inventory' },
+      { id: 'ines', name: 'Ines Duarte', role: 'Reviews' },
+      { id: 'yusuf', name: 'Yusuf Khan', role: 'Ops' },
+      { id: 'grace', name: 'Grace Liu', role: 'Compliance' },
+      { id: 'pooja', name: 'Pooja Nair', role: 'Marketing' },
+      { id: 'ben', name: 'Ben Turner', role: 'Profitability' },
+    ],
   },
   {
     id: 'a4',
@@ -214,12 +281,15 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     title: 'Two listings suppressed on image compliance',
     impactStr: 'Revenue at risk',
     mpBrand: 'amazon',
+    mpBrands: ['amazon', 'walmart'],
     mpColor: '#e78a2e',
     mpCountry: 'US',
     account: 'Wellbeing Nutrition',
     category: 'Catalog',
     repeated: false,
     hasMeeting: false,
+    originType: 'email',
+    originDetail: 'priya.nair@wellbeingnutrition.com',
     windowLabel: 'Act within 1 day',
     subheader: 'Both listings failed a background-colour compliance check after an asset refresh.',
     why: 'New lifestyle images were pushed on 30 Oct without a white-background pass, tripping compliance.',
@@ -254,6 +324,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     title: 'Price parity violation flagged across the catalog',
     impactStr: 'Net profit at risk',
     mpBrand: 'walmart',
+    mpBrands: ['walmart', 'amazon'],
     mpColor: '#0071ce',
     mpCountry: 'US',
     account: 'Boldfit',
@@ -275,7 +346,12 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     itemsCount: 600,
     itemsBreakdown: '482 ASINs · 94 listings · 24 campaigns',
     itemsBadge: '600 ASINs',
-    items: [],
+    items: [
+      { name: 'Adjustable Dumbbell Set — Grey', sku: 'B0BLD3390', impact: '−$210', color: '#b3453f' },
+      { name: 'Resistance Bands Pro Set', sku: 'B0BLD9012', impact: '−$185', color: '#b3453f' },
+      { name: 'Foam Roller — High Density', sku: 'B0BLD6620', impact: '−$140', color: '#b3453f' },
+      { name: 'Ankle Weights 2lb Pair', sku: 'B0BLD8843', impact: '−$96', color: '#b3453f' },
+    ],
     options: [
       { id: 'o1', kind: 'INSTRUCTIVE', label: 'Revert all 600 ASINs to their pre-incident price', desc: 'Restores MAP-compliant pricing storefront-wide within the hour.', expected: '+$42,600', confidence: 93, recommended: true },
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action.', isOther: true },
@@ -299,6 +375,8 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Advertising',
     repeated: false,
     hasMeeting: false,
+    originType: 'slack',
+    originDetail: '#boldfit-ppc channel',
     windowLabel: 'No action needed',
     subheader: 'A single ASIN lost the Buy Box for 40 minutes overnight, then recovered on its own.',
     why: 'A competing offer briefly undercut price by 2%, then reverted.',
@@ -337,6 +415,8 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Inventory',
     repeated: false,
     hasMeeting: false,
+    originType: 'workspace',
+    originDetail: 'Wellbeing Nutrition pod',
     windowLabel: 'Act within 7 days',
     subheader: 'A 3-unit gap between the 3PL manifest and Amazon’s received count was found on one SKU.',
     why: 'The 3PL’s manifest recorded 3 more units shipped than Amazon logged as received.',
@@ -417,6 +497,8 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Advertising',
     repeated: false,
     hasMeeting: false,
+    originType: 'jiva',
+    originDetail: 'Flagged during a routine keyword review',
     windowLabel: 'No action needed',
     subheader: 'One added negative keyword trimmed wasted spend on a single evergreen campaign — small but verified.',
     why: 'A low-intent search term was added as a negative keyword after last week’s harvest.',
@@ -657,6 +739,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     account: 'Wellbeing Nutrition',
     category: 'Catalog',
     repeated: true,
+    repeatedLabel: '2nd time this month',
     hasMeeting: false,
     windowLabel: 'Act within 1 day',
     subheader: 'The main image did not carry over on re-list, suppressing the ASIN from search for the second time this month.',
@@ -677,7 +760,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     ],
     mappedActionTypeId: 'update-product-images',
     options: [
-      { id: 'o1', kind: 'GENERATIVE', label: 'Generate a pure-white-background main image and upload', desc: 'Matches recommended action: Update product images.', expected: '+$3,400', confidence: 94, recommended: true },
+      { id: 'o1', kind: 'GENERATIVE', label: 'Generate a pure-white-background main image and upload', desc: 'Matches recommended action: Update product images.', expected: '+$3,400', confidence: 94, recommended: true, generates: 'image' },
       { id: 'o2', kind: 'PROCESS', label: 'Ask the client to upload approved product images', desc: 'If no usable image asset exists yet.', isMeetingAsk: true },
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action.', isOther: true },
     ],
@@ -1146,6 +1229,8 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Reviews',
     repeated: false,
     hasMeeting: false,
+    originType: 'meeting',
+    originDetail: 'Wellbeing Nutrition · QBR prep',
     windowLabel: 'Act within 5 days',
     subheader: 'Three new 1-2 star reviews landed this week, pulling the average rating down.',
     why: 'Reviews cite a packaging change that made the scoop harder to find inside the tub.',
@@ -1489,6 +1574,50 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action.', isOther: true },
     ],
   },
+  {
+    id: 'a36',
+    day: 'today',
+    time: '06:00 AM',
+    valueNum: -1450000,
+    valueLabel: '−$1.45M',
+    priority: 'High',
+    priorityDot: '#b3453f',
+    title: 'Q4 profitability forecast down across the entire Boldfit portfolio',
+    impactStr: 'Net profit at risk',
+    mpBrand: 'walmart',
+    mpColor: '#0071ce',
+    mpCountry: 'US',
+    account: 'Boldfit',
+    category: 'Profitability',
+    repeated: false,
+    hasMeeting: true,
+    meetingLabel: 'In your 10:30',
+    windowLabel: 'Act within 10 days',
+    subheader: 'A freight-cost increase across the supplier base is projected to erode Q4 margin storefront-wide unless pricing or sourcing is adjusted.',
+    why: 'Ocean freight rates rose 22% this quarter and were never passed through to retail pricing across the 340-ASIN portfolio.',
+    root: 'No process links supplier freight-cost changes to a pricing or margin review.',
+    oppWindow: '60 days',
+    revLabel: 'Revenue at risk',
+    revValue: '$1.45M',
+    confidence: 72,
+    source: 'Profitability Agent, quarterly forecast',
+    proof: 'estimated',
+    aiSummary: 'This is a forecast, not a single-day loss — a phased price adjustment across the highest-freight-cost SKUs recovers most of the margin without a blanket price hike that could hurt conversion.',
+    itemsCount: 340,
+    itemsBreakdown: '340 ASINs',
+    itemsBadge: '340 ASINs',
+    items: [
+      { name: 'Adjustable Dumbbell Set — Grey', sku: 'B0BLD3390', impact: '−$18,200', color: '#b3453f' },
+      { name: 'Resistance Bands Pro Set', sku: 'B0BLD9012', impact: '−$14,600', color: '#b3453f' },
+      { name: 'Foam Roller — High Density', sku: 'B0BLD6620', impact: '−$9,400', color: '#b3453f' },
+    ],
+    mappedActionTypeId: 'adjust-pricing-discount',
+    options: [
+      { id: 'o1', kind: 'INSTRUCTIVE', label: 'Phase in a price adjustment on the highest-freight-cost SKUs', desc: 'Matches recommended action: Adjust pricing/discount strategy. Recovers most of the margin without a storefront-wide hike.', expected: '+$1.1M', confidence: 72, recommended: true },
+      { id: 'o2', kind: 'PROCESS', label: 'Ask the client to renegotiate freight rates with the supplier base', desc: 'Addresses the root cause rather than passing the cost to customers.', isMeetingAsk: true },
+      { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action.', isOther: true },
+    ],
+  },
 ];
 
 export interface BriefingAlert {
@@ -1557,22 +1686,35 @@ export const ACCOUNT_GOALS: AccountGoal[] = [
   { label: 'Ad ROAS', current: '4.8', target: '4.5', pct: 100, color: '#3f7d6a', meta: 'Target met · holding four weeks' },
 ];
 
+export type TaskStatus = 'pending' | 'accepted' | 'declined' | 'in_progress' | 'done';
+
 export interface WorkstationTask {
   id: string;
   text: string;
+  /** Display name of who the task is for. 'You' is the current user. */
   assignee: string;
+  /** id into DEFAULT_ASSIGNEES / an alert's assignees, for avatar lookup. */
+  assigneeId?: string;
+  /** Who created/assigned the task — 'You' for self-created or delegated-out tasks. */
+  createdBy: string;
   meeting: string;
   due: string;
   dueColor?: string;
-  done: boolean;
+  status: TaskStatus;
+  /** Free-text ETA the assignee committed to, distinct from the original `due` context line. */
+  etaLabel?: string;
+  /** Most recent reminder sent/received, shown inline. */
+  lastReminder?: string;
 }
 
 export const WORKSTATION_TASKS: WorkstationTask[] = [
-  { id: 't1', text: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed', assignee: 'You', meeting: 'Wellbeing QBR', due: 'Due 3 Nov', dueColor: '#b3453f', done: false },
-  { id: 't2', text: 'Model Q4 stock cover at two scenarios for the hero range', assignee: 'You', meeting: 'Wellbeing QBR', due: 'Due 7 Nov', done: false },
-  { id: 't3', text: 'Chase the Q4 promo calendar from Rahul before the 8 November lock', assignee: 'You', meeting: 'Nutrabay weekly review', due: 'Overdue by 7 days', dueColor: '#b3453f', done: false },
-  { id: 't4', text: 'Place inventory reorder for the three at-risk SKUs', assignee: 'You', meeting: 'Nutrabay weekly review', due: 'Done 30 Oct', dueColor: '#3f7d6a', done: true },
-  { id: 't5', text: 'Send the October performance summary to Sneha', assignee: 'You', meeting: 'Nutrabay weekly review', due: 'Done 29 Oct', dueColor: '#3f7d6a', done: true },
+  { id: 't1', text: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed', assignee: 'You', assigneeId: 'self', createdBy: 'Priya Nair', meeting: 'Wellbeing QBR', due: 'Due 3 Nov', dueColor: '#b3453f', status: 'pending', etaLabel: 'Requested by 3 Nov' },
+  { id: 't2', text: 'Model Q4 stock cover at two scenarios for the hero range', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Wellbeing QBR', due: 'Due 7 Nov', status: 'in_progress', etaLabel: 'ETA 6 Nov' },
+  { id: 't3', text: 'Chase the Q4 promo calendar from Rahul before the 8 November lock', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Nutrabay weekly review', due: 'Overdue by 7 days', dueColor: '#b3453f', status: 'in_progress', etaLabel: 'ETA 8 Nov', lastReminder: 'You sent a reminder to Rahul · 2h ago' },
+  { id: 't4', text: 'Place inventory reorder for the three at-risk SKUs', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Nutrabay weekly review', due: 'Done 30 Oct', dueColor: '#3f7d6a', status: 'done' },
+  { id: 't5', text: 'Send the October performance summary to Sneha', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Nutrabay weekly review', due: 'Done 29 Oct', dueColor: '#3f7d6a', status: 'done' },
+  { id: 't6', text: 'Draft replacement creative for the two suppressed Wellbeing ASINs', assignee: 'Mike Torres', assigneeId: 'mike', createdBy: 'You', meeting: 'Wellbeing QBR', due: 'Due 5 Nov', status: 'accepted', etaLabel: 'ETA 5 Nov' },
+  { id: 't7', text: 'Pull the competitor price benchmark for the Q4 planning deck', assignee: 'Sarah Kim', assigneeId: 'sarah', createdBy: 'You', meeting: 'Boldfit Q4 planning', due: 'Due 4 Nov', dueColor: '#b3453f', status: 'pending' },
 ];
 
 export interface ActionRecord {
@@ -1666,4 +1808,63 @@ export const PREP_ACTIONS = [
   { alert: 'Net profit down 12% on 14 ASINs', action: 'Reverted to 27 Oct copy', impact: '+$7,100', impactColor: '#464646', impactStyle: 'italic', state: 'Running', stateColor: '#a8763f' },
   { alert: 'Inventory reorder · 3 SKUs', action: 'Reorder placed Thursday', impact: '+$6,200', impactColor: '#3f7d6a', state: 'Verified', stateColor: '#3f7d6a' },
   { alert: 'Bullet copy under-performing', action: 'Awaiting client sign-off', impact: '+$5,300', impactColor: '#464646', impactStyle: 'italic', state: 'Proposed', stateColor: '#6b7178' },
+];
+
+/** Important inbound messages surfaced on the Brief page — email, Slack, or Workspace. Reuses AlertSource for the icon. */
+export interface BriefMessage {
+  id: string;
+  channel: Extract<AlertSource, 'email' | 'slack' | 'workspace'>;
+  from: string;
+  subject: string;
+  preview: string;
+  time: string;
+  unread: boolean;
+}
+
+export const BRIEF_MESSAGES: BriefMessage[] = [
+  { id: 'msg1', channel: 'email', from: 'Priya Nair · Nutrabay', subject: 'Re: PIM approval gate', preview: "Yes, let's add the gate — can your team scope the effort by Friday?", time: '08:12 AM', unread: true },
+  { id: 'msg2', channel: 'slack', from: '#nutrabay-pod', subject: 'Ritvik Sharma', preview: 'Heads up — I moved the 10:30 to 11:00, same agenda.', time: '07:50 AM', unread: true },
+  { id: 'msg3', channel: 'workspace', from: 'Wellbeing Nutrition pod', subject: 'Creative review thread', preview: 'Aditi shared the replacement creative for the two suppressed ASINs.', time: '07:20 AM', unread: false },
+  { id: 'msg4', channel: 'email', from: 'Sneha Kapoor · Boldfit', subject: 'Q4 promo calendar', preview: 'Attaching the draft calendar — need your sign-off before the lock.', time: 'Yesterday, 6:40 PM', unread: false },
+];
+
+/** What Jiva did autonomously while the user was away — the "peak" payoff moment on the Brief page. */
+export interface JivaActivityItem {
+  id: string;
+  label: string;
+  detail: string;
+  impact?: string;
+  impactColor?: string;
+  time: string;
+  alertId?: string;
+}
+
+export const JIVA_ACTIVITY: JivaActivityItem[] = [
+  { id: 'ja1', label: 'Reordered inventory on 3 at-risk SKUs', detail: 'Verified over 7 days on units sold', impact: '+$6,200', impactColor: '#3f7d6a', time: '06:02 AM', alertId: 'a3' },
+  { id: 'ja2', label: 'Escalated the missing-main-image suppression', detail: 'Sent to Catalog with a drafted white-background image, awaiting your review', impact: '−$3,400 at risk', impactColor: '#b3453f', time: '06:22 AM', alertId: 'a15' },
+  { id: 'ja3', label: 'Drafted a follow-up email to Wellbeing Nutrition', detail: 'On the two listings suppressed for image compliance — ready to send', time: '07:05 AM', alertId: 'a4' },
+];
+
+/** Catalog of metrics the Dashboard's KPI cards can be reassigned to. */
+export interface DashboardMetric {
+  id: string;
+  label: string;
+  value: string;
+  trend: string;
+  trendUp: boolean;
+  prevLabel: string;
+  color: string;
+}
+
+export const DASHBOARD_METRICS: DashboardMetric[] = [
+  { id: 'ad-spend', label: 'Ad spend', value: '$8,456', trend: '16.9%', trendUp: true, prevLabel: 'Prev 7 days: $7,235', color: '#77469b' },
+  { id: 'ad-sales', label: 'Ad sales', value: '$38,235', trend: '17.8%', trendUp: true, prevLabel: 'Prev 7 days: $32,457', color: '#3f7d6a' },
+  { id: 'ad-units', label: 'Ad units', value: '1,203', trend: '10.7%', trendUp: true, prevLabel: 'Prev 7 days: 1,087', color: '#5c7f9e' },
+  { id: 'roas', label: 'ROAS', value: '4.52', trend: '0.7%', trendUp: true, prevLabel: 'Prev 7 days: 4.49', color: '#a8763f' },
+  { id: 'impressions', label: 'Impressions', value: '1.2M', trend: '13.4%', trendUp: true, prevLabel: 'Prev 7 days: 1,098,234', color: '#b3453f' },
+  { id: 'clicks', label: 'Clicks', value: '42,180', trend: '9.2%', trendUp: true, prevLabel: 'Prev 7 days: 38,630', color: '#8a7fa8' },
+  { id: 'ctr', label: 'CTR', value: '3.51%', trend: '2.1%', trendUp: false, prevLabel: 'Prev 7 days: 3.59%', color: '#5f9e8a' },
+  { id: 'cvr', label: 'CVR', value: '6.9%', trend: '4.4%', trendUp: true, prevLabel: 'Prev 7 days: 6.6%', color: '#3f7d6a' },
+  { id: 'acos', label: 'ACOS', value: '22.1%', trend: '1.8%', trendUp: false, prevLabel: 'Prev 7 days: 21.7%', color: '#b3453f' },
+  { id: 'tacos', label: 'TACOS', value: '9.4%', trend: '0.9%', trendUp: true, prevLabel: 'Prev 7 days: 9.5%', color: '#77469b' },
 ];

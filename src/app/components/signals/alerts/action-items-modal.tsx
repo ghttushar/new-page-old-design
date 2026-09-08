@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { LoggedActionItem } from '@/constants/signals/prototype-data';
+import { CloseIcon } from './icons';
+import motion from './motion.module.scss';
 
 interface Props {
   items: LoggedActionItem[];
@@ -34,13 +36,13 @@ export function ActionItemsModal({ items, onClose, onOpenAlert }: Props) {
   const sent = filtered.filter((i) => i.status === 'sent');
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,33,.44)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-      <div style={{ width: 780, maxHeight: '84vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className={motion.backdropIn} style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,33,.44)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
+      <div className={motion.overlayIn} style={{ width: 780, maxHeight: '84vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '16px 22px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 12, flex: 'none' }}>
           <span style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>Action items</span>
           <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{items.length} logged from alerts</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search action items" style={{ marginLeft: 'auto', width: 240, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', outline: 'none' }} />
-          <span onClick={onClose} style={{ font: '700 17px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer', padding: '0 4px' }}>×</span>
+          <span onClick={onClose} style={{ display: 'flex', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>
         </div>
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {items.length === 0 && (

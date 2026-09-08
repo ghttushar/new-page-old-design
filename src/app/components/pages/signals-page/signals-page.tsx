@@ -3,11 +3,13 @@ import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
 import { SIGNAL_TABS, type SignalTabKey, type BriefState } from '@/constants/signals/tabs.constants';
 import { BriefFull } from '../../signals/brief/brief-full';
+import { BriefDashboard } from '../../signals/brief/brief-dashboard';
 import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
 import { BriefOnboard } from '../../signals/brief/brief-onboard';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
 import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
-import { ActionItemsModal } from '../../signals/alerts/action-items-modal';
+import { AlertSpeedCard } from '../../signals/alerts/alert-speed-card';
+import { BoltIcon } from '../../signals/alerts/icons';
 import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
 import { MeetingPrep } from '../../signals/meetings/meeting-prep';
@@ -32,13 +34,41 @@ export function SignalsPage() {
   const [execProgress, setExecProgress] = useState(0);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
   const [loggedActions, setLoggedActions] = useState<LoggedActionItem[]>([]);
-  const [actionItemsModalOpen, setActionItemsModalOpen] = useState(false);
+  const [alertsViewMode, setAlertsViewMode] = useState<'normal' | 'speed'>('normal');
+  const [briefViewMode, setBriefViewMode] = useState<'brief' | 'dashboard'>('brief');
+  const [resolvedAlertIds, setResolvedAlertIds] = useState<Set<string>>(new Set());
+  const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
+  const selectedAlertIndex = PROTOTYPE_ALERTS.findIndex((a) => a.id === selectedAlertId);
+
+  // Speed Mode cycles through whatever the list panel's active search/filter currently shows,
+  // not the full alert set — approving a filtered alert should not jump you outside the filter.
+  const speedQueue = filteredAlertIds.length > 0
+    ? PROTOTYPE_ALERTS.filter((a) => filteredAlertIds.includes(a.id))
+    : PROTOTYPE_ALERTS;
+  const speedIndex = speedQueue.findIndex((a) => a.id === selectedAlertId);
 
   const logAction = useCallback((item: LoggedActionItem) => {
     setLoggedActions((prev) => [item, ...prev]);
   }, []);
+
+  const markResolved = useCallback((id: string | null) => {
+    if (!id) return;
+    setResolvedAlertIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  }, []);
+
+  const advanceToNextAlert = useCallback(() => {
+    setSelectedAlertId((current) => {
+      const queue = filteredAlertIds.length > 0
+        ? PROTOTYPE_ALERTS.filter((a) => filteredAlertIds.includes(a.id))
+        : PROTOTYPE_ALERTS;
+      const idx = queue.findIndex((a) => a.id === current);
+      const next = idx >= 0 ? queue[idx + 1] : queue[0];
+      return next ? next.id : null;
+    });
+    setAlertPhase('view');
+  }, [filteredAlertIds]);
 
   const goTab = useCallback((tab: SignalTabKey) => {
     setActiveTab(tab);
@@ -47,6 +77,7 @@ export function SignalsPage() {
     setMeetingScreen('list');
     setAlertPhase('view');
     setBriefFullSubScreen('main');
+    setBriefViewMode('brief');
   }, []);
 
   const openAlert = useCallback((id: string) => {
@@ -61,6 +92,7 @@ export function SignalsPage() {
   }, []);
 
   const handleExecute = useCallback(() => {
+    markResolved(selectedAlertId);
     setAlertPhase('executing');
     setExecProgress(0);
     const timer = setInterval(() => {
@@ -70,7 +102,7 @@ export function SignalsPage() {
         return next;
       });
     }, 650);
-  }, []);
+  }, [selectedAlertId, markResolved]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -88,54 +120,117 @@ export function SignalsPage() {
   }, [calendarOpen, selectedAlertId, selectedMeetingId]);
 
   const renderBrief = () => {
-    switch (briefState) {
-      case 'full':
-        return (
-          <BriefFull
-            onAlertClick={openAlert}
-            onMeetingClick={() => { goTab('meetings'); }}
-            subScreen={briefFullSubScreen}
-            onNudgeOpen={() => setBriefFullSubScreen('nudge')}
-            onNudgeClose={() => setBriefFullSubScreen('main')}
-            onScopeChange={() => {}}
-          />
-        );
-      case 'nointeg':
-        return <BriefNoIntegration onAlertClick={openAlert} />;
-      case 'onboard':
-        return <BriefOnboard onComplete={() => setBriefState('full')} onSkip={() => setBriefState('nointeg')} />;
+    if (briefState !== 'full') {
+      return briefState === 'nointeg'
+        ? <BriefNoIntegration onAlertClick={openAlert} />
+        : <BriefOnboard onComplete={() => setBriefState('full')} onSkip={() => setBriefState('nointeg')} />;
     }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 'none' }}>
+          <div style={{ display: 'flex', padding: 3, background: '#f1f2f4', borderRadius: 8, gap: 2 }}>
+            {(['brief', 'dashboard'] as const).map((m) => (
+              <span
+                key={m}
+                onClick={() => setBriefViewMode(m)}
+                style={{
+                  padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
+                  font: '600 11.5px/1 Inter,sans-serif',
+                  color: briefViewMode === m ? '#5f3880' : '#6b7178',
+                  background: briefViewMode === m ? '#fff' : 'transparent',
+                  boxShadow: briefViewMode === m ? '0 1px 4px rgba(20,24,33,.12)' : 'none',
+                  transition: 'all .15s ease',
+                }}
+              >
+                {m === 'brief' ? 'Brief' : 'Dashboard'}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          {briefViewMode === 'dashboard' ? (
+            <BriefDashboard />
+          ) : (
+            <BriefFull
+              onAlertClick={openAlert}
+              onMeetingClick={() => { goTab('meetings'); }}
+              subScreen={briefFullSubScreen}
+              onNudgeOpen={() => setBriefFullSubScreen('nudge')}
+              onNudgeClose={() => setBriefFullSubScreen('main')}
+              onScopeChange={() => {}}
+            />
+          )}
+        </div>
+      </div>
+    );
   };
 
   const renderAlerts = () => (
-    <div style={{ display: 'flex', gap: 16, height: '100%' }}>
-      <AlertListPanel
-        selectedAlertId={selectedAlertId}
-        onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
-        loggedActionsCount={loggedActions.length}
-        onOpenActionItems={() => setActionItemsModalOpen(true)}
-      />
-      <AlertDetailPanel
-        alert={selectedAlert}
-        phase={alertPhase}
-        execProgress={execProgress}
-        onExecute={handleExecute}
-        onViewReport={() => setAlertPhase('report')}
-        onBackToAlerts={() => setAlertPhase('view')}
-        onGenReview={() => setAlertPhase('genReview')}
-        onApproveGenReview={handleExecute}
-        onOpenItems={() => setItemsModalOpen(true)}
-        itemsModalOpen={itemsModalOpen}
-        onCloseItems={() => setItemsModalOpen(false)}
-        onLogAction={logAction}
-      />
-      {actionItemsModalOpen && (
-        <ActionItemsModal
-          items={loggedActions}
-          onClose={() => setActionItemsModalOpen(false)}
-          onOpenAlert={(id) => { setActionItemsModalOpen(false); openAlert(id); }}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 'none' }}>
+        <div style={{ display: 'flex', padding: 3, background: '#f1f2f4', borderRadius: 8, gap: 2 }}>
+          {(['normal', 'speed'] as const).map((m) => (
+            <span
+              key={m}
+              onClick={() => {
+                setAlertsViewMode(m);
+                if (m === 'speed' && !selectedAlertId && speedQueue[0]) {
+                  setSelectedAlertId(speedQueue[0].id);
+                  setAlertPhase('view');
+                }
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
+                font: '600 11.5px/1 Inter,sans-serif',
+                color: alertsViewMode === m ? '#5f3880' : '#6b7178',
+                background: alertsViewMode === m ? '#fff' : 'transparent',
+                boxShadow: alertsViewMode === m ? '0 1px 4px rgba(20,24,33,.12)' : 'none',
+                transition: 'all .15s ease',
+              }}
+            >
+              {m === 'speed' && <BoltIcon size={11} color={alertsViewMode === m ? '#5f3880' : '#6b7178'} />}
+              {m === 'normal' ? 'Normal' : 'Speed'}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
+        <AlertListPanel
+          selectedAlertId={selectedAlertId}
+          resolvedAlertIds={resolvedAlertIds}
+          onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
+          onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
+          onFilteredChange={setFilteredAlertIds}
         />
-      )}
+        {alertsViewMode === 'speed' ? (
+          <AlertSpeedCard
+            alert={selectedAlert}
+            position={speedIndex >= 0 ? speedIndex + 1 : selectedAlertIndex + 1}
+            total={speedQueue.length || PROTOTYPE_ALERTS.length}
+            onLogAction={logAction}
+            onAdvance={advanceToNextAlert}
+            onResolve={markResolved}
+          />
+        ) : (
+          <AlertDetailPanel
+            alert={selectedAlert}
+            phase={alertPhase}
+            execProgress={execProgress}
+            onExecute={handleExecute}
+            onViewReport={() => setAlertPhase('report')}
+            onBackToAlerts={() => setAlertPhase('view')}
+            onGenReview={() => setAlertPhase('genReview')}
+            onApproveGenReview={handleExecute}
+            onOpenItems={() => setItemsModalOpen(true)}
+            itemsModalOpen={itemsModalOpen}
+            onCloseItems={() => setItemsModalOpen(false)}
+            onLogAction={logAction}
+            onDismiss={() => markResolved(selectedAlertId)}
+          />
+        )}
+      </div>
     </div>
   );
 

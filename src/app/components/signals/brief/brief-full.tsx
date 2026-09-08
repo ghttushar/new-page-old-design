@@ -1,6 +1,6 @@
-import { BRIEFING_ALERTS, BRIEFING_MEETINGS, ACCOUNT_GOALS, ENGAGEMENT_STREAK } from '@/constants/signals/prototype-data';
-import type { PrototypeAlert } from '@/constants/signals/prototype-data';
-import { PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
+import { BRIEFING_ALERTS, BRIEFING_MEETINGS, JIVA_ACTIVITY, BRIEF_MESSAGES, PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
+import { SourceIcon } from '../alerts/source-icon';
+import { SparkleIcon } from '../alerts/icons';
 
 interface Props {
   onAlertClick: (id: string) => void;
@@ -27,6 +27,8 @@ function formatHeaderTime(): string {
   return `${h}:${m} ${ampm}`;
 }
 
+const HIGH_PRIORITY_ALERTS = PROTOTYPE_ALERTS.filter((a) => a.priority === 'High' && a.day === 'today').slice(0, 5);
+
 export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen, onNudgeClose }: Props) {
   return (
     <div style={{ height: '100%', display: 'flex', gap: 16 }}>
@@ -44,39 +46,69 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
             <StatCell topBorder="#3f7d6a" label="Verified gain" icon={<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="#3f7d6a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>} value="$6,200" valueColor="#3f7d6a" sub="this week" />
             <StatCell topBorder="#77469b" label="Meetings today" icon={<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10.5" rx="1.5" stroke="#77469b" strokeWidth="1.4" /><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="#77469b" strokeWidth="1.4" strokeLinecap="round" /></svg>} value="3" sub="1 unprepared" />
           </div>
-
-          {/* 5-column stat grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
-            <MiniStat label="Opportunities" value="$9,400" valueColor="#a8763f" sub="2 open" />
-            <MiniStat label="Actions in flight" value="2" sub="running now" />
-            <MiniStat label="Applied this week" value="6" valueColor="#3f7d6a" sub="verified & unverified" />
-            <MiniStat label="Repeat alerts" value="1" valueColor="#b3453f" sub="3rd day running" />
-            <MiniStat label="Avg. time to act" value="2.4h" sub="last 7 days" />
-          </div>
         </div>
 
-        {/* Top alerts */}
+        {/* While you were away — what Jiva did, and the impact so far */}
         <CardSection
-          title="Top alerts"
+          title="While you were away"
+          titleIcon={<SparkleIcon size={13} />}
+        >
+          {JIVA_ACTIVITY.map((j) => (
+            <div key={j.id} style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ font: '600 13px/1.45 Inter,sans-serif', color: '#23272d' }}>{j.label}</div>
+                <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{j.detail} · {j.time}</div>
+              </div>
+              {j.impact && (
+                <span style={{ font: '600 12px/1 Inter,sans-serif', color: j.impactColor || '#464646', flex: 'none' }}>{j.impact}</span>
+              )}
+              {j.alertId && (
+                <span onClick={() => onAlertClick(j.alertId!)} style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#5f3880', cursor: 'pointer', flex: 'none' }}>View impact</span>
+              )}
+            </div>
+          ))}
+        </CardSection>
+
+        {/* High-priority alerts */}
+        <CardSection
+          title="High-priority alerts"
           titleIcon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L9.8 5.6l4.4.4-3.3 3 1 4.3L8 11.1l-3.9 2.2 1-4.3-3.3-3 4.4-.4L8 1.5Z" stroke="#77469b" strokeWidth="1.2" strokeLinejoin="round" /></svg>}
           actionLabel="View all 12"
           actionColor="#77469b"
         >
-          {BRIEFING_ALERTS.map((a) => (
-            <div key={a.id} onClick={() => a.id !== 'a-bb' && onAlertClick(a.id)} style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 14, cursor: a.id !== 'a-bb' ? 'pointer' : 'default' }}>
+          {(HIGH_PRIORITY_ALERTS.length > 0 ? HIGH_PRIORITY_ALERTS.map((a) => ({
+            id: a.id, valueNum: a.valueNum, valueLabel: a.impactStr, title: a.title,
+            meta: `${a.priority} · ${a.account} · ${a.time}`, dotColor: a.priorityDot,
+          })) : BRIEFING_ALERTS).map((a) => (
+            <div key={a.id} onClick={() => onAlertClick(a.id)} style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: a.dotColor, flex: 'none' }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ font: `${a.id === 'a1' ? '600' : '500'} 13px/1.45 Inter,sans-serif`, color: '#23272d' }}>{a.title}</div>
+                <div style={{ font: '600 13px/1.45 Inter,sans-serif', color: '#23272d' }}>{a.title}</div>
                 <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{a.meta}</div>
               </div>
-              {a.valueLabel !== 'no impact measured' ? (
-                <span style={{ font: '600 13px/1 Inter,sans-serif', color: a.valueNum < 0 ? '#b3453f' : '#3f7d6a', flex: 'none' }}>{a.valueLabel}</span>
-              ) : (
-                <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178', flex: 'none' }}>{a.valueLabel}</span>
-              )}
-              {a.actionLabel && (
-                <span style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', flex: 'none' }}>{a.actionLabel}</span>
-              )}
+              <span style={{ font: '600 13px/1 Inter,sans-serif', color: a.valueNum < 0 ? '#b3453f' : '#3f7d6a', flex: 'none' }}>{formatValueLabel(a.valueNum, a.valueLabel)}</span>
+              <span style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', flex: 'none' }}>Review</span>
+            </div>
+          ))}
+        </CardSection>
+      </div>
+
+      {/* Right column */}
+      <div style={{ flex: '0 0 38%', maxWidth: '38%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Messages */}
+        <CardSection title="Messages" actionLabel={`${BRIEF_MESSAGES.filter((m) => m.unread).length} unread`} actionColor="#6b7178">
+          {BRIEF_MESSAGES.map((m) => (
+            <div key={m.id} style={{ padding: '13px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <SourceIcon origin={m.channel} size={14} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ font: `${m.unread ? '700' : '500'} 12.5px/1.4 Inter,sans-serif`, color: '#23272d' }}>{m.from}</span>
+                  {m.unread && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#77469b', flex: 'none' }} />}
+                </div>
+                <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', marginTop: 2, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.subject}</div>
+                <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{m.preview}</div>
+              </div>
+              <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none', whiteSpace: 'nowrap' as const }}>{m.time}</span>
             </div>
           ))}
         </CardSection>
@@ -115,57 +147,6 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
         </CardSection>
       </div>
 
-      {/* Right column */}
-      <div style={{ flex: '0 0 38%', maxWidth: '38%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {/* Engagement */}
-        <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d' }}>Your engagement</span>
-            <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Private to you</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
-            <span style={{ font: '600 24px/1 Inter,sans-serif', color: '#23272d' }}>9 days</span>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {ENGAGEMENT_STREAK.map((d, i) => (
-                <span key={i} style={{ width: 13, height: 22, borderRadius: 3, background: d.active ? '#77469b' : i === 4 ? '#e0d5ec' : '#f1f2f4' }} />
-              ))}
-            </div>
-          </div>
-          <div style={{ font: '400 11px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 10 }}>Light bar was a protected quiet day. One completed task keeps the streak alive today.</div>
-          <div style={{ height: 1, background: '#f1f2f4', margin: '14px 0' }} />
-          <div style={{ font: '500 12px/1.4 Inter,sans-serif', color: '#464646' }}>Progress to your 10:30</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 9 }}>
-            <div style={{ flex: 1, height: 5, borderRadius: 3, background: '#f1f2f4', overflow: 'hidden' }}>
-              <div style={{ width: '55%', height: '100%', background: '#77469b' }} />
-            </div>
-            <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646' }}>5 of 9</span>
-          </div>
-          <div style={{ font: '400 11px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Clear 4 more items before the call to complete the set.</div>
-        </div>
-
-        {/* Account goals */}
-        <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d' }}>Account goals</span>
-            <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>From configuration</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 15, marginTop: 15 }}>
-            {ACCOUNT_GOALS.map((g, i) => (
-              <div key={i}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', font: '500 12px/1.4 Inter,sans-serif', color: '#464646' }}>
-                  <span>{g.label}</span>
-                  <span style={{ color: g.color }}>{g.current} of {g.target}</span>
-                </div>
-                <div style={{ height: 5, borderRadius: 3, background: '#f1f2f4', marginTop: 8, overflow: 'hidden' }}>
-                  <div style={{ width: `${g.pct}%`, height: '100%', background: g.color }} />
-                </div>
-                <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>{g.meta}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Nudge dialog */}
       {subScreen === 'nudge' && (
         <div style={{ flex: '0 0 30%', maxWidth: '30%', height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: 20, overflowY: 'auto' }}>
@@ -189,20 +170,18 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
   );
 }
 
+function formatValueLabel(valueNum: number, fallback: string): string {
+  const abs = Math.abs(valueNum);
+  const sign = valueNum < 0 ? '−$' : '+$';
+  if (abs >= 1000) return sign + (abs / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  if (abs === 0) return fallback;
+  return sign + abs.toLocaleString();
+}
+
 function StatCell({ topBorder, label, icon, value, valueColor, sub }: { topBorder: string; label: string; icon: React.ReactNode; value: string; valueColor?: string; sub: string }) {
   return (
     <div style={{ background: '#fff', padding: 14, borderTop: `3px solid ${topBorder}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{icon}{label}</div>
-      <div style={{ font: '600 20px/1 Inter,sans-serif', color: valueColor || '#23272d', marginTop: 8 }}>{value}</div>
-      <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{sub}</div>
-    </div>
-  );
-}
-
-function MiniStat({ label, value, valueColor, sub }: { label: string; value: string; valueColor?: string; sub: string }) {
-  return (
-    <div style={{ background: '#fff', padding: 14 }}>
-      <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{label}</div>
       <div style={{ font: '600 20px/1 Inter,sans-serif', color: valueColor || '#23272d', marginTop: 8 }}>{value}</div>
       <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{sub}</div>
     </div>

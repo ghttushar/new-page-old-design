@@ -1,14 +1,24 @@
-import { useState, useMemo } from 'react';
-import { PROTOTYPE_ALERTS, type PrototypeAlert, type AlertDay } from '@/constants/signals/prototype-data';
+import { useState, useMemo, useEffect } from 'react';
+import { PROTOTYPE_ALERTS, type PrototypeAlert } from '@/constants/signals/prototype-data';
+import { formatAlertValue } from './format-money';
+import { HoverTip } from './hover-tip';
+import { SourceIcon } from './source-icon';
+import { MarketplaceGlyph } from './marketplace-glyph';
+import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
+import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, CheckIcon } from './icons';
+import scrollStyles from './alerts-scroll.module.scss';
+import motion from './motion.module.scss';
 
 interface Props {
   selectedAlertId: string | null;
+  resolvedAlertIds: Set<string>;
   onSelectAlert: (id: string) => void;
-  loggedActionsCount?: number;
-  onOpenActionItems?: () => void;
+  onOpenItemsForAlert: (id: string) => void;
+  /** Called whenever the active search/filter changes, so a consumer (e.g. Speed Mode) can cycle only through what's currently shown here. */
+  onFilteredChange: (ids: string[]) => void;
 }
 
-export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCount = 0, onOpenActionItems }: Props) {
+export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -18,6 +28,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
   const [sourceFilters, setSourceFilters] = useState<Record<string, boolean>>({});
   const [valueOp, setValueOp] = useState<'>' | '<' | '='>('>');
   const [valueThreshold, setValueThreshold] = useState('');
+  const [assignPopupFor, setAssignPopupFor] = useState<PrototypeAlert | null>(null);
 
   const filtered = useMemo(() => {
     return PROTOTYPE_ALERTS.filter((al) => {
@@ -37,6 +48,10 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
     });
   }, [search, priorityFilters, categoryFilters, valueOp, valueThreshold]);
 
+  useEffect(() => {
+    onFilteredChange(filtered.map((al) => al.id));
+  }, [filtered, onFilteredChange]);
+
   const todayAlerts = filtered.filter((al) => al.day === 'today');
   const yesterdayAlerts = filtered.filter((al) => al.day === 'yesterday');
   const filterCount = Object.values(priorityFilters).filter(Boolean).length + Object.values(categoryFilters).filter(Boolean).length + Object.values(sourceFilters).filter(Boolean).length + (valueThreshold ? 1 : 0);
@@ -45,32 +60,29 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
   const toggleCategory = (k: string) => setCategoryFilters((p) => ({ ...p, [k]: !p[k] }));
   const toggleSource = (k: string) => setSourceFilters((p) => ({ ...p, [k]: !p[k] }));
 
-  const money = (n: number) => {
-    const abs = Math.abs(n);
-    const sign = n < 0 ? '−$' : '+$';
-    if (abs >= 1000000) return sign + (abs / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-    if (abs >= 1000) return sign + (abs / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-    return sign + abs.toLocaleString();
+  const requestAssign = (al: PrototypeAlert) => {
+    const assignees = al.assignees ?? DEFAULT_ASSIGNEES;
+    if (assignees.length > ASSIGN_POPUP_THRESHOLD) {
+      setMenuFor(null);
+      setAssignPopupFor(al);
+    } else {
+      setMenuFor(al.id);
+      setMenuMode('assign');
+    }
   };
 
   return (
-    <div style={{ flex: '0 0 35%', maxWidth: '35%', height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
+    <div style={{ flex: '0 0 35%', maxWidth: '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
-        <div style={{ display: 'flex', gap: 7, position: 'relative' }}>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search alerts, ASINs, campaigns" style={{ padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', width: 330 }} />
-          <span onClick={() => setFilterOpen(!filterOpen)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 21px', border: `1px solid ${filterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: filterOpen ? '#f9f7fc' : '#fff' }}>
+        <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search alerts, ASINs, campaigns" style={{ flex: 1, minWidth: 0, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }} />
+          <span onClick={() => setFilterOpen(!filterOpen)} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 16px', border: `1px solid ${filterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: filterOpen ? '#f9f7fc' : '#fff', flex: 'none', whiteSpace: 'nowrap' as const }}>
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
             Filter{filterCount ? ` (${filterCount})` : ''}
           </span>
         </div>
-        {onOpenActionItems && (
-          <span onClick={onOpenActionItems} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', alignSelf: 'flex-start' }}>
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M3 8h10M3 11.5h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-            Action items{loggedActionsCount ? ` (${loggedActionsCount})` : ''}
-          </span>
-        )}
         {filterOpen && (
-          <div style={{ position: 'absolute', left: 16, top: 56, width: 270, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.16)', padding: 14, zIndex: 30, maxHeight: 440, overflowY: 'auto' }}>
+          <div className={motion.popInTop} style={{ position: 'absolute', left: 16, top: 56, width: 270, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.16)', padding: 14, zIndex: 30, maxHeight: 440, overflowY: 'auto' }}>
             <FilterSection label="Impact value">
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, border: '1px solid #dfe3ea', borderRadius: 6, overflow: 'hidden' }}>
                 {(['>', '<', '='] as const).map((op) => (
@@ -90,7 +102,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
               ))}
             </FilterSection>
             <FilterSection label="Source">
-              {['Anarix', 'Jiva', 'Meeting', 'Slack', 'Teams', 'Email'].map((k) => (
+              {['Anarix', 'Jiva', 'Meeting', 'Slack', 'Workspace', 'Email'].map((k) => (
                 <div key={k} onClick={() => toggleSource(k)} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
                   <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: sourceFilters[k] ? '#77469b' : '#fff', flex: 'none' }} />
                   <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
@@ -112,7 +124,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
         )}
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         {todayAlerts.length > 0 && (
           <>
             <div style={{ padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between' }}>
@@ -120,7 +132,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{todayAlerts.length} alert{todayAlerts.length === 1 ? '' : 's'}</span>
             </div>
             {todayAlerts.map((al) => (
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} onSelect={() => onSelectAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} money={money} />
+              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} />
             ))}
           </>
         )}
@@ -131,7 +143,7 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{yesterdayAlerts.length} alert{yesterdayAlerts.length === 1 ? '' : 's'}</span>
             </div>
             {yesterdayAlerts.map((al) => (
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} onSelect={() => onSelectAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} money={money} />
+              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} />
             ))}
           </>
         )}
@@ -142,6 +154,14 @@ export function AlertListPanel({ selectedAlertId, onSelectAlert, loggedActionsCo
           </div>
         )}
       </div>
+
+      {assignPopupFor && (
+        <AssignPopupModal
+          assignees={assignPopupFor.assignees ?? DEFAULT_ASSIGNEES}
+          onClose={() => setAssignPopupFor(null)}
+          onSelect={() => setAssignPopupFor(null)}
+        />
+      )}
     </div>
   );
 }
@@ -156,63 +176,104 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
   );
 }
 
-function AlertRow({ al, selected, onSelect, menuFor, setMenuFor, menuMode, setMenuMode, money }: {
-  al: PrototypeAlert; selected: boolean; onSelect: () => void;
+
+function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign }: {
+  al: PrototypeAlert; selected: boolean; resolved: boolean; onSelect: () => void; onOpenItems: () => void;
   menuFor: string | null; setMenuFor: (id: string | null) => void;
   menuMode: 'main' | 'share' | 'assign'; setMenuMode: (m: 'main' | 'share' | 'assign') => void;
-  money: (n: number) => string;
+  requestAssign: (al: PrototypeAlert) => void;
 }) {
   const isOpen = menuFor === al.id;
+  const origin = al.originType ?? 'anarix';
+  const assignOpen = isOpen && menuMode === 'assign';
   return (
-    <div style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1' }}>
-      <span onClick={(e) => { e.stopPropagation(); setMenuFor(isOpen ? null : al.id); setMenuMode('main'); }} style={{ position: 'absolute', right: 12, top: 12, padding: '2px 6px', font: '700 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>⋯</span>
-      <div onClick={onSelect}>
-        <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{money(al.valueNum)}</span>
-        <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: 4 }}>{al.impactStr} · {al.category} agent{al.itemsCount > 1 ? ` · ${al.itemsBreakdown}` : ''}</div>
-        <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{al.title}</div>
+    <div style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
+      {resolved && (
+        <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#eef6f3', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#3f7d6a' }}>
+          <CheckIcon size={8} color="#3f7d6a" /> Resolved
+        </span>
+      )}
+      <span
+        onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
+        title="Assign"
+        className={motion.pressable}
+        style={{ position: 'absolute', right: 12, top: 12, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+      >
+        <AssignIcon size={14} />
+      </span>
+      <div onClick={onSelect} style={{ marginTop: resolved ? 20 : 0 }}>
+        <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>
+        <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: 4 }}>
+          {al.impactStr}
+          {al.itemsCount > 1 && (
+            <>
+              {' · '}
+              <span
+                onClick={(e) => { e.stopPropagation(); onOpenItems(); }}
+                style={{ color: '#77469b', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' as const, textUnderlineOffset: 2 }}
+              >
+                {al.itemsBreakdown}
+              </span>
+            </>
+          )}
+        </div>
+        <HoverTip label={al.title} wrap inline={false}>
+          <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
+        </HoverTip>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 11, flexWrap: 'wrap' }}>
         <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
+        <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
+        <MarketplaceGlyph al={al} size={19} />
+        <SourceIcon origin={origin} detail={al.originDetail} size={15} />
         {al.repeated && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 5, background: '#fbf1ef', flex: 'none', whiteSpace: 'nowrap' as const }}>
-            <svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0 1 10.5-4M14 8a6 6 0 0 1-10.5 4" stroke="#a8763f" strokeWidth="1.4" strokeLinecap="round" /><path d="M12.5 1.5v3h-3M3.5 14.5v-3h3" stroke="#a8763f" strokeWidth="1.4" strokeLinecap="round" /></svg>
-            <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#a8763f' }}>Repeated</span>
-          </span>
+          <HoverTip label={al.repeatedLabel ? `Repeated · ${al.repeatedLabel}` : 'Repeated'}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, flex: 'none' }}>
+              <RepeatIcon size={16} />
+            </span>
+          </HoverTip>
         )}
         {al.hasMeeting && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 5, background: '#eef2fb', flex: 'none', whiteSpace: 'nowrap' as const }}>
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3 3 0 0 0 4.2 0l1.6-1.6a3 3 0 0 0-4.2-4.2L7 4.7M9.5 6.5a3 3 0 0 0-4.2 0l-1.6 1.6a3 3 0 0 0 4.2 4.2L9 11.3" stroke="#4a6fa5" strokeWidth="1.3" strokeLinecap="round" /></svg>
-            <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#4a6fa5' }}>{al.meetingLabel || 'Meeting'}</span>
-          </span>
+          <HoverTip label={al.meetingLabel || 'Meeting'}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, flex: 'none' }}>
+              <MeetingGlyphIcon size={16} />
+            </span>
+          </HoverTip>
         )}
-        <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const, flex: 'none' }}>{al.time}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
+        <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const }}>{al.time}</span>
+        <span
+          onClick={(e) => { e.stopPropagation(); setMenuFor(isOpen && menuMode !== 'assign' ? null : al.id); setMenuMode('main'); }}
+          className={motion.pressable}
+          style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, font: '700 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+        >⋯</span>
       </div>
       {isOpen && (
-        <div style={{ position: 'absolute', right: 10, top: 34, width: 172, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }}>
+        <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: menuMode === 'assign' ? 34 : undefined, bottom: menuMode === 'assign' ? undefined : 40, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
           {menuMode === 'main' && (
             <>
-              <MenuItem icon={<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" /><circle cx="12" cy="3.5" r="2" stroke="currentColor" strokeWidth="1.3" /><circle cx="12" cy="12.5" r="2" stroke="currentColor" strokeWidth="1.3" /><path d="M5.8 7l4.4-2.7M5.8 9l4.4 2.7" stroke="currentColor" strokeWidth="1.3" /></svg>} label="Share" onClick={() => setMenuMode('share')} />
-              <MenuItem icon={<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" /><path d="M5 5l6 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>} label="Dismiss" onClick={() => setMenuFor(null)} />
-              <MenuItem icon={<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3" /><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.3" /></svg>} label="Assign to…" onClick={() => setMenuMode('assign')} />
+              <MenuItem icon={<ShareIcon size={13} />} label="Share" onClick={() => setMenuMode('share')} />
+              <MenuItem icon={<DismissIcon size={13} />} label="Dismiss" onClick={() => setMenuFor(null)} />
             </>
           )}
           {menuMode === 'share' && (
             <>
               <div style={{ padding: '6px 10px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Share via</div>
-              <MenuItem label="✉ Email" onClick={() => setMenuFor(null)} />
-              <MenuItem label="▦ Workspace · Nutrabay pod" onClick={() => setMenuFor(null)} />
-              <MenuItem label="▦ Workspace · Leadership" onClick={() => setMenuFor(null)} />
+              <MenuItem icon={<EnvelopeSmallIcon size={12} />} label="Email" onClick={() => setMenuFor(null)} />
+              <MenuItem icon={<WorkspaceSmallIcon size={12} />} label="Workspace · Nutrabay pod" onClick={() => setMenuFor(null)} />
+              <MenuItem icon={<WorkspaceSmallIcon size={12} />} label="Workspace · Leadership" onClick={() => setMenuFor(null)} />
               <div onClick={() => setMenuMode('main')} style={{ padding: '8px 10px 4px', font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>← Back</div>
             </>
           )}
           {menuMode === 'assign' && (
             <>
-              <div style={{ padding: '6px 10px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Assign to</div>
-              <AssignMenuItem name="✦ Jiva" role="AI" />
-              <AssignMenuItem name="Mike" role="Ops" />
-              <AssignMenuItem name="Sarah" role="Marketing" />
-              <AssignMenuItem name="Myself" role="You" />
-              <div onClick={() => setMenuMode('main')} style={{ padding: '8px 10px 4px', font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>← Back</div>
+              <div style={{ padding: '6px 10px 2px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Assign to</div>
+              <AssignDropdownList assignees={al.assignees ?? DEFAULT_ASSIGNEES} onSelect={() => setMenuFor(null)} />
             </>
           )}
         </div>
@@ -225,15 +286,6 @@ function MenuItem({ icon, label, onClick }: { icon?: React.ReactNode; label: str
   return (
     <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 6, cursor: 'pointer', font: '500 12px/1 Inter,sans-serif', color: '#3d434b' }}>
       {icon}{label}
-    </div>
-  );
-}
-
-function AssignMenuItem({ name, role }: { name: string; role: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 6, cursor: 'pointer' }}>
-      <span style={{ font: '500 12px/1 Inter,sans-serif', color: name.includes('Jiva') ? '#5f3880' : '#3d434b' }}>{name}</span>
-      <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{role}</span>
     </div>
   );
 }

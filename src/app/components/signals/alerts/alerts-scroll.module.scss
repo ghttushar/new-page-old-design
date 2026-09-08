@@ -1,0 +1,31 @@
+.sleekScroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(119, 70, 155, 0.28) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(119, 70, 155, 0.25);
+    border-radius: 999px;
+    transition: background 0.15s ease;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background: rgba(119, 70, 155, 0.45);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(119, 70, 155, 0.6);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}

@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { AlertItem } from '@/constants/signals/prototype-data';
+import { CloseIcon } from './icons';
+import motion from './motion.module.scss';
 
 interface Props {
   items: AlertItem[];
@@ -29,8 +31,8 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
   const gridCols = filtered.length < 20 ? 1 : filtered.length <= 50 ? 2 : 3;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,33,.44)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-      <div style={{ width: 1180, maxHeight: '84vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className={motion.backdropIn} style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,33,.44)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
+      <div className={motion.overlayIn} style={{ width: 1180, maxHeight: '84vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '16px 22px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 12, flex: 'none' }}>
           <span style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>All affected items</span>
           <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{breakdown}</span>
@@ -42,7 +44,7 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
             <span style={{ paddingLeft: 8, font: '600 12px/1 Inter,sans-serif', color: '#9aa0a8' }}>$</span>
             <input value={threshold} onChange={(e) => setThreshold(e.target.value)} placeholder="impact" style={{ width: 80, padding: '9px 10px 9px 2px', border: 'none', font: '400 12px/1 Inter,sans-serif', outline: 'none' }} />
           </div>
-          <span onClick={onClose} style={{ font: '700 17px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer', padding: '0 4px' }}>×</span>
+          <span onClick={onClose} style={{ display: 'flex', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>
         </div>
         <div style={{ padding: '8px 22px', font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>Showing {filtered.length} of {itemCount}</div>
         <div style={{ overflowY: 'auto', flex: 1, padding: '0 22px 20px' }}>

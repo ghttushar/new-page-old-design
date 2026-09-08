@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "anarix-ui",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "anarix-ui"],
+      "port": 4200
+    }
+  ]
+}
