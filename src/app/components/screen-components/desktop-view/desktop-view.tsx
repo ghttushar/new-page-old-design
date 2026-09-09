@@ -31,7 +31,15 @@ import CatalogPageRoutes from '../../pages/catalog-page/catalog-wrapper';
 import CustomTablePage from '../../pages/custom-table-page/custom-table-page';
 import JivaPage from '../../pages/jiva-page/jiva-page';
 import PopupPreviewPage from '../../pages/popup-preview/popup-preview';
-import SignalsPreviewPage from '../../pages/signals-preview/signals-preview';
+import SignalsPreviewIndex from '../../pages/signals-preview/index';
+import LivePreviewPage from '../../pages/signals-preview/live-page';
+import BriefPreviewPage from '../../pages/signals-preview/brief-page';
+import AlertsStatesPreviewPage from '../../pages/signals-preview/alerts-states-page';
+import AlertsLifecyclePreviewPage from '../../pages/signals-preview/alerts-lifecycle-page';
+import AlertsFlowsPreviewPage from '../../pages/signals-preview/alerts-flows-page';
+import AlertsSpeedPreviewPage from '../../pages/signals-preview/alerts-speed-page';
+import MeetingsPreviewPage from '../../pages/signals-preview/meetings-page';
+import WorkstationPreviewPage from '../../pages/signals-preview/workstation-page';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
 import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
 import MaintenancePage from '../../pages/maintenance-page/maintenance-page';
@@ -237,7 +245,15 @@ export default function DesktopView() {
               <Route path="/signal/:id" element={<PrivateRoute component={<SignalDetailWrapper />} />} />
               <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="/popup-preview" element={<PopupPreviewPage />} />
-              <Route path="/signals-preview" element={<SignalsPreviewPage />} />
+              <Route path="/signals-preview" element={<SignalsPreviewIndex />} />
+              <Route path="/signals-preview/live" element={<LivePreviewPage />} />
+              <Route path="/signals-preview/brief" element={<BriefPreviewPage />} />
+              <Route path="/signals-preview/alerts-states" element={<AlertsStatesPreviewPage />} />
+              <Route path="/signals-preview/alerts-lifecycle" element={<AlertsLifecyclePreviewPage />} />
+              <Route path="/signals-preview/alerts-flows" element={<AlertsFlowsPreviewPage />} />
+              <Route path="/signals-preview/alerts-speed" element={<AlertsSpeedPreviewPage />} />
+              <Route path="/signals-preview/meetings" element={<MeetingsPreviewPage />} />
+              <Route path="/signals-preview/workstation" element={<WorkstationPreviewPage />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>
