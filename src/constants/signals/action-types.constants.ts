@@ -14,6 +14,8 @@ export interface ActionType {
   category: ActionCategory;
   /** True when the action is fundamentally "send the client something" — opens Mail Compose instead of the generic log form. */
   isEmailAction: boolean;
+  /** True when the action fundamentally produces an image — opens Image Studio instead of the generic log form. */
+  isImageAction?: boolean;
 }
 
 export const ACTION_CATEGORIES: ActionCategory[] = [
@@ -29,8 +31,8 @@ export const ACTION_CATEGORIES: ActionCategory[] = [
 
 export const ACTION_TYPES: ActionType[] = [
   { id: 'send-report-update', label: 'Send report/update to client (proposals, performance, forecasts)', category: 'Client Communication', isEmailAction: true },
-  { id: 'update-a-plus-content', label: 'Update A+ content/infographics', category: 'Catalog & Content', isEmailAction: false },
-  { id: 'update-product-images', label: 'Update product images', category: 'Catalog & Content', isEmailAction: false },
+  { id: 'update-a-plus-content', label: 'Update A+ content/infographics', category: 'Catalog & Content', isEmailAction: false, isImageAction: true },
+  { id: 'update-product-images', label: 'Update product images', category: 'Catalog & Content', isEmailAction: false, isImageAction: true },
   { id: 'schedule-client-call', label: 'Schedule client call/meeting', category: 'Client Communication', isEmailAction: false },
   { id: 'optimize-monitor-ad-campaign', label: 'Optimize/monitor ad campaign performance', category: 'Advertising & Campaigns', isEmailAction: false },
   { id: 'investigate-sales-decline', label: 'Investigate sales/performance decline root cause', category: 'Investigation & Analysis', isEmailAction: false },

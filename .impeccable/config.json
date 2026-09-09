@@ -29,6 +29,24 @@
         ],
         "createdAt": "2026-09-08T15:35:03.671Z",
         "reason": "user's attached reference screenshot explicitly showed each KPI card with a colored left-accent identity strip; matched deliberately, not an accidental default"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/app/components/signals/work-station/work-station.tsx"
+        ],
+        "createdAt": "2026-09-09T13:04:56.250Z",
+        "reason": "L136 border-top/left/right forms a zero-size CSS triangle (speech-bubble tail under the celebration quip), not a decorative side-accent border on a card"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "scratchpad/signals-capture-manifest.html"
+        ],
+        "createdAt": "2026-09-09T14:21:40.176Z",
+        "reason": "checker paired dark-theme --ink/--ink-muted tokens against the light-theme --surface; verified both are defined only inside mutually-exclusive prefers-color-scheme/[data-theme] blocks that always swap background+text together, so this pairing never renders live. Real contrast issues (light-mode ink-faint, flag, dark-mode ink-faint) were found separately and fixed by darkening/lightening those tokens."
       }
     ]
   }

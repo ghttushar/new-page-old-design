@@ -3,7 +3,6 @@ import { FeatureRoutes, FeaturesEnum } from '@/enums/auth.enums';
 import { IMenuItem } from '@/interfaces/side-bar/sidebar.interfaces';
 import {
   AtomIcon,
-  BellIcon,
   BookOpenTextIcon,
   ChartBarIcon,
   ChartPieSliceIcon,
@@ -35,18 +34,7 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
     },
   ];
 
-  const subMenuItems = [
-    {
-      key: FeatureRoutes.JIVA_CHATBOT_PAGE,
-      primaryText: 'JIVA',
-      icon: (
-        <span className={styles.icon}>
-          <DiamondMascot size={20} />
-        </span>
-      ),
-      feature: FeaturesEnum.JIVA_CHATBOT,
-      divider: true,
-    },
+  const subMenuItems: IMenuItem[] = [
     {
       key: FeatureRoutes.PROFITABILITY,
       primaryText: 'Profitability',
@@ -258,9 +246,13 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
   subMenuItems.unshift({
     key: FeatureRoutes.SIGNALS,
     primaryText: 'Signals',
-    icon: <BellIcon className={styles.icon} />,
+    icon: (
+      <span className={styles.icon}>
+        <DiamondMascot size={20} />
+      </span>
+    ),
     feature: FeaturesEnum.SIGNALS,
-    divider: false,
+    divider: true,
   });
 
   if (isInternalUser) {

@@ -223,25 +223,33 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
         </HoverTip>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 11, flexWrap: 'wrap' }}>
-        <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
-        <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
-        <MarketplaceGlyph al={al} size={19} />
-        <SourceIcon origin={origin} detail={al.originDetail} size={15} />
-        {al.repeated && (
-          <HoverTip label={al.repeatedLabel ? `Repeated · ${al.repeatedLabel}` : 'Repeated'}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, flex: 'none' }}>
-              <RepeatIcon size={16} />
-            </span>
-          </HoverTip>
-        )}
-        {al.hasMeeting && (
-          <HoverTip label={al.meetingLabel || 'Meeting'}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, flex: 'none' }}>
-              <MeetingGlyphIcon size={16} />
-            </span>
-          </HoverTip>
-        )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 11, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+          <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
+          <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
+        </div>
+        <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
+        <div style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
+          <MarketplaceGlyph al={al} size={22} />
+        </div>
+        <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
+          <SourceIcon origin={origin} detail={al.originDetail} size={22} />
+          {al.repeated && (
+            <HoverTip label={al.repeatedLabel ? `Repeated · ${al.repeatedLabel}` : 'Repeated'}>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
+                <RepeatIcon size={18} />
+              </span>
+            </HoverTip>
+          )}
+          {al.hasMeeting && (
+            <HoverTip label={al.meetingLabel || 'Meeting'}>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
+                <MeetingGlyphIcon size={18} />
+              </span>
+            </HoverTip>
+          )}
+        </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
         <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const }}>{al.time}</span>

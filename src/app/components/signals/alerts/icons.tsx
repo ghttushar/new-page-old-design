@@ -126,20 +126,32 @@ export function BoltIcon({ size = 12, color = '#a8763f' }: IconProps) {
   );
 }
 
+/** Duplicate/stacked-cards mark — "this has happened before," deliberately distinct from a refresh/loop glyph. */
 export function RepeatIcon({ size = 16, color = '#464646' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <path d="M2 8a6 6 0 0 1 10.5-4M14 8a6 6 0 0 1-10.5 4" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
-      <path d="M12.5 1.5v3h-3M3.5 14.5v-3h3" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+      <rect x="2.5" y="5.5" width="8" height="8" rx="1.6" stroke={color} strokeWidth="1.3" />
+      <path d="M5 5.5V4a1.5 1.5 0 0 1 1.5-1.5H12A1.5 1.5 0 0 1 13.5 4v6a1.5 1.5 0 0 1-1.5 1.5h-1.5" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
+/** Video-camera mark for "linked to a meeting" — a Meet-style call icon, not a calendar (which reads as a date picker). */
 export function MeetingGlyphIcon({ size = 16, color = '#464646' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="3" width="12" height="10.5" rx="1.5" stroke={color} strokeWidth="1.3" />
-      <path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke={color} strokeWidth="1.3" strokeLinecap="round" />
+      <rect x="1.5" y="4.5" width="8.2" height="7" rx="1.4" stroke={color} strokeWidth="1.3" />
+      <path d="M9.7 7.2l4.1-2.5a.55.55 0 0 1 .84.47v5.6a.55.55 0 0 1-.84.48L9.7 8.8" stroke={color} strokeWidth="1.3" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function InfoIcon({ size = 16, color = '#77469b' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6.5" stroke={color} strokeWidth="1.4" />
+      <circle cx="8" cy="5.1" r="0.9" fill={color} />
+      <path d="M8 7.6v3.6" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }

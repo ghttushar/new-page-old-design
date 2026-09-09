@@ -91,7 +91,8 @@ export interface PrototypeAlert {
   assignees?: AssigneeOption[];
   /** Extra marketplaces beyond `mpBrand`, for the multi-marketplace icon layouts. */
   mpBrands?: MpBrand[];
-  /** How the marketplace glyph(s) render — a design exploration across a few demo cards. Defaults to 'plain'. */
+  /** id into MEETING_LIST/COMPLETED_MEETINGS — which meeting this alert is actually linked to, when hasMeeting is true. */
+  linkedMeetingId?: string;
 }
 
 export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
@@ -113,6 +114,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     repeated: true,
     repeatedLabel: '3rd day running',
     hasMeeting: true,
+    linkedMeetingId: 'm1',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 6 hrs',
     subheader: 'Content pushed by the client on 28 Oct cut conversion from 9.1% to 6.4% across 14 ASINs.',
@@ -218,6 +220,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Inventory',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm1',
     meetingLabel: 'In your 10:30',
     windowLabel: 'No action needed',
     subheader: 'Applied Thursday, measured over seven days on units sold — safe to present.',
@@ -287,7 +290,9 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     account: 'Wellbeing Nutrition',
     category: 'Catalog',
     repeated: false,
-    hasMeeting: false,
+    hasMeeting: true,
+    meetingLabel: 'In your 14:00 QBR prep',
+    linkedMeetingId: 'm2',
     originType: 'email',
     originDetail: 'priya.nair@wellbeingnutrition.com',
     windowLabel: 'Act within 1 day',
@@ -331,6 +336,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Profitability',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm3',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 3 days',
     subheader: 'A pricing feed error undercut MAP on 600 ASINs starting overnight, triggering marketplace penalties.',
@@ -455,6 +461,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Advertising',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm1',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 4 hrs',
     subheader: 'A bid-automation rule removed its own spend cap overnight, tripling spend across 24 campaigns with no matching sales lift.',
@@ -945,6 +952,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Compliance',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm1',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 24 hrs',
     subheader: 'Account Health flagged this ASIN under a restricted-products policy — the listing risks removal if unresolved.',
@@ -1026,6 +1034,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Compliance',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm3',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 5 days',
     subheader: 'The certificate on file for this ASIN expired last month and has not been renewed.',
@@ -1188,6 +1197,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Profitability',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm1',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 2 days',
     subheader: 'A competing offer took the Buy Box overnight, putting the next 7 days of sales on this ASIN at risk.',
@@ -1271,6 +1281,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Billing',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm3',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 4 hrs',
     subheader: 'The payment method on file failed overnight — advertising will pause and order processing is at risk until it is fixed.',
@@ -1311,6 +1322,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Inventory',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm1',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 3 days',
     subheader: 'Days of supply has fallen below the critical 1–2 week threshold against a 21-day supplier lead time.',
@@ -1591,6 +1603,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Profitability',
     repeated: false,
     hasMeeting: true,
+    linkedMeetingId: 'm3',
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 10 days',
     subheader: 'A freight-cost increase across the supplier base is projected to erode Q4 margin storefront-wide unless pricing or sourcing is adjusted.',
@@ -1749,10 +1762,73 @@ export interface MeetingListItem {
 }
 
 export const MEETING_LIST: MeetingListItem[] = [
-  { id: 'm1', timeRange: '10:30 – 11:15', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 4, tasksOpen: 2, readiness: '55% ready', readinessColor: '#a8763f', progress: 55, progressColor: '#a8763f', isToday: true, dateLabel: 'Today' },
+  { id: 'm1', timeRange: '10:30 – 11:15', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 6, tasksOpen: 2, readiness: '55% ready', readinessColor: '#a8763f', progress: 55, progressColor: '#a8763f', isToday: true, dateLabel: 'Today' },
   { id: 'm2', timeRange: '14:00 – 14:30', account: 'Wellbeing', title: 'QBR preparation call', alertsMapped: 1, tasksOpen: 0, readiness: 'Ready', readinessColor: '#3f7d6a', progress: 100, progressColor: '#3f7d6a', isToday: true, dateLabel: 'Today' },
-  { id: 'm3', timeRange: '11:00 – 12:00', account: 'Boldfit', title: 'Q4 planning and inventory commitments', alertsMapped: 2, tasksOpen: 3, readiness: 'Not started', readinessColor: '#b3453f', progress: 8, progressColor: '#b3453f', isToday: false, dateLabel: 'Monday · 3 November' },
+  { id: 'm3', timeRange: '11:00 – 12:00', account: 'Boldfit', title: 'Q4 planning and inventory commitments', alertsMapped: 4, tasksOpen: 3, readiness: 'Not started', readinessColor: '#b3453f', progress: 8, progressColor: '#b3453f', isToday: false, dateLabel: 'Monday · 3 November' },
 ];
+
+export interface MeetingStat {
+  label: string;
+  value: string;
+  trend: string;
+  trendColor: string;
+}
+
+export interface MeetingDetail {
+  dateTimeLabel: string;
+  attendees: string;
+  resolvedPct: number;
+  resolvedColor: string;
+  agenda: string;
+  accountStudy: string;
+  metrics: MeetingStat[];
+}
+
+/** Keyed by MeetingListItem.id — the content the detail panel actually renders per meeting. */
+export const MEETING_DETAILS: Record<string, MeetingDetail> = {
+  m1: {
+    dateTimeLabel: 'Today, 1 November · 10:30 – 11:15 · in two hours',
+    attendees: 'Rahul Gupta, Head of Ecommerce · Sneha Iyer, Brand Manager · last met 25 October',
+    resolvedPct: 55,
+    resolvedColor: '#a8763f',
+    agenda: 'Weekly trading review covering October close, the content incident on the hero range, and Q4 promo readiness. Rahul has asked for a view on margin against the 18% target before the board pack goes out on 8 November.',
+    accountStudy: 'GMV is up 6.2% month on month and ROAS is holding at 4.8 against a 4.5 target. Margin is the weak line at 16.4%, held back mostly by the content incident. The relationship is healthy; the recurring PIM overwrite is the one friction point worth naming today.',
+    metrics: [
+      { label: 'GMV', value: '$412k', trend: 'up 6.2%', trendColor: '#3f7d6a' },
+      { label: 'Net margin', value: '16.4%', trend: 'up 0.9 pt', trendColor: '#3f7d6a' },
+      { label: 'ROAS', value: '4.8', trend: 'flat', trendColor: '#6b7178' },
+      { label: 'Conversion', value: '6.4%', trend: 'down 2.7 pt', trendColor: '#b3453f' },
+    ],
+  },
+  m2: {
+    dateTimeLabel: 'Today, 1 November · 14:00 – 14:30 · in five hours',
+    attendees: 'Priya Nair, Ecommerce Lead · Aditi Rao, Compliance · last met 18 October',
+    resolvedPct: 100,
+    resolvedColor: '#3f7d6a',
+    agenda: 'QBR prep for Wellbeing Nutrition — the compliance suppression on two listings, the replacement creative timeline, and confirming Q4 stock cover before the deck goes to the client.',
+    accountStudy: 'GMV is flat quarter over quarter with the two suppressed listings weighing on it directly. The client has been responsive — replacement creative is already in review. No other account-health flags this quarter.',
+    metrics: [
+      { label: 'GMV', value: '$186k', trend: 'flat', trendColor: '#6b7178' },
+      { label: 'Listings suppressed', value: '2', trend: 'since 30 Oct', trendColor: '#b3453f' },
+      { label: 'ROAS', value: '4.2', trend: 'up 0.3', trendColor: '#3f7d6a' },
+      { label: 'Stock cover', value: '5 wks', trend: 'below target', trendColor: '#a8763f' },
+    ],
+  },
+  m3: {
+    dateTimeLabel: 'Monday, 3 November · 11:00 – 12:00',
+    attendees: 'Karan Mehta, Founder · Isha Verma, Finance · last met 6 October',
+    resolvedPct: 8,
+    resolvedColor: '#b3453f',
+    agenda: 'Q4 planning and inventory commitments for Boldfit — the profitability forecast miss, two open compliance documents, the declined card blocking ad spend, and locking Q4 stock levels.',
+    accountStudy: 'Profitability is trending down across the portfolio ahead of Q4, compounded by a declined payment method that has already paused advertising once this month. Two compliance documents are still outstanding with Amazon. This meeting is under-prepared — start here first.',
+    metrics: [
+      { label: 'GMV', value: '$268k', trend: 'down 3.1%', trendColor: '#b3453f' },
+      { label: 'Net margin', value: '11.2%', trend: 'down 2.4 pt', trendColor: '#b3453f' },
+      { label: 'ROAS', value: '3.9', trend: 'down 0.4', trendColor: '#b3453f' },
+      { label: 'Ad spend', value: '$0', trend: 'card declined', trendColor: '#b3453f' },
+    ],
+  },
+};
 
 export interface CompletedMeeting {
   id: string;
@@ -1773,42 +1849,146 @@ export const COMPLETED_MEETINGS: CompletedMeeting[] = [
   { id: 'm5', timeRange: '10:30 – 11:20', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 5, tasksExtracted: 3, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM sent', momColor: '#3f7d6a', dateLabel: '25 October' },
 ];
 
-export const MOM_TASKS = [
-  { task: 'Model Q4 stock cover at two scenarios', assignee: 'Ritvik Sharma', due: '7 Nov', delivery: 'Work-station' },
-  { task: 'Send replacement creative for two suppressed ASINs', assignee: 'Priya Nair · client', due: '4 Nov', delivery: 'Email' },
-  { task: 'Publish approved bullet copy on 6 hero ASINs', assignee: 'Ritvik Sharma', due: '3 Nov', delivery: 'Work-station' },
-  { task: 'Share updated compliance checklist', assignee: 'Aditi Rao · client', due: '5 Nov', delivery: 'Email' },
-];
+export interface MomTaskItem {
+  task: string;
+  assignee: string;
+  due: string;
+  delivery: string;
+}
 
-export const MOM_DECISIONS = [
-  'Anarix runs a pre-flight compliance check on all creative before it goes live.',
-  'Bullet copy recommendation approved as proposed, no edits requested.',
-  'Q4 stock cover to be modelled at two scenarios before the next review.',
-];
+export interface MomRecord {
+  completedLabel: string;
+  transcriptMeta: string;
+  title: string;
+  dateLabel: string;
+  sent: boolean;
+  summary: string;
+  decisions: string[];
+  tasks: MomTaskItem[];
+}
 
-export const PREP_POSITIVES = [
-  'Inventory reorder recovered $6,200, verified over seven days on units sold.',
-  'GMV up 6.2% with ad spend flat — growth is organic, not bought.',
-  'ROAS holding above the 4.5 target for a fourth consecutive week.',
-];
+/** Keyed by CompletedMeeting.id. */
+export const MOM_RECORDS: Record<string, MomRecord> = {
+  m4: {
+    completedLabel: 'Completed 15:44',
+    transcriptMeta: 'From transcript · 44 minutes · 4 attendees',
+    title: 'Wellbeing Nutrition · Quarterly business review',
+    dateLabel: '31 October 2025 · draft minutes, not yet sent',
+    sent: false,
+    summary: 'The quarter closed ahead on GMV but short on margin, and most of the conversation was about why. We walked through the two suppressed listings, agreed the compliance issue was avoidable, and committed to a pre-flight image check before any future asset push. Priya raised concern about Q4 stock cover on the hero range; we agreed to model two scenarios before the next call. The team accepted our recommendation on bullet copy without changes.',
+    decisions: [
+      'Anarix runs a pre-flight compliance check on all creative before it goes live.',
+      'Bullet copy recommendation approved as proposed, no edits requested.',
+      'Q4 stock cover to be modelled at two scenarios before the next review.',
+    ],
+    tasks: [
+      { task: 'Model Q4 stock cover at two scenarios', assignee: 'Ritvik Sharma', due: '7 Nov', delivery: 'Work-station' },
+      { task: 'Send replacement creative for two suppressed ASINs', assignee: 'Priya Nair · client', due: '4 Nov', delivery: 'Email' },
+      { task: 'Publish approved bullet copy on 6 hero ASINs', assignee: 'Ritvik Sharma', due: '3 Nov', delivery: 'Work-station' },
+      { task: 'Share updated compliance checklist', assignee: 'Aditi Rao · client', due: '5 Nov', delivery: 'Email' },
+    ],
+  },
+  m5: {
+    completedLabel: 'Completed 11:20',
+    transcriptMeta: 'From transcript · 50 minutes · 3 attendees',
+    title: 'Nutrabay · Weekly performance review',
+    dateLabel: '25 October 2025 · sent to client',
+    sent: true,
+    summary: 'Reviewed the week-over-week dip in conversion on the hero range, traced to a client catalogue push that overwrote optimised bullet copy. Agreed to revert immediately and raised the recurring-overwrite pattern as a process risk. Inventory reorder on three SKUs was confirmed verified. No new asks from the client this week.',
+    decisions: [
+      'Revert the 27 Oct bullet copy on the affected ASINs immediately.',
+      'Raise a formal request for a PIM approval gate to stop the recurrence.',
+      'Continue weekly cadence at the same time next week.',
+    ],
+    tasks: [
+      { task: 'Revert bullet copy to the 27 Oct version', assignee: 'Ritvik Sharma', due: '26 Oct', delivery: 'Work-station' },
+      { task: 'Draft the PIM approval-gate proposal for the client', assignee: 'Ritvik Sharma', due: '29 Oct', delivery: 'Work-station' },
+      { task: 'Confirm re-index completed on reverted ASINs', assignee: 'Priya Nair · client', due: '28 Oct', delivery: 'Email' },
+    ],
+  },
+};
 
-export const PREP_NEGATIVES = [
-  'Conversion down 2.7 points on the hero range after their catalogue push.',
-  'Third recurrence of the same overwrite — the fix keeps getting undone.',
-  'Q4 promo calendar is a week overdue and the 8 November lock is close.',
-];
+export interface PrepAction {
+  alert: string;
+  action: string;
+  impact: string;
+  impactColor: string;
+  impactStyle?: string;
+  state: string;
+  stateColor: string;
+}
 
-export const PREP_DISCUSSION = [
-  'Route catalogue pushes through an approval gate — third recurrence this week.',
-  'Sign off new bullet copy on the six hero ASINs, worth about $5,300 a month.',
-  'Confirm Q4 promo dates before the 8 November lock.',
-];
+export interface PrepRecord {
+  positives: string[];
+  negatives: string[];
+  actions: PrepAction[];
+  discussion: string[];
+}
 
-export const PREP_ACTIONS = [
-  { alert: 'Net profit down 12% on 14 ASINs', action: 'Reverted to 27 Oct copy', impact: '+$7,100', impactColor: '#464646', impactStyle: 'italic', state: 'Running', stateColor: '#a8763f' },
-  { alert: 'Inventory reorder · 3 SKUs', action: 'Reorder placed Thursday', impact: '+$6,200', impactColor: '#3f7d6a', state: 'Verified', stateColor: '#3f7d6a' },
-  { alert: 'Bullet copy under-performing', action: 'Awaiting client sign-off', impact: '+$5,300', impactColor: '#464646', impactStyle: 'italic', state: 'Proposed', stateColor: '#6b7178' },
-];
+/** Keyed by MeetingListItem.id — everything the Prep/Presentation flow shows for that meeting. */
+export const PREP_RECORDS: Record<string, PrepRecord> = {
+  m1: {
+    positives: [
+      'Inventory reorder recovered $6,200, verified over seven days on units sold.',
+      'GMV up 6.2% with ad spend flat — growth is organic, not bought.',
+      'ROAS holding above the 4.5 target for a fourth consecutive week.',
+    ],
+    negatives: [
+      'Conversion down 2.7 points on the hero range after their catalogue push.',
+      'Third recurrence of the same overwrite — the fix keeps getting undone.',
+      'Q4 promo calendar is a week overdue and the 8 November lock is close.',
+    ],
+    actions: [
+      { alert: 'Net profit down 12% on 14 ASINs', action: 'Reverted to 27 Oct copy', impact: '+$7,100', impactColor: '#464646', impactStyle: 'italic', state: 'Running', stateColor: '#a8763f' },
+      { alert: 'Inventory reorder · 3 SKUs', action: 'Reorder placed Thursday', impact: '+$6,200', impactColor: '#3f7d6a', state: 'Verified', stateColor: '#3f7d6a' },
+      { alert: 'Bullet copy under-performing', action: 'Awaiting client sign-off', impact: '+$5,300', impactColor: '#464646', impactStyle: 'italic', state: 'Proposed', stateColor: '#6b7178' },
+    ],
+    discussion: [
+      'Route catalogue pushes through an approval gate — third recurrence this week.',
+      'Sign off new bullet copy on the six hero ASINs, worth about $5,300 a month.',
+      'Confirm Q4 promo dates before the 8 November lock.',
+    ],
+  },
+  m2: {
+    positives: [
+      'Replacement creative for both suppressed listings is already in client review.',
+      'No new account-health flags this quarter — the compliance issue was isolated.',
+      'Client has been responsive on every ask this cycle, under 24h turnaround.',
+    ],
+    negatives: [
+      'Two listings still suppressed on image compliance since 30 October.',
+      'Stock cover sits at 5 weeks against Wellbeing\'s usual 8-week comfort line.',
+      'GMV is flat quarter over quarter while the suppression is unresolved.',
+    ],
+    actions: [
+      { alert: 'Two listings suppressed on image compliance', action: 'Replacement creative drafted, awaiting sign-off', impact: '+$6,380', impactColor: '#464646', impactStyle: 'italic', state: 'Proposed', stateColor: '#6b7178' },
+    ],
+    discussion: [
+      'Confirm timeline for the replacement creative sign-off.',
+      'Model Q4 stock cover at two scenarios before committing inventory.',
+      'Agree a pre-flight compliance check so this doesn\'t recur.',
+    ],
+  },
+  m3: {
+    positives: [
+      'Ad account access is otherwise clean — the decline is a card issue, not a policy flag.',
+    ],
+    negatives: [
+      'Profitability forecast down across the entire portfolio ahead of Q4.',
+      'Declined card has already paused advertising once this month.',
+      'Two compliance documents remain outstanding with Amazon.',
+    ],
+    actions: [
+      { alert: 'Q4 profitability forecast down across the entire Boldfit portfolio', action: 'Awaiting Q4 planning decisions', impact: '−$1.4M', impactColor: '#b3453f', state: 'Open', stateColor: '#b3453f' },
+      { alert: 'Credit card on file declined', action: 'Client notified, new card pending', impact: '—', impactColor: '#6b7178', state: 'Open', stateColor: '#b3453f' },
+    ],
+    discussion: [
+      'Get an updated payment method on file before ad spend resumes.',
+      'Close out both outstanding compliance documents this week.',
+      'Lock Q4 stock commitments given the profitability miss.',
+    ],
+  },
+};
 
 /** Important inbound messages surfaced on the Brief page — email, Slack, or Workspace. Reuses AlertSource for the icon. */
 export interface BriefMessage {

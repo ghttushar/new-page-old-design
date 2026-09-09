@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { PrototypeAlert, AlertOption, LoggedActionItem } from '@/constants/signals/prototype-data';
+import { PROTOTYPE_ALERTS, type PrototypeAlert, type AlertOption, type LoggedActionItem } from '@/constants/signals/prototype-data';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import { ACTION_TYPES, type ActionType } from '@/constants/signals/action-types.constants';
 
 const GENERIC_SEND_UPDATE = ACTION_TYPES.find((a) => a.id === 'send-report-update')!;
-/** Below this, a direct commit fires immediately. At or above it, Execute asks for one explicit confirmation first. */
-const HIGH_VALUE_THRESHOLD = 5000;
 import { ItemsModal } from './items-modal';
 import { ActionPicker } from './action-picker';
 import { ComposeMail } from './compose-mail';
@@ -17,7 +16,7 @@ import { EmptyAlertGraphic } from './empty-alert-graphic';
 import { MarketplaceGlyph } from './marketplace-glyph';
 import { SourceIcon } from './source-icon';
 import { HoverTip } from './hover-tip';
-import { SparkleIcon, DiamondIcon, AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon } from './icons';
+import { SparkleIcon, DiamondIcon, AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, ChevronDownIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 
@@ -35,9 +34,15 @@ interface Props {
   onCloseItems: () => void;
   onLogAction: (item: LoggedActionItem) => void;
   onDismiss: () => void;
+  /** Reverses an in-progress Execute — clears the running progress and un-resolves the alert. */
+  onUndoExecute?: () => void;
+  /** True only for the alert used to demo an alternate "Ask Jiva" detail layout — not a global feature yet. */
+  isFirstAlert?: boolean;
+  onOpenAskJiva?: () => void;
+  onSelectAlert?: (id: string) => void;
 }
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, isFirstAlert, onOpenAskJiva, onSelectAlert }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
@@ -47,7 +52,6 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   const [assignPopupOpen, setAssignPopupOpen] = useState(false);
   const [emailFor, setEmailFor] = useState<ActionType | null>(null);
   const [imageStudioOpen, setImageStudioOpen] = useState(false);
-  const [confirmExecute, setConfirmExecute] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [lastLogged, setLastLogged] = useState<{ label: string; sent: boolean } | null>(null);
 
@@ -56,19 +60,37 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
     setAssignPopupOpen(false);
     setEmailFor(null);
     setImageStudioOpen(false);
-    setConfirmExecute(false);
     setDismissed(false);
   }, [sel?.id]);
 
   if (!sel) {
+    const spotlight = PROTOTYPE_ALERTS.filter((a) => a.priority === 'High').slice(0, 3);
     return (
-      <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <EmptyAlertGraphic />
-            <div style={{ font: '700 16px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select an alert</div>
-            <div style={{ font: '400 12.5px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>The reasoning, impact and recommended strategy open here.</div>
-          </div>
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: 'radial-gradient(circle at 18% 8%, rgba(119,70,155,.06), transparent 45%), #fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
+          <EmptyAlertGraphic />
+          <div style={{ font: '700 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select an alert to get started</div>
+          <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 320, textAlign: 'center' }}>The reasoning, impact and recommended strategy open here.</div>
+
+          {onSelectAlert && spotlight.length > 0 && (
+            <div style={{ width: '100%', maxWidth: 380, marginTop: 32 }}>
+              <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8', textAlign: 'center' }}>Jump back in</div>
+              <div style={{ marginTop: 12, border: '1px solid #eceef1', borderRadius: 10, overflow: 'hidden' }}>
+                {spotlight.map((a, i) => (
+                  <div
+                    key={a.id}
+                    onClick={() => onSelectAlert(a.id)}
+                    className={motion.rowHover}
+                    style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 11, cursor: 'pointer', borderBottom: i < spotlight.length - 1 ? '1px solid #f1f2f4' : 'none', background: '#fff' }}
+                  >
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: a.priorityDot, flex: 'none' }} />
+                    <span style={{ flex: 1, minWidth: 0, font: '500 12.5px/1.4 Inter,sans-serif', color: '#3d434b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{a.title}</span>
+                    <span style={{ flex: 'none', font: '700 13px/1 Inter,sans-serif', color: a.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(a.valueNum)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -87,9 +109,6 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
       : `Execute: ${pickedOption.label}`
     : 'Execute';
 
-  const isDirectCommit = !!pickedOption && pickedOption.kind !== 'GENERATIVE' && !pickedOption.isMeetingAsk && !pickedOption.isOther;
-  const needsConfirm = isDirectCommit && Math.abs(sel.valueNum) >= HIGH_VALUE_THRESHOLD;
-
   const handleExecute = () => {
     if (pickedOption?.kind === 'GENERATIVE') {
       if (pickedOption.generates === 'image') { setImageStudioOpen(true); return; }
@@ -97,8 +116,6 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
       return;
     }
     if (pickedOption?.isMeetingAsk || pickedOption?.isOther) { setActionPickerOpen(true); return; }
-    if (needsConfirm && !confirmExecute) { setConfirmExecute(true); return; }
-    setConfirmExecute(false);
     onExecute();
   };
 
@@ -135,6 +152,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
         initialSearch={mappedActionType?.label}
         onClose={() => setActionPickerOpen(false)}
         onRequestEmail={(actionType) => { setActionPickerOpen(false); setEmailFor(actionType); }}
+        onRequestImageGen={() => { setActionPickerOpen(false); setImageStudioOpen(true); }}
         onSave={(actionType, note, dueDate, assignee) => {
           onLogAction({
             id: `log-${Date.now()}`,
@@ -209,9 +227,15 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               <div style={{ width: `${execProgress}%`, height: '100%', background: '#77469b', transition: 'width .5s ease' }} />
             </div>
             <div style={{ font: '400 12px/1.65 Inter,sans-serif', color: '#6b7178', marginTop: 12 }}>You can leave this alert. Progress continues in the background.</div>
-            {execProgress >= 100 && (
-              <span onClick={onViewReport} className={motion.pressable} style={{ display: 'inline-block', marginTop: 16, padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>View impact report</span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 16 }}>
+              {execProgress >= 100 ? (
+                <span onClick={onViewReport} className={motion.pressable} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>View impact report</span>
+              ) : (
+                onUndoExecute && (
+                  <span onClick={onUndoExecute} className={motion.pressable} style={{ padding: '10px 16px', borderRadius: 7, border: '1px solid #dfe3ea', font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Undo</span>
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -277,30 +301,41 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   return (
     <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
       <div key={sel.id} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
-        {/* Header */}
+        {/* Header — the full identity row for a normal alert; trimmed to just title/value/timestamp for the Ask Jiva variation, which trades badge chrome for chat space */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
-          <div style={{ display: 'flex', alignItems: 'center', columnGap: 8, rowGap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-            <span style={{ padding: '3px 8px', borderRadius: 5, background: sel.priorityDot + '1a', font: '700 10px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: sel.priorityDot, flex: 'none' }}>{sel.priority}</span>
-            <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 11px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' }}>{sel.category}</span>
-            <MarketplaceGlyph al={sel} size={19} />
-            <SourceIcon origin={sel.originType ?? 'anarix'} detail={sel.originDetail} size={15} />
-            {sel.repeated && (
-              <HoverTip label={sel.repeatedLabel ? `Repeated · ${sel.repeatedLabel}` : 'Repeated'}>
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 21, height: 21, flex: 'none' }}>
-                  <RepeatIcon size={15} />
-                </span>
-              </HoverTip>
-            )}
-            {sel.hasMeeting && (
-              <HoverTip label={sel.meetingLabel || 'Meeting'}>
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 21, height: 21, flex: 'none' }}>
-                  <MeetingGlyphIcon size={15} />
-                </span>
-              </HoverTip>
-            )}
-            <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#5c636e', flex: 'none', whiteSpace: 'nowrap' }}>{sel.mpCountry} · {sel.account}</span>
-            <span style={{ marginLeft: 'auto', font: '400 11px/1 Inter,sans-serif', color: '#6b7178', flex: 'none', whiteSpace: 'nowrap' }}>{sel.time}</span>
-          </div>
+          {!isFirstAlert && (
+            <div style={{ display: 'flex', alignItems: 'center', columnGap: 8, rowGap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+                <span style={{ padding: '3px 8px', borderRadius: 5, background: sel.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: sel.priorityDot, flex: 'none' }}>{sel.priority}</span>
+                <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' }}>{sel.category}</span>
+              </div>
+              <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
+              <div style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
+                <MarketplaceGlyph al={sel} size={26} />
+              </div>
+              <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 'none' }}>
+                <SourceIcon origin={sel.originType ?? 'anarix'} detail={sel.originDetail} size={26} />
+                {sel.repeated && (
+                  <HoverTip label={sel.repeatedLabel ? `Repeated · ${sel.repeatedLabel}` : 'Repeated'}>
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flex: 'none' }}>
+                      <RepeatIcon size={20} />
+                    </span>
+                  </HoverTip>
+                )}
+                {sel.hasMeeting && (
+                  <HoverTip label={sel.meetingLabel || 'Meeting'}>
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flex: 'none' }}>
+                      <MeetingGlyphIcon size={20} />
+                    </span>
+                  </HoverTip>
+                )}
+              </div>
+              <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
+              <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#5c636e', flex: 'none', whiteSpace: 'nowrap' }}>{sel.mpCountry} · {sel.account}</span>
+              <span style={{ marginLeft: 'auto', font: '400 11px/1 Inter,sans-serif', color: '#6b7178', flex: 'none', whiteSpace: 'nowrap' }}>{sel.time}</span>
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d' }}>{sel.title}</div>
@@ -311,44 +346,63 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                 <div style={{ font: '600 22px/1 Inter,sans-serif', color: valueColor }}>{money(sel.valueNum)}</div>
                 <ValueInfoIcon label={explainAlertValue(sel)} />
               </div>
-              <div style={{ marginTop: 6, padding: '2px 7px', borderRadius: 4, background: sel.proof === 'verified' ? '#eef6f3' : '#f1f2f4', font: '600 10px/1.5 Inter,sans-serif', color: sel.proof === 'verified' ? '#3f7d6a' : '#5c636e', display: 'inline-block' }}>{sel.proof === 'verified' ? 'VERIFIED' : 'ESTIMATED'}</div>
+              {isFirstAlert ? (
+                <div style={{ marginTop: 6, font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>{sel.time}</div>
+              ) : (
+                <div style={{ marginTop: 6, padding: '2px 7px', borderRadius: 4, background: sel.proof === 'verified' ? '#eef6f3' : '#f1f2f4', font: '600 10px/1.5 Inter,sans-serif', color: sel.proof === 'verified' ? '#3f7d6a' : '#5c636e', display: 'inline-block' }}>{sel.proof === 'verified' ? 'VERIFIED' : 'ESTIMATED'}</div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Body */}
-        <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Why + Root cause */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
-            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Why it happened</div><div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646', marginTop: 7 }}>{sel.why}</div></div>
-            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Root cause</div><div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646', marginTop: 7 }}>{sel.root}</div></div>
+        <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {/* Why it happened — one headline, one flowing explanation (root cause folded in, not a second heading) */}
+          <div>
+            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Why it happened</div>
+            <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646', marginTop: 7 }}>{sel.why} {sel.root}</div>
           </div>
 
           {/* Business impact */}
-          <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, padding: 14 }}>
+          <div>
             <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Business impact</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
-              <div style={{ background: '#fafbfd', padding: 12 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Opportunity window</div><div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d', marginTop: 6 }}>{sel.oppWindow}</div></div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
               <div style={{ background: '#fafbfd', padding: 12 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{sel.revLabel}</div><div style={{ font: '600 15px/1 Inter,sans-serif', color: valueColor, marginTop: 6 }}>{sel.revValue}</div></div>
               <div style={{ background: '#fafbfd', padding: 12 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Confidence</div><div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d', marginTop: 6 }}>{sel.confidence}%</div></div>
             </div>
-            <div style={{ font: '400 11px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 9 }}>Detected via {sel.category} · {sel.source}</div>
           </div>
 
-          {/* AI summary */}
-          <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
-            <div onClick={() => setAiSummaryOpen(!aiSummaryOpen)} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: '#fbfafd' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '600 12px/1 Inter,sans-serif', color: '#5f3880' }}><SparkleIcon size={12} /> AI summary</span>
-              <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b' }}>{aiSummaryOpen ? 'Collapse' : 'Read more'}</span>
+          {/* AI summary — the first alert trades this for a live Ask Jiva entry point, as a concept variation */}
+          {isFirstAlert && onOpenAskJiva ? (
+            <div
+              onClick={onOpenAskJiva}
+              className={motion.pressable}
+              style={{ border: '1px solid #e6ddf0', borderRadius: 8, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 11, cursor: 'pointer', background: 'linear-gradient(90deg, #fbfafd, #f6f4fa)' }}
+            >
+              <DiamondMascot size={26} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ font: '600 12.5px/1.3 Inter,sans-serif', color: '#3d2a52' }}>Ask Jiva about this alert</div>
+                <div style={{ font: '400 11px/1.4 Inter,sans-serif', color: '#6b7178', marginTop: 2 }}>Chat instead of reading a static summary</div>
+              </div>
+              <span style={{ color: '#77469b', fontSize: 16, flex: 'none' }}>→</span>
             </div>
-            <div className={`${motion.accordionRow} ${aiSummaryOpen ? motion.accordionRowOpen : ''}`}>
-              <div style={{ padding: '0 14px 14px', font: '400 12px/1.65 Inter,sans-serif', color: '#464646' }}>{sel.aiSummary}</div>
+          ) : (
+            <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
+              <div onClick={() => setAiSummaryOpen(!aiSummaryOpen)} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: '#fbfafd' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '600 12px/1 Inter,sans-serif', color: '#5f3880' }}><SparkleIcon size={12} /> AI summary</span>
+                <span style={{ display: 'flex', transform: aiSummaryOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms ease-out' }}><ChevronDownIcon size={10} color="#77469b" /></span>
+              </div>
+              <div className={`${motion.accordionRow} ${aiSummaryOpen ? motion.accordionRowOpen : ''}`}>
+                <div>
+                  <div style={{ padding: '0 14px 14px', font: '400 12px/1.65 Inter,sans-serif', color: '#464646' }}>{sel.aiSummary}</div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Strategy picker */}
-          <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
-            <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
+          {/* Strategy picker — the decision this whole card exists to support, so it gets a primary border instead of blending in with the reference cards around it */}
+          <div style={{ border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
+            <div style={{ padding: '12px 14px', borderBottom: '1px solid #eee3f6', background: '#fbfafd', display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
               <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Choose your strategy</span>
               {mappedActionType && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1.5 Inter,sans-serif', color: '#5f3880' }}>
@@ -357,7 +411,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               )}
             </div>
             {sel.options.map((o) => (
-              <div key={o.id} onClick={() => { setSelectedOptionId(o.id); setConfirmExecute(false); }} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
+              <div key={o.id} onClick={() => setSelectedOptionId(o.id)} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', border: optId === o.id ? '4px solid #77469b' : '1px solid #dfe3ea', flex: 'none', marginTop: 2 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
@@ -382,29 +436,19 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                 </div>
               </div>
             ))}
-            {confirmExecute ? (
-              <div key="confirm" className={motion.contentFadeIn} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, background: '#fbf1ef', borderTop: '1px solid #f0d8d5' }}>
-                <span style={{ flex: 1, minWidth: 0, font: '500 12px/1.5 Inter,sans-serif', color: '#7a3530' }}>
-                  Confirm: this commits <strong>{pickedOption?.label.toLowerCase()}</strong> — estimated impact {money(sel.valueNum)}. This can't be automatically undone.
-                </span>
-                <span onClick={handleExecute} className={motion.pressable} style={{ padding: '9px 15px', borderRadius: 7, background: '#b3453f', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', flex: 'none' }}>Confirm</span>
-                <span onClick={() => setConfirmExecute(false)} className={motion.pressable} style={{ padding: '9px 15px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', flex: 'none' }}>Cancel</span>
-              </div>
-            ) : (
-              <div key="action" className={motion.contentFadeIn} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 9, background: '#fafbfd' }}>
-                <span onClick={handleExecute} className={motion.pressable} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  {executeLabel}
-                </span>
-                <span
-                  onClick={() => { if (dismissed) return; setDismissed(true); onDismiss(); setLastLogged({ label: 'Dismissed', sent: false }); window.setTimeout(() => setLastLogged(null), 3200); }}
-                  className={dismissed ? undefined : motion.pressable}
-                  style={{ padding: '9px 14px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: dismissed ? '#9aa0a8' : '#3d434b', cursor: dismissed ? 'default' : 'pointer', transition: 'color 150ms ease-out' }}
-                >
-                  {dismissed ? 'Dismissed' : 'Dismiss'}
-                </span>
-              </div>
-            )}
+            <div key="action" className={motion.contentFadeIn} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 9, background: '#fafbfd' }}>
+              <span onClick={handleExecute} className={motion.pressable} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                {executeLabel}
+              </span>
+              <span
+                onClick={() => { if (dismissed) return; setDismissed(true); onDismiss(); setLastLogged({ label: 'Dismissed', sent: false }); window.setTimeout(() => setLastLogged(null), 3200); }}
+                className={dismissed ? undefined : motion.pressable}
+                style={{ padding: '9px 14px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: dismissed ? '#9aa0a8' : '#3d434b', cursor: dismissed ? 'default' : 'pointer', transition: 'color 150ms ease-out' }}
+              >
+                {dismissed ? 'Dismissed' : 'Dismiss'}
+              </span>
+            </div>
           </div>
 
           {/* Affected items */}
@@ -427,8 +471,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
           )}
         </div>
 
-        {/* Sticky action bar */}
-        <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e6e8ec', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Sticky action bar — a translucent material so scrolled content reads as passing beneath it, not stopping at a hard edge */}
+        <div style={{ position: 'sticky', bottom: 0, background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(14px) saturate(180%)', WebkitBackdropFilter: 'blur(14px) saturate(180%)', borderTop: '1px solid rgba(230,232,236,0.7)', boxShadow: '0 -8px 20px -14px rgba(20,24,33,.12)', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 8 } as React.CSSProperties}>
           <span
             onClick={() => {
               const assignees = sel.assignees ?? DEFAULT_ASSIGNEES;
@@ -437,7 +481,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             }}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', position: 'relative' }}
           >
-            <AssignIcon size={13} /> Assign{sel.assignees ? ` (${sel.assignees.length})` : ''}
+            <AssignIcon size={13} /> Assign
             {detailMenu === 'assign' && (
               <div className={motion.popInBottomLeft} style={{ position: 'absolute', left: 0, bottom: 38, width: 220, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 70, textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
                 <AssignDropdownList assignees={sel.assignees ?? DEFAULT_ASSIGNEES} onSelect={() => setDetailMenu(null)} />

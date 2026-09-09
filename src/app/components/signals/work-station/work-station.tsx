@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { WORKSTATION_TASKS, ACTION_HISTORY, ACCOUNT_GOALS, type WorkstationTask, type TaskStatus } from '@/constants/signals/prototype-data';
+import { WORKSTATION_TASKS, ENGAGEMENT_STREAK, type WorkstationTask, type TaskStatus } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
 import { CheckIcon, XIcon, AssignIcon, CloseIcon } from '../alerts/icons';
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import motion from '../alerts/motion.module.scss';
 
 const STATUS_LABEL: Record<TaskStatus, string> = {
@@ -19,6 +20,19 @@ const STATUS_COLOR: Record<TaskStatus, string> = {
   in_progress: '#77469b',
   done: '#3f7d6a',
 };
+
+const CELEBRATIONS = [
+  "Nice. Jiva approves.",
+  "Task: eliminated. Ego: boosted.",
+  "One down. Chaos, briefly avoided.",
+  "You really said 'not today' to procrastination.",
+  "Jiva is doing a tiny victory dance.",
+  "Look at you, finishing things.",
+  "That's one less thing haunting your dreams.",
+  "Certified task-doer. Please clap.",
+];
+
+const CONFETTI_COLORS = ['#77469b', '#a37fc7', '#3f7d6a', '#a8763f', '#5c7f9e', '#f2b6b0'];
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -49,14 +63,101 @@ function StatusPill({ status }: { status: TaskStatus }) {
   );
 }
 
+/** A short, self-clearing confetti burst — celebratory but confined to the streak card, never the whole page. */
+function Confetti() {
+  const pieces = Array.from({ length: 22 }, (_, i) => ({
+    id: i,
+    left: 10 + Math.random() * 80,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    delay: Math.random() * 0.15,
+    duration: 0.9 + Math.random() * 0.5,
+    drift: (Math.random() - 0.5) * 60,
+    rotate: Math.random() * 360,
+  }));
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' as const }}>
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          style={{
+            position: 'absolute', top: '38%', left: `${p.left}%`, width: 6, height: 9, borderRadius: 1.5,
+            background: p.color,
+            // @ts-expect-error custom properties consumed by the keyframe below
+            '--drift': `${p.drift}px`,
+            '--rotate': `${p.rotate}deg`,
+            animation: `wsConfettiFall ${p.duration}s ${p.delay}s cubic-bezier(0.23,1,0.32,1) forwards`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes wsConfettiFall {
+          0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+          100% { transform: translate(var(--drift), 120px) rotate(var(--rotate)); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/** A working week's worth of days — this card is a compact strip now, not a hero moment. */
+const STREAK_WEEK = ENGAGEMENT_STREAK.slice(0, 5);
+
+function StreakCard({ celebrateTick }: { celebrateTick: number }) {
+  const [celebrating, setCelebrating] = useState(false);
+  const [quip, setQuip] = useState('');
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setQuip(CELEBRATIONS[Math.floor(Math.random() * CELEBRATIONS.length)]);
+    setCelebrating(true);
+    const t = window.setTimeout(() => setCelebrating(false), 2400);
+    return () => window.clearTimeout(t);
+  }, [celebrateTick]);
+
+  // Consecutive from Monday — breaks at the first inactive day within the 5-day work week.
+  let streak = 0;
+  for (const d of STREAK_WEEK) {
+    if (!d.active) break;
+    streak++;
+  }
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 14, position: 'relative', padding: '0 18px' }}>
+      {celebrating && <Confetti />}
+
+      <div style={{ position: 'relative', flex: 'none' }}>
+        <div style={{ transform: celebrating ? 'scale(1.15)' : 'scale(1)', transition: 'transform 300ms cubic-bezier(0.23,1,0.32,1)' }}>
+          <DiamondMascot size={34} />
+        </div>
+        {celebrating && (
+          <div className={motion.popInTop} style={{ position: 'absolute', bottom: 'calc(100% + 9px)', left: '50%', transform: 'translateX(-50%)', width: 190, padding: '8px 11px', borderRadius: 9, background: '#3d2a52', color: '#fff', font: '600 11px/1.4 Inter,sans-serif', textAlign: 'center' as const, boxShadow: '0 10px 22px rgba(20,24,33,.28)', zIndex: 5 }}>
+            {quip}
+            <span style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid #3d2a52' }} />
+          </div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>{streak}-day streak</div>
+        <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+          {STREAK_WEEK.map((d, i) => (
+            <span key={i} title={d.label} style={{ flex: 1, height: 8, borderRadius: 3, background: d.active ? 'linear-gradient(90deg,#a37fc7,#77469b)' : '#f1f2f4' }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function WorkStation() {
   const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
-  const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [newText, setNewText] = useState('');
   const [newAssigneeId, setNewAssigneeId] = useState(DEFAULT_ASSIGNEES[0].id);
   const [newEta, setNewEta] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const [celebrateTick, setCelebrateTick] = useState(0);
   const newTextRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -66,6 +167,10 @@ export function WorkStation() {
   const flash = (msg: string) => { setToast(msg); window.setTimeout(() => setToast(null), 2600); };
 
   const setStatus = (id: string, status: TaskStatus) => {
+    const current = tasks.find((t) => t.id === id);
+    if (status === 'done' && current && current.status !== 'done') {
+      setCelebrateTick((n) => n + 1);
+    }
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   };
 
@@ -98,92 +203,27 @@ export function WorkStation() {
     flash(assignee === 'You' ? 'Task created' : `Task sent to ${assignee}`);
   };
 
-  const q = search.trim().toLowerCase();
-  const matches = (t: WorkstationTask) => !q || t.text.toLowerCase().includes(q) || t.assignee.toLowerCase().includes(q);
-
-  const assignedToMe = tasks.filter((t) => t.assignee === 'You' && matches(t));
-  const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You' && matches(t));
+  const assignedToMe = tasks.filter((t) => t.assignee === 'You');
+  const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You');
   const doneThisWeek = tasks.filter((t) => t.status === 'done').length;
 
   return (
     <div style={{ height: '100%', display: 'flex', gap: 16, position: 'relative' }}>
-      {/* Left — Task workspace */}
+      {/* Left — Assigned to me, the whole column */}
       <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #e6e8ec', flex: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d' }}>Tasks</div>
-              <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{doneThisWeek} of {tasks.length} done this week</div>
-            </div>
-            <span onClick={() => setCreateOpen((v) => !v)} className={motion.pressable} style={{ padding: '9px 14px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>
-              {createOpen ? 'Cancel' : 'Create task'}
-            </span>
-          </div>
-          <div style={{ marginTop: 13 }}>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tasks or people"
-              style={{ width: '100%', padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
-            />
-          </div>
-
-          <div className={`${motion.accordionRow} ${createOpen ? motion.accordionRowOpen : ''}`}>
-            <div style={{ marginTop: 13, padding: 14, border: '1px solid #e6e8ec', borderRadius: 8, background: '#fafbfd' }}>
-              <textarea
-                ref={newTextRef}
-                value={newText}
-                onChange={(e) => setNewText(e.target.value)}
-                placeholder="What needs to get done?"
-                style={{ width: '100%', minHeight: 54, padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12.5px/1.5 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'vertical' as const }}
-              />
-              <div style={{ display: 'flex', gap: 9, marginTop: 10, alignItems: 'center' }}>
-                <select
-                  value={newAssigneeId}
-                  onChange={(e) => setNewAssigneeId(e.target.value)}
-                  style={{ padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
-                >
-                  {DEFAULT_ASSIGNEES.map((a) => (
-                    <option key={a.id} value={a.id}>{a.id === 'self' ? 'Myself' : a.name}</option>
-                  ))}
-                </select>
-                <input
-                  value={newEta}
-                  onChange={(e) => setNewEta(e.target.value)}
-                  placeholder="ETA, e.g. 7 Nov"
-                  style={{ flex: 1, minWidth: 0, padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
-                />
-                <span onClick={createTask} className={motion.pressable} style={{ padding: '8px 14px', borderRadius: 7, background: newText.trim() ? '#77469b' : '#e6e0ec', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: newText.trim() ? 'pointer' : 'default', flex: 'none' }}>
-                  {newAssigneeId === 'self' ? 'Create' : 'Assign'}
-                </span>
-              </div>
-            </div>
-          </div>
+          <div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d' }}>Assigned to me</div>
+          <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{doneThisWeek} of {tasks.length} done this week</div>
         </div>
-
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {/* Assigned to me */}
-          <div style={{ padding: '11px 20px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Assigned to me</span>
-            <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{assignedToMe.length}</span>
-          </div>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
           {assignedToMe.length === 0 && (
             <div style={{ padding: '20px', textAlign: 'center', font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>Nothing assigned to you right now.</div>
           )}
           {assignedToMe.map((t) => (
             <div key={t.id} className={motion.contentFadeIn} style={{ padding: '14px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 13, alignItems: 'flex-start' }}>
-              {t.status === 'done' ? (
-                <span style={{ width: 16, height: 16, borderRadius: 4, background: '#3f7d6a', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', marginTop: 2 }}><CheckIcon size={9} /></span>
-              ) : (
-                <span
-                  onClick={() => t.status !== 'pending' && setStatus(t.id, 'done')}
-                  style={{ width: 16, height: 16, borderRadius: 4, border: '1.5px solid #cfd4dc', flex: 'none', marginTop: 2, cursor: t.status !== 'pending' ? 'pointer' : 'default' }}
-                />
-              )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: `${t.status === 'done' ? '400' : '500'} 13px/1.5 Inter,sans-serif`, color: t.status === 'done' ? '#6b7178' : '#23272d', textDecoration: t.status === 'done' ? 'line-through' : 'none' }}>{t.text}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 7, flexWrap: 'wrap' as const }}>
-                  <StatusPill status={t.status} />
                   <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{t.createdBy !== 'You' ? `From ${t.createdBy}` : t.meeting}</span>
                   {t.etaLabel && <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{t.etaLabel}</span>}
                   {t.due && !t.etaLabel && <span style={{ font: '400 11px/1 Inter,sans-serif', color: t.dueColor || '#6b7178' }}>{t.due}</span>}
@@ -191,11 +231,24 @@ export function WorkStation() {
                 {t.lastReminder && (
                   <div style={{ font: '400 10.5px/1.5 Inter,sans-serif', color: '#a8763f', marginTop: 5 }}>{t.lastReminder}</div>
                 )}
-                {t.status !== 'pending' && t.status !== 'done' && (
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 7, flex: 'none' }}>
+                {t.status === 'pending' && (
+                  <div style={{ display: 'flex', gap: 7 }}>
+                    <span onClick={() => setStatus(t.id, 'accepted')} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 11px', borderRadius: 6, background: '#eef6f3', color: '#3f7d6a', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>
+                      <CheckIcon size={11} color="#3f7d6a" /> Accept
+                    </span>
+                    <span onClick={() => setStatus(t.id, 'declined')} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 11px', borderRadius: 6, background: '#fbf1ef', color: '#b3453f', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>
+                      <XIcon size={11} color="#b3453f" /> Decline
+                    </span>
+                  </div>
+                )}
+                {t.status === 'done' && <StatusPill status="done" />}
+                {(t.status === 'accepted' || t.status === 'in_progress') && (
                   <select
                     value={t.status}
                     onChange={(e) => setStatus(t.id, e.target.value as TaskStatus)}
-                    style={{ marginTop: 8, padding: '5px 8px', border: '1px solid #dfe3ea', borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
+                    style={{ padding: '6px 9px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: STATUS_COLOR[t.status], outline: 'none', background: '#fff' }}
                   >
                     <option value="accepted">Accepted</option>
                     <option value="in_progress">In progress</option>
@@ -203,89 +256,91 @@ export function WorkStation() {
                   </select>
                 )}
               </div>
-              {t.status === 'pending' && (
-                <div style={{ display: 'flex', gap: 7, flex: 'none' }}>
-                  <span onClick={() => setStatus(t.id, 'accepted')} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 11px', borderRadius: 6, background: '#eef6f3', color: '#3f7d6a', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>
-                    <CheckIcon size={11} color="#3f7d6a" /> Accept
-                  </span>
-                  <span onClick={() => setStatus(t.id, 'declined')} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 11px', borderRadius: 6, background: '#fbf1ef', color: '#b3453f', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>
-                    <XIcon size={11} color="#b3453f" /> Decline
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Assigned by me */}
-          <div style={{ padding: '11px 20px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', borderTop: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Assigned by me</span>
-            <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{assignedByMe.length}</span>
-          </div>
-          {assignedByMe.length === 0 && (
-            <div style={{ padding: '20px', textAlign: 'center', font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>You haven't assigned anything to the team yet.</div>
-          )}
-          {assignedByMe.map((t) => (
-            <div key={t.id} className={motion.contentFadeIn} style={{ padding: '14px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 13, alignItems: 'flex-start' }}>
-              <Avatar name={t.assignee} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ font: '500 13px/1.5 Inter,sans-serif', color: '#23272d' }}>{t.text}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 7, flexWrap: 'wrap' as const }}>
-                  <StatusPill status={t.status} />
-                  <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646' }}>{t.assignee}</span>
-                  {t.etaLabel && <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{t.etaLabel}</span>}
-                  {t.due && !t.etaLabel && <span style={{ font: '400 11px/1 Inter,sans-serif', color: t.dueColor || '#6b7178' }}>{t.due}</span>}
-                </div>
-                {t.lastReminder && (
-                  <div style={{ font: '400 10.5px/1.5 Inter,sans-serif', color: '#a8763f', marginTop: 5 }}>{t.lastReminder}</div>
-                )}
-              </div>
-              {t.status !== 'done' && t.status !== 'declined' && (
-                <span onClick={() => sendReminder(t)} className={motion.pressable} style={{ padding: '7px 11px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', flex: 'none' }}>
-                  Send reminder
-                </span>
-              )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Right — Goals + Actions */}
-      <div style={{ flex: '0 0 38%', maxWidth: '38%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {/* Account goals */}
-        <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, padding: '18px 20px' }}>
-          <div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d' }}>Account goals</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 14 }}>
-            {ACCOUNT_GOALS.slice(0, 2).map((g, i) => (
-              <div key={i} style={{ background: '#fafbfd', padding: 15 }}>
-                <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{g.label}</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginTop: 8 }}>
-                  <span style={{ font: '600 19px/1 Inter,sans-serif', color: '#23272d' }}>{g.current}</span>
-                  <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>of {g.target}</span>
+      {/* Right — a small streak strip (20% of this column) sitting above the "Assigned by me" card, which takes the rest */}
+      <div style={{ flex: '0 0 40%', maxWidth: '40%', height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ flex: '0 0 20%', minHeight: 76 }}>
+          <StreakCard celebrateTick={celebrateTick} />
+        </div>
+
+        <div style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #e6e8ec', flex: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d' }}>Assigned by me</div>
+                <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{assignedByMe.length} outstanding</div>
+              </div>
+              <span onClick={() => setCreateOpen((v) => !v)} className={motion.pressable} style={{ padding: '9px 14px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>
+                {createOpen ? 'Cancel' : 'Create task'}
+              </span>
+            </div>
+
+            <div className={`${motion.accordionRow} ${createOpen ? motion.accordionRowOpen : ''}`}>
+              <div>
+                <div style={{ marginTop: 13, padding: 14, border: '1px solid #e6e8ec', borderRadius: 8, background: '#fafbfd' }}>
+                  <textarea
+                    ref={newTextRef}
+                    value={newText}
+                    onChange={(e) => setNewText(e.target.value)}
+                    placeholder="What needs to get done?"
+                    style={{ width: '100%', minHeight: 54, padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12.5px/1.5 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'vertical' as const }}
+                  />
+                  <div style={{ display: 'flex', gap: 9, marginTop: 10, alignItems: 'center' }}>
+                    <select
+                      value={newAssigneeId}
+                      onChange={(e) => setNewAssigneeId(e.target.value)}
+                      style={{ padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
+                    >
+                      {DEFAULT_ASSIGNEES.map((a) => (
+                        <option key={a.id} value={a.id}>{a.id === 'self' ? 'Myself' : a.name}</option>
+                      ))}
+                    </select>
+                    <input
+                      value={newEta}
+                      onChange={(e) => setNewEta(e.target.value)}
+                      placeholder="ETA, e.g. 7 Nov"
+                      style={{ flex: 1, minWidth: 0, padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                    />
+                    <span onClick={createTask} className={motion.pressable} style={{ padding: '8px 14px', borderRadius: 7, background: newText.trim() ? '#77469b' : '#e6e0ec', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: newText.trim() ? 'pointer' : 'default', flex: 'none' }}>
+                      {newAssigneeId === 'self' ? 'Create' : 'Assign'}
+                    </span>
+                  </div>
                 </div>
-                <div style={{ height: 4, borderRadius: 2, background: '#e6e8ec', marginTop: 10, overflow: 'hidden' }}>
-                  <div style={{ width: `${g.pct}%`, height: '100%', background: g.color }} />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+            {assignedByMe.length === 0 && (
+              <div style={{ padding: '20px', textAlign: 'center', font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>You haven't assigned anything to the team yet.</div>
+            )}
+            {assignedByMe.map((t) => (
+              <div key={t.id} className={motion.contentFadeIn} style={{ padding: '14px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 13, alignItems: 'flex-start' }}>
+                <Avatar name={t.assignee} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ font: '500 13px/1.5 Inter,sans-serif', color: '#23272d' }}>{t.text}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 7, flexWrap: 'wrap' as const }}>
+                    <StatusPill status={t.status} />
+                    <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646' }}>{t.assignee}</span>
+                    {t.etaLabel && <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{t.etaLabel}</span>}
+                    {t.due && !t.etaLabel && <span style={{ font: '400 11px/1 Inter,sans-serif', color: t.dueColor || '#6b7178' }}>{t.due}</span>}
+                  </div>
+                  {t.lastReminder && (
+                    <div style={{ font: '400 10.5px/1.5 Inter,sans-serif', color: '#a8763f', marginTop: 5 }}>{t.lastReminder}</div>
+                  )}
                 </div>
+                {t.status !== 'done' && t.status !== 'declined' && (
+                  <span onClick={() => sendReminder(t)} className={motion.pressable} style={{ padding: '7px 11px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', flex: 'none' }}>
+                    Send reminder
+                  </span>
+                )}
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Actions history */}
-        <div style={{ background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d' }}>Actions taken for net margin</span>
-            <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>4 this month</span>
-          </div>
-          {ACTION_HISTORY.map((a, i) => (
-            <div key={i} style={{ padding: '14px 20px', borderBottom: i < ACTION_HISTORY.length - 1 ? '1px solid #f1f2f4' : 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: a.dotColor }} />
-                <span style={{ flex: 1, font: '500 13px/1.4 Inter,sans-serif', color: '#464646' }}>{a.label}</span>
-                <span style={{ font: '600 12px/1 Inter,sans-serif', color: a.impactColor, fontStyle: a.impactStyle }}>{a.impact}</span>
-              </div>
-              <div style={{ font: '400 11px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{a.meta}</div>
-            </div>
-          ))}
         </div>
       </div>
 

@@ -11,6 +11,19 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   }
 }
 
+// Clickable list rows — a hint the row is interactive before the pointer even settles.
+.rowHover {
+  transition: background 120ms $ease-out;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: #fafbfd;
+    }
+  }
+  &:active {
+    background: #f6f4fa;
+  }
+}
+
 // Popovers, dropdowns, menus — grow from their trigger instead of popping into existence.
 @keyframes popIn {
   from {
@@ -89,8 +102,12 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 .accordionRow {
   display: grid;
   grid-template-rows: 0fr;
+  min-height: 0;
   transition: grid-template-rows 220ms $ease-in-out;
   > div {
+    // min-height: 0 is required here too — without it, a grid row sized to 0fr still
+    // reserves the content's intrinsic height (min-height: auto default) and never fully collapses.
+    min-height: 0;
     overflow: hidden;
   }
 }

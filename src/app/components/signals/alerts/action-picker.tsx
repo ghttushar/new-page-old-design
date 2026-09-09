@@ -13,12 +13,13 @@ interface Props {
   variant?: 'inline' | 'overlay';
   onClose: () => void;
   onRequestEmail: (actionType: ActionType) => void;
+  onRequestImageGen: (actionType: ActionType) => void;
   onSave: (actionType: ActionType, note: string, dueDate: string, assignee: string) => void;
 }
 
 const ASSIGNEES = ['You', 'Jiva · AI', 'Mike Torres', 'Priya Nair'];
 
-export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClose, onRequestEmail, onSave }: Props) {
+export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClose, onRequestEmail, onRequestImageGen, onSave }: Props) {
   const [search, setSearch] = useState(initialSearch ?? '');
   const [picked, setPicked] = useState<ActionType | null>(null);
   const [note, setNote] = useState('');
@@ -38,6 +39,10 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
   const pick = (a: ActionType) => {
     if (a.isEmailAction) {
       onRequestEmail(a);
+      return;
+    }
+    if (a.isImageAction) {
+      onRequestImageGen(a);
       return;
     }
     setPicked(a);
@@ -87,7 +92,10 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
                   >
                     <span style={{ flex: 1, minWidth: 0, font: '500 12px/1.5 Inter,sans-serif', color: '#3d434b' }}>{a.label}</span>
                     {a.isEmailAction && (
-                      <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880' }}>✉ EMAIL</span>
+                      <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880' }}>EMAIL</span>
+                    )}
+                    {a.isImageAction && (
+                      <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 4, background: '#eef6f3', font: '600 9px/1.5 Inter,sans-serif', color: '#3f7d6a' }}>IMAGE GEN</span>
                     )}
                   </div>
                 ))}

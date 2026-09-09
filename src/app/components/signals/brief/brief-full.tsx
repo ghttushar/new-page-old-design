@@ -1,6 +1,8 @@
 import { BRIEFING_ALERTS, BRIEFING_MEETINGS, JIVA_ACTIVITY, BRIEF_MESSAGES, PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
 import { SourceIcon } from '../alerts/source-icon';
 import { SparkleIcon } from '../alerts/icons';
+import { formatAlertValue } from '../alerts/format-money';
+import motion from '../alerts/motion.module.scss';
 
 interface Props {
   onAlertClick: (id: string) => void;

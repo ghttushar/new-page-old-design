@@ -27,8 +27,6 @@ interface Props {
 const GENERIC_SEND_UPDATE = ACTION_TYPES.find((a) => a.id === 'send-report-update')!;
 const CARD_MAX_WIDTH = 800;
 const SWIPE_THRESHOLD = 130;
-/** Below this, swipe/Approve commits immediately. At or above it, one explicit confirmation is required first. */
-const HIGH_VALUE_THRESHOLD = 5000;
 
 export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance, onResolve }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
@@ -45,7 +43,6 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
   const [flash, setFlash] = useState<'approved' | 'denied' | null>(null);
   const [flyOut, setFlyOut] = useState<'left' | 'right' | null>(null);
-  const [confirmApprove, setConfirmApprove] = useState(false);
 
   // Drag-to-swipe physics
   const [drag, setDrag] = useState({ x: 0, dragging: false });
@@ -65,7 +62,6 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
     setAssignPopupOpen(false);
     setShareMenuOpen(false);
     setThumb(null);
-    setConfirmApprove(false);
     setDrag({ x: 0, dragging: false });
   }, [alert?.id]);
 
@@ -111,21 +107,15 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
     window.setTimeout(onAdvance, 460);
   };
 
-  const isDirectCommit = !!picked && picked.kind !== 'GENERATIVE' && !picked.isOther && !picked.isMeetingAsk;
-  const needsConfirm = isDirectCommit && Math.abs(alert.valueNum) >= HIGH_VALUE_THRESHOLD;
-
   const handleApprove = () => {
     if (!picked) { onAdvance(); return; }
     if (picked.kind === 'GENERATIVE' && picked.generates === 'image') { setImageStudioOpen(true); return; }
     if (picked.isOther || picked.isMeetingAsk) { setActionPickerOpen(true); return; }
-    if (needsConfirm && !confirmApprove) { setConfirmApprove(true); return; }
-    setConfirmApprove(false);
     setFlyOut('right');
     window.setTimeout(() => logAndAdvance(picked.label, picked.desc, 'logged'), 220);
   };
 
   const handleDeny = () => {
-    setConfirmApprove(false);
     onResolve(alert.id);
     setFlyOut('left');
     window.setTimeout(() => { setFlash('denied'); window.setTimeout(onAdvance, 400); }, 220);
@@ -234,10 +224,18 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ padding: '4px 10px', borderRadius: 6, background: alert.priorityDot + '1a', font: '800 11px/1.5 Inter,sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase' as const, color: alert.priorityDot }}>{alert.priority}</span>
-                <span style={{ padding: '4px 10px', borderRadius: 6, background: '#f3eefa', font: '700 11px/1 Inter,sans-serif', color: '#5f3880' }}>{alert.category}</span>
-                <MarketplaceGlyph al={alert} size={24} />
-                <SourceIcon origin={origin} detail={alert.originDetail} size={20} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+                  <span style={{ padding: '4px 10px', borderRadius: 6, background: alert.priorityDot + '1a', font: '800 11px/1 Inter,sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase' as const, color: alert.priorityDot }}>{alert.priority}</span>
+                  <span style={{ padding: '4px 10px', borderRadius: 6, background: '#f3eefa', font: '700 11px/1 Inter,sans-serif', color: '#5f3880' }}>{alert.category}</span>
+                </div>
+                <span style={{ width: 1, height: 16, background: '#e6ddf0', flex: 'none' }} />
+                <div style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
+                  <MarketplaceGlyph al={alert} size={30} />
+                </div>
+                <span style={{ width: 1, height: 16, background: '#e6ddf0', flex: 'none' }} />
+                <div style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
+                  <SourceIcon origin={origin} detail={alert.originDetail} size={30} />
+                </div>
                 <span style={{ marginLeft: 'auto', font: '600 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>{alert.account}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 2, color: '#c3b9d1' }} title="Drag to swipe">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="4" r="1.3" /><circle cx="11" cy="4" r="1.3" /><circle cx="5" cy="8" r="1.3" /><circle cx="11" cy="8" r="1.3" /><circle cx="5" cy="12" r="1.3" /><circle cx="11" cy="12" r="1.3" /></svg>
@@ -256,7 +254,7 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 28px', flex: 'none' }} onPointerDown={(e) => e.stopPropagation()}>
               <span style={{ position: 'relative' }}>
                 <span onClick={requestAssign} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 11px', border: '1px solid #e6e0ec', borderRadius: 8, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
-                  <AssignIcon size={13} /> Assign{alert.assignees ? ` (${alert.assignees.length})` : ''}
+                  <AssignIcon size={13} /> Assign
                 </span>
                 {assignMenuOpen && (
                   <div className={motion.popInTop} style={{ position: 'absolute', left: 0, top: 38, width: 220, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 30 }}>
@@ -284,24 +282,13 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
             {/* Two-column body: strategy on the left, always-on stats on the right */}
             <div className={scrollStyles.sleekScroll} style={{ overflowY: 'auto', padding: '10px 28px 24px', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
               <div>
-                {confirmApprove ? (
-                  <div key="confirm" className={motion.contentFadeIn} style={{ padding: '14px 16px', borderRadius: 14, background: '#fbf1ef', border: '1.5px solid #f0d8d5' }}>
-                    <div style={{ font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#b3453f' }}>Confirm to approve</div>
-                    <div style={{ font: '600 13px/1.5 Inter,sans-serif', color: '#7a3530', marginTop: 6 }}>This commits <strong>{picked?.label.toLowerCase()}</strong> — estimated impact {formatAlertValue(alert.valueNum)}. This can't be automatically undone.</div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
-                      <span onClick={handleApprove} className={motion.pressable} style={{ padding: '9px 15px', borderRadius: 7, background: '#b3453f', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Confirm</span>
-                      <span onClick={() => setConfirmApprove(false)} className={motion.pressable} style={{ padding: '9px 15px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: '#fff' }}>Cancel</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div key="action" className={motion.contentFadeIn} style={{ padding: '14px 16px', borderRadius: 14, background: '#f9f7fc', border: '1.5px solid #e5d9f0' }}>
-                    <div style={{ font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9a7fb8' }}>Approving will</div>
-                    <div style={{ font: '700 14px/1.4 Inter,sans-serif', color: '#3d2a52', marginTop: 6 }}>{picked?.label ?? 'Log this alert'}</div>
-                    {picked?.expected && (
-                      <div style={{ font: '700 13px/1 Inter,sans-serif', color: '#3f7d6a', marginTop: 8 }}>Est. {picked.expected}{picked.confidence ? ` · ${picked.confidence}% confidence` : ''}</div>
-                    )}
-                  </div>
-                )}
+                <div key="action" className={motion.contentFadeIn} style={{ padding: '14px 16px', borderRadius: 14, background: '#f9f7fc', border: '1.5px solid #e5d9f0' }}>
+                  <div style={{ font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9a7fb8' }}>Approving will</div>
+                  <div style={{ font: '700 14px/1.4 Inter,sans-serif', color: '#3d2a52', marginTop: 6 }}>{picked?.label ?? 'Log this alert'}</div>
+                  {picked?.expected && (
+                    <div style={{ font: '700 13px/1 Inter,sans-serif', color: '#3f7d6a', marginTop: 8 }}>Est. {picked.expected}{picked.confidence ? ` · ${picked.confidence}% confidence` : ''}</div>
+                  )}
+                </div>
 
                 {otherOptions.length > 0 && (
                   <div style={{ marginTop: 10 }}>
@@ -310,18 +297,20 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
                       <span style={{ display: 'flex', transform: pickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><ChevronDownIcon size={9} color="#77469b" /></span>
                     </span>
                     <div className={`${motion.accordionRow} ${pickerOpen ? motion.accordionRowOpen : ''}`}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
-                        {alert.options.map((o) => (
-                          <div
-                            key={o.id}
-                            onClick={() => { setSelectedOptionId(o.id); setPickerOpen(false); }}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', border: `1.4px solid ${optId === o.id ? '#77469b' : '#eceef1'}`, background: optId === o.id ? '#fbfafd' : '#fff', borderRadius: 8, cursor: 'pointer' }}
-                          >
-                            <span style={{ width: 12, height: 12, borderRadius: '50%', border: optId === o.id ? '3.5px solid #77469b' : '1px solid #dfe3ea', flex: 'none' }} />
-                            <span style={{ flex: 1, minWidth: 0, font: '600 12px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{o.label}</span>
-                            {o.expected && <span style={{ flex: 'none', font: '700 11px/1 Inter,sans-serif', color: '#3f7d6a' }}>{o.expected}</span>}
-                          </div>
-                        ))}
+                      <div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                          {alert.options.map((o) => (
+                            <div
+                              key={o.id}
+                              onClick={() => { setSelectedOptionId(o.id); setPickerOpen(false); }}
+                              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', border: `1.4px solid ${optId === o.id ? '#77469b' : '#eceef1'}`, background: optId === o.id ? '#fbfafd' : '#fff', borderRadius: 8, cursor: 'pointer' }}
+                            >
+                              <span style={{ width: 12, height: 12, borderRadius: '50%', border: optId === o.id ? '3.5px solid #77469b' : '1px solid #dfe3ea', flex: 'none' }} />
+                              <span style={{ flex: 1, minWidth: 0, font: '600 12px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{o.label}</span>
+                              {o.expected && <span style={{ flex: 'none', font: '700 11px/1 Inter,sans-serif', color: '#3f7d6a' }}>{o.expected}</span>}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -332,14 +321,16 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
                   <span style={{ display: 'flex', transform: detailsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><ChevronDownIcon size={9} /></span>
                 </div>
                 <div className={`${motion.accordionRow} ${detailsOpen ? motion.accordionRowOpen : ''}`}>
-                  <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ padding: 12, background: '#fafbfd', border: '1px solid #f1f2f4', borderRadius: 8 }}>
-                      <div style={{ font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Why it happened</div>
-                      <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#464646', marginTop: 6 }}>{alert.why}</div>
-                    </div>
-                    <div style={{ padding: 12, background: '#fafbfd', border: '1px solid #f1f2f4', borderRadius: 8 }}>
-                      <div style={{ font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Root cause</div>
-                      <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#464646', marginTop: 6 }}>{alert.root}</div>
+                  <div>
+                    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ padding: 12, background: '#fafbfd', border: '1px solid #f1f2f4', borderRadius: 8 }}>
+                        <div style={{ font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Why it happened</div>
+                        <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#464646', marginTop: 6 }}>{alert.why}</div>
+                      </div>
+                      <div style={{ padding: 12, background: '#fafbfd', border: '1px solid #f1f2f4', borderRadius: 8 }}>
+                        <div style={{ font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Root cause</div>
+                        <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#464646', marginTop: 6 }}>{alert.root}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -350,7 +341,9 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
                   <span style={{ display: 'flex', transform: aiSummaryOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><ChevronDownIcon size={9} color="#5f3880" /></span>
                 </div>
                 <div className={`${motion.accordionRow} ${aiSummaryOpen ? motion.accordionRowOpen : ''}`}>
-                  <div style={{ marginTop: 10, padding: 12, background: '#fbfafd', border: '1px solid #f1f2f4', borderRadius: 8, font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{alert.aiSummary}</div>
+                  <div>
+                    <div style={{ marginTop: 10, padding: 12, background: '#fbfafd', border: '1px solid #f1f2f4', borderRadius: 8, font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{alert.aiSummary}</div>
+                  </div>
                 </div>
               </div>
 
@@ -419,6 +412,7 @@ export function AlertSpeedCard({ alert, position, total, onLogAction, onAdvance,
           initialSearch={mappedActionType?.label}
           onClose={() => setActionPickerOpen(false)}
           onRequestEmail={(actionType) => { setActionPickerOpen(false); setEmailFor(actionType); }}
+          onRequestImageGen={() => { setActionPickerOpen(false); setImageStudioOpen(true); }}
           onSave={(actionType, note) => {
             setActionPickerOpen(false);
             logAndAdvance(actionType.label, note, 'logged');

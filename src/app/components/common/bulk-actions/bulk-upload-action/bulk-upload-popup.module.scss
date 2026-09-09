@@ -1,17 +1,45 @@
 @import 'src/assets/styles/variables/variables.scss';
 
+@keyframes indeterminateSweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .popupContainer {
   .dialogTitle {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: $spacing-16 $spacing-20;
+    padding: $spacing-20;
     border-bottom: 1px solid $border-color-4;
 
     .titleText {
+      display: block;
       font-size: 1.8rem;
       font-weight: $font-weight-700;
       color: $main-text;
+    }
+
+    .subtitleText {
+      display: block;
+      font-size: 1.2rem;
+      color: $sub-text-2;
+      margin-top: 0.4rem;
     }
 
     .closeButton {
@@ -20,14 +48,16 @@
       align-items: center;
       justify-content: center;
       padding: $spacing-4;
-      border-radius: 0.4rem;
+      border-radius: 999px;
       background: none;
       border: none;
       color: $sub-text-2;
-      transition: color 0.15s ease;
+      flex: none;
+      transition: color 0.15s ease, background 0.15s ease;
 
       &:hover {
         color: $main-text;
+        background: $background-color;
       }
     }
   }
@@ -36,13 +66,7 @@
     padding: $spacing-20;
     display: flex;
     flex-direction: column;
-    gap: $spacing-20;
-  }
-
-  .description {
-    font-size: 1.2rem;
-    color: $sub-text-1;
-    line-height: 1.5;
+    gap: $spacing-16;
   }
 
   .downloadSection {
@@ -51,7 +75,7 @@
     gap: $spacing-8;
     padding: $spacing-12;
     background-color: $background-color;
-    border-radius: 0.6rem;
+    border-radius: 1rem;
     border: 1px solid $border-color-4;
 
     .downloadLabel {
@@ -66,31 +90,9 @@
     }
   }
 
-  .disclaimer {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-4;
-    padding: $spacing-8 $spacing-12;
-    background-color: $background-color;
-    border-radius: 0.6rem;
-    border: 1px solid $border-color-4;
-
-    .disclaimerTitle {
-      font-size: 1.1rem;
-      font-weight: $font-weight-600;
-      color: $sub-text-1;
-    }
-
-    .disclaimerText {
-      font-size: 1rem;
-      color: $sub-text-2;
-      line-height: 1.4;
-    }
-  }
-
   .uploadArea {
-    border: 2px dashed $border-color-3;
-    border-radius: 0.8rem;
+    border: 1.5px dashed $border-color-3;
+    border-radius: 1.4rem;
     padding: $spacing-20;
     display: flex;
     flex-direction: column;
@@ -98,27 +100,37 @@
     justify-content: center;
     gap: $spacing-8;
     cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-    min-height: 16rem;
+    transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+    min-height: 14rem;
+    background: linear-gradient(180deg, rgba(119, 70, 155, 0.015), transparent 60%);
 
     &:hover {
       border-color: $primary-color;
-      background-color: rgba($primary-color, 0.02);
+      background-color: rgba($primary-color, 0.03);
     }
 
     &.uploadAreaActive {
       border-color: $primary-color;
-      background-color: rgba($primary-color, 0.04);
+      background-color: rgba($primary-color, 0.05);
+      transform: scale(1.004);
     }
 
-    .uploadIcon {
-      color: $sub-text-4;
+    .uploadIconWrap {
+      width: 4.4rem;
+      height: 4.4rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $button-background-1;
+      color: $primary-color;
     }
 
     .uploadText {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       color: $sub-text-1;
       text-align: center;
+      margin-top: $spacing-4;
 
       .uploadLink {
         color: $primary-color;
@@ -129,57 +141,195 @@
     }
 
     .uploadHint {
-      font-size: 1rem;
+      font-size: 1.05rem;
       color: $sub-text-4;
     }
   }
 
-  .filePreview {
+  .fileList {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-8;
+  }
+
+  .fileItem {
+    border: 1px solid $border-color-4;
+    border-radius: 1.1rem;
+    padding: $spacing-12;
+    background: $foreground-color;
+    animation: rowIn 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    transition: border-color 0.18s ease;
+
+    &[data-status='failed'] {
+      border-color: rgba(179, 69, 63, 0.35);
+    }
+
+    &[data-status='validated'],
+    &[data-status='uploaded'] {
+      border-color: rgba(63, 125, 106, 0.3);
+    }
+  }
+
+  .fileItemMain {
     display: flex;
     align-items: center;
     gap: $spacing-8;
+  }
+
+  .fileIconWrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.9rem;
+    background: $background-color;
+  }
+
+  .fileMeta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .fileNameText {
+    font-size: 1.2rem;
+    font-weight: $font-weight-600;
+    color: $main-text;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fileSubText {
+    font-size: 1rem;
+    color: $sub-text-4;
+  }
+
+  .statusPill {
+    flex: none;
+    font-size: 1rem;
+    font-weight: $font-weight-600;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .removeFile {
+    cursor: pointer;
+    color: $sub-text-4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    transition: color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      color: #b3453f;
+      background: rgba(179, 69, 63, 0.08);
+    }
+  }
+
+  .linearTrack {
+    position: relative;
+    overflow: hidden;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: $background-color;
+    margin-top: $spacing-8;
+  }
+
+  .linearFill {
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(119, 70, 155, 0) 0%, #77469b 50%, rgba(119, 70, 155, 0) 100%);
+    animation: indeterminateSweep 1.3s ease-in-out infinite;
+  }
+
+  .errorBox {
+    margin-top: $spacing-8;
     padding: $spacing-8 $spacing-12;
-    background-color: $background-color;
-    border: 1px solid $border-color-4;
+    background: #fbebea;
+    border-left: 3px solid #b3453f;
     border-radius: 0.6rem;
+  }
 
-    .fileName {
+  .errorHeader {
+    font-size: 1.05rem;
+    font-weight: $font-weight-600;
+    color: #b3453f;
+  }
+
+  .errorList {
+    margin: 0.5rem 0 0;
+    padding-left: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    li {
       font-size: 1.1rem;
-      color: $main-text;
-      font-weight: $font-weight-500;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      color: #8a3c37;
+      line-height: 1.5;
     }
+  }
 
-    .fileSize {
-      font-size: 1rem;
-      color: $sub-text-2;
-    }
+  .errorToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: $spacing-8;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: $font-weight-600;
+    color: #b3453f;
 
-    .removeFile {
-      cursor: pointer;
-      color: $sub-text-4;
-      display: flex;
-      align-items: center;
-      padding: $spacing-4;
-      border-radius: 0.4rem;
-      background: none;
-      border: none;
-      transition: color 0.15s ease;
-
-      &:hover {
-        color: $error-color;
-      }
+    .caretUp {
+      transform: rotate(180deg);
     }
   }
 
   .dialogActions {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
-    gap: $spacing-8;
+    gap: $spacing-12;
     padding: $spacing-12 $spacing-20;
     border-top: 1px solid $border-color-4;
+  }
+
+  .readyCount {
+    margin-right: auto;
+    font-size: 1.1rem;
+    font-weight: $font-weight-600;
+    color: #3f7d6a;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popupContainer {
+    .linearFill {
+      animation: none;
+      width: 100%;
+      background: #77469b;
+      opacity: 0.5;
+    }
+
+    .fileItem {
+      animation: none;
+    }
   }
 }

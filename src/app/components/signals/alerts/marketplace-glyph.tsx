@@ -3,7 +3,7 @@ import type { MpBrand, PrototypeAlert } from '@/constants/signals/prototype-data
 import { HoverTip } from './hover-tip';
 
 const BRAND: Record<MpBrand, { bg: string; fg: string }> = {
-  amazon: { bg: '#131921', fg: '#FF9900' },
+  amazon: { bg: '#4a4a52', fg: '#FFFFFF' },
   walmart: { bg: '#0071CE', fg: '#FFFFFF' },
 };
 

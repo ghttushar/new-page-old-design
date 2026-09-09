@@ -3189,7 +3189,7 @@ export const buildQueryKeyWithAccountIds = (
 };
 
 export const shouldShowHeader = (pathname: string) => {
-  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance') && !pathname.startsWith('/popup-preview') && !pathname.startsWith('/signals') && !pathname.startsWith('/signal');
+  return !pathname.startsWith('/user') && !pathname.startsWith('/maintenance') && !pathname.startsWith('/popup-preview') && !pathname.startsWith('/signals-preview') && !pathname.startsWith('/signals') && !pathname.startsWith('/signal');
 };
 
 export const shouldShowSidebar = (pathname: string) => {
@@ -3197,7 +3197,8 @@ export const shouldShowSidebar = (pathname: string) => {
     !pathname.startsWith(ONBOARDING_CONNECTING_PAGE) &&
     !pathname.startsWith('/user') &&
     !pathname.startsWith('/maintenance') &&
-    !pathname.startsWith('/popup-preview')
+    !pathname.startsWith('/popup-preview') &&
+    !pathname.startsWith('/signals-preview')
   );
 };
 export const getRedirectURLByWMTClientType = (

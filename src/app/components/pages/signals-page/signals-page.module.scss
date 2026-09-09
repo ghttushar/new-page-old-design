@@ -21,12 +21,6 @@
   color: $main-text;
 }
 
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .dateRangeBtn {
   display: flex;
   align-items: center;
@@ -50,10 +44,19 @@
 
 .tabBar {
   display: flex;
-  gap: 22px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   border-bottom: 1px solid #e6e8ec;
   flex-shrink: 0;
   margin-top: 2px;
+}
+
+.tabBarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
 }
 
 .tab {
