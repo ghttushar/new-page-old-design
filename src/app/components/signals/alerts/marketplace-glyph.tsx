@@ -4,14 +4,14 @@ import { HoverTip } from './hover-tip';
 
 const BRAND: Record<MpBrand, { bg: string; fg: string }> = {
   amazon: { bg: '#4a4a52', fg: '#FFFFFF' },
-  walmart: { bg: '#0071CE', fg: '#FFFFFF' },
+  walmart: { bg: '#0071CE', fg: '#FFC220' },
 };
 
 function BrandIcon({ brand, size }: { brand: MpBrand; size: number }) {
   const iconSize = Math.round(size * 0.62);
   return brand === 'walmart' ? (
     <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" fill="none">
-      <g stroke={BRAND.walmart.fg} strokeWidth="1.6" strokeLinecap="round"><path d="M8 1.2v4.6M8 10.2v4.6M2.3 4l4 2.3M9.7 9.7l4 2.3M2.3 12l4-2.3M9.7 6.3l4-2.3" /></g>
+      <g stroke={BRAND.walmart.fg} strokeWidth="2.1" strokeLinecap="round"><path d="M8 1.2v4.6M8 10.2v4.6M2.3 4l4 2.3M9.7 9.7l4 2.3M2.3 12l4-2.3M9.7 6.3l4-2.3" /></g>
     </svg>
   ) : (
     <AmazonLogo size={iconSize} color={BRAND.amazon.fg} weight="bold" />

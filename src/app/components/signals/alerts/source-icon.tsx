@@ -79,12 +79,24 @@ function SlackMark({ size }: { size: number }) {
   );
 }
 
-/** Video-camera mark in Google Meet's brand green — a colour-coded approximation, not the exact vector, but unambiguous next to its tooltip. */
+/** Google Meet's camera mark, full colour — a best-effort reconstruction (not traced from the official vector). */
 function GoogleMeetMark({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <rect x="1.4" y="4.3" width="8" height="7.4" rx="1.7" fill="#00AC47" />
-      <path d="M9.4 6.9l4.3-2.5c.5-.3 1.1.07 1.1.65v5.8c0 .58-.6.95-1.1.65l-4.3-2.5V6.9z" fill="#00832D" />
+      <path d="M2.2 5.4c0-1.05.85-1.9 1.9-1.9h3.8c1.05 0 1.9.85 1.9 1.9v5.2c0 1.05-.85 1.9-1.9 1.9H4.1c-1.05 0-1.9-.85-1.9-1.9V5.4z" fill="#00AC47" />
+      <path d="M9.8 6.7V5l3.4-2a.6.6 0 0 1 .9.52v8.96a.6.6 0 0 1-.9.52l-3.4-2V9.3" fill="#00832D" />
+      <path d="M9.8 5l3.4-2c.24-.14.5-.16.74-.08l-2.02 3.9L9.8 5.8V5z" fill="#FFBA00" />
+      <path d="M9.8 11v-1.7l1.98-1.1 2.02 3.9c-.35.12-.75.1-1.06-.1l-2.94-1.7V11z" fill="#4285F4" />
+    </svg>
+  );
+}
+
+/** Gmail-style envelope mark — white envelope, red outline and flap, evoking the classic Gmail glyph. */
+function GmailMark({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="2.8" width="14" height="10.4" rx="1.2" fill="#fff" stroke="#EA4335" strokeWidth="1.1" />
+      <path d="M1.4 3.4l6.6 5 6.6-5" stroke="#EA4335" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -96,26 +108,19 @@ export function toRowSource(origin: AlertSource): RowSource | null {
   return origin === 'email' || origin === 'slack' || origin === 'meeting' ? origin : null;
 }
 
-const ROW_BADGE_BG: Record<RowSource, string> = {
-  meeting: '#00AC47',
-  email: '#5b6b8c',
-  slack: '#ffffff',
-};
-
-/** Raw circular badge with no HoverTip — exported for composing with the marketplace Badge in the Alerts row's overlapping-circle group. */
+/** Raw circular badge with no tooltip — exported for composing with the marketplace Badge in the Alerts row's overlapping-circle group. All three row sources carry their own full-colour mark on a white disc. */
 export function SourceBadge({ source, size, style }: { source: RowSource; size: number; style?: React.CSSProperties }) {
-  const iconSize = Math.round(size * 0.58);
-  const needsRing = ROW_BADGE_BG[source] === '#ffffff';
+  const iconSize = Math.round(size * 0.62);
   return (
     <span
       style={{
-        width: size, height: size, borderRadius: '50%', background: ROW_BADGE_BG[source],
+        width: size, height: size, borderRadius: '50%', background: '#ffffff',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
-        boxShadow: needsRing ? '0 0 0 1.5px #fff, 0 0 0 2px #e6e8ec' : '0 0 0 1.5px #fff',
+        boxShadow: '0 0 0 1.5px #fff, 0 0 0 2px #e6e8ec',
         ...style,
       }}
     >
-      {source === 'email' && <Envelope size={iconSize} color="#ffffff" weight="fill" />}
+      {source === 'email' && <GmailMark size={iconSize} />}
       {source === 'slack' && <SlackMark size={iconSize} />}
       {source === 'meeting' && <GoogleMeetMark size={iconSize} />}
     </span>

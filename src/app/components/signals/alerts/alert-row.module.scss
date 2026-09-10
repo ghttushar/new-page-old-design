@@ -1,0 +1,11 @@
+// Inline styles can't react to a parent's :hover, so the "black by default,
+// purple on card hover" rule for the items-breakdown link lives here.
+.alertCard {
+  .breakdownLink {
+    color: #23272d;
+  }
+
+  &:hover .breakdownLink {
+    color: #77469b;
+  }
+}

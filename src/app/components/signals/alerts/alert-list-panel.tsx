@@ -1,19 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption } from '@/constants/signals/prototype-data';
 import { formatAlertValue } from './format-money';
-import { HoverTip } from './hover-tip';
 import { SourceBadge, toRowSource } from './source-icon';
-import { Badge as MarketplaceBadge, brandLabel } from './marketplace-glyph';
+import { Badge as MarketplaceBadge } from './marketplace-glyph';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD, Avatar } from './assign-menu';
 import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, MoreVertIcon, CheckIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
-
-const SOURCE_LABEL: Record<'email' | 'slack' | 'meeting', string> = {
-  email: 'Reported by email',
-  slack: 'Shared via Slack',
-  meeting: 'Raised in a meeting',
-};
+import rowStyles from './alert-row.module.scss';
 
 interface Props {
   selectedAlertId: string | null;
@@ -199,27 +193,24 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
   const rowSource = toRowSource(origin);
   const assignOpen = isOpen && menuMode === 'assign';
   return (
-    <div style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
+    <div className={rowStyles.alertCard} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
       {resolved && (
         <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#eef6f3', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#3f7d6a' }}>
           <CheckIcon size={8} color="#3f7d6a" /> Resolved
         </span>
       )}
-      <div style={{ position: 'absolute', right: 12, top: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+      <div style={{ position: 'absolute', right: 12, top: 12, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         {assignedTo ? (
-          <HoverTip label={assignedTo.name}>
-            <span
-              onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
-              className={motion.pressable}
-              style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer' }}
-            >
-              <Avatar name={assignedTo.name} size={22} vivid />
-            </span>
-          </HoverTip>
+          <span
+            onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
+            className={motion.pressable}
+            style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer' }}
+          >
+            <Avatar name={assignedTo.name} size={22} vivid />
+          </span>
         ) : (
           <span
             onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
-            title="Assign"
             className={motion.pressable}
             style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
@@ -230,7 +221,6 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
         )}
         <span
           onClick={(e) => { e.stopPropagation(); setMenuFor(isOpen && menuMode !== 'assign' ? null : al.id); setMenuMode('main'); }}
-          title="More"
           className={motion.pressable}
           style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
           onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
@@ -248,16 +238,15 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
               {' · '}
               <span
                 onClick={(e) => { e.stopPropagation(); onOpenItems(); }}
-                style={{ color: '#77469b', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' as const, textUnderlineOffset: 2 }}
+                className={rowStyles.breakdownLink}
+                style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' as const, textUnderlineOffset: 2 }}
               >
                 {al.itemsBreakdown}
               </span>
             </>
           )}
         </div>
-        <HoverTip label={al.title} wrap inline={false}>
-          <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
-        </HoverTip>
+        <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 56, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 11, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
@@ -267,41 +256,32 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           <span style={{ padding: '3px 8px', borderRadius: 5, border: '1px solid #d9c6ec', background: '#fff', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
         </div>
         <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 10px 2px 2px', borderRadius: 999, background: '#eef0f3', flex: 'none' }}>
           <span style={{ display: 'flex', alignItems: 'center' }}>
-            <HoverTip label={brandLabel(al.mpBrand)}>
-              <MarketplaceBadge brand={al.mpBrand} size={22} style={rowSource ? { position: 'relative', zIndex: 2 } : undefined} />
-            </HoverTip>
+            <MarketplaceBadge brand={al.mpBrand} size={20} style={{ borderRadius: 7, position: rowSource ? 'relative' : undefined, zIndex: rowSource ? 2 : undefined }} />
             {rowSource && (
-              <HoverTip label={al.originDetail ? `${SOURCE_LABEL[rowSource]} · ${al.originDetail}` : SOURCE_LABEL[rowSource]}>
-                <SourceBadge source={rowSource} size={22} style={{ marginLeft: -Math.round(22 * 0.25), zIndex: 1 }} />
-              </HoverTip>
+              <SourceBadge source={rowSource} size={20} style={{ marginLeft: -5, zIndex: 1 }} />
             )}
           </span>
-          <span style={{ font: '600 10px/1 Inter,sans-serif', color: '#6b7178' }}>{al.mpCountry}</span>
-        </div>
+          <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#3d434b' }}>{al.mpCountry}</span>
+        </span>
+        <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
           {al.repeated && (
-            <HoverTip label={al.repeatedLabel ? `Repeated · ${al.repeatedLabel}` : 'Repeated'}>
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
-                <RepeatIcon size={18} />
-              </span>
-            </HoverTip>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
+              <RepeatIcon size={18} />
+            </span>
           )}
           {al.hasMeeting && (
-            <HoverTip label={al.meetingLabel || 'Meeting'}>
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
-                <MeetingGlyphIcon size={18} />
-              </span>
-            </HoverTip>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
+              <MeetingGlyphIcon size={18} />
+            </span>
           )}
         </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 8 }}>
-        <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const }}>{al.time}</span>
+        <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const, flex: 'none' }}>{al.time}</span>
       </div>
       {isOpen && (
-        <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: 62, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
+        <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: 40, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
           {menuMode === 'main' && (
             <>
               <MenuItem icon={<ShareIcon size={13} />} label="Share" onClick={() => setMenuMode('share')} />
