@@ -77,8 +77,14 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
     <div style={{ flex: '0 0 35%', maxWidth: '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
         <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search alerts, ASINs, campaigns" style={{ flex: 1, minWidth: 0, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }} />
-          <span onClick={() => setFilterOpen(!filterOpen)} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 16px', border: `1px solid ${filterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: filterOpen ? '#f9f7fc' : '#fff', flex: 'none', whiteSpace: 'nowrap' as const }}>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search alerts, ASINs, campaigns" className={motion.focusRing} style={{ flex: 1, minWidth: 0, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }} />
+          <span
+            onClick={() => setFilterOpen(!filterOpen)}
+            className={motion.pressable}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 16px', border: `1px solid ${filterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: filterOpen ? '#f9f7fc' : '#fff', flex: 'none', whiteSpace: 'nowrap' as const, transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
+            onMouseEnter={(e) => { if (!filterOpen) e.currentTarget.style.background = '#fafbfd'; }}
+            onMouseLeave={(e) => { if (!filterOpen) e.currentTarget.style.background = '#fff'; }}
+          >
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
             Filter{filterCount ? ` (${filterCount})` : ''}
           </span>
@@ -88,7 +94,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
             <FilterSection label="Impact value">
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, border: '1px solid #dfe3ea', borderRadius: 6, overflow: 'hidden' }}>
                 {(['>', '<', '='] as const).map((op) => (
-                  <span key={op} onClick={() => setValueOp(op)} style={{ padding: '8px 10px', background: valueOp === op ? '#f9f7fc' : '#fff', font: '700 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>{op}</span>
+                  <span key={op} onClick={() => setValueOp(op)} className={motion.pressable} style={{ padding: '8px 10px', background: valueOp === op ? '#f9f7fc' : '#fff', font: '700 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', transition: 'background 120ms ease-out' }}>{op}</span>
                 ))}
                 <span style={{ width: 1, height: 20, background: '#e6e8ec' }} />
                 <span style={{ paddingLeft: 8, font: '600 12px/1 Inter,sans-serif', color: '#9aa0a8' }}>$</span>
@@ -97,31 +103,39 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
             </FilterSection>
             <FilterSection label="Category">
               {['Catalog', 'Inventory', 'Advertising', 'Profitability', 'Compliance', 'Operations', 'Billing', 'Reviews'].map((k) => (
-                <div key={k} onClick={() => toggleCategory(k)} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: categoryFilters[k] ? '#77469b' : '#fff', flex: 'none' }} />
+                <div key={k} onClick={() => toggleCategory(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '4px 6px', margin: '0 -6px', borderRadius: 6 }}>
+                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: categoryFilters[k] ? '#77469b' : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
                   <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
                 </div>
               ))}
             </FilterSection>
             <FilterSection label="Source">
               {['Anarix', 'Jiva', 'Meeting', 'Slack', 'Workspace', 'Email'].map((k) => (
-                <div key={k} onClick={() => toggleSource(k)} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: sourceFilters[k] ? '#77469b' : '#fff', flex: 'none' }} />
+                <div key={k} onClick={() => toggleSource(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '4px 6px', margin: '0 -6px', borderRadius: 6 }}>
+                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: sourceFilters[k] ? '#77469b' : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
                   <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
                 </div>
               ))}
             </FilterSection>
             <FilterSection label="Priority">
               {[['High', '#b3453f'], ['Medium', '#5c7f9e'], ['Low', '#3f7d6a']].map(([k, dot]) => (
-                <div key={k} onClick={() => togglePriority(k)} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
-                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: priorityFilters[k] ? '#77469b' : '#fff', flex: 'none' }} />
+                <div key={k} onClick={() => togglePriority(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '4px 6px', margin: '0 -6px', borderRadius: 6 }}>
+                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: priorityFilters[k] ? '#77469b' : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot }} />
                   <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
                 </div>
               ))}
             </FilterSection>
             <div style={{ height: 1, background: '#f1f2f4', margin: '13px 0' }} />
-            <span onClick={() => { setSearch(''); setPriorityFilters({}); setCategoryFilters({}); setSourceFilters({}); setValueThreshold(''); }} style={{ display: 'block', textAlign: 'center', padding: 9, borderRadius: 6, border: '1px solid #dfe3ea', font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Clear all</span>
+            <span
+              onClick={() => { setSearch(''); setPriorityFilters({}); setCategoryFilters({}); setSourceFilters({}); setValueThreshold(''); }}
+              className={motion.pressable}
+              style={{ display: 'block', textAlign: 'center', padding: 9, borderRadius: 6, border: '1px solid #dfe3ea', font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#f9f7fc'; e.currentTarget.style.borderColor = '#c9b6dd'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#dfe3ea'; }}
+            >
+              Clear all
+            </span>
           </div>
         )}
       </div>
@@ -190,7 +204,7 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
   const isOpen = menuFor === al.id;
   const assignOpen = isOpen && menuMode === 'assign';
   return (
-    <div className={rowStyles.alertCard} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
+    <div className={`${rowStyles.alertCard} ${motion.cardHover}`} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
       {resolved && (
         <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#eef6f3', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#3f7d6a' }}>
           <CheckIcon size={8} color="#3f7d6a" /> Resolved
@@ -279,7 +293,11 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
 
 function MenuItem({ icon, label, onClick }: { icon?: React.ReactNode; label: string; onClick: () => void }) {
   return (
-    <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 6, cursor: 'pointer', font: '500 12px/1 Inter,sans-serif', color: '#3d434b' }}>
+    <div
+      onClick={onClick}
+      className={motion.rowHover}
+      style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 6, cursor: 'pointer', font: '500 12px/1 Inter,sans-serif', color: '#3d434b' }}
+    >
       {icon}{label}
     </div>
   );

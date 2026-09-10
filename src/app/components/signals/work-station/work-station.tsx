@@ -56,14 +56,14 @@ function MiniJivaPanel({ task, onClose }: { task: WorkstationTask; onClose: () =
       {!draft && !generating && (
         <>
           <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Want me to draft this for you?</div>
-          <span onClick={generate} className={motion.pressable} style={{ display: 'inline-block', marginTop: 9, padding: '8px 13px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>Generate draft</span>
+          <span onClick={generate} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ display: 'inline-block', marginTop: 9, padding: '8px 13px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>Generate draft</span>
         </>
       )}
       {generating && <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Drafting…</div>}
       {draft && (
         <>
           <div style={{ marginTop: 9, padding: '9px 12px', borderRadius: 8, background: '#f6f4fa', color: '#3d2a52', font: '400 12.5px/1.6 Inter,sans-serif' }}>{draft}</div>
-          <span onClick={generate} className={motion.pressable} style={{ display: 'inline-block', marginTop: 8, font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Regenerate</span>
+          <span onClick={generate} className={motion.pressable} style={{ display: 'inline-block', marginTop: 8, font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', textDecoration: 'none' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>Regenerate</span>
         </>
       )}
     </div>
@@ -88,8 +88,8 @@ function TaskCard({
   const linkedAlert = task.origin === 'alert' && task.alertId ? PROTOTYPE_ALERTS.find((a) => a.id === task.alertId) : undefined;
 
   return (
-    <div className={motion.contentFadeIn} style={{ margin: '10px 12px', border: '1px solid #eceef1', borderRadius: 10, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', overflow: 'hidden' }}>
-      <div onClick={onToggle} style={{ padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+    <div className={`${motion.contentFadeIn} ${motion.cardHover}`} style={{ margin: '10px 12px', border: '1px solid #eceef1', borderRadius: 10, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', overflow: 'hidden' }}>
+      <div onClick={onToggle} className={motion.rowHover} style={{ padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', borderRadius: 10 }}>
         <Avatar name={task.assignee} size={26} vivid={task.assignee !== 'Unassigned'} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ font: `${task.status === 'done' ? '400' : '500'} 13px/1.45 Inter,sans-serif`, color: task.status === 'done' ? '#6b7178' : '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none' }}>{task.text}</div>
@@ -114,12 +114,12 @@ function TaskCard({
               <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Context</div>
               <div style={{ marginTop: 7 }}>
                 {task.origin === 'alert' && (
-                  <span onClick={() => onOpenAlert?.(task.alertId!)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>
+                  <span onClick={() => onOpenAlert?.(task.alertId!)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', textDecoration: 'none' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>
                     Linked alert: {linkedAlert?.title ?? task.alertId} →
                   </span>
                 )}
                 {task.origin === 'meeting' && (
-                  <span onClick={() => onOpenMeeting?.(task.meetingId!)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>
+                  <span onClick={() => onOpenMeeting?.(task.meetingId!)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', textDecoration: 'none' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>
                     Linked meeting: {task.meetingLabel} →
                   </span>
                 )}
@@ -145,22 +145,23 @@ function TaskCard({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 15, flexWrap: 'wrap' as const, position: 'relative' }}>
-              <span onClick={(e) => { e.stopPropagation(); onToggleAssignMenu(); }} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
+              <span onClick={(e) => { e.stopPropagation(); onToggleAssignMenu(); }} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
                 <AssignIcon size={12} /> Assign to someone else
               </span>
               {task.origin === 'alert' && (
-                <span onClick={() => onOpenAlert?.(task.alertId!)} className={motion.pressable} style={{ padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>View alert</span>
+                <span onClick={() => onOpenAlert?.(task.alertId!)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>View alert</span>
               )}
               {task.origin === 'meeting' && (
-                <span onClick={() => onOpenMeeting?.(task.meetingId!)} className={motion.pressable} style={{ padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>View meeting</span>
+                <span onClick={() => onOpenMeeting?.(task.meetingId!)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>View meeting</span>
               )}
               {task.origin === 'generative' && (
-                <span onClick={onToggleJiva} className={motion.pressable} style={{ padding: '8px 12px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>Open Jiva</span>
+                <span onClick={onToggleJiva} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '8px 12px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>Open Jiva</span>
               )}
               <select
                 value={task.status}
                 onChange={(e) => onSetStatus(e.target.value as TaskStatus)}
                 onClick={(e) => e.stopPropagation()}
+                className={motion.focusRing}
                 style={{ marginLeft: 'auto', padding: '7px 9px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: STATUS_COLOR[task.status], outline: 'none', background: '#fff' }}
               >
                 <option value="open">Open</option>
@@ -262,11 +263,13 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search tasks"
+          className={motion.focusRing}
           style={{ flex: '1 1 200px', minWidth: 160, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
         />
         <select
           value={personFilter}
           onChange={(e) => setPersonFilter(e.target.value)}
+          className={motion.focusRing}
           style={{ padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
         >
           <option value="">Everyone</option>
@@ -277,7 +280,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
         </select>
         <span
           onClick={() => setOverdueOnly((v) => !v)}
-          className={motion.pressable}
+          className={`${motion.pressable} ${motion.btnSecondary}`}
           style={{ padding: '9px 13px', border: `1px solid ${overdueOnly ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, background: overdueOnly ? '#f9f7fc' : '#fff', font: '500 12px/1 Inter,sans-serif', color: overdueOnly ? '#5f3880' : '#3d434b', cursor: 'pointer' }}
         >
           Overdue only

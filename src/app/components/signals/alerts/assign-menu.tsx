@@ -59,6 +59,7 @@ export function AssignDropdownList({ assignees, onSelect }: { assignees: Assigne
           onChange={(e) => setQ(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           placeholder="Search people…"
+          className={motion.focusRing}
           style={{ width: '100%', padding: '7px 9px', border: '1px solid #dfe3ea', borderRadius: 6, font: '400 11px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
         />
       </div>
@@ -67,7 +68,7 @@ export function AssignDropdownList({ assignees, onSelect }: { assignees: Assigne
           <div
             key={a.id}
             onClick={(e) => { e.stopPropagation(); onSelect(a); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 6, cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 6, cursor: 'pointer', transition: 'background 120ms ease-out' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >
@@ -107,16 +108,17 @@ export function AssignPopupModal({ assignees, variant = 'overlay', onSelect, onC
     >
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #e6e8ec', flex: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {variant === 'inline' && <span onClick={onClose} style={{ display: 'flex', cursor: 'pointer' }}><BackArrowIcon size={14} /></span>}
+          {variant === 'inline' && <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}><BackArrowIcon size={14} /></span>}
           <span style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>Assign to</span>
           <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{assignees.length} people</span>
-          {variant === 'overlay' && <span onClick={onClose} style={{ display: 'flex', marginLeft: 'auto', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>}
+          {variant === 'overlay' && <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', marginLeft: 'auto', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>}
         </div>
         <input
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search people or role…"
+          className={motion.focusRing}
           style={{ width: '100%', marginTop: 12, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
         />
       </div>
@@ -125,7 +127,7 @@ export function AssignPopupModal({ assignees, variant = 'overlay', onSelect, onC
           <div
             key={a.id}
             onClick={() => onSelect(a)}
-            style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 8, cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', transition: 'background 120ms ease-out' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >

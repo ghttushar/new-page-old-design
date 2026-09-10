@@ -24,6 +24,65 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   }
 }
 
+// Clickable cards (Alerts rows, Meeting rows, Workstation tasks) — a soft lift so the
+// surface itself feels liftable, not just recolored, before the pointer settles.
+.cardHover {
+  transition: transform 160ms $ease-out, box-shadow 160ms $ease-out, border-color 160ms $ease-out;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(20, 24, 33, 0.08);
+    }
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// A visible, on-brand focus/hover ring for text inputs, selects and textareas —
+// replaces bare `outline: none` with something intentional instead of nothing.
+.focusRing {
+  transition: border-color 140ms $ease-out, box-shadow 140ms $ease-out;
+  &:hover {
+    border-color: #c9b6dd;
+  }
+  &:focus {
+    border-color: #77469b;
+    box-shadow: 0 0 0 3px rgba(119, 70, 155, 0.14);
+  }
+}
+
+// Filled primary buttons (any base colour) — a touch of lift instead of sitting flat.
+// `filter` and `box-shadow` are used deliberately: they layer on top of whatever
+// inline `background` a button already has, no specificity fight required.
+.btnPrimary {
+  transition: filter 140ms $ease-out, box-shadow 140ms $ease-out, transform 120ms $ease-out;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      filter: brightness(0.93);
+      box-shadow: 0 4px 14px rgba(20, 24, 33, 0.18);
+    }
+  }
+  &:active {
+    transform: scale(0.97);
+    filter: brightness(0.88);
+  }
+}
+
+// Outline / ghost buttons — an inset ring + soft shadow stand in for a border-colour
+// change, again to avoid overriding an inline `border`.
+.btnSecondary {
+  transition: box-shadow 140ms $ease-out, transform 120ms $ease-out;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      box-shadow: inset 0 0 0 1px #c9b6dd, 0 2px 8px rgba(119, 70, 155, 0.1);
+    }
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
 // Popovers, dropdowns, menus — grow from their trigger instead of popping into existence.
 @keyframes popIn {
   from {
@@ -125,5 +184,15 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   }
   .accordionRow {
     transition: none;
+  }
+  .cardHover {
+    transition: box-shadow 120ms linear;
+    &:hover {
+      transform: none;
+    }
+  }
+  .btnPrimary, .btnSecondary {
+    transition: none;
+    &:active { transform: none; }
   }
 }

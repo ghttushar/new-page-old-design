@@ -32,6 +32,16 @@
   color: #5f3880;
   cursor: pointer;
   background-color: #fff;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 140ms cubic-bezier(0.23, 1, 0.32, 1), transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+
+  &:hover {
+    background-color: #f9f7fc;
+    box-shadow: 0 2px 8px rgba(119, 70, 155, 0.14);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 .avatarCircle {
@@ -60,6 +70,7 @@
 }
 
 .tab {
+  position: relative;
   padding-bottom: 9px;
   font: 600 14px/1 Inter, sans-serif;
   color: #6b7178;
@@ -69,7 +80,21 @@
   border-top: none;
   border-left: none;
   border-right: none;
-  transition: color 0.15s;
+  transition: color 160ms cubic-bezier(0.23, 1, 0.32, 1);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: $primary-color;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
 
   &:hover {
     color: $main-text;
@@ -78,7 +103,10 @@
 
 .tabActive {
   color: $main-text;
-  border-bottom-color: $primary-color;
+
+  &::after {
+    transform: scaleX(1);
+  }
 }
 
 .content {
@@ -92,7 +120,7 @@
   height: 100%;
 }
 
-/* Calendar Popover */
+/* Calendar Popover — legacy classes, unused (CalendarPopover renders with inline styles instead); left as-is */
 .calendarPopover {
   position: absolute;
   right: 0;

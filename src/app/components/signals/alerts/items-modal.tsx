@@ -36,15 +36,15 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
         <div style={{ padding: '16px 22px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 12, flex: 'none' }}>
           <span style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>All affected items</span>
           <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{breakdown}</span>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search ASIN, listing or campaign" style={{ marginLeft: 'auto', width: 240, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', outline: 'none' }} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search ASIN, listing or campaign" className={motion.focusRing} style={{ marginLeft: 'auto', width: 240, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', outline: 'none' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, border: '1px solid #dfe3ea', borderRadius: 7, overflow: 'hidden' }}>
-            <span onClick={() => setOp('>')} style={{ padding: '9px 10px', background: op === '>' ? '#f0e9f7' : '#fff', font: '700 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>{'>'}</span>
-            <span onClick={() => setOp('<')} style={{ padding: '9px 10px', background: op === '<' ? '#f0e9f7' : '#fff', font: '700 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>{'<'}</span>
+            <span onClick={() => setOp('>')} className={motion.pressable} style={{ padding: '9px 10px', background: op === '>' ? '#f0e9f7' : '#fff', font: '700 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', transition: 'background 120ms ease-out' }}>{'>'}</span>
+            <span onClick={() => setOp('<')} className={motion.pressable} style={{ padding: '9px 10px', background: op === '<' ? '#f0e9f7' : '#fff', font: '700 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', transition: 'background 120ms ease-out' }}>{'<'}</span>
             <span style={{ width: 1, height: 20, background: '#e6e8ec' }} />
             <span style={{ paddingLeft: 8, font: '600 12px/1 Inter,sans-serif', color: '#9aa0a8' }}>$</span>
             <input value={threshold} onChange={(e) => setThreshold(e.target.value)} placeholder="impact" style={{ width: 80, padding: '9px 10px 9px 2px', border: 'none', font: '400 12px/1 Inter,sans-serif', outline: 'none' }} />
           </div>
-          <span onClick={onClose} style={{ display: 'flex', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>
+          <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>
         </div>
         <div style={{ padding: '8px 22px', font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>Showing {filtered.length} of {itemCount}</div>
         <div style={{ overflowY: 'auto', flex: 1, padding: '0 22px 20px' }}>

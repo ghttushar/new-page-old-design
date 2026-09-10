@@ -37,6 +37,7 @@ function ImageTile({ img, selected, onSelect }: { img: ImageResult; selected: bo
   return (
     <div
       onClick={onSelect}
+      className={motion.cardHover}
       style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', border: selected ? '2.5px solid #77469b' : '2.5px solid transparent', boxShadow: selected ? '0 0 0 2px #f0e9f7' : '0 1px 3px rgba(20,24,33,.08)' }}
     >
       <div style={{ aspectRatio: '1 / 1', background: GRADIENTS[img.seed % GRADIENTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -91,17 +92,17 @@ export function ImageGenStudio({ alert, onBack, onPublish }: Props) {
     <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 10, flex: 'none' }}>
-        <span onClick={onBack} style={{ display: 'flex', cursor: 'pointer', padding: '2px 4px' }}><BackArrowIcon size={14} /></span>
+        <span onClick={onBack} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: '2px 4px' }}><BackArrowIcon size={14} /></span>
         <span style={{ font: '700 14px/1 Inter,sans-serif', color: '#23272d' }}>Image Studio</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880' }}><SparkleIcon size={9} /> JIVA</span>
         <span style={{ position: 'relative', marginLeft: 'auto' }}>
-          <span onClick={() => setToolMenuOpen((v) => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
+          <span onClick={() => setToolMenuOpen((v) => !v)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
             {tool} <ChevronDownIcon size={8} />
           </span>
           {toolMenuOpen && (
             <div className={motion.popIn} style={{ position: 'absolute', right: 0, top: 34, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 20 }}>
               {TOOLS.map((t) => (
-                <div key={t} onClick={() => { setTool(t); setToolMenuOpen(false); }} style={{ padding: '8px 10px', borderRadius: 6, cursor: 'pointer', font: '500 12px/1 Inter,sans-serif', color: t === tool ? '#77469b' : '#3d434b', background: t === tool ? '#f9f7fc' : 'transparent' }}>{t}</div>
+                <div key={t} onClick={() => { setTool(t); setToolMenuOpen(false); }} className={motion.rowHover} style={{ padding: '8px 10px', borderRadius: 6, cursor: 'pointer', font: '500 12px/1 Inter,sans-serif', color: t === tool ? '#77469b' : '#3d434b', background: t === tool ? '#f9f7fc' : 'transparent' }}>{t}</div>
               ))}
             </div>
           )}
@@ -150,13 +151,14 @@ export function ImageGenStudio({ alert, onBack, onPublish }: Props) {
         {turns.length === 1 && (
           <span
             onClick={() => runGeneration(suggestedPrompt)}
+            className={`${motion.pressable} ${motion.btnSecondary}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 10, padding: '8px 12px', borderRadius: 8, border: '1px dashed #d7c6e8', background: '#fbfafd', font: '500 11.5px/1.4 Inter,sans-serif', color: '#5f3880', cursor: 'pointer' }}
           >
             <SparkleIcon size={11} /> Use suggested prompt: “{suggestedPrompt}”
           </span>
         )}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid #dfe3ea', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', cursor: 'pointer', color: '#6b7178' }} title="Attach reference image">
+          <span className={motion.pressable} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid #dfe3ea', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', cursor: 'pointer', color: '#6b7178' }} title="Attach reference image">
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M11.5 6.5l-5 5a2.5 2.5 0 0 1-3.5-3.5l6-6a3.5 3.5 0 0 1 5 5l-6 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </span>
           <textarea
@@ -164,10 +166,12 @@ export function ImageGenStudio({ alert, onBack, onPublish }: Props) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (input.trim()) runGeneration(input.trim()); } }}
             placeholder="Describe the image you want, or ask for a change…"
+            className={motion.focusRing}
             style={{ flex: 1, minHeight: 34, maxHeight: 90, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 10, font: '400 12.5px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'vertical' as const }}
           />
           <span
             onClick={() => input.trim() && runGeneration(input.trim())}
+            className={input.trim() ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
             style={{ width: 34, height: 34, borderRadius: '50%', background: input.trim() ? '#77469b' : '#e6e0ec', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', cursor: input.trim() ? 'pointer' : 'default' }}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8 2.5L13.5 8 8 13.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -179,12 +183,13 @@ export function ImageGenStudio({ alert, onBack, onPublish }: Props) {
       <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10, borderTop: '1px solid #f1f2f4', flex: 'none' }}>
         <span
           onClick={() => selectedImage && onPublish()}
+          className={selectedImage ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 16px', borderRadius: 7, background: selectedImage ? '#77469b' : '#e6e0ec', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: selectedImage ? 'pointer' : 'default' }}
         >
           {selectedImage && <CheckIcon size={12} />}
           {selectedImage ? `Use ${selectedImage.label} & publish` : 'Select an image to continue'}
         </span>
-        <span onClick={onBack} style={{ padding: '9px 14px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
+        <span onClick={onBack} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '9px 14px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
       </div>
     </div>
   );

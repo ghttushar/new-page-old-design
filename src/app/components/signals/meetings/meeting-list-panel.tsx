@@ -27,6 +27,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search meetings or accounts"
+          className={motion.focusRing}
           style={{ width: '100%', padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
         />
       </div>
@@ -42,7 +43,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
             <div
               key={m.id}
               onClick={() => onSelectMeeting(m.id)}
-              className={motion.rowHover}
+              className={`${motion.rowHover} ${motion.cardHover}`}
               style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: isSelected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: isSelected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -62,7 +63,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
             <div
               key={m.id}
               onClick={() => onSelectMeeting(m.id)}
-              className={motion.rowHover}
+              className={`${motion.rowHover} ${motion.cardHover}`}
               style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: isSelected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: isSelected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>

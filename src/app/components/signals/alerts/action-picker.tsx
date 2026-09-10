@@ -57,9 +57,9 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
     >
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #e6e8ec', flex: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {variant === 'inline' && <span onClick={onClose} style={{ display: 'flex', cursor: 'pointer' }}><BackArrowIcon size={14} /></span>}
+          {variant === 'inline' && <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}><BackArrowIcon size={14} /></span>}
           <span style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>{picked ? 'Log this action' : 'Choose an action type'}</span>
-          {variant === 'overlay' && <span onClick={onClose} style={{ display: 'flex', marginLeft: 'auto', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>}
+          {variant === 'overlay' && <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', marginLeft: 'auto', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>}
         </div>
         <div style={{ font: '400 12px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{alert.title}</div>
       </div>
@@ -72,6 +72,7 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search action types…"
+              className={motion.focusRing}
               style={{ width: '100%', padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
             />
           </div>
@@ -86,7 +87,7 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
                   <div
                     key={a.id}
                     onClick={() => pick(a)}
-                    style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', borderBottom: '1px solid #f6f7f8' }}
+                    style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', borderBottom: '1px solid #f6f7f8', transition: 'background 120ms ease-out' }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = '#fbfafd')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
@@ -114,6 +115,7 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="What are you doing, and why…"
+              className={motion.focusRing}
               style={{ width: '100%', padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#464646', resize: 'vertical' as const, minHeight: 68, outline: 'none' }}
             />
           </div>
@@ -121,20 +123,20 @@ export function ActionPicker({ alert, initialSearch, variant = 'overlay', onClos
           <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
             <div style={{ flex: 1 }}>
               <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginBottom: 7 }}>Due date</div>
-              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }} />
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={motion.focusRing} style={{ width: '100%', padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginBottom: 7 }}>Assignee</div>
-              <select value={assignee} onChange={(e) => setAssignee(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}>
+              <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className={motion.focusRing} style={{ width: '100%', padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}>
                 {ASSIGNEES.map((a) => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 18 }}>
-            <span onClick={() => onSave(picked, note, dueDate, assignee)} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Save action</span>
-            <span onClick={() => setPicked(null)} style={{ padding: '9px 14px', borderRadius: 7, border: '1px solid #dfe3ea', font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>← Back</span>
-            <span onClick={() => onRequestEmail(picked)} style={{ marginLeft: 'auto', font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Send as email instead →</span>
+            <span onClick={() => onSave(picked, note, dueDate, assignee)} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Save action</span>
+            <span onClick={() => setPicked(null)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '9px 14px', borderRadius: 7, border: '1px solid #dfe3ea', font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>← Back</span>
+            <span onClick={() => onRequestEmail(picked)} className={motion.pressable} style={{ marginLeft: 'auto', font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Send as email instead →</span>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ACCOUNT_GOALS, ACTION_HISTORY, DASHBOARD_METRICS, ENGAGEMENT_STREAK } from '@/constants/signals/prototype-data';
 import { MetricCard } from './metric-card';
+import motion from '../alerts/motion.module.scss';
 
 const DEFAULT_CARD_METRIC_IDS = ['ad-spend', 'ad-sales', 'ad-units', 'roas', 'impressions'];
 
@@ -84,7 +85,8 @@ export function BriefDashboard() {
                   <span
                     key={m.id}
                     onClick={() => setTrendMetricId(m.id)}
-                    style={{ padding: '4px 9px', borderRadius: 6, cursor: 'pointer', font: '600 10.5px/1 Inter,sans-serif', color: trendMetricId === m.id ? '#fff' : '#6b7178', background: trendMetricId === m.id ? m.color : '#f1f2f4' }}
+                    className={motion.pressable}
+                    style={{ padding: '4px 9px', borderRadius: 6, cursor: 'pointer', font: '600 10.5px/1 Inter,sans-serif', color: trendMetricId === m.id ? '#fff' : '#6b7178', background: trendMetricId === m.id ? m.color : '#f1f2f4', transition: 'background 140ms ease-out, color 140ms ease-out' }}
                   >
                     {m.label}
                   </span>

@@ -65,7 +65,7 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
                 <span style={{ font: '600 12px/1 Inter,sans-serif', color: j.impactColor || '#464646', flex: 'none' }}>{j.impact}</span>
               )}
               {j.alertId && (
-                <span onClick={() => onAlertClick(j.alertId!)} style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#5f3880', cursor: 'pointer', flex: 'none' }}>View impact</span>
+                <span onClick={() => onAlertClick(j.alertId!)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#5f3880', cursor: 'pointer', flex: 'none' }}>View impact</span>
               )}
             </div>
           ))}
@@ -82,14 +82,14 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
             id: a.id, valueNum: a.valueNum, valueLabel: a.impactStr, title: a.title,
             meta: `${a.priority} · ${a.account} · ${a.time}`, dotColor: a.priorityDot,
           })) : BRIEFING_ALERTS).map((a) => (
-            <div key={a.id} onClick={() => onAlertClick(a.id)} style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
+            <div key={a.id} onClick={() => onAlertClick(a.id)} className={motion.rowHover} style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: a.dotColor, flex: 'none' }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: '600 13px/1.45 Inter,sans-serif', color: '#23272d' }}>{a.title}</div>
                 <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{a.meta}</div>
               </div>
               <span style={{ font: '600 13px/1 Inter,sans-serif', color: a.valueNum < 0 ? '#b3453f' : '#3f7d6a', flex: 'none' }}>{formatValueLabel(a.valueNum, a.valueLabel)}</span>
-              <span style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', flex: 'none' }}>Review</span>
+              <span className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '7px 12px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', flex: 'none' }}>Review</span>
             </div>
           ))}
         </CardSection>
@@ -124,19 +124,19 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
           onAction={onMeetingClick}
         >
           {BRIEFING_MEETINGS.map((m, i) => (
-            <div key={i} onClick={m.actionStyle === 'primary' ? onMeetingClick : undefined} style={{ padding: '15px 18px', borderBottom: i < BRIEFING_MEETINGS.length - 1 ? '1px solid #f1f2f4' : 'none', display: 'flex', alignItems: 'center', gap: 16, cursor: m.actionStyle === 'primary' ? 'pointer' : 'default' }}>
+            <div key={i} onClick={m.actionStyle === 'primary' ? onMeetingClick : undefined} className={m.actionStyle === 'primary' ? motion.rowHover : undefined} style={{ padding: '15px 18px', borderBottom: i < BRIEFING_MEETINGS.length - 1 ? '1px solid #f1f2f4' : 'none', display: 'flex', alignItems: 'center', gap: 16, cursor: m.actionStyle === 'primary' ? 'pointer' : 'default' }}>
               <span style={{ font: '600 12px/1 Inter,sans-serif', color: m.actionStyle === 'muted' ? '#6b7178' : '#464646', width: 44, flex: 'none' }}>{m.time}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: `${m.actionStyle === 'primary' ? '600' : '500'} 13px/1.45 Inter,sans-serif`, color: m.actionStyle === 'muted' ? '#6b7178' : '#23272d' }}>{m.title}</div>
                 <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{m.meta}</div>
                 {m.progress !== undefined && (
                   <div style={{ height: 3, borderRadius: 2, background: '#f1f2f4', marginTop: 8, overflow: 'hidden' }}>
-                    <div style={{ width: `${m.progress}%`, height: '100%', background: m.progressColor }} />
+                    <div style={{ width: `${m.progress}%`, height: '100%', background: m.progressColor, transition: 'width 300ms ease-out' }} />
                   </div>
                 )}
               </div>
               {m.actionStyle === 'primary' && (
-                <span style={{ padding: '8px 13px', borderRadius: 6, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', flex: 'none' }}>{m.actionLabel}</span>
+                <span className={motion.pressable} style={{ padding: '8px 13px', borderRadius: 6, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', flex: 'none' }}>{m.actionLabel}</span>
               )}
               {m.actionStyle === 'ready' && (
                 <span style={{ font: '500 11px/1 Inter,sans-serif', color: '#3f7d6a', flex: 'none' }}>{m.actionLabel}</span>
@@ -163,8 +163,8 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
             <div style={{ marginTop: 9, padding: 13, border: '1px solid #dfe3ea', borderRadius: 8, font: '400 13px/1.7 Inter,sans-serif', color: '#464646' }}>Hey Ritvik — the Nutrabay content alert is into its 3rd day (−$7,940). The recommended revert is ready to approve whenever you get to it. Flagging since it's in your 10:30.</div>
           </div>
           <div style={{ display: 'flex', gap: 9, marginTop: 16 }}>
-            <span style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send nudge</span>
-            <span onClick={onNudgeClose} style={{ padding: '10px 16px', borderRadius: 7, border: '1px solid #dfe3ea', font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
+            <span className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send nudge</span>
+            <span onClick={onNudgeClose} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '10px 16px', borderRadius: 7, border: '1px solid #dfe3ea', font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
           </div>
         </div>
       )}
@@ -196,7 +196,15 @@ function CardSection({ title, titleIcon, actionLabel, actionColor, onAction, chi
       <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 7, font: '600 13px/1 Inter,sans-serif', color: '#23272d' }}>{titleIcon}{title}</span>
         {actionLabel && (
-          <span onClick={onAction} style={{ font: '600 12px/1 Inter,sans-serif', color: actionColor || '#77469b', cursor: onAction ? 'pointer' : 'default' }}>{actionLabel}</span>
+          <span
+            onClick={onAction}
+            className={onAction ? motion.pressable : undefined}
+            style={{ font: '600 12px/1 Inter,sans-serif', color: actionColor || '#77469b', cursor: onAction ? 'pointer' : 'default', textDecoration: 'none' }}
+            onMouseEnter={onAction ? (e) => (e.currentTarget.style.textDecoration = 'underline') : undefined}
+            onMouseLeave={onAction ? (e) => (e.currentTarget.style.textDecoration = 'none') : undefined}
+          >
+            {actionLabel}
+          </span>
         )}
       </div>
       {children}

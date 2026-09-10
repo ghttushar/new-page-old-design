@@ -70,7 +70,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 9, marginTop: 16 }}>
-          <span onClick={onCreatePresentation} className={motion.pressable} style={{ padding: '11px 17px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 13px/1 Inter,sans-serif', cursor: 'pointer' }}>Create presentation</span>
+          <span onClick={onCreatePresentation} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '11px 17px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 13px/1 Inter,sans-serif', cursor: 'pointer' }}>Create presentation</span>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 12 }}>
             {discussion.map((d, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', border: '1px solid #e6e8ec', borderRadius: 8 }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', border: '1px solid #e6e8ec', borderRadius: 8, transition: 'box-shadow 140ms ease-out' }}>
                 <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178', width: 12, flex: 'none' }}>{i + 1}</span>
                 {editingIdx === i ? (
                   <input
@@ -119,15 +119,16 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
                     onChange={(e) => updatePoint(i, e.target.value)}
                     onBlur={() => setEditingIdx(null)}
                     onKeyDown={(e) => { if (e.key === 'Enter') setEditingIdx(null); }}
+                    className={motion.focusRing}
                     style={{ flex: 1, minWidth: 0, font: '400 13px/1.6 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 8px', outline: 'none' }}
                   />
                 ) : (
-                  <span onClick={() => setEditingIdx(i)} style={{ flex: 1, font: '400 13px/1.6 Inter,sans-serif', color: '#464646', cursor: 'text' }}>{d}</span>
+                  <span onClick={() => setEditingIdx(i)} className={motion.rowHover} style={{ flex: 1, font: '400 13px/1.6 Inter,sans-serif', color: '#464646', cursor: 'text', padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{d}</span>
                 )}
                 <span onClick={() => removePoint(i)} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', flex: 'none' }}><CloseIcon size={11} /></span>
               </div>
             ))}
-            <div onClick={addPoint} className={motion.pressable} style={{ padding: '11px 13px', border: '1px dashed #cfd4dc', borderRadius: 8, font: '400 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a discussion point</div>
+            <div onClick={addPoint} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '11px 13px', border: '1px dashed #cfd4dc', borderRadius: 8, font: '400 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a discussion point</div>
           </div>
         </div>
 

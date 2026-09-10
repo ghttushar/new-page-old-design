@@ -112,7 +112,7 @@ export function AskJivaMeetingPanel({ meetingId, onClose }: Props) {
             <span
               key={s}
               onClick={() => setDraft(s)}
-              className={motion.pressable}
+              className={`${motion.pressable} ${motion.btnSecondary}`}
               style={{ padding: '6px 11px', borderRadius: 999, border: '1px solid #e6ddf0', font: '500 11px/1 Inter,sans-serif', color: '#5f3880', cursor: 'pointer', background: '#fbfafd' }}
             >
               {s}
@@ -127,11 +127,12 @@ export function AskJivaMeetingPanel({ meetingId, onClose }: Props) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
           placeholder="Ask about this meeting…"
+          className={motion.focusRing}
           style={{ flex: 1, minWidth: 0, padding: '10px 12px', border: '1px solid #dfe3ea', borderRadius: 8, font: '400 12.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
         />
         <span
           onClick={send}
-          className={motion.pressable}
+          className={draft.trim() ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, background: draft.trim() ? '#77469b' : '#eee7f5', flex: 'none', cursor: draft.trim() ? 'pointer' : 'default' }}
         >
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M1.5 8h13M9.5 3l5 5-5 5" stroke={draft.trim() ? '#fff' : '#c3b3d6'} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
