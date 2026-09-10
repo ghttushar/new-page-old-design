@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MEETING_LIST, MEETING_DETAILS, PREP_RECORDS, type MeetingStat } from '@/constants/signals/prototype-data';
 import { EmptyAlertGraphic } from '../alerts/empty-alert-graphic';
 import { Avatar } from '../alerts/assign-menu';
+import { HoverTip } from '../alerts/hover-tip';
 import { CloseIcon } from '../alerts/icons';
 import motion from '../alerts/motion.module.scss';
 
@@ -48,16 +49,16 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
             <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{detail.dateTimeLabel}</div>
             <div style={{ font: '600 21px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{meeting.title}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 9 }}>
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                {detail.attendees.map((a, i) => (
-                  <span key={a.name} style={{ marginLeft: i === 0 ? 0 : -6, zIndex: detail.attendees.length - i, position: 'relative', display: 'flex' }}>
-                    <Avatar name={a.name} size={24} vivid={i === 0} />
-                  </span>
-                ))}
-              </span>
-              <span style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178' }}>
-                {detail.attendees.map((a) => `${a.name}, ${a.role}`).join(' · ')} · {detail.lastMet}
-              </span>
+              <HoverTip label={detail.attendees.map((a) => `${a.name}, ${a.role}`).join(' · ')}>
+                <span style={{ display: 'flex', alignItems: 'center' }}>
+                  {detail.attendees.map((a, i) => (
+                    <span key={a.name} style={{ marginLeft: i === 0 ? 0 : -6, zIndex: detail.attendees.length - i, position: 'relative', display: 'flex' }}>
+                      <Avatar name={a.name} size={24} vivid={i === 0} />
+                    </span>
+                  ))}
+                </span>
+              </HoverTip>
+              <span style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178' }}>{detail.lastMet}</span>
             </div>
           </div>
           <div style={{ flex: 'none', textAlign: 'right' }}>

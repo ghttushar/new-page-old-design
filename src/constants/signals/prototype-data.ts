@@ -1789,7 +1789,7 @@ export interface MeetingDetail {
 /** Keyed by MeetingListItem.id — the content the detail panel actually renders per meeting. */
 export const MEETING_DETAILS: Record<string, MeetingDetail> = {
   m1: {
-    dateTimeLabel: 'Today, 1 November · 10:30 – 11:15 AM · in two hours',
+    dateTimeLabel: 'Today, 1 November · 10:30 – 11:15 AM',
     attendees: [
       { name: 'Rahul Gupta', role: 'Head of Ecommerce' },
       { name: 'Sneha Iyer', role: 'Brand Manager' },
@@ -1807,7 +1807,7 @@ export const MEETING_DETAILS: Record<string, MeetingDetail> = {
     ],
   },
   m2: {
-    dateTimeLabel: 'Today, 1 November · 2:00 – 2:30 PM · in five hours',
+    dateTimeLabel: 'Today, 1 November · 2:00 – 2:30 PM',
     attendees: [
       { name: 'Priya Nair', role: 'Ecommerce Lead' },
       { name: 'Aditi Rao', role: 'Compliance' },
