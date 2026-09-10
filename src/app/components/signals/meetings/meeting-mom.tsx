@@ -60,7 +60,7 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
           <span style={{ padding: '2px 7px', borderRadius: 4, background: '#eef6f3', font: '600 10px/1.5 Inter,sans-serif', color: '#3f7d6a' }}>{record.completedLabel}</span>
           <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{record.transcriptMeta}</span>
         </div>
-        <div style={{ font: '600 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 11 }}>{record.title}</div>
+        <div style={{ font: '600 18px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 11 }}>{record.title}</div>
         <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{record.dateLabel}</div>
       </div>
 
@@ -119,7 +119,7 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
             <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{tasks.length} extracted · assignees detected</span>
           </div>
           <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 11 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 170px 100px 110px', padding: '9px 15px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 170px 100px 110px', padding: '9px 15px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178' }}>
               <div>TASK</div><div>ASSIGN</div><div>DUE</div><div style={{ textAlign: 'right' }}>STATUS</div>
             </div>
             {tasks.map((t, i) => (

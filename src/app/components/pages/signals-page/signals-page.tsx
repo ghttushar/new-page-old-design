@@ -15,7 +15,8 @@ import { MeetingMOM } from '../../signals/meetings/meeting-mom';
 import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-panel';
 import { WorkStation } from '../../signals/work-station/work-station';
 import { CalendarPopover } from '../../signals/common/calendar-popover';
-import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, type PrototypeAlert, type LoggedActionItem } from '@/constants/signals/prototype-data';
+import { AccountFilterDropdown } from '../../signals/common/account-filter-dropdown';
+import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, type PrototypeAlert, type LoggedActionItem, type MpBrand } from '@/constants/signals/prototype-data';
 
 export function SignalsPage() {
   const [activeTab, setActiveTab] = useState<SignalTabKey>('brief');
@@ -25,6 +26,10 @@ export function SignalsPage() {
   const [meetingAskJivaOpen, setMeetingAskJivaOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [rangeLabel, setRangeLabel] = useState('Today · 1 Nov');
+  const [accountFilterOpen, setAccountFilterOpen] = useState(false);
+  const [filterMarketplaces, setFilterMarketplaces] = useState<MpBrand[]>([]);
+  const [filterCountries, setFilterCountries] = useState<string[]>([]);
+  const [filterBrands, setFilterBrands] = useState<string[]>([]);
   const [briefFullSubScreen, setBriefFullSubScreen] = useState<'main' | 'nudge'>('main');
   const [alertPhase, setAlertPhase] = useState<'view' | 'executing' | 'report' | 'genReview'>('view');
   const [execProgress, setExecProgress] = useState(0);
@@ -47,6 +52,25 @@ export function SignalsPage() {
     if (!id) return;
     setResolvedAlertIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }, []);
+
+  const toggleFilterMarketplace = useCallback((m: MpBrand) => {
+    setFilterMarketplaces((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
+  }, []);
+  const toggleFilterCountry = useCallback((c: string) => {
+    setFilterCountries((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
+  }, []);
+  const toggleFilterBrand = useCallback((b: string) => {
+    setFilterBrands((prev) => (prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]));
+  }, []);
+  const clearAccountFilters = useCallback(() => {
+    setFilterMarketplaces([]);
+    setFilterCountries([]);
+    setFilterBrands([]);
+    setAccountFilterOpen(false);
+  }, []);
+
+  const accountFilterCount = filterMarketplaces.length + filterCountries.length + filterBrands.length;
+  const accountFilterLabel = accountFilterCount === 0 ? 'All accounts' : `${accountFilterCount} selected`;
 
   const goTab = useCallback((tab: SignalTabKey) => {
     setActiveTab(tab);
@@ -280,6 +304,24 @@ export function SignalsPage() {
         </div>
         <div className={styles.tabBarRight}>
           {viewToggle}
+          <span style={{ position: 'relative' }}>
+            <button className={styles.dateRangeBtn} onClick={() => setAccountFilterOpen(!accountFilterOpen)}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5L2 3z" stroke="#5f3880" strokeWidth="1.4" strokeLinejoin="round" /></svg>
+              {accountFilterLabel}
+              <CaretDown size={9} color="#5f3880" weight="bold" />
+            </button>
+            {accountFilterOpen && (
+              <AccountFilterDropdown
+                marketplaces={filterMarketplaces}
+                countries={filterCountries}
+                brands={filterBrands}
+                onToggleMarketplace={toggleFilterMarketplace}
+                onToggleCountry={toggleFilterCountry}
+                onToggleBrand={toggleFilterBrand}
+                onAll={clearAccountFilters}
+              />
+            )}
+          </span>
           <span style={{ position: 'relative' }}>
             <button className={styles.dateRangeBtn} onClick={() => setCalendarOpen(!calendarOpen)}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10.5" rx="1.5" stroke="#5f3880" strokeWidth="1.4" /><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="#5f3880" strokeWidth="1.4" strokeLinecap="round" /></svg>

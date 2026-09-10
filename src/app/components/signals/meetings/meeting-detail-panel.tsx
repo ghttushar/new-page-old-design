@@ -47,7 +47,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{detail.dateTimeLabel}</div>
-            <div style={{ font: '600 21px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{meeting.title}</div>
+            <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{meeting.title}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 9 }}>
               <HoverTip label={detail.attendees.map((a) => `${a.name}, ${a.role}`).join(' · ')}>
                 <span style={{ display: 'flex', alignItems: 'center' }}>
@@ -135,7 +135,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
         {/* Relevant alerts, actions taken and impact */}
         <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ padding: '13px 16px', borderBottom: '1px solid #f1f2f4', font: '600 13px/1 Inter,sans-serif', color: '#23272d' }}>Relevant alerts, actions taken and impact</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 190px 100px 100px', padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 190px 100px 100px', padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178' }}>
             <div>ALERT</div><div>ACTION TAKEN</div><div style={{ textAlign: 'right' }}>IMPACT</div><div style={{ textAlign: 'right' }}>STATE</div>
           </div>
           {record.actions.map((a, i) => (
