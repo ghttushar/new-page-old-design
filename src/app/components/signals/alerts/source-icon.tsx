@@ -80,7 +80,7 @@ function SlackMark({ size }: { size: number }) {
 }
 
 /** Google Meet's camera mark, full colour — a best-effort reconstruction (not traced from the official vector). */
-function GoogleMeetMark({ size }: { size: number }) {
+export function GoogleMeetMark({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <path d="M2.2 5.4c0-1.05.85-1.9 1.9-1.9h3.8c1.05 0 1.9.85 1.9 1.9v5.2c0 1.05-.85 1.9-1.9 1.9H4.1c-1.05 0-1.9-.85-1.9-1.9V5.4z" fill="#00AC47" />

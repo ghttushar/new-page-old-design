@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { PROTOTYPE_ALERTS, type PrototypeAlert, type AlertOption, type LoggedActionItem } from '@/constants/signals/prototype-data';
-import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import { ACTION_TYPES, type ActionType } from '@/constants/signals/action-types.constants';
 
 const GENERIC_SEND_UPDATE = ACTION_TYPES.find((a) => a.id === 'send-report-update')!;
@@ -13,10 +12,8 @@ import { getDisplayItems } from './items-util';
 import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { EmptyAlertGraphic } from './empty-alert-graphic';
-import { MarketplaceGlyph, brandLabel } from './marketplace-glyph';
-import { SourceIcon } from './source-icon';
-import { HoverTip } from './hover-tip';
-import { SparkleIcon, AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, ChevronDownIcon } from './icons';
+import { AlertBadgeRow } from './alert-badge-row';
+import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 
@@ -36,15 +33,14 @@ interface Props {
   onDismiss: () => void;
   /** Reverses an in-progress Execute — clears the running progress and un-resolves the alert. */
   onUndoExecute?: () => void;
-  /** True only for the alert used to demo an alternate "Ask Jiva" detail layout — not a global feature yet. */
+  /** Unused — every alert now renders the same detail layout. Kept optional so existing call sites don't need to change. */
   isFirstAlert?: boolean;
   onOpenAskJiva?: () => void;
   onSelectAlert?: (id: string) => void;
 }
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, isFirstAlert, onOpenAskJiva, onSelectAlert }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onSelectAlert }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -297,42 +293,11 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   return (
     <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
       <div key={sel.id} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
-        {/* Header — the full identity row for a normal alert; trimmed to just title/value/timestamp for the Ask Jiva variation, which trades badge chrome for chat space */}
+        {/* Header — badges/marketplace/source match the Alerts row exactly (shared AlertBadgeRow), so the two never diverge */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
-          {!isFirstAlert && (
-            <div style={{ display: 'flex', alignItems: 'center', columnGap: 8, rowGap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
-                <span style={{ padding: '3px 8px', borderRadius: 5, background: sel.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: sel.priorityDot, flex: 'none' }}>{sel.priority}</span>
-                <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' }}>{sel.category}</span>
-              </div>
-              <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
-                <MarketplaceGlyph al={sel} size={26} />
-                <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646', whiteSpace: 'nowrap' }}>{brandLabel(sel.mpBrand)}</span>
-              </div>
-              <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 'none' }}>
-                <SourceIcon origin={sel.originType ?? 'anarix'} detail={sel.originDetail} size={26} />
-                {sel.repeated && (
-                  <HoverTip label={sel.repeatedLabel ? `Repeated · ${sel.repeatedLabel}` : 'Repeated'}>
-                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flex: 'none' }}>
-                      <RepeatIcon size={20} />
-                    </span>
-                  </HoverTip>
-                )}
-                {sel.hasMeeting && (
-                  <HoverTip label={sel.meetingLabel || 'Meeting'}>
-                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flex: 'none' }}>
-                      <MeetingGlyphIcon size={20} />
-                    </span>
-                  </HoverTip>
-                )}
-              </div>
-              <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-              <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#5c636e', flex: 'none', whiteSpace: 'nowrap' }}>{sel.mpCountry} · {sel.account}</span>
-              <span style={{ marginLeft: 'auto', font: '400 11px/1 Inter,sans-serif', color: '#6b7178', flex: 'none', whiteSpace: 'nowrap' }}>{sel.time}</span>
-            </div>
-          )}
+          <div style={{ marginBottom: 12 }}>
+            <AlertBadgeRow al={sel} size={20} />
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d' }}>{sel.title}</div>
@@ -343,11 +308,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                 <div style={{ font: '600 22px/1 Inter,sans-serif', color: valueColor }}>{money(sel.valueNum)}</div>
                 <ValueInfoIcon label={explainAlertValue(sel)} />
               </div>
-              {isFirstAlert ? (
-                <div style={{ marginTop: 6, font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>{sel.time}</div>
-              ) : (
-                <div style={{ marginTop: 6, padding: '2px 7px', borderRadius: 4, background: sel.proof === 'verified' ? '#eef6f3' : '#f1f2f4', font: '600 10px/1.5 Inter,sans-serif', color: sel.proof === 'verified' ? '#3f7d6a' : '#5c636e', display: 'inline-block' }}>{sel.proof === 'verified' ? 'VERIFIED' : 'ESTIMATED'}</div>
-              )}
+              <div style={{ marginTop: 6, padding: '2px 7px', borderRadius: 4, background: sel.proof === 'verified' ? '#eef6f3' : '#f1f2f4', font: '600 10px/1.5 Inter,sans-serif', color: sel.proof === 'verified' ? '#3f7d6a' : '#5c636e', display: 'inline-block' }}>{sel.proof === 'verified' ? 'VERIFIED' : 'ESTIMATED'}</div>
             </div>
           </div>
         </div>
@@ -356,43 +317,6 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
         <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* No section heading here by design — just the flowing explanation (root cause folded in) */}
           <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{sel.why} {sel.root}</div>
-
-          {/* Business impact */}
-          <div>
-            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Business impact</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
-              <div style={{ background: '#fafbfd', padding: 12 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{sel.revLabel}</div><div style={{ font: '600 15px/1 Inter,sans-serif', color: valueColor, marginTop: 6 }}>{sel.revValue}</div></div>
-              <div style={{ background: '#fafbfd', padding: 12 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Confidence</div><div style={{ font: '600 15px/1 Inter,sans-serif', color: '#23272d', marginTop: 6 }}>{sel.confidence}%</div></div>
-            </div>
-          </div>
-
-          {/* AI summary — the first alert trades this for a live Ask Jiva entry point, as a concept variation */}
-          {isFirstAlert && onOpenAskJiva ? (
-            <div
-              onClick={onOpenAskJiva}
-              className={motion.pressable}
-              style={{ border: '1px solid #e6ddf0', borderRadius: 8, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 11, cursor: 'pointer', background: 'linear-gradient(90deg, #fbfafd, #f6f4fa)' }}
-            >
-              <DiamondMascot size={26} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ font: '600 12.5px/1.3 Inter,sans-serif', color: '#3d2a52' }}>Ask Jiva about this alert</div>
-                <div style={{ font: '400 11px/1.4 Inter,sans-serif', color: '#6b7178', marginTop: 2 }}>Chat instead of reading a static summary</div>
-              </div>
-              <span style={{ color: '#77469b', fontSize: 16, flex: 'none' }}>→</span>
-            </div>
-          ) : (
-            <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
-              <div onClick={() => setAiSummaryOpen(!aiSummaryOpen)} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: '#fbfafd' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '600 12px/1 Inter,sans-serif', color: '#5f3880' }}><SparkleIcon size={12} /> AI summary</span>
-                <span style={{ display: 'flex', transform: aiSummaryOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms ease-out' }}><ChevronDownIcon size={10} color="#77469b" /></span>
-              </div>
-              <div className={`${motion.accordionRow} ${aiSummaryOpen ? motion.accordionRowOpen : ''}`}>
-                <div>
-                  <div style={{ padding: '0 14px 14px', font: '400 12px/1.65 Inter,sans-serif', color: '#464646' }}>{sel.aiSummary}</div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Strategy picker — the decision this whole card exists to support, so it gets a primary border instead of blending in with the reference cards around it */}
           <div style={{ border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
@@ -403,15 +327,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               <div key={o.id} onClick={() => setSelectedOptionId(o.id)} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', border: optId === o.id ? '4px solid #77469b' : '1px solid #dfe3ea', flex: 'none', marginTop: 2 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.label}</span>
-                  {o.isOther && optId === o.id && (
-                    <span
-                      onClick={(e) => { e.stopPropagation(); onOpenAskJiva?.(); }}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, padding: '8px 13px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: '#fff' }}
-                    >
-                      Ask Jiva <span style={{ color: '#77469b' }}>→</span>
-                    </span>
-                  )}
+                  <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.isOther ? 'Ask Jiva' : o.label}</span>
                   {o.isMeetingAsk && optId === o.id && (
                     <span
                       onClick={(e) => { e.stopPropagation(); setActionPickerOpen(true); }}

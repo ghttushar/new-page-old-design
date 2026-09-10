@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption } from '@/constants/signals/prototype-data';
 import { formatAlertValue } from './format-money';
-import { SourceBadge, toRowSource } from './source-icon';
-import { Badge as MarketplaceBadge } from './marketplace-glyph';
+import { AlertBadgeRow } from './alert-badge-row';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD, Avatar } from './assign-menu';
-import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, MoreVertIcon, CheckIcon } from './icons';
+import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, MoreVertIcon, CheckIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 import rowStyles from './alert-row.module.scss';
@@ -189,8 +188,6 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
   onAssign: (id: string, a: AssigneeOption) => void;
 }) {
   const isOpen = menuFor === al.id;
-  const origin = al.originType ?? 'anarix';
-  const rowSource = toRowSource(origin);
   const assignOpen = isOpen && menuMode === 'assign';
   return (
     <div className={rowStyles.alertCard} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
@@ -248,33 +245,8 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
         </div>
         <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 56, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 11, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
-          {al.priority !== 'Low' && (
-            <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
-          )}
-          <span style={{ padding: '3px 8px', borderRadius: 5, border: '1px solid #d9c6ec', background: '#fff', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
-        </div>
-        <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 10px 2px 2px', borderRadius: 999, background: '#eef0f3', flex: 'none' }}>
-          <MarketplaceBadge brand={al.mpBrand} size={20} style={{ borderRadius: 7 }} />
-          <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#3d434b' }}>{al.mpCountry}</span>
-        </span>
-        <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
-          {rowSource && <SourceBadge source={rowSource} size={20} />}
-          {al.repeated && (
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
-              <RepeatIcon size={18} />
-            </span>
-          )}
-          {al.hasMeeting && (
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
-              <MeetingGlyphIcon size={18} />
-            </span>
-          )}
-        </div>
-        <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const, flex: 'none' }}>{al.time}</span>
+      <div style={{ marginTop: 11 }}>
+        <AlertBadgeRow al={al} size={20} />
       </div>
       {isOpen && (
         <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: 40, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
