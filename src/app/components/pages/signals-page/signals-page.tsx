@@ -173,53 +173,64 @@ export function SignalsPage() {
     );
   };
 
-  const renderAlerts = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
-        {askJivaOpen && alertsViewMode === 'normal' && selectedAlert ? (
-          <AskJivaPanel alert={selectedAlert} onClose={() => setAskJivaOpen(false)} />
-        ) : (
-          <AlertListPanel
-            selectedAlertId={selectedAlertId}
-            resolvedAlertIds={resolvedAlertIds}
-            onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
-            onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
-            onFilteredChange={setFilteredAlertIds}
-          />
-        )}
-        {alertsViewMode === 'speed' ? (
-          <AlertSpeedCard
-            alert={selectedAlert}
-            position={speedIndex >= 0 ? speedIndex + 1 : selectedAlertIndex + 1}
-            total={speedQueue.length || PROTOTYPE_ALERTS.length}
-            onLogAction={logAction}
-            onAdvance={advanceToNextAlert}
-            onResolve={markResolved}
-          />
-        ) : (
-          <AlertDetailPanel
-            alert={selectedAlert}
-            phase={alertPhase}
-            execProgress={execProgress}
-            onExecute={handleExecute}
-            onViewReport={() => setAlertPhase('report')}
-            onBackToAlerts={() => setAlertPhase('view')}
-            onGenReview={() => setAlertPhase('genReview')}
-            onApproveGenReview={handleExecute}
-            onOpenItems={() => setItemsModalOpen(true)}
-            itemsModalOpen={itemsModalOpen}
-            onCloseItems={() => setItemsModalOpen(false)}
-            onLogAction={logAction}
-            onDismiss={() => markResolved(selectedAlertId)}
-            onUndoExecute={handleUndoExecute}
-            isFirstAlert={!!selectedAlertId && selectedAlertId === firstAlertId}
-            onOpenAskJiva={() => setAskJivaOpen(true)}
-            onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
-          />
-        )}
+  const renderAlerts = () => {
+    const detailPanel = (
+      <AlertDetailPanel
+        alert={selectedAlert}
+        phase={alertPhase}
+        execProgress={execProgress}
+        onExecute={handleExecute}
+        onViewReport={() => setAlertPhase('report')}
+        onBackToAlerts={() => setAlertPhase('view')}
+        onGenReview={() => setAlertPhase('genReview')}
+        onApproveGenReview={handleExecute}
+        onOpenItems={() => setItemsModalOpen(true)}
+        itemsModalOpen={itemsModalOpen}
+        onCloseItems={() => setItemsModalOpen(false)}
+        onLogAction={logAction}
+        onDismiss={() => markResolved(selectedAlertId)}
+        onUndoExecute={handleUndoExecute}
+        isFirstAlert={!!selectedAlertId && selectedAlertId === firstAlertId}
+        onOpenAskJiva={() => setAskJivaOpen(true)}
+        onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
+      />
+    );
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+        <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
+          {askJivaOpen && alertsViewMode === 'normal' && selectedAlert ? (
+            <>
+              {detailPanel}
+              <AskJivaPanel alert={selectedAlert} onClose={() => setAskJivaOpen(false)} />
+            </>
+          ) : (
+            <>
+              <AlertListPanel
+                selectedAlertId={selectedAlertId}
+                resolvedAlertIds={resolvedAlertIds}
+                onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
+                onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
+                onFilteredChange={setFilteredAlertIds}
+              />
+              {alertsViewMode === 'speed' ? (
+                <AlertSpeedCard
+                  alert={selectedAlert}
+                  position={speedIndex >= 0 ? speedIndex + 1 : selectedAlertIndex + 1}
+                  total={speedQueue.length || PROTOTYPE_ALERTS.length}
+                  onLogAction={logAction}
+                  onAdvance={advanceToNextAlert}
+                  onResolve={markResolved}
+                />
+              ) : (
+                detailPanel
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const verifyMom = useCallback((id: string) => {
     setSelectedMeetingId(id);

@@ -13,10 +13,10 @@ import { getDisplayItems } from './items-util';
 import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { EmptyAlertGraphic } from './empty-alert-graphic';
-import { MarketplaceGlyph } from './marketplace-glyph';
+import { MarketplaceGlyph, brandLabel } from './marketplace-glyph';
 import { SourceIcon } from './source-icon';
 import { HoverTip } from './hover-tip';
-import { SparkleIcon, DiamondIcon, AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, ChevronDownIcon } from './icons';
+import { SparkleIcon, AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, ChevronDownIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 
@@ -102,12 +102,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   const optId = selectedOptionId || (sel.options.find((o) => o.recommended) || sel.options[0])?.id;
   const pickedOption = sel.options.find((o) => o.id === optId);
 
-  const executeLabel = pickedOption
-    ? pickedOption.kind === 'GENERATIVE' ? (pickedOption.generates === 'image' ? 'Open Image Studio' : 'Generate & review')
-      : pickedOption.isMeetingAsk ? 'Choose action type'
-      : pickedOption.isOther ? 'Choose action type'
-      : `Execute: ${pickedOption.label}`
-    : 'Execute';
+  const executeLabel = 'Execute';
 
   const handleExecute = () => {
     if (pickedOption?.kind === 'GENERATIVE') {
@@ -115,7 +110,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
       onGenReview();
       return;
     }
-    if (pickedOption?.isMeetingAsk || pickedOption?.isOther) { setActionPickerOpen(true); return; }
+    if (pickedOption?.isOther) { onOpenAskJiva?.(); return; }
+    if (pickedOption?.isMeetingAsk) { setActionPickerOpen(true); return; }
     onExecute();
   };
 
@@ -310,8 +306,9 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                 <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' }}>{sel.category}</span>
               </div>
               <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-              <div style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
                 <MarketplaceGlyph al={sel} size={26} />
+                <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646', whiteSpace: 'nowrap' }}>{brandLabel(sel.mpBrand)}</span>
               </div>
               <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 'none' }}>
@@ -357,11 +354,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
 
         {/* Body */}
         <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* Why it happened — one headline, one flowing explanation (root cause folded in, not a second heading) */}
-          <div>
-            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Why it happened</div>
-            <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646', marginTop: 7 }}>{sel.why} {sel.root}</div>
-          </div>
+          {/* No section heading here by design — just the flowing explanation (root cause folded in) */}
+          <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{sel.why} {sel.root}</div>
 
           {/* Business impact */}
           <div>
@@ -403,29 +397,22 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
           {/* Strategy picker — the decision this whole card exists to support, so it gets a primary border instead of blending in with the reference cards around it */}
           <div style={{ border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
             <div style={{ padding: '12px 14px', borderBottom: '1px solid #eee3f6', background: '#fbfafd', display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-              <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Choose your strategy</span>
-              {mappedActionType && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1.5 Inter,sans-serif', color: '#5f3880' }}>
-                  <DiamondIcon size={8} /> Recommended action type: {mappedActionType.label}
-                </span>
-              )}
+              <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Suggested actions</span>
             </div>
             {sel.options.map((o) => (
               <div key={o.id} onClick={() => setSelectedOptionId(o.id)} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', border: optId === o.id ? '4px solid #77469b' : '1px solid #dfe3ea', flex: 'none', marginTop: 2 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                    <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.label}</span>
-                    {o.recommended && <span style={{ display: 'flex', alignItems: 'center', gap: 4, font: '600 10px/1 Inter,sans-serif', color: '#5f3880' }}><DiamondIcon size={7} /> Recommended</span>}
-                  </div>
-                  <div style={{ font: '400 11px/1.55 Inter,sans-serif', color: '#6b7178', marginTop: 4 }}>{o.desc}</div>
-                  {o.expected && (
-                    <div style={{ display: 'flex', gap: 16, marginTop: 7, font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>
-                      <span>Est. <strong style={{ font: '600 11px Inter,sans-serif', color: '#464646' }}>{o.expected}</strong></span>
-                      <span>Confidence <strong style={{ font: '600 11px Inter,sans-serif', color: '#464646' }}>{o.confidence}%</strong></span>
-                    </div>
+                  <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.label}</span>
+                  {o.isOther && optId === o.id && (
+                    <span
+                      onClick={(e) => { e.stopPropagation(); onOpenAskJiva?.(); }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, padding: '8px 13px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: '#fff' }}
+                    >
+                      Ask Jiva <span style={{ color: '#77469b' }}>→</span>
+                    </span>
                   )}
-                  {(o.isOther || o.isMeetingAsk) && optId === o.id && (
+                  {o.isMeetingAsk && optId === o.id && (
                     <span
                       onClick={(e) => { e.stopPropagation(); setActionPickerOpen(true); }}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, padding: '8px 13px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: '#fff' }}

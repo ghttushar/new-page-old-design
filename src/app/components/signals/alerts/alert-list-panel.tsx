@@ -257,16 +257,12 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
         </div>
         <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
         <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 10px 2px 2px', borderRadius: 999, background: '#eef0f3', flex: 'none' }}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <MarketplaceBadge brand={al.mpBrand} size={20} style={{ borderRadius: 7, position: rowSource ? 'relative' : undefined, zIndex: rowSource ? 2 : undefined }} />
-            {rowSource && (
-              <SourceBadge source={rowSource} size={20} style={{ marginLeft: -5, zIndex: 1 }} />
-            )}
-          </span>
+          <MarketplaceBadge brand={al.mpBrand} size={20} style={{ borderRadius: 7 }} />
           <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#3d434b' }}>{al.mpCountry}</span>
         </span>
         <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
+          {rowSource && <SourceBadge source={rowSource} size={20} />}
           {al.repeated && (
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
               <RepeatIcon size={18} />

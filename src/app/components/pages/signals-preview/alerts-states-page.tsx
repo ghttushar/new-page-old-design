@@ -20,10 +20,10 @@ export default function AlertsStatesPreviewPage() {
         </div>
       </Frame>
 
-      <Frame label="Normal mode — Ask Jiva panel open" note="replaces the list column entirely">
+      <Frame label="Normal mode — Ask Jiva panel open" note="list column disappears; the detail card shifts left, Jiva chat takes the right column at the list's width">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AskJivaPanel alert={firstAlert} onClose={noop} />
           <AlertDetailPanel alert={firstAlert} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} isFirstAlert onOpenAskJiva={noop} onSelectAlert={noopId} />
+          <AskJivaPanel alert={firstAlert} onClose={noop} />
         </div>
       </Frame>
 
