@@ -1699,35 +1699,89 @@ export const ACCOUNT_GOALS: AccountGoal[] = [
   { label: 'Ad ROAS', current: '4.8', target: '4.5', pct: 100, color: '#3f7d6a', meta: 'Target met · holding four weeks' },
 ];
 
-export type TaskStatus = 'pending' | 'accepted' | 'declined' | 'in_progress' | 'done';
+export type TaskStatus = 'open' | 'in_progress' | 'done';
+
+/** What kind of thing produced this task — decides which contextual action the card offers. */
+export type TaskOrigin = 'alert' | 'meeting' | 'generative' | 'direct';
+
+export interface WorkstationLogEntry {
+  time: string;
+  text: string;
+}
 
 export interface WorkstationTask {
   id: string;
   text: string;
-  /** Display name of who the task is for. 'You' is the current user. */
+  /** Longer explanation shown only in the expanded card. */
+  description: string;
+  /** Display name of who the task is for. 'You' is the current user, 'Unassigned' if nobody yet. */
   assignee: string;
-  /** id into DEFAULT_ASSIGNEES / an alert's assignees, for avatar lookup. */
+  /** id into DEFAULT_ASSIGNEES, for avatar lookup — omitted for external/unassigned people. */
   assigneeId?: string;
   /** Who created/assigned the task — 'You' for self-created or delegated-out tasks. */
   createdBy: string;
-  meeting: string;
   due: string;
   dueColor?: string;
+  overdue: boolean;
   status: TaskStatus;
-  /** Free-text ETA the assignee committed to, distinct from the original `due` context line. */
-  etaLabel?: string;
-  /** Most recent reminder sent/received, shown inline. */
-  lastReminder?: string;
+  origin: TaskOrigin;
+  /** id into PROTOTYPE_ALERTS — present when origin is 'alert'. */
+  alertId?: string;
+  /** id into MEETING_LIST / COMPLETED_MEETINGS — present when origin is 'meeting'. */
+  meetingId?: string;
+  meetingLabel?: string;
+  logs: WorkstationLogEntry[];
 }
 
 export const WORKSTATION_TASKS: WorkstationTask[] = [
-  { id: 't1', text: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed', assignee: 'You', assigneeId: 'self', createdBy: 'Priya Nair', meeting: 'Wellbeing QBR', due: 'Due 3 Nov', dueColor: '#b3453f', status: 'pending', etaLabel: 'Requested by 3 Nov' },
-  { id: 't2', text: 'Model Q4 stock cover at two scenarios for the hero range', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Wellbeing QBR', due: 'Due 7 Nov', status: 'in_progress', etaLabel: 'ETA 6 Nov' },
-  { id: 't3', text: 'Chase the Q4 promo calendar from Rahul before the 8 November lock', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Nutrabay weekly review', due: 'Overdue by 7 days', dueColor: '#b3453f', status: 'in_progress', etaLabel: 'ETA 8 Nov', lastReminder: 'You sent a reminder to Rahul · 2h ago' },
-  { id: 't4', text: 'Place inventory reorder for the three at-risk SKUs', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Nutrabay weekly review', due: 'Done 30 Oct', dueColor: '#3f7d6a', status: 'done' },
-  { id: 't5', text: 'Send the October performance summary to Sneha', assignee: 'You', assigneeId: 'self', createdBy: 'You', meeting: 'Nutrabay weekly review', due: 'Done 29 Oct', dueColor: '#3f7d6a', status: 'done' },
-  { id: 't6', text: 'Draft replacement creative for the two suppressed Wellbeing ASINs', assignee: 'Mike Torres', assigneeId: 'mike', createdBy: 'You', meeting: 'Wellbeing QBR', due: 'Due 5 Nov', status: 'accepted', etaLabel: 'ETA 5 Nov' },
-  { id: 't7', text: 'Pull the competitor price benchmark for the Q4 planning deck', assignee: 'Sarah Kim', assigneeId: 'sarah', createdBy: 'You', meeting: 'Boldfit Q4 planning', due: 'Due 4 Nov', dueColor: '#b3453f', status: 'pending' },
+  {
+    id: 't1', text: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed',
+    description: 'Priya signed off on the proposed bullet copy for the six hero ASINs during the QBR prep call. Publish it and confirm Amazon has re-indexed the listings before the next check-in.',
+    assignee: 'You', assigneeId: 'self', createdBy: 'Priya Nair', due: 'Due 3 Nov', dueColor: '#b3453f', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
+    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }, { time: '1 day ago', text: 'Priya confirmed sign-off over email' }],
+  },
+  {
+    id: 't2', text: 'Model Q4 stock cover at two scenarios for the hero range',
+    description: "Wellbeing's stock cover sits below their usual comfort line. Build a base case and a conservative case for Q4 so the account team can commit inventory with confidence.",
+    assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Due 7 Nov', overdue: false, status: 'in_progress', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
+    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }, { time: 'Yesterday', text: 'Started the base-case model' }],
+  },
+  {
+    id: 't3', text: 'Chase the Q4 promo calendar from Rahul before the 8 November lock',
+    description: "Nutrabay's Q4 promo calendar is overdue. Without it the promo slots can't be locked in time for the 8 November deadline.",
+    assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Overdue by 7 days', dueColor: '#b3453f', overdue: true, status: 'in_progress', origin: 'meeting', meetingId: 'm1', meetingLabel: 'Weekly performance review',
+    logs: [{ time: '9 days ago', text: 'Created from Weekly performance review' }, { time: '2 hours ago', text: 'You sent a reminder to Rahul' }],
+  },
+  {
+    id: 't4', text: 'Place inventory reorder for the three at-risk SKUs',
+    description: 'Three SKUs were flagged as at-risk of stocking out. Reorder placed and verified against the units-sold trend over the following week.',
+    assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Done 30 Oct', dueColor: '#3f7d6a', overdue: false, status: 'done', origin: 'alert', alertId: 'a3',
+    logs: [{ time: '3 days ago', text: 'Created from alert: Inventory reorder on three SKUs came back verified' }, { time: '2 days ago', text: 'Reorder placed' }, { time: 'Yesterday', text: 'Verified over 7 days on units sold' }],
+  },
+  {
+    id: 't5', text: 'Send the October performance summary to Sneha',
+    description: "Draft and send Sneha a short October wrap-up covering GMV, margin, and the content incident — she asked for this ahead of the board pack.",
+    assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Done 29 Oct', dueColor: '#3f7d6a', overdue: false, status: 'done', origin: 'generative',
+    logs: [{ time: '4 days ago', text: 'Created directly' }, { time: '3 days ago', text: 'Drafted with Jiva' }, { time: '3 days ago', text: 'Sent to Sneha' }],
+  },
+  {
+    id: 't6', text: 'Draft replacement creative for the two suppressed Wellbeing ASINs',
+    description: 'Both suppressed listings need a compliant white-background main image before they can be reinstated. Generate a draft for review.',
+    assignee: 'Mike Torres', assigneeId: 'mike', createdBy: 'You', due: 'Due 5 Nov', overdue: false, status: 'open', origin: 'generative',
+    logs: [{ time: '2 days ago', text: 'Created from alert: Two listings suppressed on image compliance' }],
+  },
+  {
+    id: 't7', text: 'Pull the competitor price benchmark for the Q4 planning deck',
+    description: "Boldfit's Q4 planning call flagged the need for a competitor price benchmark on the hero range before the profitability discussion.",
+    assignee: 'Sarah Kim', assigneeId: 'sarah', createdBy: 'You', due: 'Due 4 Nov', dueColor: '#b3453f', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm3', meetingLabel: 'Q4 planning and inventory commitments',
+    logs: [{ time: '1 day ago', text: 'Created from Q4 planning and inventory commitments' }],
+  },
+  {
+    id: 't8', text: 'Confirm a pre-flight compliance check before the next creative push',
+    description: 'Agreed at the QBR to add a compliance check before any future creative goes live, to stop the recurring suppression pattern. Needs an owner.',
+    assignee: 'Unassigned', createdBy: 'You', due: 'Due 8 Nov', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
+    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }],
+  },
 ];
 
 export interface ActionRecord {

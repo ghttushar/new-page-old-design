@@ -226,7 +226,13 @@ export function SignalsPage() {
       case 'brief': return renderBrief();
       case 'alerts': return renderAlerts();
       case 'meetings': return renderMeetings();
-      case 'workstation': return <WorkStation />;
+      case 'workstation':
+        return (
+          <WorkStation
+            onOpenAlert={openAlert}
+            onOpenMeeting={(id) => { setActiveTab('meetings'); setSelectedMeetingId(id); setMeetingAskJivaOpen(false); }}
+          />
+        );
     }
   };
 
