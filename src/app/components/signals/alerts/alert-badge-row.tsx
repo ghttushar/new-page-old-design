@@ -1,7 +1,6 @@
 import type { PrototypeAlert } from '@/constants/signals/prototype-data';
 import { Badge as MarketplaceBadge } from './marketplace-glyph';
 import { SourceBadge, GoogleMeetMark, toRowSource } from './source-icon';
-import { RepeatIcon } from './icons';
 
 /**
  * The badge/marketplace/source strip shared verbatim by the Alerts list row and the
@@ -29,11 +28,6 @@ export function AlertBadgeRow({ al, size = 20, showTime = true }: { al: Prototyp
       <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
         {rowSource && <SourceBadge source={rowSource} size={size} />}
-        {al.repeated && (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: iconBox, height: iconBox, flex: 'none' }}>
-            <RepeatIcon size={iconSize} />
-          </span>
-        )}
         {al.hasMeeting && (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: iconBox, height: iconBox, flex: 'none' }}>
             <GoogleMeetMark size={iconSize} />

@@ -126,16 +126,6 @@ export function BoltIcon({ size = 12, color = '#a8763f' }: IconProps) {
   );
 }
 
-/** Duplicate/stacked-cards mark — "this has happened before," deliberately distinct from a refresh/loop glyph. */
-export function RepeatIcon({ size = 16, color = '#464646' }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <rect x="2.5" y="5.5" width="8" height="8" rx="1.6" stroke={color} strokeWidth="1.3" />
-      <path d="M5 5.5V4a1.5 1.5 0 0 1 1.5-1.5H12A1.5 1.5 0 0 1 13.5 4v6a1.5 1.5 0 0 1-1.5 1.5h-1.5" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 export function InfoIcon({ size = 16, color = '#77469b' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">

@@ -8,9 +8,7 @@ import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
 import { BriefOnboard } from '../../signals/brief/brief-onboard';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
 import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
-import { AlertSpeedCard } from '../../signals/alerts/alert-speed-card';
 import { AskJivaPanel } from '../../signals/alerts/ask-jiva-panel';
-import { BoltIcon } from '../../signals/alerts/icons';
 import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
 import { MeetingPrep } from '../../signals/meetings/meeting-prep';
@@ -35,23 +33,14 @@ export function SignalsPage() {
   const [execProgress, setExecProgress] = useState(0);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
   const [loggedActions, setLoggedActions] = useState<LoggedActionItem[]>([]);
-  const [alertsViewMode, setAlertsViewMode] = useState<'normal' | 'speed'>('normal');
   const [briefViewMode, setBriefViewMode] = useState<'brief' | 'dashboard'>('brief');
   const [resolvedAlertIds, setResolvedAlertIds] = useState<Set<string>>(new Set());
   const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
   const [askJivaOpen, setAskJivaOpen] = useState(false);
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
-  const selectedAlertIndex = PROTOTYPE_ALERTS.findIndex((a) => a.id === selectedAlertId);
   // The Ask Jiva variation is a one-alert concept demo, anchored to whichever alert leads today's list.
   const firstAlertId = PROTOTYPE_ALERTS.find((a) => a.day === 'today')?.id ?? PROTOTYPE_ALERTS[0]?.id;
-
-  // Speed Mode cycles through whatever the list panel's active search/filter currently shows,
-  // not the full alert set — approving a filtered alert should not jump you outside the filter.
-  const speedQueue = filteredAlertIds.length > 0
-    ? PROTOTYPE_ALERTS.filter((a) => filteredAlertIds.includes(a.id))
-    : PROTOTYPE_ALERTS;
-  const speedIndex = speedQueue.findIndex((a) => a.id === selectedAlertId);
 
   const logAction = useCallback((item: LoggedActionItem) => {
     setLoggedActions((prev) => [item, ...prev]);
@@ -61,18 +50,6 @@ export function SignalsPage() {
     if (!id) return;
     setResolvedAlertIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }, []);
-
-  const advanceToNextAlert = useCallback(() => {
-    setSelectedAlertId((current) => {
-      const queue = filteredAlertIds.length > 0
-        ? PROTOTYPE_ALERTS.filter((a) => filteredAlertIds.includes(a.id))
-        : PROTOTYPE_ALERTS;
-      const idx = queue.findIndex((a) => a.id === current);
-      const next = idx >= 0 ? queue[idx + 1] : queue[0];
-      return next ? next.id : null;
-    });
-    setAlertPhase('view');
-  }, [filteredAlertIds]);
 
   const goTab = useCallback((tab: SignalTabKey) => {
     setActiveTab(tab);
@@ -199,7 +176,7 @@ export function SignalsPage() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
         <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
-          {askJivaOpen && alertsViewMode === 'normal' && selectedAlert ? (
+          {askJivaOpen && selectedAlert ? (
             <>
               {detailPanel}
               <AskJivaPanel alert={selectedAlert} onClose={() => setAskJivaOpen(false)} />
@@ -213,18 +190,7 @@ export function SignalsPage() {
                 onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
                 onFilteredChange={setFilteredAlertIds}
               />
-              {alertsViewMode === 'speed' ? (
-                <AlertSpeedCard
-                  alert={selectedAlert}
-                  position={speedIndex >= 0 ? speedIndex + 1 : selectedAlertIndex + 1}
-                  total={speedQueue.length || PROTOTYPE_ALERTS.length}
-                  onLogAction={logAction}
-                  onAdvance={advanceToNextAlert}
-                  onResolve={markResolved}
-                />
-              ) : (
-                detailPanel
-              )}
+              {detailPanel}
             </>
           )}
         </div>
@@ -308,35 +274,6 @@ export function SignalsPage() {
             }}
           >
             {m === 'brief' ? 'Brief' : 'Dashboard'}
-          </span>
-        ))}
-      </div>
-    )
-    : activeTab === 'alerts'
-    ? (
-      <div style={{ display: 'flex', padding: 3, background: '#f1f2f4', borderRadius: 8, gap: 2 }}>
-        {(['normal', 'speed'] as const).map((m) => (
-          <span
-            key={m}
-            onClick={() => {
-              setAlertsViewMode(m);
-              if (m === 'speed' && !selectedAlertId && speedQueue[0]) {
-                setSelectedAlertId(speedQueue[0].id);
-                setAlertPhase('view');
-              }
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
-              font: '600 11.5px/1 Inter,sans-serif',
-              color: alertsViewMode === m ? '#5f3880' : '#6b7178',
-              background: alertsViewMode === m ? '#fff' : 'transparent',
-              boxShadow: alertsViewMode === m ? '0 1px 4px rgba(20,24,33,.12)' : 'none',
-              transition: 'all .15s ease',
-            }}
-          >
-            {m === 'speed' && <BoltIcon size={11} color={alertsViewMode === m ? '#5f3880' : '#6b7178'} />}
-            {m === 'normal' ? 'Normal' : 'Speed'}
           </span>
         ))}
       </div>
