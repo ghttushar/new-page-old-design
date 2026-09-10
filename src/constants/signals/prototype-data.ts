@@ -1751,20 +1751,16 @@ export interface MeetingListItem {
   timeRange: string;
   account: string;
   title: string;
-  alertsMapped: number;
-  tasksOpen: number;
-  readiness: string;
-  readinessColor: string;
-  progress: number;
-  progressColor: string;
+  tasksCompleted: number;
+  tasksTotal: number;
   isToday: boolean;
   dateLabel: string;
 }
 
 export const MEETING_LIST: MeetingListItem[] = [
-  { id: 'm1', timeRange: '10:30 – 11:15', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 6, tasksOpen: 2, readiness: '55% ready', readinessColor: '#a8763f', progress: 55, progressColor: '#a8763f', isToday: true, dateLabel: 'Today' },
-  { id: 'm2', timeRange: '14:00 – 14:30', account: 'Wellbeing', title: 'QBR preparation call', alertsMapped: 1, tasksOpen: 0, readiness: 'Ready', readinessColor: '#3f7d6a', progress: 100, progressColor: '#3f7d6a', isToday: true, dateLabel: 'Today' },
-  { id: 'm3', timeRange: '11:00 – 12:00', account: 'Boldfit', title: 'Q4 planning and inventory commitments', alertsMapped: 4, tasksOpen: 3, readiness: 'Not started', readinessColor: '#b3453f', progress: 8, progressColor: '#b3453f', isToday: false, dateLabel: 'Monday · 3 November' },
+  { id: 'm1', timeRange: '10:30 – 11:15 AM', account: 'Nutrabay', title: 'Weekly performance review', tasksCompleted: 2, tasksTotal: 5, isToday: true, dateLabel: 'Today' },
+  { id: 'm2', timeRange: '2:00 – 2:30 PM', account: 'Wellbeing', title: 'QBR preparation call', tasksCompleted: 3, tasksTotal: 3, isToday: true, dateLabel: 'Today' },
+  { id: 'm3', timeRange: '11:00 AM – 12:00 PM', account: 'Boldfit', title: 'Q4 planning and inventory commitments', tasksCompleted: 0, tasksTotal: 4, isToday: false, dateLabel: 'Monday · 3 November' },
 ];
 
 export interface MeetingStat {
@@ -1774,9 +1770,15 @@ export interface MeetingStat {
   trendColor: string;
 }
 
+export interface MeetingAttendee {
+  name: string;
+  role: string;
+}
+
 export interface MeetingDetail {
   dateTimeLabel: string;
-  attendees: string;
+  attendees: MeetingAttendee[];
+  lastMet: string;
   resolvedPct: number;
   resolvedColor: string;
   agenda: string;
@@ -1787,8 +1789,12 @@ export interface MeetingDetail {
 /** Keyed by MeetingListItem.id — the content the detail panel actually renders per meeting. */
 export const MEETING_DETAILS: Record<string, MeetingDetail> = {
   m1: {
-    dateTimeLabel: 'Today, 1 November · 10:30 – 11:15 · in two hours',
-    attendees: 'Rahul Gupta, Head of Ecommerce · Sneha Iyer, Brand Manager · last met 25 October',
+    dateTimeLabel: 'Today, 1 November · 10:30 – 11:15 AM · in two hours',
+    attendees: [
+      { name: 'Rahul Gupta', role: 'Head of Ecommerce' },
+      { name: 'Sneha Iyer', role: 'Brand Manager' },
+    ],
+    lastMet: 'last met 25 October',
     resolvedPct: 55,
     resolvedColor: '#a8763f',
     agenda: 'Weekly trading review covering October close, the content incident on the hero range, and Q4 promo readiness. Rahul has asked for a view on margin against the 18% target before the board pack goes out on 8 November.',
@@ -1801,8 +1807,12 @@ export const MEETING_DETAILS: Record<string, MeetingDetail> = {
     ],
   },
   m2: {
-    dateTimeLabel: 'Today, 1 November · 14:00 – 14:30 · in five hours',
-    attendees: 'Priya Nair, Ecommerce Lead · Aditi Rao, Compliance · last met 18 October',
+    dateTimeLabel: 'Today, 1 November · 2:00 – 2:30 PM · in five hours',
+    attendees: [
+      { name: 'Priya Nair', role: 'Ecommerce Lead' },
+      { name: 'Aditi Rao', role: 'Compliance' },
+    ],
+    lastMet: 'last met 18 October',
     resolvedPct: 100,
     resolvedColor: '#3f7d6a',
     agenda: 'QBR prep for Wellbeing Nutrition — the compliance suppression on two listings, the replacement creative timeline, and confirming Q4 stock cover before the deck goes to the client.',
@@ -1815,8 +1825,12 @@ export const MEETING_DETAILS: Record<string, MeetingDetail> = {
     ],
   },
   m3: {
-    dateTimeLabel: 'Monday, 3 November · 11:00 – 12:00',
-    attendees: 'Karan Mehta, Founder · Isha Verma, Finance · last met 6 October',
+    dateTimeLabel: 'Monday, 3 November · 11:00 AM – 12:00 PM',
+    attendees: [
+      { name: 'Karan Mehta', role: 'Founder' },
+      { name: 'Isha Verma', role: 'Finance' },
+    ],
+    lastMet: 'last met 6 October',
     resolvedPct: 8,
     resolvedColor: '#b3453f',
     agenda: 'Q4 planning and inventory commitments for Boldfit — the profitability forecast miss, two open compliance documents, the declined card blocking ad spend, and locking Q4 stock levels.',
@@ -1845,15 +1859,15 @@ export interface CompletedMeeting {
 }
 
 export const COMPLETED_MEETINGS: CompletedMeeting[] = [
-  { id: 'm4', timeRange: '15:00 – 15:44', account: 'Wellbeing', title: 'Quarterly business review', alertsMapped: 3, tasksExtracted: 4, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM unsent', momColor: '#a8763f', dateLabel: 'Yesterday · 31 October' },
-  { id: 'm5', timeRange: '10:30 – 11:20', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 5, tasksExtracted: 3, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM sent', momColor: '#3f7d6a', dateLabel: '25 October' },
+  { id: 'm4', timeRange: '3:00 – 3:44 PM', account: 'Wellbeing', title: 'Quarterly business review', alertsMapped: 3, tasksExtracted: 4, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM unsent', momColor: '#a8763f', dateLabel: 'Yesterday · 31 October' },
+  { id: 'm5', timeRange: '10:30 – 11:20 AM', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 5, tasksExtracted: 3, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM sent', momColor: '#3f7d6a', dateLabel: '25 October' },
 ];
 
 export interface MomTaskItem {
   task: string;
   assignee: string;
   due: string;
-  delivery: string;
+  status: string;
 }
 
 export interface MomRecord {
@@ -1870,10 +1884,10 @@ export interface MomRecord {
 /** Keyed by CompletedMeeting.id. */
 export const MOM_RECORDS: Record<string, MomRecord> = {
   m4: {
-    completedLabel: 'Completed 15:44',
+    completedLabel: 'Completed 3:44 PM',
     transcriptMeta: 'From transcript · 44 minutes · 4 attendees',
     title: 'Wellbeing Nutrition · Quarterly business review',
-    dateLabel: '31 October 2025 · draft minutes, not yet sent',
+    dateLabel: '31 October 2025',
     sent: false,
     summary: 'The quarter closed ahead on GMV but short on margin, and most of the conversation was about why. We walked through the two suppressed listings, agreed the compliance issue was avoidable, and committed to a pre-flight image check before any future asset push. Priya raised concern about Q4 stock cover on the hero range; we agreed to model two scenarios before the next call. The team accepted our recommendation on bullet copy without changes.',
     decisions: [
@@ -1882,14 +1896,14 @@ export const MOM_RECORDS: Record<string, MomRecord> = {
       'Q4 stock cover to be modelled at two scenarios before the next review.',
     ],
     tasks: [
-      { task: 'Model Q4 stock cover at two scenarios', assignee: 'Ritvik Sharma', due: '7 Nov', delivery: 'Work-station' },
-      { task: 'Send replacement creative for two suppressed ASINs', assignee: 'Priya Nair · client', due: '4 Nov', delivery: 'Email' },
-      { task: 'Publish approved bullet copy on 6 hero ASINs', assignee: 'Ritvik Sharma', due: '3 Nov', delivery: 'Work-station' },
-      { task: 'Share updated compliance checklist', assignee: 'Aditi Rao · client', due: '5 Nov', delivery: 'Email' },
+      { task: 'Model Q4 stock cover at two scenarios', assignee: 'Ritvik Sharma', due: '7 Nov', status: 'Work-station' },
+      { task: 'Send replacement creative for two suppressed ASINs', assignee: 'Priya Nair · client', due: '4 Nov', status: 'Email' },
+      { task: 'Publish approved bullet copy on 6 hero ASINs', assignee: 'Ritvik Sharma', due: '3 Nov', status: 'Work-station' },
+      { task: 'Share updated compliance checklist', assignee: 'Aditi Rao · client', due: '5 Nov', status: 'Email' },
     ],
   },
   m5: {
-    completedLabel: 'Completed 11:20',
+    completedLabel: 'Completed 11:20 AM',
     transcriptMeta: 'From transcript · 50 minutes · 3 attendees',
     title: 'Nutrabay · Weekly performance review',
     dateLabel: '25 October 2025 · sent to client',
@@ -1901,9 +1915,9 @@ export const MOM_RECORDS: Record<string, MomRecord> = {
       'Continue weekly cadence at the same time next week.',
     ],
     tasks: [
-      { task: 'Revert bullet copy to the 27 Oct version', assignee: 'Ritvik Sharma', due: '26 Oct', delivery: 'Work-station' },
-      { task: 'Draft the PIM approval-gate proposal for the client', assignee: 'Ritvik Sharma', due: '29 Oct', delivery: 'Work-station' },
-      { task: 'Confirm re-index completed on reverted ASINs', assignee: 'Priya Nair · client', due: '28 Oct', delivery: 'Email' },
+      { task: 'Revert bullet copy to the 27 Oct version', assignee: 'Ritvik Sharma', due: '26 Oct', status: 'Work-station' },
+      { task: 'Draft the PIM approval-gate proposal for the client', assignee: 'Ritvik Sharma', due: '29 Oct', status: 'Work-station' },
+      { task: 'Confirm re-index completed on reverted ASINs', assignee: 'Priya Nair · client', due: '28 Oct', status: 'Email' },
     ],
   },
 };

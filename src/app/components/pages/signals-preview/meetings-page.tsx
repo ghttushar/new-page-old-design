@@ -1,9 +1,8 @@
 import { MEETING_LIST } from '@/constants/signals/prototype-data';
 import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
-import { MeetingPrep } from '../../signals/meetings/meeting-prep';
-import { MeetingPresentation } from '../../signals/meetings/meeting-presentation';
 import { MeetingMOM } from '../../signals/meetings/meeting-mom';
+import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-panel';
 import { PreviewShell, Frame, noop, noopId } from './shared';
 
 export default function MeetingsPreviewPage() {
@@ -11,33 +10,34 @@ export default function MeetingsPreviewPage() {
     <PreviewShell current="/signals-preview/meetings">
       <Frame label="List + Detail — nothing selected">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <MeetingListPanel selectedMeetingId={null} onSelectMeeting={noopId} onVerifyMom={noopId} />
-          <MeetingDetailPanel meetingId={null} onOpenAlert={noopId} onPrepare={noop} />
+          <MeetingListPanel selectedMeetingId={null} onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId={null} onCreatePresentation={noop} />
         </div>
       </Frame>
 
-      <Frame label="List + Detail — meeting selected">
+      <Frame label="List + Detail — upcoming meeting selected" note="merged agenda/positives/negatives/discussion/actions card">
+        <div style={{ height: 900, display: 'flex', gap: 16 }}>
+          <MeetingListPanel selectedMeetingId={MEETING_LIST[0].id} onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId={MEETING_LIST[0].id} onCreatePresentation={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="Create presentation — Ask Jiva panel open" note="list column disappears; the detail card shifts left, Jiva chat takes the right column at the list's width">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <MeetingListPanel selectedMeetingId={MEETING_LIST[0].id} onSelectMeeting={noopId} onVerifyMom={noopId} />
-          <MeetingDetailPanel meetingId={MEETING_LIST[0].id} onOpenAlert={noopId} onPrepare={noop} />
+          <MeetingDetailPanel meetingId={MEETING_LIST[0].id} onCreatePresentation={noop} />
+          <AskJivaMeetingPanel meetingId={MEETING_LIST[0].id} onClose={noop} />
         </div>
       </Frame>
 
-      <Frame label="Prep">
+      <Frame label="Completed meeting — MOM detail, unsent">
         <div style={{ height: 900, display: 'flex' }}>
-          <MeetingPrep meetingId={MEETING_LIST[0].id} onBack={noop} onCreatePresentation={noop} />
+          <MeetingMOM meetingId="m4" onGoWorkstation={noop} />
         </div>
       </Frame>
 
-      <Frame label="Presentation">
-        <div style={{ height: 900, display: 'flex' }}>
-          <MeetingPresentation meetingId={MEETING_LIST[0].id} onBack={noop} />
-        </div>
-      </Frame>
-
-      <Frame label="MOM (minutes) — unsent">
+      <Frame label="Completed meeting — MOM detail, sent">
         <div style={{ height: 800, display: 'flex' }}>
-          <MeetingMOM meetingId="m4" onBackToMeetings={noop} onGoWorkstation={noop} />
+          <MeetingMOM meetingId="m5" onGoWorkstation={noop} />
         </div>
       </Frame>
     </PreviewShell>

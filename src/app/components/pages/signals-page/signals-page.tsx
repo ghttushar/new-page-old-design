@@ -11,21 +11,18 @@ import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
 import { AskJivaPanel } from '../../signals/alerts/ask-jiva-panel';
 import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
-import { MeetingPrep } from '../../signals/meetings/meeting-prep';
-import { MeetingPresentation } from '../../signals/meetings/meeting-presentation';
 import { MeetingMOM } from '../../signals/meetings/meeting-mom';
+import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-panel';
 import { WorkStation } from '../../signals/work-station/work-station';
 import { CalendarPopover } from '../../signals/common/calendar-popover';
-import { PROTOTYPE_ALERTS, type PrototypeAlert, type LoggedActionItem } from '@/constants/signals/prototype-data';
-
-type MeetingScreen = 'list' | 'detail' | 'prep' | 'presentation' | 'mom';
+import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, type PrototypeAlert, type LoggedActionItem } from '@/constants/signals/prototype-data';
 
 export function SignalsPage() {
   const [activeTab, setActiveTab] = useState<SignalTabKey>('brief');
   const [briefState, setBriefState] = useState<BriefState>('full');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
-  const [meetingScreen, setMeetingScreen] = useState<MeetingScreen>('list');
+  const [meetingAskJivaOpen, setMeetingAskJivaOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [rangeLabel, setRangeLabel] = useState('Today · 1 Nov');
   const [briefFullSubScreen, setBriefFullSubScreen] = useState<'main' | 'nudge'>('main');
@@ -55,7 +52,7 @@ export function SignalsPage() {
     setActiveTab(tab);
     setSelectedAlertId(null);
     setSelectedMeetingId(null);
-    setMeetingScreen('list');
+    setMeetingAskJivaOpen(false);
     setAlertPhase('view');
     setBriefFullSubScreen('main');
     setBriefViewMode('brief');
@@ -71,7 +68,7 @@ export function SignalsPage() {
 
   const openMeeting = useCallback((id: string) => {
     setSelectedMeetingId(id);
-    setMeetingScreen('detail');
+    setMeetingAskJivaOpen(false);
   }, []);
 
   const executeTimerRef = useRef<number | null>(null);
@@ -115,7 +112,7 @@ export function SignalsPage() {
         else if (selectedAlertId) setSelectedAlertId(null);
         else if (selectedMeetingId) {
           setSelectedMeetingId(null);
-          setMeetingScreen('list');
+          setMeetingAskJivaOpen(false);
         }
       }
     };
@@ -198,54 +195,30 @@ export function SignalsPage() {
     );
   };
 
-  const verifyMom = useCallback((id: string) => {
-    setSelectedMeetingId(id);
-    setMeetingScreen('mom');
-  }, []);
-
   const renderMeetings = () => {
-    switch (meetingScreen) {
-      case 'prep':
-        return (
-          <MeetingPrep
-            meetingId={selectedMeetingId}
-            onBack={() => setMeetingScreen('detail')}
-            onCreatePresentation={() => setMeetingScreen('presentation')}
-          />
-        );
-      case 'presentation':
-        return (
-          <MeetingPresentation
-            meetingId={selectedMeetingId}
-            onBack={() => setMeetingScreen('prep')}
-          />
-        );
-      case 'mom':
-        return (
-          <MeetingMOM
-            meetingId={selectedMeetingId}
-            onBackToMeetings={() => { goTab('meetings'); setSelectedMeetingId(null); setMeetingScreen('list'); }}
-            onGoWorkstation={() => goTab('workstation')}
-          />
-        );
-      default:
-        // 'list' and 'detail' share one layout — MeetingDetailPanel already renders its own
-        // "select a meeting" empty state when nothing is selected, so there's nothing else to branch on.
-        return (
-          <div style={{ display: 'flex', gap: 16, height: '100%' }}>
-            <MeetingListPanel
-              selectedMeetingId={selectedMeetingId}
-              onSelectMeeting={openMeeting}
-              onVerifyMom={verifyMom}
-            />
-            <MeetingDetailPanel
-              meetingId={selectedMeetingId}
-              onOpenAlert={openAlert}
-              onPrepare={() => setMeetingScreen('prep')}
-            />
-          </div>
-        );
-    }
+    const isCompleted = selectedMeetingId ? COMPLETED_MEETINGS.some((m) => m.id === selectedMeetingId) : false;
+
+    const detailPanel = isCompleted ? (
+      <MeetingMOM meetingId={selectedMeetingId} onGoWorkstation={() => goTab('workstation')} />
+    ) : (
+      <MeetingDetailPanel meetingId={selectedMeetingId} onCreatePresentation={() => setMeetingAskJivaOpen(true)} />
+    );
+
+    return (
+      <div style={{ display: 'flex', gap: 16, height: '100%' }}>
+        {meetingAskJivaOpen && selectedMeetingId && !isCompleted ? (
+          <>
+            {detailPanel}
+            <AskJivaMeetingPanel meetingId={selectedMeetingId} onClose={() => setMeetingAskJivaOpen(false)} />
+          </>
+        ) : (
+          <>
+            <MeetingListPanel selectedMeetingId={selectedMeetingId} onSelectMeeting={openMeeting} />
+            {detailPanel}
+          </>
+        )}
+      </div>
+    );
   };
 
   const tabContent = () => {
