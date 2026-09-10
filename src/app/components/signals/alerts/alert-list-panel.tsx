@@ -1,13 +1,19 @@
 import { useState, useMemo, useEffect } from 'react';
-import { PROTOTYPE_ALERTS, type PrototypeAlert } from '@/constants/signals/prototype-data';
+import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption } from '@/constants/signals/prototype-data';
 import { formatAlertValue } from './format-money';
 import { HoverTip } from './hover-tip';
-import { SourceIcon } from './source-icon';
-import { MarketplaceGlyph } from './marketplace-glyph';
-import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
-import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, CheckIcon } from './icons';
+import { SourceBadge, toRowSource } from './source-icon';
+import { Badge as MarketplaceBadge, brandLabel } from './marketplace-glyph';
+import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD, Avatar } from './assign-menu';
+import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, RepeatIcon, MeetingGlyphIcon, MoreVertIcon, CheckIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
+
+const SOURCE_LABEL: Record<'email' | 'slack' | 'meeting', string> = {
+  email: 'Reported by email',
+  slack: 'Shared via Slack',
+  meeting: 'Raised in a meeting',
+};
 
 interface Props {
   selectedAlertId: string | null;
@@ -29,6 +35,9 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
   const [valueOp, setValueOp] = useState<'>' | '<' | '='>('>');
   const [valueThreshold, setValueThreshold] = useState('');
   const [assignPopupFor, setAssignPopupFor] = useState<PrototypeAlert | null>(null);
+  const [assignedTo, setAssignedTo] = useState<Record<string, AssigneeOption>>({});
+
+  const assignAlert = (id: string, a: AssigneeOption) => setAssignedTo((m) => ({ ...m, [id]: a }));
 
   const filtered = useMemo(() => {
     return PROTOTYPE_ALERTS.filter((al) => {
@@ -132,7 +141,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{todayAlerts.length} alert{todayAlerts.length === 1 ? '' : 's'}</span>
             </div>
             {todayAlerts.map((al) => (
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} />
+              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
             ))}
           </>
         )}
@@ -143,7 +152,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{yesterdayAlerts.length} alert{yesterdayAlerts.length === 1 ? '' : 's'}</span>
             </div>
             {yesterdayAlerts.map((al) => (
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} />
+              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
             ))}
           </>
         )}
@@ -159,7 +168,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
         <AssignPopupModal
           assignees={assignPopupFor.assignees ?? DEFAULT_ASSIGNEES}
           onClose={() => setAssignPopupFor(null)}
-          onSelect={() => setAssignPopupFor(null)}
+          onSelect={(a) => { assignAlert(assignPopupFor.id, a); setAssignPopupFor(null); }}
         />
       )}
     </div>
@@ -177,14 +186,17 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
 }
 
 
-function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign }: {
+function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign, assignedTo, onAssign }: {
   al: PrototypeAlert; selected: boolean; resolved: boolean; onSelect: () => void; onOpenItems: () => void;
   menuFor: string | null; setMenuFor: (id: string | null) => void;
   menuMode: 'main' | 'share' | 'assign'; setMenuMode: (m: 'main' | 'share' | 'assign') => void;
   requestAssign: (al: PrototypeAlert) => void;
+  assignedTo?: AssigneeOption;
+  onAssign: (id: string, a: AssigneeOption) => void;
 }) {
   const isOpen = menuFor === al.id;
   const origin = al.originType ?? 'anarix';
+  const rowSource = toRowSource(origin);
   const assignOpen = isOpen && menuMode === 'assign';
   return (
     <div style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', borderColor: selected ? '#77469b' : '#eceef1', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
@@ -193,16 +205,40 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           <CheckIcon size={8} color="#3f7d6a" /> Resolved
         </span>
       )}
-      <span
-        onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
-        title="Assign"
-        className={motion.pressable}
-        style={{ position: 'absolute', right: 12, top: 12, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
-        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-      >
-        <AssignIcon size={14} />
-      </span>
+      <div style={{ position: 'absolute', right: 12, top: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+        {assignedTo ? (
+          <HoverTip label={assignedTo.name}>
+            <span
+              onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
+              className={motion.pressable}
+              style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer' }}
+            >
+              <Avatar name={assignedTo.name} size={22} vivid />
+            </span>
+          </HoverTip>
+        ) : (
+          <span
+            onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
+            title="Assign"
+            className={motion.pressable}
+            style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <AssignIcon size={14} />
+          </span>
+        )}
+        <span
+          onClick={(e) => { e.stopPropagation(); setMenuFor(isOpen && menuMode !== 'assign' ? null : al.id); setMenuMode('main'); }}
+          title="More"
+          className={motion.pressable}
+          style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+        >
+          <MoreVertIcon size={13} />
+        </span>
+      </div>
       <div onClick={onSelect} style={{ marginTop: resolved ? 20 : 0 }}>
         <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>
         <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: 4 }}>
@@ -225,16 +261,26 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 11, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
-          <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
-          <span style={{ padding: '3px 8px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
+          {al.priority !== 'Low' && (
+            <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
+          )}
+          <span style={{ padding: '3px 8px', borderRadius: 5, border: '1px solid #d9c6ec', background: '#fff', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
         </div>
         <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-        <div style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
-          <MarketplaceGlyph al={al} size={22} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <HoverTip label={brandLabel(al.mpBrand)}>
+              <MarketplaceBadge brand={al.mpBrand} size={22} style={rowSource ? { position: 'relative', zIndex: 2 } : undefined} />
+            </HoverTip>
+            {rowSource && (
+              <HoverTip label={al.originDetail ? `${SOURCE_LABEL[rowSource]} · ${al.originDetail}` : SOURCE_LABEL[rowSource]}>
+                <SourceBadge source={rowSource} size={22} style={{ marginLeft: -Math.round(22 * 0.25), zIndex: 1 }} />
+              </HoverTip>
+            )}
+          </span>
+          <span style={{ font: '600 10px/1 Inter,sans-serif', color: '#6b7178' }}>{al.mpCountry}</span>
         </div>
-        <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
-          <SourceIcon origin={origin} detail={al.originDetail} size={22} />
           {al.repeated && (
             <HoverTip label={al.repeatedLabel ? `Repeated · ${al.repeatedLabel}` : 'Repeated'}>
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flex: 'none' }}>
@@ -251,18 +297,11 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           )}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 8 }}>
         <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const }}>{al.time}</span>
-        <span
-          onClick={(e) => { e.stopPropagation(); setMenuFor(isOpen && menuMode !== 'assign' ? null : al.id); setMenuMode('main'); }}
-          className={motion.pressable}
-          style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, font: '700 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-        >⋯</span>
       </div>
       {isOpen && (
-        <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: menuMode === 'assign' ? 34 : undefined, bottom: menuMode === 'assign' ? undefined : 40, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
+        <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: 62, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
           {menuMode === 'main' && (
             <>
               <MenuItem icon={<ShareIcon size={13} />} label="Share" onClick={() => setMenuMode('share')} />
@@ -281,7 +320,7 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           {menuMode === 'assign' && (
             <>
               <div style={{ padding: '6px 10px 2px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Assign to</div>
-              <AssignDropdownList assignees={al.assignees ?? DEFAULT_ASSIGNEES} onSelect={() => setMenuFor(null)} />
+              <AssignDropdownList assignees={al.assignees ?? DEFAULT_ASSIGNEES} onSelect={(a) => { onAssign(al.id, a); setMenuFor(null); }} />
             </>
           )}
         </div>

@@ -18,7 +18,8 @@ function BrandIcon({ brand, size }: { brand: MpBrand; size: number }) {
   );
 }
 
-function Badge({ brand, size, style }: { brand: MpBrand; size: number; style?: React.CSSProperties }) {
+/** Raw circular badge with no HoverTip — exported for composing with SourceBadge in the Alerts row's overlapping-circle group. */
+export function Badge({ brand, size, style }: { brand: MpBrand; size: number; style?: React.CSSProperties }) {
   return (
     <span
       style={{
@@ -33,7 +34,7 @@ function Badge({ brand, size, style }: { brand: MpBrand; size: number; style?: R
   );
 }
 
-function brandLabel(b: MpBrand): string {
+export function brandLabel(b: MpBrand): string {
   return b === 'walmart' ? 'Walmart' : 'Amazon';
 }
 

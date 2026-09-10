@@ -79,6 +79,49 @@ function SlackMark({ size }: { size: number }) {
   );
 }
 
+/** Video-camera mark in Google Meet's brand green — a colour-coded approximation, not the exact vector, but unambiguous next to its tooltip. */
+function GoogleMeetMark({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <rect x="1.4" y="4.3" width="8" height="7.4" rx="1.7" fill="#00AC47" />
+      <path d="M9.4 6.9l4.3-2.5c.5-.3 1.1.07 1.1.65v5.8c0 .58-.6.95-1.1.65l-4.3-2.5V6.9z" fill="#00832D" />
+    </svg>
+  );
+}
+
+/** The three sources the Alerts row is allowed to show — everything else (Anarix/Jiva/Workspace) gets no source badge on the row. */
+export type RowSource = 'email' | 'slack' | 'meeting';
+
+export function toRowSource(origin: AlertSource): RowSource | null {
+  return origin === 'email' || origin === 'slack' || origin === 'meeting' ? origin : null;
+}
+
+const ROW_BADGE_BG: Record<RowSource, string> = {
+  meeting: '#00AC47',
+  email: '#5b6b8c',
+  slack: '#ffffff',
+};
+
+/** Raw circular badge with no HoverTip — exported for composing with the marketplace Badge in the Alerts row's overlapping-circle group. */
+export function SourceBadge({ source, size, style }: { source: RowSource; size: number; style?: React.CSSProperties }) {
+  const iconSize = Math.round(size * 0.58);
+  const needsRing = ROW_BADGE_BG[source] === '#ffffff';
+  return (
+    <span
+      style={{
+        width: size, height: size, borderRadius: '50%', background: ROW_BADGE_BG[source],
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
+        boxShadow: needsRing ? '0 0 0 1.5px #fff, 0 0 0 2px #e6e8ec' : '0 0 0 1.5px #fff',
+        ...style,
+      }}
+    >
+      {source === 'email' && <Envelope size={iconSize} color="#ffffff" weight="fill" />}
+      {source === 'slack' && <SlackMark size={iconSize} />}
+      {source === 'meeting' && <GoogleMeetMark size={iconSize} />}
+    </span>
+  );
+}
+
 function Glyph({ source, size }: { source: AlertSource; size: number }) {
   switch (source) {
     case 'anarix':

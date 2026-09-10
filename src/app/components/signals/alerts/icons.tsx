@@ -156,6 +156,16 @@ export function InfoIcon({ size = 16, color = '#77469b' }: IconProps) {
   );
 }
 
+export function MoreVertIcon({ size = 14, color = '#6b7178' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="3.4" r="1.35" fill={color} />
+      <circle cx="8" cy="8" r="1.35" fill={color} />
+      <circle cx="8" cy="12.6" r="1.35" fill={color} />
+    </svg>
+  );
+}
+
 export function ChevronDownIcon({ size = 9, color = '#9aa0a8' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">

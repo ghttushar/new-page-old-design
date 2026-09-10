@@ -13,23 +13,27 @@ export const DEFAULT_ASSIGNEES: AssigneeOption[] = [
 
 export const ASSIGN_POPUP_THRESHOLD = 15;
 
-function initials(name: string): string {
+export function initials(name: string): string {
   const clean = name.replace(/[^\p{L}\s]/gu, '').trim();
   const parts = clean.split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
 }
 
-function Avatar({ name, size = 24 }: { name: string; size?: number }) {
+/** `vivid` is the saturated-blue treatment used for the "currently assigned" avatar on the Alerts row; the default muted tone stays for the assign lists/popups. */
+export function Avatar({ name, size = 24, vivid = false }: { name: string; size?: number; vivid?: boolean }) {
   const isJiva = name.includes('Jiva');
+  const bg = isJiva ? '#f3eefa' : vivid ? '#2f6fed' : '#eceef1';
+  const fg = isJiva ? '#5f3880' : vivid ? '#ffffff' : '#5c636e';
   return (
     <span
       style={{
         width: size, height: size, borderRadius: '50%', flex: 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: isJiva ? '#f3eefa' : '#eceef1',
-        color: isJiva ? '#5f3880' : '#5c636e',
+        background: bg,
+        color: fg,
         font: `700 ${Math.round(size * 0.42)}px/1 Inter,sans-serif`,
+        boxShadow: vivid ? '0 0 0 1.5px #fff' : undefined,
       }}
     >
       {isJiva ? <SparkleIcon size={Math.round(size * 0.5)} color="#5f3880" /> : initials(name)}
