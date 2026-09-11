@@ -110,6 +110,15 @@ export function CloseIcon({ size = 12, color = '#6b7178' }: IconProps) {
   );
 }
 
+export function DownloadIcon({ size = 13, color = '#464646' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.8v8M4.8 6.8L8 10l3.2-3.2" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 12.2v1.2c0 .6.5 1 1 1h10c.5 0 1-.4 1-1v-1.2" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function BackArrowIcon({ size = 13, color = '#6b7178' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">

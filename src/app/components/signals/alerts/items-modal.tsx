@@ -3,7 +3,7 @@ import type { ColumnDef, PaginationState } from '@tanstack/react-table';
 import type { AlertItem } from '@/constants/signals/prototype-data';
 import { CustomTableWrapper } from '@/app/components/shared/custom-table-wrapper/custom-table-wrapper';
 import ImgComponent from '@/app/components/common/img-component/img-component';
-import { CloseIcon } from './icons';
+import { CloseIcon, DownloadIcon } from './icons';
 import motion from './motion.module.scss';
 
 interface Props {
@@ -11,6 +11,23 @@ interface Props {
   itemCount: number;
   breakdown: string;
   onClose: () => void;
+}
+
+function downloadItemsCsv(items: AlertItem[]) {
+  const header = ['Product Name', 'ASIN Number', 'Impact'];
+  const rows = items.map((it) => [it.name, it.sku, it.impact]);
+  const csv = [header, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'affected-items.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 const COLUMNS: ColumnDef<AlertItem>[] = [
@@ -90,7 +107,16 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
           </div>
           <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>
         </div>
-        <div style={{ padding: '8px 22px', font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>Showing {filtered.length} of {itemCount}</div>
+        <div style={{ padding: '8px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 'none' }}>
+          <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>Showing {filtered.length} of {itemCount}</span>
+          <span
+            onClick={() => downloadItemsCsv(filtered)}
+            className={`${motion.pressable} ${motion.btnSecondary}`}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 11px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}
+          >
+            <DownloadIcon size={12} /> Download
+          </span>
+        </div>
         <div style={{ flex: 1, minHeight: 0, padding: '0 22px 20px' }}>
           <CustomTableWrapper
             data={filtered}

@@ -51,6 +51,8 @@ export interface PrototypeAlert {
   time: string;
   valueNum: number;
   valueLabel: string;
+  /** Card/detail variation with no $ value shown at all — for alerts that are informational rather than quantified (valueNum/valueLabel still drive internal sort/color logic but never render). */
+  hideValue?: boolean;
   priority: AlertPriority;
   priorityDot: string;
   title: string;
@@ -375,6 +377,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     time: '08:15 AM',
     valueNum: -88,
     valueLabel: '−$88',
+    hideValue: true,
     priority: 'Low',
     priorityDot: '#3f7d6a',
     title: 'Buy Box lost briefly',

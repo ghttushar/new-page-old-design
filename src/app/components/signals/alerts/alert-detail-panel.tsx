@@ -284,12 +284,14 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d' }}>{sel.title}</div>
               <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>{sel.subheader}</div>
             </div>
-            <div style={{ textAlign: 'right', flex: 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 3, justifyContent: 'flex-end' }}>
-                <div style={{ font: '600 22px/1 Inter,sans-serif', color: valueColor }}>{money(sel.valueNum)}</div>
-                <ValueInfoIcon label={explainAlertValue(sel)} size={11} />
+            {!sel.hideValue && (
+              <div style={{ textAlign: 'right', flex: 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 3, justifyContent: 'flex-end' }}>
+                  <div style={{ font: '600 22px/1 Inter,sans-serif', color: valueColor }}>{money(sel.valueNum)}</div>
+                  <ValueInfoIcon label={explainAlertValue(sel)} size={11} />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

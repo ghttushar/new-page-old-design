@@ -243,8 +243,10 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
         </span>
       </div>
       <div onClick={onSelect} style={{ marginTop: resolved ? 20 : 0 }}>
-        <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>
-        <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: 4 }}>
+        {!al.hideValue && (
+          <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>
+        )}
+        <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: al.hideValue ? 0 : 4 }}>
           {al.impactStr}
           {al.itemsCount > 1 && (
             <>
