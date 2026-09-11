@@ -83,6 +83,8 @@ export interface PrototypeAlert {
   mappedActionTypeId?: string;
   /** Where this alert originated (for the source icon). Defaults to 'anarix' (agent-detected) when omitted. Not to be confused with `source`, the provenance text shown under Business Impact. */
   originType?: AlertSource;
+  /** Extra row-eligible origins beyond `originType`, for alerts raised across more than one channel — renders as an overlapping cluster, same idea as `mpBrands`. */
+  originTypes?: AlertSource[];
   /** Tooltip detail for the origin icon — email sender, workspace name, meeting name, etc. */
   originDetail?: string;
   /** Tooltip detail for the "repeated" icon, e.g. "3rd day running". */
@@ -115,6 +117,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     repeatedLabel: '3rd day running',
     hasMeeting: true,
     linkedMeetingId: 'm1',
+    originTypes: ['email', 'slack', 'meeting'],
     meetingLabel: 'In your 10:30',
     windowLabel: 'Act within 6 hrs',
     subheader: 'Content pushed by the client on 28 Oct cut conversion from 9.1% to 6.4% across 14 ASINs.',
@@ -165,6 +168,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     category: 'Advertising',
     repeated: false,
     hasMeeting: false,
+    originTypes: ['slack', 'email'],
     windowLabel: 'Act within 2 days',
     subheader: 'These listings convert below category median despite strong traffic — nothing is broken.',
     why: 'Six ASINs draw 9,400 weekly sessions but convert at 5.8% against a 7.9% category median.',
@@ -221,6 +225,7 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
     repeated: false,
     hasMeeting: true,
     linkedMeetingId: 'm1',
+    originType: 'slack',
     meetingLabel: 'In your 10:30',
     windowLabel: 'No action needed',
     subheader: 'Applied Thursday, measured over seven days on units sold — safe to present.',

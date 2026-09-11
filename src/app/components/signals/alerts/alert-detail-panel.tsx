@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PROTOTYPE_ALERTS, type PrototypeAlert, type AlertOption, type LoggedActionItem } from '@/constants/signals/prototype-data';
+import type { PrototypeAlert, AlertOption, LoggedActionItem } from '@/constants/signals/prototype-data';
 import { ACTION_TYPES, type ActionType } from '@/constants/signals/action-types.constants';
 
 const GENERIC_SEND_UPDATE = ACTION_TYPES.find((a) => a.id === 'send-report-update')!;
@@ -37,10 +37,11 @@ interface Props {
   /** Unused — every alert now renders the same detail layout. Kept optional so existing call sites don't need to change. */
   isFirstAlert?: boolean;
   onOpenAskJiva?: () => void;
+  /** Unused — the empty state no longer shows a "jump back in" shortcut list. Kept optional so existing call sites don't need to change. */
   onSelectAlert?: (id: string) => void;
 }
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onSelectAlert }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
@@ -61,33 +62,12 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   }, [sel?.id]);
 
   if (!sel) {
-    const spotlight = PROTOTYPE_ALERTS.filter((a) => a.priority === 'High').slice(0, 3);
     return (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: 'radial-gradient(circle at 18% 8%, rgba(119,70,155,.06), transparent 45%), #fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
         <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
           <EmptyAlertGraphic />
           <div style={{ font: '700 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select an alert to get started</div>
           <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 320, textAlign: 'center' }}>The reasoning, impact and recommended strategy open here.</div>
-
-          {onSelectAlert && spotlight.length > 0 && (
-            <div style={{ width: '100%', maxWidth: 380, marginTop: 32 }}>
-              <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8', textAlign: 'center' }}>Jump back in</div>
-              <div style={{ marginTop: 12, border: '1px solid #eceef1', borderRadius: 10, overflow: 'hidden' }}>
-                {spotlight.map((a, i) => (
-                  <div
-                    key={a.id}
-                    onClick={() => onSelectAlert(a.id)}
-                    className={motion.rowHover}
-                    style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 11, cursor: 'pointer', borderBottom: i < spotlight.length - 1 ? '1px solid #f1f2f4' : 'none', background: '#fff' }}
-                  >
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: a.priorityDot, flex: 'none' }} />
-                    <span style={{ flex: 1, minWidth: 0, font: '500 12.5px/1.4 Inter,sans-serif', color: '#3d434b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{a.title}</span>
-                    <span style={{ flex: 'none', font: '700 13px/1 Inter,sans-serif', color: a.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(a.valueNum)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -306,11 +286,10 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>{sel.subheader}</div>
             </div>
             <div style={{ textAlign: 'right', flex: 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 3, justifyContent: 'flex-end' }}>
                 <div style={{ font: '600 22px/1 Inter,sans-serif', color: valueColor }}>{money(sel.valueNum)}</div>
-                <ValueInfoIcon label={explainAlertValue(sel)} />
+                <ValueInfoIcon label={explainAlertValue(sel)} size={11} />
               </div>
-              <div style={{ marginTop: 6, padding: '2px 7px', borderRadius: 4, background: sel.proof === 'verified' ? '#eef6f3' : '#f1f2f4', font: '600 10px/1.5 Inter,sans-serif', color: sel.proof === 'verified' ? '#3f7d6a' : '#5c636e', display: 'inline-block' }}>{sel.proof === 'verified' ? 'VERIFIED' : 'ESTIMATED'}</div>
             </div>
           </div>
         </div>

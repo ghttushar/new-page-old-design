@@ -1,5 +1,4 @@
 import { useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
-import { PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
 
 const DOT_POSITIONS = [
   { x: -84, y: -34, color: '#b3453f', delay: '0s' },
@@ -22,31 +21,41 @@ function AnarixMark({ size }: { size: number }) {
 export function EmptyAlertGraphic() {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [hoveredDot, setHoveredDot] = useState<number | null>(null);
 
   const onMove = (e: ReactMouseEvent<HTMLDivElement>) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: px * 14, y: py * -14 });
+    setTilt({ x: px * 18, y: py * -18 });
   };
-
-  const highCount = PROTOTYPE_ALERTS.filter((a) => a.priority === 'High').length;
-  const accounts = new Set(PROTOTYPE_ALERTS.map((a) => a.account)).size;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <style>{`
         @keyframes eag-ping { 0% { transform: scale(0.55); opacity: .5; } 100% { transform: scale(1.85); opacity: 0; } }
         @keyframes eag-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        @keyframes eag-spin { to { transform: rotate(360deg); } }
+        @keyframes eag-spin-reverse { to { transform: rotate(-360deg); } }
+        @keyframes eag-line-pulse { 0%, 100% { opacity: .1; } 50% { opacity: .38; } }
+        .eag-halo { animation: eag-spin 26s linear infinite; }
+        .eag-halo-inner { animation: eag-spin-reverse 18s linear infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .eag-halo, .eag-halo-inner { animation: none; }
+        }
       `}</style>
 
       <div
         ref={ref}
         onMouseMove={onMove}
-        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+        onMouseLeave={() => { setTilt({ x: 0, y: 0 }); setHoveredDot(null); }}
         style={{ position: 'relative', width: 240, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}
       >
+        {/* Ambient rotating halos — pure decoration, gives the whole thing a "live radar" feel at rest */}
+        <span className="eag-halo" style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', border: '1px dashed rgba(119,70,155,.16)' }} />
+        <span className="eag-halo-inner" style={{ position: 'absolute', width: 152, height: 152, borderRadius: '50%', border: '1px dashed rgba(119,70,155,.13)' }} />
+
         <div
           style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -64,6 +73,21 @@ export function EmptyAlertGraphic() {
           ))}
         </div>
 
+        {/* Signal lines from the core to each watched point — turns the dots from decoration into a small network */}
+        <svg width={240} height={240} style={{ position: 'absolute', inset: 0, transform: `translate(${tilt.x * 0.5}px, ${tilt.y * 0.5}px)`, transition: 'transform .15s ease-out' }}>
+          {DOT_POSITIONS.map((d, i) => (
+            <line
+              key={i}
+              x1={120} y1={120}
+              x2={120 + d.x} y2={120 + d.y}
+              stroke={d.color}
+              strokeWidth={1}
+              strokeDasharray="3 4"
+              style={{ opacity: hoveredDot === i ? 0.6 : undefined, animation: hoveredDot === i ? undefined : `eag-line-pulse 3.6s ${d.delay} ease-in-out infinite`, transition: 'opacity 160ms ease-out' }}
+            />
+          ))}
+        </svg>
+
         <div
           style={{
             position: 'relative', width: 74, height: 74, borderRadius: '50%', background: '#f3eefa',
@@ -74,22 +98,26 @@ export function EmptyAlertGraphic() {
           <AnarixMark size={30} />
         </div>
 
-        {DOT_POSITIONS.map((d, i) => (
-          <span
-            key={i}
-            style={{
-              position: 'absolute', left: `calc(50% + ${d.x}px)`, top: `calc(50% + ${d.y}px)`,
-              width: 10, height: 10, borderRadius: '50%', background: d.color, marginLeft: -5, marginTop: -5,
-              boxShadow: `0 0 0 4px ${d.color}22`, animation: `eag-float 3.6s ${d.delay} ease-in-out infinite`,
-              transform: `translate(${tilt.x}px, ${tilt.y}px)`, transition: 'transform .15s ease-out',
-              cursor: 'default',
-            }}
-          />
-        ))}
-      </div>
-
-      <div style={{ marginTop: 18, textAlign: 'center', font: '500 11px/1.4 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const }}>
-        Watching {PROTOTYPE_ALERTS.length} alerts · {highCount} high priority · {accounts} accounts
+        {DOT_POSITIONS.map((d, i) => {
+          const hovered = hoveredDot === i;
+          return (
+            <span
+              key={i}
+              onMouseEnter={() => setHoveredDot(i)}
+              onMouseLeave={() => setHoveredDot(null)}
+              style={{
+                position: 'absolute', left: `calc(50% + ${d.x}px)`, top: `calc(50% + ${d.y}px)`,
+                width: hovered ? 14 : 10, height: hovered ? 14 : 10, borderRadius: '50%', background: d.color,
+                marginLeft: hovered ? -7 : -5, marginTop: hovered ? -7 : -5,
+                boxShadow: hovered ? `0 0 0 6px ${d.color}33` : `0 0 0 4px ${d.color}22`,
+                animation: hovered ? undefined : `eag-float 3.6s ${d.delay} ease-in-out infinite`,
+                transform: `translate(${tilt.x}px, ${tilt.y}px)`,
+                transition: 'transform .15s ease-out, width 160ms ease-out, height 160ms ease-out, margin 160ms ease-out, box-shadow 160ms ease-out',
+                cursor: 'default',
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

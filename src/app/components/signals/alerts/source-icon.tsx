@@ -108,6 +108,10 @@ export function toRowSource(origin: AlertSource): RowSource | null {
   return origin === 'email' || origin === 'slack' || origin === 'meeting' ? origin : null;
 }
 
+export function rowSourceLabel(source: RowSource): string {
+  return LABELS[source];
+}
+
 /** Raw circular badge with no tooltip — exported for composing with the marketplace Badge in the Alerts row's overlapping-circle group. All three row sources carry their own full-colour mark on a white disc. */
 export function SourceBadge({ source, size, style }: { source: RowSource; size: number; style?: React.CSSProperties }) {
   const iconSize = Math.round(size * 0.62);
