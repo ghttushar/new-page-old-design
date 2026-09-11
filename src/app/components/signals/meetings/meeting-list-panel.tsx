@@ -6,31 +6,30 @@ import motion from '../alerts/motion.module.scss';
 interface Props {
   selectedMeetingId: string | null;
   onSelectMeeting: (id: string) => void;
+  /** Forces the filter popover open on mount — for the design-handoff preview, not used by the real app. */
+  initialFilterOpen?: boolean;
 }
 
-type GroupKey = 'today' | 'tomorrow' | 'upcoming' | 'yesterday' | 'earlier';
+type GroupKey = 'today' | 'tomorrow' | 'earlier';
 
 const GROUP_ORDER: { key: GroupKey; label: string }[] = [
   { key: 'today', label: 'Today' },
   { key: 'tomorrow', label: 'Tomorrow' },
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'yesterday', label: 'Yesterday' },
   { key: 'earlier', label: 'Earlier' },
 ];
 
 const ALL_ACCOUNTS = Array.from(new Set([...MEETING_LIST, ...COMPLETED_MEETINGS].map((m) => m.account)));
 const ALL_MOM_STATUSES = Array.from(new Set(COMPLETED_MEETINGS.map((m) => m.momStatus)));
 
-function groupFor(dateLabel: string, kind: 'upcoming' | 'completed'): GroupKey {
+function groupFor(dateLabel: string): GroupKey {
   if (dateLabel.startsWith('Today')) return 'today';
   if (dateLabel.startsWith('Tomorrow')) return 'tomorrow';
-  if (dateLabel.startsWith('Yesterday')) return 'yesterday';
-  return kind === 'upcoming' ? 'upcoming' : 'earlier';
+  return 'earlier';
 }
 
-export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) {
+export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false }: Props) {
   const [search, setSearch] = useState('');
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [accountFilters, setAccountFilters] = useState<Record<string, boolean>>({});
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({});
   const [momFilters, setMomFilters] = useState<Record<string, boolean>>({});
@@ -69,12 +68,10 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
     const map: Record<GroupKey, { upcoming: MeetingListItem[]; completed: CompletedMeeting[] }> = {
       today: { upcoming: [], completed: [] },
       tomorrow: { upcoming: [], completed: [] },
-      upcoming: { upcoming: [], completed: [] },
-      yesterday: { upcoming: [], completed: [] },
       earlier: { upcoming: [], completed: [] },
     };
-    filteredUpcoming.forEach((m) => map[groupFor(m.dateLabel, 'upcoming')].upcoming.push(m));
-    filteredCompleted.forEach((m) => map[groupFor(m.dateLabel, 'completed')].completed.push(m));
+    filteredUpcoming.forEach((m) => map[groupFor(m.dateLabel)].upcoming.push(m));
+    filteredCompleted.forEach((m) => map[groupFor(m.dateLabel)].completed.push(m));
     return map;
   }, [filteredUpcoming, filteredCompleted]);
 
@@ -160,16 +157,6 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
               </div>
               {key === 'today' ? (
                 <>
-                  {bucket.completed.length > 0 && (
-                    <>
-                      <div style={{ padding: '10px 16px 4px' }}>
-                        <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Completed</span>
-                      </div>
-                      {bucket.completed.map((m) => (
-                        <CompletedRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
-                      ))}
-                    </>
-                  )}
                   {bucket.upcoming.length > 0 && (
                     <>
                       <div style={{ padding: '10px 16px 4px' }}>
@@ -177,6 +164,16 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
                       </div>
                       {bucket.upcoming.map((m) => (
                         <UpcomingRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
+                      ))}
+                    </>
+                  )}
+                  {bucket.completed.length > 0 && (
+                    <>
+                      <div style={{ padding: '10px 16px 4px' }}>
+                        <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Completed</span>
+                      </div>
+                      {bucket.completed.map((m) => (
+                        <CompletedRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
                       ))}
                     </>
                   )}

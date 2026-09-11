@@ -64,18 +64,12 @@ export default function DesktopView() {
     setisJivaPage(location.pathname.includes(JIVA_PAGE_URL) === true);
   }, [location.pathname]);
 
-  // The design-handoff preview screens hide the sidebar via shouldShowSidebar, but still want
-  // it present in its collapsed (icon-only) width for visual context, not toggleable there.
-  const isSignalsPreviewRoute = location.pathname.startsWith('/signals-preview');
-
   return (
     <div className={styles.app}>
       <ToastMessageQueue />
       <div className={styles.body}>
         {isSidebarVisible === true ? (
           <Sidebar isHover={isChatbotOpen === true || isJivaPage} />
-        ) : isSignalsPreviewRoute ? (
-          <Sidebar forceCollapsed />
         ) : null}
         <div className={styles.main}>
           {isHeaderVisible && isJivaPage === false && (

@@ -1,5 +1,6 @@
 import { PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES } from '../../signals/alerts/assign-menu';
+import Sidebar from '../../layout/side-bar/side-bar';
 
 export const noop = () => {};
 export const noopId = (_id: string) => {};
@@ -63,6 +64,7 @@ export function PreviewShell({ current, intro, children }: { current: string; in
   );
 }
 
+/** Each frame carries its own collapsed nav rail so a screenshot of just this box reads as a full app screen, not a bare floating panel. */
 export function Frame({ label, note, children }: { label: string; note?: string; children: React.ReactNode }) {
   return (
     <div style={{ marginTop: 22 }}>
@@ -70,7 +72,8 @@ export function Frame({ label, note, children }: { label: string; note?: string;
         <span style={{ font: '700 13px/1 Inter,sans-serif', color: '#23272d' }}>{label}</span>
         {note && <span style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#9aa0a8' }}>{note}</span>}
       </div>
-      <div style={{ border: '1px solid #cfc7dc', borderRadius: 6, background: '#fbfafd', padding: 16, overflow: 'auto' }}>
+      <div style={{ border: '1px solid #cfc7dc', borderRadius: 6, background: '#fbfafd', padding: 16, overflow: 'auto', display: 'flex', gap: 16, alignItems: 'stretch' }}>
+        <Sidebar forceCollapsed />
         {children}
       </div>
     </div>

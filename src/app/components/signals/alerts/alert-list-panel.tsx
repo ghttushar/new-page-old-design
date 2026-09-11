@@ -15,11 +15,13 @@ interface Props {
   onOpenItemsForAlert: (id: string) => void;
   /** Called whenever the active search/filter changes, so a consumer (e.g. Speed Mode) can cycle only through what's currently shown here. */
   onFilteredChange: (ids: string[]) => void;
+  /** Forces the filter popover open on mount — for the design-handoff preview, not used by the real app. */
+  initialFilterOpen?: boolean;
 }
 
-export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange }: Props) {
+export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false }: Props) {
   const [search, setSearch] = useState('');
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [menuMode, setMenuMode] = useState<'main' | 'share' | 'assign'>('main');
   const [priorityFilters, setPriorityFilters] = useState<Record<string, boolean>>({});

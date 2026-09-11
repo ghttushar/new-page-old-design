@@ -14,7 +14,14 @@ export default function MeetingsPreviewPage() {
         </div>
       </Frame>
 
-      <Frame label="List + Detail — upcoming meeting selected" note="day grouping (Today/Upcoming/Yesterday/Earlier), agenda, positives/negatives, discussion points, relevant alerts table, Create presentation pinned in the footer">
+      <Frame label="Filter panel open">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <MeetingListPanel initialFilterOpen selectedMeetingId={null} onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId={null} onCreatePresentation={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="List + Detail — upcoming meeting selected" note="day grouping (Today, split into Upcoming/Completed / Tomorrow / Earlier), agenda, positives/negatives, discussion points, relevant alerts table, Create presentation pinned in the footer">
         <div style={{ height: 900, display: 'flex', gap: 16 }}>
           <MeetingListPanel selectedMeetingId="m1" onSelectMeeting={noopId} />
           <MeetingDetailPanel meetingId="m1" onCreatePresentation={noop} />

@@ -23,6 +23,13 @@ export default function AlertsPreviewPage() {
         </div>
       </Frame>
 
+      <Frame label="Filter panel open">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <AlertListPanel initialFilterOpen selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
+        </div>
+      </Frame>
+
       <Frame label="List + Detail — alert selected" note="the Ask Jiva entry point, brand name in the header, source-badge cluster">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
           <AlertListPanel selectedAlertId={firstAlert.id} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
