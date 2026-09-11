@@ -1,5 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ColumnDef, PaginationState } from '@tanstack/react-table';
 import type { AlertItem } from '@/constants/signals/prototype-data';
+import { CustomTableWrapper } from '@/app/components/shared/custom-table-wrapper/custom-table-wrapper';
+import ImgComponent from '@/app/components/common/img-component/img-component';
 import { CloseIcon } from './icons';
 import motion from './motion.module.scss';
 
@@ -10,10 +13,49 @@ interface Props {
   onClose: () => void;
 }
 
+const COLUMNS: ColumnDef<AlertItem>[] = [
+  {
+    id: 'image',
+    header: 'IMAGE',
+    size: 70,
+    cell: () => (
+      <ImgComponent
+        imageURL=""
+        alt="Product"
+        isProduct
+        customStyles={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6 }}
+      />
+    ),
+  },
+  {
+    accessorKey: 'name',
+    id: 'productName',
+    header: 'PRODUCT NAME',
+    size: 420,
+  },
+  {
+    accessorKey: 'sku',
+    id: 'asin',
+    header: 'ASIN NUMBER',
+    size: 160,
+  },
+  {
+    accessorKey: 'impact',
+    id: 'impact',
+    header: 'IMPACT',
+    size: 120,
+    cell: (props) => {
+      const item = props.row.original;
+      return <span style={{ color: item.color, fontWeight: 600 }}>{item.impact}</span>;
+    },
+  },
+];
+
 export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
   const [search, setSearch] = useState('');
   const [op, setOp] = useState<'>' | '<'>('>');
   const [threshold, setThreshold] = useState('');
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 
   const filtered = useMemo(() => {
     return items.filter((it) => {
@@ -28,7 +70,9 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
     });
   }, [items, search, op, threshold]);
 
-  const gridCols = filtered.length < 20 ? 1 : filtered.length <= 50 ? 2 : 3;
+  useEffect(() => {
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  }, [search, op, threshold]);
 
   return (
     <div className={motion.backdropIn} style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,33,.44)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
@@ -47,15 +91,18 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
           <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>
         </div>
         <div style={{ padding: '8px 22px', font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>Showing {filtered.length} of {itemCount}</div>
-        <div style={{ overflowY: 'auto', flex: 1, padding: '0 22px 20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, 1fr)`, borderLeft: '1px solid #e6e8ec' }}>
-            {filtered.map((it, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 100px', alignItems: 'center', padding: '8px 10px', borderRight: '1px solid #e6e8ec', borderBottom: '1px solid #e6e8ec' }}>
-                <div style={{ minWidth: 0, font: '400 12px/1.4 Inter,sans-serif', color: '#464646', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{it.name}</div>
-                <div style={{ textAlign: 'right', font: '600 12px/1 Inter,sans-serif', color: it.color }}>{it.impact}</div>
-              </div>
-            ))}
-          </div>
+        <div style={{ flex: 1, minHeight: 0, padding: '0 22px 20px' }}>
+          <CustomTableWrapper
+            data={filtered}
+            columns={COLUMNS}
+            getRowId={(row, i) => `${row.sku}-${i}`}
+            width="100%"
+            height="440px"
+            fixedHeight
+            pagination={pagination}
+            setPagination={setPagination}
+            pageSizes={[10, 25, 50]}
+          />
         </div>
       </div>
     </div>

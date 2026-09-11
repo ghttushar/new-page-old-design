@@ -13,6 +13,7 @@ import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { EmptyAlertGraphic } from './empty-alert-graphic';
 import { AlertBadgeRow } from './alert-badge-row';
+import { DetailFooterBar } from './detail-footer-bar';
 import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
@@ -291,8 +292,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   // View phase
   const valueColor = sel.valueNum < 0 ? '#b3453f' : '#3f7d6a';
   return (
-    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
-      <div key={sel.id} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
+    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <div key={sel.id} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         {/* Header — badges/marketplace/source match the Alerts row exactly (shared AlertBadgeRow), so the two never diverge */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
           <div style={{ marginBottom: 12 }}>
@@ -300,7 +301,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d' }}>{sel.title}</div>
+              <div style={{ font: '700 11px/1 Inter,sans-serif', color: '#77469b' }}>{sel.account}</div>
+              <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 4 }}>{sel.title}</div>
               <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>{sel.subheader}</div>
             </div>
             <div style={{ textAlign: 'right', flex: 'none' }}>
@@ -374,56 +376,55 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             </div>
           )}
         </div>
-
-        {/* Sticky action bar — a translucent material so scrolled content reads as passing beneath it, not stopping at a hard edge */}
-        <div style={{ position: 'sticky', bottom: 0, background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(14px) saturate(180%)', WebkitBackdropFilter: 'blur(14px) saturate(180%)', borderTop: '1px solid rgba(230,232,236,0.7)', boxShadow: '0 -8px 20px -14px rgba(20,24,33,.12)', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 8 } as React.CSSProperties}>
-          <span
-            onClick={() => {
-              const assignees = sel.assignees ?? DEFAULT_ASSIGNEES;
-              if (assignees.length > ASSIGN_POPUP_THRESHOLD) { setAssignPopupOpen(true); setDetailMenu(null); }
-              else setDetailMenu(detailMenu === 'assign' ? null : 'assign');
-            }}
-            className={motion.btnSecondary}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', position: 'relative' }}
-          >
-            <AssignIcon size={13} /> Assign
-            {detailMenu === 'assign' && (
-              <div className={motion.popInBottomLeft} style={{ position: 'absolute', left: 0, bottom: 38, width: 220, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 70, textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
-                <AssignDropdownList assignees={sel.assignees ?? DEFAULT_ASSIGNEES} onSelect={() => setDetailMenu(null)} />
-              </div>
-            )}
-          </span>
-          <span onClick={() => setDetailMenu(detailMenu === 'share' ? null : 'share')} className={motion.btnSecondary} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', position: 'relative' }}>
-            <ShareIcon size={13} /> Share
-            {detailMenu === 'share' && (
-              <div className={motion.popInBottomLeft} style={{ position: 'absolute', left: 0, bottom: 38, width: 180, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 70, textAlign: 'left' }}>
-                <div style={{ padding: '6px 10px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Share via</div>
-                <div onClick={() => { setDetailMenu(null); setEmailFor(GENERIC_SEND_UPDATE); }} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}><EnvelopeSmallIcon size={12} /> Email</div>
-                <div className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}><WorkspaceSmallIcon size={12} /> Workspace · {sel.account}</div>
-              </div>
-            )}
-          </span>
-          <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 9, position: 'relative' }}>
-            <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>Rate these results</span>
-            <span onClick={() => { setThumb('up'); setFeedbackOpen(false); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}>
-              <ThumbUpIcon size={15} color={thumb === 'up' ? '#3f7d6a' : '#9aa0a8'} />
-            </span>
-            <span onClick={() => { setThumb('down'); setFeedbackOpen(true); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}>
-              <ThumbDownIcon size={15} color={thumb === 'down' ? '#b3453f' : '#9aa0a8'} />
-            </span>
-            {feedbackOpen && (
-              <div className={motion.popInBottomRight} style={{ position: 'absolute', right: 0, bottom: 38, width: 280, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 16, zIndex: 75, textAlign: 'left' }}>
-                <div style={{ font: '600 13px/1.4 Inter,sans-serif', color: '#23272d' }}>Help us make it better for you</div>
-                <textarea placeholder="What was off about this recommendation?" className={motion.focusRing} style={{ width: '100%', marginTop: 11, padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#464646', resize: 'vertical' as const, minHeight: 64, outline: 'none' }} />
-                <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
-                  <span onClick={() => setFeedbackOpen(false)} className={motion.btnPrimary} style={{ padding: '9px 15px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send</span>
-                  <span onClick={() => setFeedbackOpen(false)} className={motion.btnSecondary} style={{ padding: '9px 15px', borderRadius: 7, border: '1px solid #dfe3ea', font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
-                </div>
-              </div>
-            )}
-          </span>
-        </div>
       </div>
+
+      <DetailFooterBar>
+        <span
+          onClick={() => {
+            const assignees = sel.assignees ?? DEFAULT_ASSIGNEES;
+            if (assignees.length > ASSIGN_POPUP_THRESHOLD) { setAssignPopupOpen(true); setDetailMenu(null); }
+            else setDetailMenu(detailMenu === 'assign' ? null : 'assign');
+          }}
+          className={motion.btnSecondary}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', position: 'relative' }}
+        >
+          <AssignIcon size={13} /> Assign
+          {detailMenu === 'assign' && (
+            <div className={motion.popInBottomLeft} style={{ position: 'absolute', left: 0, bottom: 38, width: 220, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 70, textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
+              <AssignDropdownList assignees={sel.assignees ?? DEFAULT_ASSIGNEES} onSelect={() => setDetailMenu(null)} />
+            </div>
+          )}
+        </span>
+        <span onClick={() => setDetailMenu(detailMenu === 'share' ? null : 'share')} className={motion.btnSecondary} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', position: 'relative' }}>
+          <ShareIcon size={13} /> Share
+          {detailMenu === 'share' && (
+            <div className={motion.popInBottomLeft} style={{ position: 'absolute', left: 0, bottom: 38, width: 180, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 70, textAlign: 'left' }}>
+              <div style={{ padding: '6px 10px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Share via</div>
+              <div onClick={() => { setDetailMenu(null); setEmailFor(GENERIC_SEND_UPDATE); }} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}><EnvelopeSmallIcon size={12} /> Email</div>
+              <div className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 6, font: '500 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}><WorkspaceSmallIcon size={12} /> Workspace · {sel.account}</div>
+            </div>
+          )}
+        </span>
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 9, position: 'relative' }}>
+          <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>Rate these results</span>
+          <span onClick={() => { setThumb('up'); setFeedbackOpen(false); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}>
+            <ThumbUpIcon size={15} color={thumb === 'up' ? '#3f7d6a' : '#9aa0a8'} />
+          </span>
+          <span onClick={() => { setThumb('down'); setFeedbackOpen(true); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}>
+            <ThumbDownIcon size={15} color={thumb === 'down' ? '#b3453f' : '#9aa0a8'} />
+          </span>
+          {feedbackOpen && (
+            <div className={motion.popInBottomRight} style={{ position: 'absolute', right: 0, bottom: 38, width: 280, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 16, zIndex: 75, textAlign: 'left' }}>
+              <div style={{ font: '600 13px/1.4 Inter,sans-serif', color: '#23272d' }}>Help us make it better for you</div>
+              <textarea placeholder="What was off about this recommendation?" className={motion.focusRing} style={{ width: '100%', marginTop: 11, padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#464646', resize: 'vertical' as const, minHeight: 64, outline: 'none' }} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
+                <span onClick={() => setFeedbackOpen(false)} className={motion.btnPrimary} style={{ padding: '9px 15px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send</span>
+                <span onClick={() => setFeedbackOpen(false)} className={motion.btnSecondary} style={{ padding: '9px 15px', borderRadius: 7, border: '1px solid #dfe3ea', font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
+              </div>
+            </div>
+          )}
+        </span>
+      </DetailFooterBar>
 
       {itemsModalOpen && <ItemsModal items={getDisplayItems(sel)} itemCount={sel.itemsCount} breakdown={sel.itemsBreakdown} onClose={onCloseItems} />}
 

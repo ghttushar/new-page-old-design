@@ -3,6 +3,7 @@ import { MOM_RECORDS, type MomTaskItem } from '@/constants/signals/prototype-dat
 import { AssignDropdownList, DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
 import { AssignIcon } from '../alerts/icons';
 import { EmptyAlertGraphic } from '../alerts/empty-alert-graphic';
+import { DetailFooterBar } from '../alerts/detail-footer-bar';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -57,8 +58,8 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
   };
 
   return (
-    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-    <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
+    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <span style={{ padding: '2px 7px', borderRadius: 4, background: '#eef6f3', font: '600 10px/1.5 Inter,sans-serif', color: '#3f7d6a' }}>{record.completedLabel}</span>
@@ -178,20 +179,19 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
           </div>
           <div style={{ font: '400 11px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 9 }}>Assignees outside Anarix receive their task by email; Anarix users see it in their Work-station.</div>
         </div>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', paddingTop: 16, borderTop: '1px solid #f1f2f4' }}>
-          {isSent ? (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 7, background: '#eef6f3', color: '#3f7d6a', font: '600 12px/1 Inter,sans-serif' }}>
-              Sent to client
-            </span>
-          ) : (
-            <span onClick={() => setSent(true)} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send MOM to client</span>
-          )}
-          <span onClick={onGoWorkstation} className={motion.pressable} style={{ marginLeft: 'auto', font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', textDecoration: 'none' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>See my tasks</span>
-        </div>
       </div>
     </div>
+
+    <DetailFooterBar>
+      {isSent ? (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 7, background: '#eef6f3', color: '#3f7d6a', font: '600 12px/1 Inter,sans-serif' }}>
+          Sent to client
+        </span>
+      ) : (
+        <span onClick={() => setSent(true)} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send MOM</span>
+      )}
+      <span onClick={onGoWorkstation} className={motion.pressable} style={{ marginLeft: 'auto', font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', textDecoration: 'none' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>See my tasks</span>
+    </DetailFooterBar>
     </div>
   );
 }

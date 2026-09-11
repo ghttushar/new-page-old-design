@@ -4,6 +4,7 @@ import { EmptyAlertGraphic } from '../alerts/empty-alert-graphic';
 import { Avatar } from '../alerts/assign-menu';
 import { HoverTip } from '../alerts/hover-tip';
 import { CloseIcon } from '../alerts/icons';
+import { DetailFooterBar } from '../alerts/detail-footer-bar';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -42,8 +43,8 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
   const addPoint = () => { setDiscussion((prev) => [...prev, '']); setEditingIdx(discussion.length); };
 
   return (
-    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-    <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
+    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       {/* Header */}
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
@@ -70,9 +71,6 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
               <div style={{ width: `${detail.resolvedPct}%`, height: '100%', background: detail.resolvedColor, transition: 'width 300ms ease-out' }} />
             </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 9, marginTop: 16 }}>
-          <span onClick={onCreatePresentation} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Create presentation</span>
         </div>
       </div>
 
@@ -151,6 +149,10 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
         </div>
       </div>
     </div>
+
+    <DetailFooterBar>
+      <span onClick={onCreatePresentation} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Create presentation</span>
+    </DetailFooterBar>
     </div>
   );
 }
