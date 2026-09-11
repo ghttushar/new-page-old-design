@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { MOM_RECORDS, type MomTaskItem } from '@/constants/signals/prototype-data';
 import { AssignDropdownList, DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
 import { AssignIcon } from '../alerts/icons';
+import { EmptyAlertGraphic } from '../alerts/empty-alert-graphic';
+import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
 interface Props {
@@ -33,10 +35,11 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
 
   if (!record) {
     return (
-      <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10 }}>
-        <div style={{ textAlign: 'center', maxWidth: 300 }}>
-          <div style={{ font: '600 15px/1.4 Inter,sans-serif', color: '#23272d' }}>No minutes to show</div>
-          <div style={{ font: '400 13px/1.7 Inter,sans-serif', color: '#6b7178', marginTop: 8 }}>Select a completed meeting from the list.</div>
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: 'radial-gradient(circle at 18% 8%, rgba(119,70,155,.06), transparent 45%), #fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
+          <EmptyAlertGraphic />
+          <div style={{ font: '700 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>No minutes to show</div>
+          <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 320, textAlign: 'center' }}>Select a completed meeting from the list.</div>
         </div>
       </div>
     );
@@ -54,7 +57,8 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
   };
 
   return (
-    <div key={meetingId} className={motion.contentFadeIn} style={{ flex: 1, minWidth: 0, height: '100%', overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10 }}>
+    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+    <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <span style={{ padding: '2px 7px', borderRadius: 4, background: '#eef6f3', font: '600 10px/1.5 Inter,sans-serif', color: '#3f7d6a' }}>{record.completedLabel}</span>
@@ -64,7 +68,7 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
         <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{record.dateLabel}</div>
       </div>
 
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
         {/* Discussion summary */}
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
@@ -79,10 +83,10 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
               value={summaryText}
               onChange={(e) => setSummaryText(e.target.value)}
               className={motion.focusRing}
-              style={{ width: '100%', minHeight: 110, marginTop: 9, padding: 12, border: '1px solid #77469b', borderRadius: 7, font: '400 13px/1.8 Inter,sans-serif', color: '#464646', outline: 'none', resize: 'vertical' as const }}
+              style={{ width: '100%', minHeight: 110, marginTop: 9, padding: 12, border: '1px solid #77469b', borderRadius: 7, font: '400 12px/1.6 Inter,sans-serif', color: '#464646', outline: 'none', resize: 'vertical' as const }}
             />
           ) : (
-            <div style={{ font: '400 13px/1.8 Inter,sans-serif', color: '#464646', marginTop: 9 }}>{summaryText}</div>
+            <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646', marginTop: 9 }}>{summaryText}</div>
           )}
         </div>
 
@@ -101,14 +105,14 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
                     onBlur={() => setDecisionEditIdx(null)}
                     onKeyDown={(e) => { if (e.key === 'Enter') setDecisionEditIdx(null); }}
                     className={motion.focusRing}
-                    style={{ flex: 1, minWidth: 0, font: '400 13px/1.7 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 8px', outline: 'none' }}
+                    style={{ flex: 1, minWidth: 0, font: '400 12px/1.6 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 8px', outline: 'none' }}
                   />
                 ) : (
-                  <span onClick={() => setDecisionEditIdx(i)} className={motion.rowHover} style={{ flex: 1, font: '400 13px/1.7 Inter,sans-serif', color: '#464646', cursor: 'text', padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{d}</span>
+                  <span onClick={() => setDecisionEditIdx(i)} className={motion.rowHover} style={{ flex: 1, font: '400 12px/1.6 Inter,sans-serif', color: '#464646', cursor: 'text', padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{d}</span>
                 )}
               </div>
             ))}
-            <div onClick={addDecision} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '11px 14px', border: '1px dashed #cfd4dc', borderRadius: 8, font: '400 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a decision</div>
+            <div onClick={addDecision} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '11px 14px', border: '1px dashed #cfd4dc', borderRadius: 8, font: '400 12px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a decision</div>
           </div>
         </div>
 
@@ -123,7 +127,7 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
               <div>TASK</div><div>ASSIGN</div><div>DUE</div><div style={{ textAlign: 'right' }}>STATUS</div>
             </div>
             {tasks.map((t, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 170px 100px 110px', padding: '10px 15px', borderBottom: i < tasks.length - 1 ? '1px solid #f1f2f4' : 'none', alignItems: 'center', font: '400 12px/1.5 Inter,sans-serif' }}>
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 170px 100px 110px', padding: '10px 15px', borderBottom: i < tasks.length - 1 ? '1px solid #f1f2f4' : 'none', alignItems: 'center', font: '400 12px/1.4 Inter,sans-serif' }}>
                 {taskEditCell?.idx === i && taskEditCell.field === 'task' ? (
                   <input
                     autoFocus
@@ -132,7 +136,7 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
                     onBlur={() => setTaskEditCell(null)}
                     onKeyDown={(e) => { if (e.key === 'Enter') setTaskEditCell(null); }}
                     className={motion.focusRing}
-                    style={{ minWidth: 0, font: '400 12px/1.5 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 7px', outline: 'none' }}
+                    style={{ minWidth: 0, font: '400 12px/1.4 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 7px', outline: 'none' }}
                   />
                 ) : (
                   <span onClick={() => setTaskEditCell({ idx: i, field: 'task' })} className={motion.rowHover} style={{ color: t.task ? '#464646' : '#9aa0a8', cursor: 'text', padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{t.task || 'Untitled task'}</span>
@@ -162,7 +166,7 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
                     onBlur={() => setTaskEditCell(null)}
                     onKeyDown={(e) => { if (e.key === 'Enter') setTaskEditCell(null); }}
                     className={motion.focusRing}
-                    style={{ minWidth: 0, font: '400 12px/1.5 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 7px', outline: 'none' }}
+                    style={{ minWidth: 0, font: '400 12px/1.4 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 7px', outline: 'none' }}
                   />
                 ) : (
                   <span onClick={() => setTaskEditCell({ idx: i, field: 'due' })} className={motion.rowHover} style={{ color: '#6b7178', cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' as const, textUnderlineOffset: 2, padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{t.due}</span>
@@ -178,15 +182,16 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
         {/* Actions */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', paddingTop: 16, borderTop: '1px solid #f1f2f4' }}>
           {isSent ? (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 17px', borderRadius: 7, background: '#eef6f3', color: '#3f7d6a', font: '600 13px/1 Inter,sans-serif' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 7, background: '#eef6f3', color: '#3f7d6a', font: '600 12px/1 Inter,sans-serif' }}>
               Sent to client
             </span>
           ) : (
-            <span onClick={() => setSent(true)} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '11px 17px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 13px/1 Inter,sans-serif', cursor: 'pointer' }}>Send MOM to client</span>
+            <span onClick={() => setSent(true)} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Send MOM to client</span>
           )}
           <span onClick={onGoWorkstation} className={motion.pressable} style={{ marginLeft: 'auto', font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', textDecoration: 'none' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>See my tasks</span>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -243,7 +243,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             <span style={{ font: '500 11px/1 Inter,sans-serif', color: '#6b7178' }}>Verified over 7 days on conversion</span>
           </div>
           <div style={{ font: '600 17px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 11 }}>Recovered $7,240</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px', padding: '9px 0', borderBottom: '1px solid #f1f2f4', font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178', marginTop: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px', padding: '9px 0', borderBottom: '1px solid #f1f2f4', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178', marginTop: 14 }}>
             <div>METRIC</div><div style={{ textAlign: 'right' }}>BEFORE</div><div style={{ textAlign: 'right' }}>AFTER</div><div style={{ textAlign: 'right' }}>CHANGE</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px', padding: '11px 0', borderBottom: '1px solid #f1f2f4', font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>

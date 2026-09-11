@@ -4,6 +4,7 @@ import { EmptyAlertGraphic } from '../alerts/empty-alert-graphic';
 import { Avatar } from '../alerts/assign-menu';
 import { HoverTip } from '../alerts/hover-tip';
 import { CloseIcon } from '../alerts/icons';
+import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
 interface Props {
@@ -26,11 +27,11 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
 
   if (!meeting || !detail || !record) {
     return (
-      <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10 }}>
-        <div style={{ textAlign: 'center' }}>
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: 'radial-gradient(circle at 18% 8%, rgba(119,70,155,.06), transparent 45%), #fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
           <EmptyAlertGraphic />
-          <div style={{ font: '700 16px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select a meeting</div>
-          <div style={{ font: '400 12.5px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>Agenda, prep and discussion points open here.</div>
+          <div style={{ font: '700 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select a meeting</div>
+          <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 320, textAlign: 'center' }}>Agenda, prep and discussion points open here.</div>
         </div>
       </div>
     );
@@ -41,9 +42,10 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
   const addPoint = () => { setDiscussion((prev) => [...prev, '']); setEditingIdx(discussion.length); };
 
   return (
-    <div key={meetingId} className={motion.contentFadeIn} style={{ flex: 1, minWidth: 0, height: '100%', overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10 }}>
+    <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+    <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ height: '100%', overflowY: 'auto' }}>
       {/* Header */}
-      <div style={{ padding: '22px 24px', borderBottom: '1px solid #f1f2f4' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{detail.dateTimeLabel}</div>
@@ -70,16 +72,16 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 9, marginTop: 16 }}>
-          <span onClick={onCreatePresentation} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '11px 17px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 13px/1 Inter,sans-serif', cursor: 'pointer' }}>Create presentation</span>
+          <span onClick={onCreatePresentation} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Create presentation</span>
         </div>
       </div>
 
       {/* Body */}
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
         {/* Agenda */}
         <div>
           <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Agenda</div>
-          <div style={{ font: '400 13px/1.75 Inter,sans-serif', color: '#464646', marginTop: 9 }}>{detail.agenda}</div>
+          <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646', marginTop: 9 }}>{detail.agenda}</div>
         </div>
 
         {/* Positives + Negatives */}
@@ -88,7 +90,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
             <div style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Positives to raise</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
               {record.positives.map((p, i) => (
-                <div key={i} style={{ display: 'flex', gap: 9 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3f7d6a', marginTop: 6, flex: 'none' }} /><span style={{ font: '400 12.5px/1.6 Inter,sans-serif', color: '#464646' }}>{p}</span></div>
+                <div key={i} style={{ display: 'flex', gap: 9 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3f7d6a', marginTop: 6, flex: 'none' }} /><span style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{p}</span></div>
               ))}
             </div>
           </div>
@@ -96,7 +98,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
             <div style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Negatives to get ahead of</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
               {record.negatives.map((p, i) => (
-                <div key={i} style={{ display: 'flex', gap: 9 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b3453f', marginTop: 6, flex: 'none' }} /><span style={{ font: '400 12.5px/1.6 Inter,sans-serif', color: '#464646' }}>{p}</span></div>
+                <div key={i} style={{ display: 'flex', gap: 9 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b3453f', marginTop: 6, flex: 'none' }} /><span style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{p}</span></div>
               ))}
             </div>
           </div>
@@ -120,26 +122,26 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
                     onBlur={() => setEditingIdx(null)}
                     onKeyDown={(e) => { if (e.key === 'Enter') setEditingIdx(null); }}
                     className={motion.focusRing}
-                    style={{ flex: 1, minWidth: 0, font: '400 13px/1.6 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 8px', outline: 'none' }}
+                    style={{ flex: 1, minWidth: 0, font: '400 12px/1.6 Inter,sans-serif', color: '#464646', border: '1px solid #77469b', borderRadius: 6, padding: '4px 8px', outline: 'none' }}
                   />
                 ) : (
-                  <span onClick={() => setEditingIdx(i)} className={motion.rowHover} style={{ flex: 1, font: '400 13px/1.6 Inter,sans-serif', color: '#464646', cursor: 'text', padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{d}</span>
+                  <span onClick={() => setEditingIdx(i)} className={motion.rowHover} style={{ flex: 1, font: '400 12px/1.6 Inter,sans-serif', color: '#464646', cursor: 'text', padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{d}</span>
                 )}
                 <span onClick={() => removePoint(i)} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', flex: 'none' }}><CloseIcon size={11} /></span>
               </div>
             ))}
-            <div onClick={addPoint} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '11px 13px', border: '1px dashed #cfd4dc', borderRadius: 8, font: '400 13px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a discussion point</div>
+            <div onClick={addPoint} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '11px 13px', border: '1px dashed #cfd4dc', borderRadius: 8, font: '400 12px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a discussion point</div>
           </div>
         </div>
 
         {/* Relevant alerts, actions taken and impact */}
         <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
-          <div style={{ padding: '13px 16px', borderBottom: '1px solid #f1f2f4', font: '600 13px/1 Inter,sans-serif', color: '#23272d' }}>Relevant alerts, actions taken and impact</div>
+          <div style={{ padding: '13px 16px', borderBottom: '1px solid #f1f2f4', font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Relevant alerts, actions taken and impact</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 190px 100px 100px', padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.06em', color: '#6b7178' }}>
             <div>ALERT</div><div>ACTION TAKEN</div><div style={{ textAlign: 'right' }}>IMPACT</div><div style={{ textAlign: 'right' }}>STATE</div>
           </div>
           {record.actions.map((a, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 190px 100px 100px', padding: '12px 16px', borderBottom: i < record.actions.length - 1 ? '1px solid #f1f2f4' : 'none', alignItems: 'center', font: '400 12px/1.5 Inter,sans-serif' }}>
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 190px 100px 100px', padding: '12px 16px', borderBottom: i < record.actions.length - 1 ? '1px solid #f1f2f4' : 'none', alignItems: 'center', font: '400 12px/1.4 Inter,sans-serif' }}>
               <div style={{ color: '#464646' }}>{a.alert}</div>
               <div style={{ color: '#6b7178' }}>{a.action}</div>
               <div style={{ textAlign: 'right', fontWeight: 600, color: a.impactColor, fontStyle: a.impactStyle }}>{a.impact}</div>
@@ -148,6 +150,7 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation }: Props) {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 }

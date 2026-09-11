@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MEETING_LIST, COMPLETED_MEETINGS } from '@/constants/signals/prototype-data';
+import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
 interface Props {
@@ -32,9 +33,12 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
         />
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div className={scrollStyles.sleekScroll} style={{ flex: 1, overflowY: 'auto' }}>
         {upcoming.length === 0 && completed.length === 0 && (
-          <div style={{ padding: '30px 20px', textAlign: 'center', font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>No meetings match.</div>
+          <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+            <div style={{ font: '600 13px/1.4 Inter,sans-serif', color: '#23272d' }}>No meetings match</div>
+            <div style={{ font: '400 11px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>Try clearing the search.</div>
+          </div>
         )}
         {upcoming.map((m) => {
           const isSelected = selectedMeetingId === m.id;
@@ -43,14 +47,14 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
             <div
               key={m.id}
               onClick={() => onSelectMeeting(m.id)}
-              className={`${motion.rowHover} ${motion.cardHover}`}
+              className={motion.cardHover}
               style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: isSelected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: isSelected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646' }}>{m.timeRange}</span>
                 <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{m.dateLabel}</span>
               </div>
-              <div style={{ font: `${isSelected ? '600' : '500'} 13px/1.45 Inter,sans-serif`, color: '#23272d', marginTop: 9 }}>{m.title}</div>
+              <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{m.title}</div>
               <div style={{ marginTop: 9, font: '600 11px/1 Inter,sans-serif', color: allDone ? '#3f7d6a' : '#a8763f' }}>
                 {m.tasksCompleted}/{m.tasksTotal} task{m.tasksTotal === 1 ? '' : 's'} completed
               </div>
@@ -63,7 +67,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
             <div
               key={m.id}
               onClick={() => onSelectMeeting(m.id)}
-              className={`${motion.rowHover} ${motion.cardHover}`}
+              className={motion.cardHover}
               style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: isSelected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: isSelected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -71,7 +75,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting }: Props) 
                 <span style={{ padding: '2px 7px', borderRadius: 4, background: m.momColor + '1a', font: '600 10px/1.5 Inter,sans-serif', color: m.momColor }}>{m.momStatus}</span>
                 <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{m.dateLabel}</span>
               </div>
-              <div style={{ font: `${isSelected ? '600' : '500'} 13px/1.45 Inter,sans-serif`, color: '#23272d', marginTop: 9 }}>{m.title}</div>
+              <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{m.title}</div>
             </div>
           );
         })}
