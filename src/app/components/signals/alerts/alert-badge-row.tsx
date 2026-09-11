@@ -22,7 +22,7 @@ export function AlertBadgeRow({ al, size = 20, showTime = true, showAccount = fa
         {al.priority !== 'Low' && (
           <span style={{ padding: '3px 8px', borderRadius: 5, background: al.priorityDot + '1a', font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: al.priorityDot, flex: 'none' }}>{al.priority}</span>
         )}
-        <span style={{ padding: '3px 8px', borderRadius: 5, border: '1px solid #d9c6ec', background: '#fff', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
+        <span style={{ padding: '3px 8px', borderRadius: 5, border: '1px solid #d9c6ec', background: '#fff', font: '600 10px/1 Inter,sans-serif', color: '#464646', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
       </div>
       <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
       <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 10px 2px 2px', borderRadius: 7, background: '#eef0f3', flex: 'none' }}>

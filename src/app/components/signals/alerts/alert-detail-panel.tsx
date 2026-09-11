@@ -298,7 +298,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
         {/* Body */}
         <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* No section heading here by design — just the flowing explanation (root cause folded in) */}
-          <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>{sel.why} {sel.root}</div>
+          <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#464646' }}>{sel.why} {sel.root}</div>
 
           {/* Strategy picker — the decision this whole card exists to support, so it gets a primary border instead of blending in with the reference cards around it */}
           <div style={{ border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
