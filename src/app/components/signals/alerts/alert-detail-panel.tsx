@@ -277,12 +277,11 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
         {/* Header — badges/marketplace/source match the Alerts row exactly (shared AlertBadgeRow), so the two never diverge */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
           <div style={{ marginBottom: 12 }}>
-            <AlertBadgeRow al={sel} size={20} />
+            <AlertBadgeRow al={sel} size={20} showAccount />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ font: '700 11px/1 Inter,sans-serif', color: '#77469b' }}>{sel.account}</div>
-              <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 4 }}>{sel.title}</div>
+              <div style={{ font: '600 18px/1.35 Inter,sans-serif', color: '#23272d' }}>{sel.title}</div>
               <div style={{ font: '400 12px/1.55 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>{sel.subheader}</div>
             </div>
             <div style={{ textAlign: 'right', flex: 'none' }}>

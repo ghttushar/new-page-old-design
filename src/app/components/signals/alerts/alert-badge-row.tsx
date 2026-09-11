@@ -7,7 +7,7 @@ import { HoverTip } from './hover-tip';
  * The badge/marketplace/source strip shared verbatim by the Alerts list row and the
  * detail card header, so the two never drift into different icon systems.
  */
-export function AlertBadgeRow({ al, size = 20, showTime = true }: { al: PrototypeAlert; size?: number; showTime?: boolean }) {
+export function AlertBadgeRow({ al, size = 20, showTime = true, showAccount = false }: { al: PrototypeAlert; size?: number; showTime?: boolean; showAccount?: boolean }) {
   const origins: AlertSource[] = al.originTypes && al.originTypes.length > 0 ? al.originTypes : [al.originType ?? 'anarix'];
   const rowSources = Array.from(new Set(origins.map(toRowSource).filter((s): s is RowSource => s !== null)));
   // A row already showing a "meeting" source badge doesn't also need the separate meeting-link glyph — same icon, redundant.
@@ -25,9 +25,9 @@ export function AlertBadgeRow({ al, size = 20, showTime = true }: { al: Prototyp
         <span style={{ padding: '3px 8px', borderRadius: 5, border: '1px solid #d9c6ec', background: '#fff', font: '600 10px/1 Inter,sans-serif', color: '#5f3880', flex: 'none', whiteSpace: 'nowrap' as const }}>{al.category}</span>
       </div>
       <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
-      <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 10px 2px 2px', borderRadius: 999, background: '#eef0f3', flex: 'none' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 10px 2px 2px', borderRadius: 7, background: '#eef0f3', flex: 'none' }}>
         <MarketplaceBadge brand={al.mpBrand} size={size} style={{ borderRadius: 7 }} />
-        <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#3d434b' }}>{al.mpCountry}</span>
+        <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#3d434b', whiteSpace: 'nowrap' as const }}>{al.mpCountry}{showAccount ? ` · ${al.account}` : ''}</span>
       </span>
       <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
