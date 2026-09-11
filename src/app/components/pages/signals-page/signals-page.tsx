@@ -18,8 +18,8 @@ import { CalendarPopover } from '../../signals/common/calendar-popover';
 import { AccountFilterDropdown } from '../../signals/common/account-filter-dropdown';
 import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, type PrototypeAlert, type LoggedActionItem, type MpBrand } from '@/constants/signals/prototype-data';
 
-export function SignalsPage() {
-  const [activeTab, setActiveTab] = useState<SignalTabKey>('brief');
+export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKey } = {}) {
+  const [activeTab, setActiveTab] = useState<SignalTabKey>(initialTab);
   const [briefState, setBriefState] = useState<BriefState>('full');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
