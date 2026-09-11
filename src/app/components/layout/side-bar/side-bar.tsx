@@ -22,14 +22,17 @@ import SideBarComponent from './sidebar-component';
 
 interface SidebarProps {
   isHover?: boolean;
+  /** Renders the collapsed (icon-only) width regardless of the user's global sidebar preference, and disables the expand toggle — for contexts (e.g. the design-handoff preview screens) that want the nav present but out of the way, without touching the shared open/closed setting used elsewhere in the app. */
+  forceCollapsed?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isHover = false }) => {
-  const isSidebarMenuOpen = useAppSelector(selectIsSidebarMenuOpen);
+const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = false }) => {
+  const isSidebarMenuOpenSetting = useAppSelector(selectIsSidebarMenuOpen);
+  const isSidebarMenuOpen = forceCollapsed ? false : isSidebarMenuOpenSetting;
   const dispatch = useAppDispatch();
 
   const toggleSidebar = () => {
-    dispatch(setIsSidebarMenuOpen(!isSidebarMenuOpen));
+    dispatch(setIsSidebarMenuOpen(!isSidebarMenuOpenSetting));
   };
 
   return (
@@ -56,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false }) => {
             width: '98%',
             justifyContent: isHover ? 'center' : 'space-between',
           }}
-          onClick={!isHover ? toggleSidebar : undefined}
+          onClick={!isHover && !forceCollapsed ? toggleSidebar : undefined}
         >
           <div
             style={{
@@ -98,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false }) => {
               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             aria-label="toggle sidebar"
-            onClick={toggleSidebar}
+            onClick={forceCollapsed ? undefined : toggleSidebar}
           >
             <XIcon color="#464646" size={'2rem'} width={'2.4rem'} />
           </IconButton>
