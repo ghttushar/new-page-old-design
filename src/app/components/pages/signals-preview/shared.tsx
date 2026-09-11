@@ -1,6 +1,32 @@
+import { PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
+import { DEFAULT_ASSIGNEES } from '../../signals/alerts/assign-menu';
+
+export const noop = () => {};
+export const noopId = (_id: string) => {};
+
+export const firstAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a1')!;
+export const normalAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a2')!;
+export const imageAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a15')!;
+
+export const MANY_ASSIGNEES = [
+  ...DEFAULT_ASSIGNEES,
+  { id: 'p5', name: 'Aditi Rao', role: 'Client · Nutrabay' },
+  { id: 'p6', name: 'Karan Mehta', role: 'Ops' },
+  { id: 'p7', name: 'Wellbeing Nutrition pod', role: 'Team' },
+  { id: 'p8', name: 'Rahul Gupta', role: 'Client · Nutrabay' },
+  { id: 'p9', name: 'Sneha Iyer', role: 'Client · Nutrabay' },
+  { id: 'p10', name: 'Priya Nair', role: 'Client · Wellbeing' },
+  { id: 'p11', name: 'Ritvik Sharma', role: 'Ops' },
+  { id: 'p12', name: 'Boldfit pod', role: 'Team' },
+  { id: 'p13', name: 'Growth pod', role: 'Team' },
+  { id: 'p14', name: 'Ananya Das', role: 'Marketing' },
+  { id: 'p15', name: 'Vikram Nair', role: 'Ops' },
+  { id: 'p16', name: 'Leadership', role: 'Team' },
+];
+
 export const PREVIEW_PAGES: { path: string; label: string; note: string }[] = [
-  { path: '/signals-preview/alerts', label: 'Alerts', note: 'The real, interactive Alerts tab — click through anything reachable by clicking.' },
-  { path: '/signals-preview/meetings', label: 'Meetings', note: 'The real, interactive Meetings tab — click through anything reachable by clicking.' },
+  { path: '/signals-preview/alerts', label: 'Alerts', note: 'Every Alerts screen, panel and menu as static frames — nothing to click through.' },
+  { path: '/signals-preview/meetings', label: 'Meetings', note: 'Every Meetings screen, panel and menu as static frames — nothing to click through.' },
 ];
 
 export function PreviewNav({ current }: { current: string }) {
