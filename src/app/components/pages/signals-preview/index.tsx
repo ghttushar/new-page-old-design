@@ -7,7 +7,7 @@ export default function SignalsPreviewIndex() {
         <span style={{ font: '600 11px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#77469b' }}>Signals · design handoff</span>
         <h1 style={{ font: '800 26px/1.3 Inter,sans-serif', color: '#23272d', margin: '10px 0 8px' }}>Component preview</h1>
         <p style={{ font: '400 13.5px/1.7 Inter,sans-serif', color: '#6b7178', maxWidth: '62ch' }}>
-          Split into one page per section so html.to.design doesn't have to process everything at once. Open a page, capture it, move to the next.
+          Every Alerts and Meetings screen, panel and menu on one page as static frames — nothing to click through.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 28 }}>
           {PREVIEW_PAGES.map((p) => (

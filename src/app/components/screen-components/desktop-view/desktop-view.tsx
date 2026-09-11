@@ -32,8 +32,7 @@ import CustomTablePage from '../../pages/custom-table-page/custom-table-page';
 import JivaPage from '../../pages/jiva-page/jiva-page';
 import PopupPreviewPage from '../../pages/popup-preview/popup-preview';
 import SignalsPreviewIndex from '../../pages/signals-preview/index';
-import AlertsPreviewPage from '../../pages/signals-preview/alerts-page';
-import MeetingsPreviewPage from '../../pages/signals-preview/meetings-page';
+import SignalsCombinedPreviewPage from '../../pages/signals-preview/combined-page';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
 import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
 import MaintenancePage from '../../pages/maintenance-page/maintenance-page';
@@ -240,8 +239,7 @@ export default function DesktopView() {
               <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="/popup-preview" element={<PopupPreviewPage />} />
               <Route path="/signals-preview" element={<SignalsPreviewIndex />} />
-              <Route path="/signals-preview/alerts" element={<AlertsPreviewPage />} />
-              <Route path="/signals-preview/meetings" element={<MeetingsPreviewPage />} />
+              <Route path="/signals-preview/signals" element={<SignalsCombinedPreviewPage />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>

@@ -8,6 +8,7 @@ export const noopId = (_id: string) => {};
 export const firstAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a1')!;
 export const normalAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a2')!;
 export const imageAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a15')!;
+export const noValueAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a6')!;
 
 export const MANY_ASSIGNEES = [
   ...DEFAULT_ASSIGNEES,
@@ -26,8 +27,7 @@ export const MANY_ASSIGNEES = [
 ];
 
 export const PREVIEW_PAGES: { path: string; label: string; note: string }[] = [
-  { path: '/signals-preview/alerts', label: 'Alerts', note: 'Every Alerts screen, panel and menu as static frames — nothing to click through.' },
-  { path: '/signals-preview/meetings', label: 'Meetings', note: 'Every Meetings screen, panel and menu as static frames — nothing to click through.' },
+  { path: '/signals-preview/signals', label: 'Alerts & Meetings', note: 'Every Alerts and Meetings screen, panel and menu as static frames — nothing to click through.' },
 ];
 
 export function PreviewNav({ current }: { current: string }) {
@@ -76,6 +76,15 @@ export function Frame({ label, note, children }: { label: string; note?: string;
         <Sidebar forceCollapsed />
         {children}
       </div>
+    </div>
+  );
+}
+
+/** Divides the merged page into its Alerts/Meetings halves. */
+export function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ marginTop: 44, paddingTop: 20, borderTop: '2px solid #cfc7dc' }}>
+      <h2 style={{ font: '800 20px/1.3 Inter,sans-serif', color: '#23272d', margin: 0 }}>{children}</h2>
     </div>
   );
 }

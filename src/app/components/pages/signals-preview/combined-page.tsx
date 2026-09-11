@@ -9,13 +9,19 @@ import { ImageGenStudio } from '../../signals/alerts/image-gen-studio';
 import { ItemsModal } from '../../signals/alerts/items-modal';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES } from '../../signals/alerts/assign-menu';
 import { getDisplayItems } from '../../signals/alerts/items-util';
-import { PreviewShell, Frame, noop, noopId, firstAlert, normalAlert, imageAlert, MANY_ASSIGNEES, containFixed } from './shared';
+import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
+import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
+import { MeetingMOM } from '../../signals/meetings/meeting-mom';
+import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-panel';
+import { PreviewShell, Frame, SectionHeading, noop, noopId, firstAlert, normalAlert, imageAlert, noValueAlert, MANY_ASSIGNEES, containFixed } from './shared';
 
-export default function AlertsPreviewPage() {
+export default function CombinedPreviewPage() {
   const [itemsModalOpen, setItemsModalOpen] = useState(true);
 
   return (
-    <PreviewShell current="/signals-preview/alerts" intro="Every Alerts screen, panel and menu as its own static frame — nothing here needs to be clicked to reveal the next state.">
+    <PreviewShell current="/signals-preview/signals" intro="Every Alerts and Meetings screen, panel and menu as its own static frame — nothing here needs to be clicked to reveal the next state.">
+      <SectionHeading>Alerts</SectionHeading>
+
       <Frame label="List + Detail — nothing selected">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
           <AlertListPanel selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
@@ -34,6 +40,13 @@ export default function AlertsPreviewPage() {
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
           <AlertListPanel selectedAlertId={firstAlert.id} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={firstAlert} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} onOpenAskJiva={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="List + Detail — no-value alert selected" note="informational alert with hideValue set — no $ figure in either the card or the detail header">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <AlertListPanel selectedAlertId={noValueAlert.id} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertDetailPanel alert={noValueAlert} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
 
@@ -90,7 +103,7 @@ export default function AlertsPreviewPage() {
         </div>
       </Frame>
 
-      <Frame label="Affected items — table with pagination" note="uses position:fixed internally — contained to this frame with a CSS transform trick">
+      <Frame label="Affected items — table with pagination and download" note="uses position:fixed internally — contained to this frame with a CSS transform trick">
         <div style={{ height: 560, ...containFixed }}>
           {itemsModalOpen && (
             <ItemsModal items={getDisplayItems(normalAlert)} itemCount={normalAlert.itemsCount} breakdown={normalAlert.itemsBreakdown} onClose={() => setItemsModalOpen(false)} />
@@ -110,6 +123,49 @@ export default function AlertsPreviewPage() {
       <Frame label="Assign — full popup (>15 people)">
         <div style={{ height: 620, width: 480, display: 'flex' }}>
           <AssignPopupModal assignees={MANY_ASSIGNEES} variant="inline" onSelect={noop} onClose={noop} />
+        </div>
+      </Frame>
+
+      <SectionHeading>Meetings</SectionHeading>
+
+      <Frame label="List + Detail — nothing selected">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <MeetingListPanel selectedMeetingId={null} onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId={null} onCreatePresentation={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="Filter panel open">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <MeetingListPanel initialFilterOpen selectedMeetingId={null} onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId={null} onCreatePresentation={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="List + Detail — upcoming meeting selected" note="day grouping (Today, split into Upcoming/Completed / Tomorrow / Earlier), agenda, positives/negatives, discussion points, relevant alerts table, Create presentation pinned in the footer">
+        <div style={{ height: 900, display: 'flex', gap: 16 }}>
+          <MeetingListPanel selectedMeetingId="m1" onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId="m1" onCreatePresentation={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="Ask Jiva panel open" note="'Create presentation' opens this — list column disappears, detail shifts left, Jiva chat takes the right column">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <MeetingDetailPanel meetingId="m1" onCreatePresentation={noop} />
+          <AskJivaMeetingPanel meetingId="m1" onClose={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="List + MOM — completed meeting, MOM unsent" note="discussion summary, decisions, task items table, Send MOM pinned in the footer">
+        <div style={{ height: 900, display: 'flex', gap: 16 }}>
+          <MeetingListPanel selectedMeetingId="m4" onSelectMeeting={noopId} />
+          <MeetingMOM meetingId="m4" onGoWorkstation={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="MOM — already sent" note="the footer's primary button is replaced by a 'Sent to client' confirmation">
+        <div style={{ height: 760, display: 'flex' }}>
+          <MeetingMOM meetingId="m5" onGoWorkstation={noop} />
         </div>
       </Frame>
     </PreviewShell>
