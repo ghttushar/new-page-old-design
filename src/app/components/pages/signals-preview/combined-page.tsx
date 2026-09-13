@@ -22,7 +22,7 @@ export default function CombinedPreviewPage() {
     <PreviewShell current="/signals-preview/signals" intro="Every Alerts and Meetings screen, panel and menu as its own static frame — nothing here needs to be clicked to reveal the next state.">
       <SectionHeading>Alerts</SectionHeading>
 
-      <Frame label="List + Detail — nothing selected">
+      <Frame label="List + Detail — nothing selected" note="empty state shows a 5-tile 'Alerts by category' breakdown (top 5 categories by count)">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
           <AlertListPanel selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
@@ -32,6 +32,13 @@ export default function CombinedPreviewPage() {
       <Frame label="Filter panel open">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
           <AlertListPanel initialFilterOpen selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
+        </div>
+      </Frame>
+
+      <Frame label="Yesterday section collapsed" note="day-group headers (Yesterday here, Tomorrow/Earlier in Meetings) collapse via the chevron — Today always stays expanded">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <AlertListPanel initialYesterdayCollapsed selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
@@ -103,7 +110,7 @@ export default function CombinedPreviewPage() {
         </div>
       </Frame>
 
-      <Frame label="Affected items — table with pagination and download" note="uses position:fixed internally — contained to this frame with a CSS transform trick">
+      <Frame label="Affected items — table with pagination and download" note="compact rows fit all 10-per-page without scrolling; uses position:fixed internally — contained to this frame with a CSS transform trick">
         <div style={{ height: 560, ...containFixed }}>
           {itemsModalOpen && (
             <ItemsModal items={getDisplayItems(normalAlert)} itemCount={normalAlert.itemsCount} breakdown={normalAlert.itemsBreakdown} onClose={() => setItemsModalOpen(false)} />
@@ -142,6 +149,13 @@ export default function CombinedPreviewPage() {
         </div>
       </Frame>
 
+      <Frame label="Earlier section collapsed" note="Tomorrow/Earlier headers collapse via the chevron — Today (and its Upcoming/Completed split) always stays expanded">
+        <div style={{ height: 760, display: 'flex', gap: 16 }}>
+          <MeetingListPanel initialCollapsedGroups={{ earlier: true }} selectedMeetingId={null} onSelectMeeting={noopId} />
+          <MeetingDetailPanel meetingId={null} onCreatePresentation={noop} />
+        </div>
+      </Frame>
+
       <Frame label="List + Detail — upcoming meeting selected" note="day grouping (Today, split into Upcoming/Completed / Tomorrow / Earlier), agenda, positives/negatives, discussion points, relevant alerts table, Create presentation pinned in the footer">
         <div style={{ height: 900, display: 'flex', gap: 16 }}>
           <MeetingListPanel selectedMeetingId="m1" onSelectMeeting={noopId} />
@@ -156,7 +170,7 @@ export default function CombinedPreviewPage() {
         </div>
       </Frame>
 
-      <Frame label="List + MOM — completed meeting, MOM unsent" note="discussion summary, decisions, task items table, Send MOM pinned in the footer">
+      <Frame label="List + MOM — completed meeting, MOM unsent" note="discussion summary, decisions, task items table with an editable STATUS dropdown (Work-station/Email), Send MOM pinned in the footer">
         <div style={{ height: 900, display: 'flex', gap: 16 }}>
           <MeetingListPanel selectedMeetingId="m4" onSelectMeeting={noopId} />
           <MeetingMOM meetingId="m4" onGoWorkstation={noop} />

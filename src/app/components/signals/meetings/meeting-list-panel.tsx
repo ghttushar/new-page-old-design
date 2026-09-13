@@ -9,6 +9,8 @@ interface Props {
   onSelectMeeting: (id: string) => void;
   /** Forces the filter popover open on mount — for the design-handoff preview, not used by the real app. */
   initialFilterOpen?: boolean;
+  /** Forces the given day groups collapsed on mount — for the design-handoff preview, not used by the real app. */
+  initialCollapsedGroups?: Partial<Record<GroupKey, boolean>>;
 }
 
 type GroupKey = 'today' | 'tomorrow' | 'earlier';
@@ -28,13 +30,13 @@ function groupFor(dateLabel: string): GroupKey {
   return 'earlier';
 }
 
-export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false }: Props) {
+export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false, initialCollapsedGroups }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [accountFilters, setAccountFilters] = useState<Record<string, boolean>>({});
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({});
   const [momFilters, setMomFilters] = useState<Record<string, boolean>>({});
-  const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<GroupKey, boolean>>>({});
+  const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<GroupKey, boolean>>>(initialCollapsedGroups ?? {});
   const toggleGroup = (key: GroupKey) => setCollapsedGroups((p) => ({ ...p, [key]: !p[key] }));
 
   const toggleAccount = (k: string) => setAccountFilters((p) => ({ ...p, [k]: !p[k] }));

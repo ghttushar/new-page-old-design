@@ -17,9 +17,11 @@ interface Props {
   onFilteredChange: (ids: string[]) => void;
   /** Forces the filter popover open on mount — for the design-handoff preview, not used by the real app. */
   initialFilterOpen?: boolean;
+  /** Forces the Yesterday group collapsed on mount — for the design-handoff preview, not used by the real app. */
+  initialYesterdayCollapsed?: boolean;
 }
 
-export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false }: Props) {
+export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
   const [valueThreshold, setValueThreshold] = useState('');
   const [assignPopupFor, setAssignPopupFor] = useState<PrototypeAlert | null>(null);
   const [assignedTo, setAssignedTo] = useState<Record<string, AssigneeOption>>({});
-  const [yesterdayCollapsed, setYesterdayCollapsed] = useState(false);
+  const [yesterdayCollapsed, setYesterdayCollapsed] = useState(initialYesterdayCollapsed);
 
   const assignAlert = (id: string, a: AssigneeOption) => setAssignedTo((m) => ({ ...m, [id]: a }));
 
