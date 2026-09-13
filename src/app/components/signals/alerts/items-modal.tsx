@@ -93,7 +93,7 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
 
   return (
     <div className={motion.backdropIn} style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,33,.44)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-      <div className={motion.overlayIn} style={{ width: 1180, maxHeight: '84vh', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div className={motion.overlayIn} style={{ width: 1180, maxHeight: 'min(860px, 94vh)', background: '#fff', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '16px 22px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 12, flex: 'none' }}>
           <span style={{ font: '700 15px/1 Inter,sans-serif', color: '#23272d' }}>All affected items</span>
           <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>{breakdown}</span>
@@ -123,7 +123,7 @@ export function ItemsModal({ items, itemCount, breakdown, onClose }: Props) {
             columns={COLUMNS}
             getRowId={(row, i) => `${row.sku}-${i}`}
             width="100%"
-            height="440px"
+            height="712px"
             fixedHeight
             pagination={pagination}
             setPagination={setPagination}
