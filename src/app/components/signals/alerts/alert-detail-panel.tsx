@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { PrototypeAlert, AlertOption, LoggedActionItem } from '@/constants/signals/prototype-data';
+import { PROTOTYPE_ALERTS, type PrototypeAlert, type AlertOption, type LoggedActionItem } from '@/constants/signals/prototype-data';
 import { ACTION_TYPES, type ActionType } from '@/constants/signals/action-types.constants';
 
 const GENERIC_SEND_UPDATE = ACTION_TYPES.find((a) => a.id === 'send-report-update')!;
@@ -41,6 +41,27 @@ interface Props {
   onSelectAlert?: (id: string) => void;
 }
 
+const CATEGORY_COLORS: Record<string, string> = {
+  Catalog: '#77469b',
+  Inventory: '#3f7d6a',
+  Compliance: '#b3453f',
+  Profitability: '#a8763f',
+  Advertising: '#5c7f9e',
+  Operations: '#5f3880',
+  Billing: '#0071ce',
+  Reviews: '#e78a2e',
+};
+
+/** Top 5 alert categories by count, for the empty-state "at a glance" tiles. */
+const CATEGORY_METRICS: { category: string; count: number }[] = (() => {
+  const counts = new Map<string, number>();
+  PROTOTYPE_ALERTS.forEach((a) => counts.set(a.category, (counts.get(a.category) ?? 0) + 1));
+  return Array.from(counts.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+})();
+
 export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
@@ -68,6 +89,18 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
           <EmptyAlertGraphic />
           <div style={{ font: '700 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select an alert to get started</div>
           <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 320, textAlign: 'center' }}>The reasoning, impact and recommended strategy open here.</div>
+
+          <div style={{ width: '100%', maxWidth: 460, marginTop: 32 }}>
+            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8', textAlign: 'center' }}>Alerts by category</div>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${CATEGORY_METRICS.length},1fr)`, gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 12 }}>
+              {CATEGORY_METRICS.map((m) => (
+                <div key={m.category} style={{ background: '#fff', padding: '12px 6px', textAlign: 'center', borderTop: `2px solid ${CATEGORY_COLORS[m.category] ?? '#77469b'}` }}>
+                  <div style={{ font: '700 18px/1 Inter,sans-serif', color: '#23272d' }}>{m.count}</div>
+                  <div style={{ font: '500 10px/1.3 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{m.category}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

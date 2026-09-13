@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MEETING_LIST, COMPLETED_MEETINGS, type MeetingListItem, type CompletedMeeting } from '@/constants/signals/prototype-data';
+import { ChevronDownIcon } from '../alerts/icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -33,6 +34,8 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
   const [accountFilters, setAccountFilters] = useState<Record<string, boolean>>({});
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({});
   const [momFilters, setMomFilters] = useState<Record<string, boolean>>({});
+  const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<GroupKey, boolean>>>({});
+  const toggleGroup = (key: GroupKey) => setCollapsedGroups((p) => ({ ...p, [key]: !p[key] }));
 
   const toggleAccount = (k: string) => setAccountFilters((p) => ({ ...p, [k]: !p[k] }));
   const toggleStatus = (k: string) => setStatusFilters((p) => ({ ...p, [k]: !p[k] }));
@@ -149,45 +152,62 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
           const bucket = grouped[key];
           const count = bucket.upcoming.length + bucket.completed.length;
           if (count === 0) return null;
+          const collapsible = key !== 'today';
+          const collapsed = collapsible && !!collapsedGroups[key];
           return (
             <div key={key}>
-              <div style={{ padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6b7178' }}>{label}</span>
+              <div
+                onClick={collapsible ? () => toggleGroup(key) : undefined}
+                className={collapsible ? motion.rowHover : undefined}
+                style={{ padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: collapsible ? 'pointer' : 'default' }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {collapsible && (
+                    <span style={{ display: 'flex', transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 160ms ease-out' }}>
+                      <ChevronDownIcon size={9} />
+                    </span>
+                  )}
+                  <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6b7178' }}>{label}</span>
+                </span>
                 <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{count} meeting{count === 1 ? '' : 's'}</span>
               </div>
-              {key === 'today' ? (
-                <>
-                  {bucket.upcoming.length > 0 && (
+              <div className={`${motion.accordionRow} ${!collapsed ? motion.accordionRowOpen : ''}`}>
+                <div>
+                  {key === 'today' ? (
                     <>
-                      <div style={{ padding: '10px 16px 4px' }}>
-                        <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Upcoming</span>
-                      </div>
+                      {bucket.upcoming.length > 0 && (
+                        <>
+                          <div style={{ padding: '10px 16px 4px' }}>
+                            <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Upcoming</span>
+                          </div>
+                          {bucket.upcoming.map((m) => (
+                            <UpcomingRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
+                          ))}
+                        </>
+                      )}
+                      {bucket.completed.length > 0 && (
+                        <>
+                          <div style={{ padding: '10px 16px 4px' }}>
+                            <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Completed</span>
+                          </div>
+                          {bucket.completed.map((m) => (
+                            <CompletedRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
+                          ))}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
                       {bucket.upcoming.map((m) => (
                         <UpcomingRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
                       ))}
-                    </>
-                  )}
-                  {bucket.completed.length > 0 && (
-                    <>
-                      <div style={{ padding: '10px 16px 4px' }}>
-                        <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Completed</span>
-                      </div>
                       {bucket.completed.map((m) => (
                         <CompletedRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
                       ))}
                     </>
                   )}
-                </>
-              ) : (
-                <>
-                  {bucket.upcoming.map((m) => (
-                    <UpcomingRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
-                  ))}
-                  {bucket.completed.map((m) => (
-                    <CompletedRow key={m.id} m={m} selected={selectedMeetingId === m.id} onSelect={() => onSelectMeeting(m.id)} />
-                  ))}
-                </>
-              )}
+                </div>
+              </div>
             </div>
           );
         })}

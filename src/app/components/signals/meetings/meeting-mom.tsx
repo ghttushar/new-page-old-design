@@ -172,7 +172,17 @@ export function MeetingMOM({ meetingId, onGoWorkstation }: Props) {
                 ) : (
                   <span onClick={() => setTaskEditCell({ idx: i, field: 'due' })} className={motion.rowHover} style={{ color: '#6b7178', cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' as const, textUnderlineOffset: 2, padding: '3px 6px', margin: '-3px -6px', borderRadius: 5 }}>{t.due}</span>
                 )}
-                <div style={{ textAlign: 'right', color: t.status === 'Work-station' ? '#5f3880' : '#6b7178' }}>{t.status}</div>
+                <div style={{ textAlign: 'right' }}>
+                  <select
+                    value={t.status}
+                    onChange={(e) => updateTask(i, { status: e.target.value })}
+                    className={motion.focusRing}
+                    style={{ font: '600 12px/1 Inter,sans-serif', color: t.status === 'Work-station' ? '#5f3880' : '#6b7178', border: '1px solid transparent', borderRadius: 6, background: 'transparent', padding: '4px 6px', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="Work-station">Work-station</option>
+                    <option value="Email">Email</option>
+                  </select>
+                </div>
               </div>
             ))}
             <div onClick={addTask} className={`${motion.pressable} ${motion.rowHover}`} style={{ padding: '11px 15px', borderTop: tasks.length > 0 ? '1px solid #f1f2f4' : 'none', font: '400 12px/1 Inter,sans-serif', color: '#6b7178', cursor: 'pointer' }}>+ Add a task</div>

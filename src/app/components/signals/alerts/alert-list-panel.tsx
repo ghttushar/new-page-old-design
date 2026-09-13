@@ -3,7 +3,7 @@ import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption } from '@/co
 import { formatAlertValue } from './format-money';
 import { AlertBadgeRow } from './alert-badge-row';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD, Avatar } from './assign-menu';
-import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, MoreVertIcon, CheckIcon } from './icons';
+import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, MoreVertIcon, CheckIcon, ChevronDownIcon } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 import rowStyles from './alert-row.module.scss';
@@ -31,6 +31,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
   const [valueThreshold, setValueThreshold] = useState('');
   const [assignPopupFor, setAssignPopupFor] = useState<PrototypeAlert | null>(null);
   const [assignedTo, setAssignedTo] = useState<Record<string, AssigneeOption>>({});
+  const [yesterdayCollapsed, setYesterdayCollapsed] = useState(false);
 
   const assignAlert = (id: string, a: AssigneeOption) => setAssignedTo((m) => ({ ...m, [id]: a }));
 
@@ -156,13 +157,26 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
         )}
         {yesterdayAlerts.length > 0 && (
           <>
-            <div style={{ padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Yesterday</span>
+            <div
+              onClick={() => setYesterdayCollapsed((v) => !v)}
+              className={motion.rowHover}
+              style={{ padding: '9px 16px', background: '#fafbfd', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'flex', transform: yesterdayCollapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 160ms ease-out' }}>
+                  <ChevronDownIcon size={9} />
+                </span>
+                <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Yesterday</span>
+              </span>
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{yesterdayAlerts.length} alert{yesterdayAlerts.length === 1 ? '' : 's'}</span>
             </div>
-            {yesterdayAlerts.map((al) => (
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
-            ))}
+            <div className={`${motion.accordionRow} ${!yesterdayCollapsed ? motion.accordionRowOpen : ''}`}>
+              <div>
+                {yesterdayAlerts.map((al) => (
+                  <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
+                ))}
+              </div>
+            </div>
           </>
         )}
         {filtered.length === 0 && (
