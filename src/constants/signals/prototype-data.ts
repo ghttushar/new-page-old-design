@@ -1725,6 +1725,8 @@ export interface WorkstationTask {
   /** Longer explanation shown only in the expanded card. */
   description: string;
   priority: TaskPriority;
+  /** Channels that raised/discussed this task — rendered as the same overlapping badge stack as the Alerts row. Falls back to a single origin badge when omitted. */
+  contextSources?: ('email' | 'slack' | 'meeting')[];
   /** Display name of who the task is for. 'You' is the current user, 'Unassigned' if nobody yet. */
   assignee: string;
   /** id into DEFAULT_ASSIGNEES, for avatar lookup — omitted for external/unassigned people. */
@@ -1748,21 +1750,21 @@ export const WORKSTATION_TASKS: WorkstationTask[] = [
   {
     id: 't1', text: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed',
     description: 'Priya signed off on the proposed bullet copy for the six hero ASINs during the QBR prep call. Publish it and confirm Amazon has re-indexed the listings before the next check-in.',
-    priority: 'High',
+    priority: 'High', contextSources: ['meeting', 'email', 'slack'],
     assignee: 'You', assigneeId: 'self', createdBy: 'Priya Nair', due: 'Due 3 Nov', dueColor: '#b3453f', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
     logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }, { time: '1 day ago', text: 'Priya confirmed sign-off over email' }],
   },
   {
     id: 't2', text: 'Model Q4 stock cover at two scenarios for the hero range',
     description: "Wellbeing's stock cover sits below their usual comfort line. Build a base case and a conservative case for Q4 so the account team can commit inventory with confidence.",
-    priority: 'Medium',
+    priority: 'Medium', contextSources: ['meeting', 'email'],
     assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Due 7 Nov', overdue: false, status: 'in_progress', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
     logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }, { time: 'Yesterday', text: 'Started the base-case model' }],
   },
   {
     id: 't3', text: 'Chase the Q4 promo calendar from Rahul before the 8 November lock',
     description: "Nutrabay's Q4 promo calendar is overdue. Without it the promo slots can't be locked in time for the 8 November deadline.",
-    priority: 'High',
+    priority: 'High', contextSources: ['meeting'],
     assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Overdue by 7 days', dueColor: '#b3453f', overdue: true, status: 'in_progress', origin: 'meeting', meetingId: 'm1', meetingLabel: 'Weekly performance review',
     logs: [{ time: '9 days ago', text: 'Created from Weekly performance review' }, { time: '2 hours ago', text: 'You sent a reminder to Rahul' }],
   },

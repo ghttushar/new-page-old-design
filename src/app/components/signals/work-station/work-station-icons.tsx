@@ -1,6 +1,6 @@
 import type { TaskStatus, TaskOrigin } from '@/constants/signals/prototype-data';
 import { SparkleIcon } from '../alerts/icons';
-import { GoogleMeetMark } from '../alerts/source-icon';
+import { GoogleMeetMark, SourceBadge, rowSourceLabel, type RowSource } from '../alerts/source-icon';
 import { HoverTip } from '../alerts/hover-tip';
 
 export const STATUS_COLOR: Record<TaskStatus, string> = {
@@ -97,6 +97,23 @@ export function OriginGlyph({ origin, size = 17 }: { origin: TaskOrigin; size?: 
         {origin === 'meeting' && <GoogleMeetMark size={iconSize} />}
         {origin === 'generative' && <SparkleIcon size={iconSize} color="#fff" />}
         {origin === 'direct' && <span style={{ width: Math.round(iconSize * 0.75), height: 2, borderRadius: 1, background: '#9aa0a8' }} />}
+      </span>
+    </HoverTip>
+  );
+}
+
+/**
+ * The channels that raised/discussed a task, as the exact same overlapping badge
+ * stack the Alerts row uses for its sources — same real marks, same size, same overlap math.
+ */
+export function ContextSourceStack({ sources, size = 20 }: { sources: RowSource[]; size?: number }) {
+  const overlap = Math.round(size * 0.3);
+  return (
+    <HoverTip label={sources.map(rowSourceLabel).join(' + ')}>
+      <span style={{ display: 'flex', alignItems: 'center' }}>
+        {sources.map((s, i) => (
+          <SourceBadge key={s} source={s} size={size} style={{ position: 'relative', marginLeft: i === 0 ? 0 : -overlap, zIndex: sources.length - i }} />
+        ))}
       </span>
     </HoverTip>
   );

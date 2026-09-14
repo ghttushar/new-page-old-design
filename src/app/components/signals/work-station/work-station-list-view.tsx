@@ -3,7 +3,7 @@ import type { WorkstationTask } from '@/constants/signals/prototype-data';
 import { Avatar } from '../alerts/assign-menu';
 import { ChevronDownIcon } from '../alerts/icons';
 import { HoverTip } from '../alerts/hover-tip';
-import { StatusCircleIcon, OriginGlyph } from './work-station-icons';
+import { StatusCircleIcon, OriginGlyph, ContextSourceStack } from './work-station-icons';
 import motion from '../alerts/motion.module.scss';
 
 function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: WorkstationTask; selected: boolean; onSelect: () => void; onCycleStatus: () => void }) {
@@ -27,7 +27,9 @@ function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: Workstatio
       <span style={{ flex: 1, minWidth: 0, font: `${task.status === 'done' ? '400' : '500'} 12.5px/1.4 Inter,sans-serif`, color: task.status === 'done' ? '#9aa0a8' : '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
         {task.text}
       </span>
-      <span style={{ display: 'flex', alignItems: 'center', flex: 'none' }}><OriginGlyph origin={task.origin} size={16} /></span>
+      <span style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
+        {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={20} /> : <OriginGlyph origin={task.origin} size={16} />}
+      </span>
       <span style={{ font: '500 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#9aa0a8'), flex: 'none', width: 96, textAlign: 'right' as const, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {task.due}
       </span>

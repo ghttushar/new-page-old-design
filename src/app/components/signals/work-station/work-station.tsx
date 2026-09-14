@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   WORKSTATION_TASKS,
-  type WorkstationTask, type TaskStatus, type AssigneeOption,
+  type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
 import { PlusIcon } from '../alerts/icons';
@@ -49,6 +49,8 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
 
   const setStatus = (id: string, status: TaskStatus) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   const cycleStatus = (id: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: NEXT_STATUS[t.status] } : t)));
+  const setPriority = (id: string, priority: TaskPriority) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, priority } : t)));
+  const setDue = (id: string, due: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, due, overdue: false, dueColor: undefined } : t)));
   const togglePriorityFilter = (k: string) => setPriorityFilters((p) => ({ ...p, [k]: !p[k] }));
 
   const createTask = () => {
@@ -283,6 +285,8 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
               onClose={() => { setSelectedId(null); setJivaOpen(false); }}
               onReassign={(a) => reassign(selectedTask.id, a)}
               onSetStatus={(s) => setStatus(selectedTask.id, s)}
+              onSetPriority={(p) => setPriority(selectedTask.id, p)}
+              onSetDue={(d) => setDue(selectedTask.id, d)}
               onOpenAlert={onOpenAlert}
               onOpenMeeting={onOpenMeeting}
               onOpenJiva={() => setJivaOpen((v) => !v)}
@@ -307,6 +311,8 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
                 onClose={() => setSelectedId(null)}
                 onReassign={(a) => reassign(selectedTask.id, a)}
                 onSetStatus={(s) => setStatus(selectedTask.id, s)}
+                onSetPriority={(p) => setPriority(selectedTask.id, p)}
+                onSetDue={(d) => setDue(selectedTask.id, d)}
                 onOpenAlert={onOpenAlert}
                 onOpenMeeting={onOpenMeeting}
                 onOpenJiva={() => setJivaOpen((v) => !v)}
