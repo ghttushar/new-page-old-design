@@ -4,11 +4,12 @@ import {
   type WorkstationTask, type TaskStatus, type AssigneeOption,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
+import { PlusIcon } from '../alerts/icons';
 import { WorkStationListView } from './work-station-list-view';
 import { WorkStationBoardView } from './work-station-board-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
-import { ListViewIcon, BoardViewIcon, STATUS_COLOR } from './work-station-icons';
+import { ListViewIcon, BoardViewIcon, STATUS_COLOR, PRIORITY_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -18,6 +19,10 @@ function assigneeNameFor(id: string): string {
 }
 
 const NEXT_STATUS: Record<TaskStatus, TaskStatus> = { open: 'in_progress', in_progress: 'done', done: 'open' };
+
+const PRIORITY_FILTER_COLOR: Record<string, string> = {
+  ...PRIORITY_COLOR, Generative: '#5f3880', Overdue: '#b3453f',
+};
 
 interface Props {
   onOpenAlert?: (id: string) => void;
@@ -31,20 +36,55 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
   const [jivaOpen, setJivaOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [personFilter, setPersonFilter] = useState('');
-  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [priorityFilterOpen, setPriorityFilterOpen] = useState(false);
+  const [priorityFilters, setPriorityFilters] = useState<Record<string, boolean>>({});
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newAssigneeId, setNewAssigneeId] = useState('self');
+  const [newPriority, setNewPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
+  const [newDue, setNewDue] = useState('');
 
   const selectTask = (id: string) => { setSelectedId(id); setJivaOpen(false); };
 
   const setStatus = (id: string, status: TaskStatus) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   const cycleStatus = (id: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: NEXT_STATUS[t.status] } : t)));
+  const togglePriorityFilter = (k: string) => setPriorityFilters((p) => ({ ...p, [k]: !p[k] }));
+
+  const createTask = () => {
+    const title = newTitle.trim();
+    if (!title) return;
+    const id = `t${Date.now()}`;
+    const task: WorkstationTask = {
+      id, text: title, description: newDescription.trim() || title,
+      priority: newPriority,
+      assignee: newAssigneeId === 'unassigned' ? 'Unassigned' : assigneeNameFor(newAssigneeId),
+      assigneeId: newAssigneeId === 'unassigned' ? undefined : newAssigneeId,
+      createdBy: 'You', due: newDue.trim() || 'No due date', overdue: false,
+      status: 'open', origin: 'direct',
+      logs: [{ time: 'Just now', text: 'Created directly' }],
+    };
+    setTasks((prev) => [task, ...prev]);
+    selectTask(id);
+    setCreateOpen(false);
+    setNewTitle('');
+    setNewDescription('');
+    setNewAssigneeId('self');
+    setNewPriority('Medium');
+    setNewDue('');
+  };
 
   const reassign = (id: string, a: AssigneeOption) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, assignee: a.id === 'self' ? 'You' : a.name, assigneeId: a.id } : t)));
   };
 
+  const activePriorityFilters = Object.keys(priorityFilters).filter((k) => priorityFilters[k]);
   const q = search.trim().toLowerCase();
   const matches = (t: WorkstationTask) => {
-    if (overdueOnly && !t.overdue) return false;
+    if (activePriorityFilters.length) {
+      const isMatch = activePriorityFilters.some((k) => (k === 'Overdue' ? t.overdue : k === 'Generative' ? t.origin === 'generative' : t.priority === k));
+      if (!isMatch) return false;
+    }
     if (personFilter === 'unassigned') {
       if (t.assignee !== 'Unassigned') return false;
     } else if (personFilter) {
@@ -125,13 +165,111 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
             ))}
             <option value="unassigned">Unassigned</option>
           </select>
-          <span
-            onClick={() => setOverdueOnly((v) => !v)}
-            className={`${motion.pressable} ${motion.btnSecondary}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 13px', border: `1px solid ${overdueOnly ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, background: overdueOnly ? '#f9f7fc' : '#fff', font: '500 12px/1 Inter,sans-serif', color: overdueOnly ? '#5f3880' : '#3d434b', cursor: 'pointer', flex: 'none', whiteSpace: 'nowrap' as const }}
-          >
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-            Overdue only
+          <span style={{ position: 'relative', flex: 'none' }}>
+            <span
+              onClick={() => { setPriorityFilterOpen((v) => !v); setCreateOpen(false); }}
+              className={`${motion.pressable} ${motion.btnSecondary}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 13px', border: `1px solid ${activePriorityFilters.length ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, background: activePriorityFilters.length ? '#f9f7fc' : '#fff', font: '500 12px/1 Inter,sans-serif', color: activePriorityFilters.length ? '#5f3880' : '#3d434b', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+            >
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+              Priority{activePriorityFilters.length ? ` (${activePriorityFilters.length})` : ''}
+            </span>
+            {priorityFilterOpen && (
+              <div className={motion.popInTop} style={{ position: 'absolute', left: 0, top: 40, width: 190, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.16)', padding: 10, zIndex: 60 }} onClick={(e) => e.stopPropagation()}>
+                {(['High', 'Medium', 'Low', 'Generative', 'Overdue'] as const).map((k) => (
+                  <div key={k} onClick={() => togglePriorityFilter(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '6px 8px', borderRadius: 6 }}>
+                    <span style={{ width: 13, height: 13, borderRadius: 3, border: `1.5px solid ${priorityFilters[k] ? PRIORITY_FILTER_COLOR[k] : '#cfd4dc'}`, background: priorityFilters[k] ? PRIORITY_FILTER_COLOR[k] : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
+                    <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
+                  </div>
+                ))}
+                {activePriorityFilters.length > 0 && (
+                  <span
+                    onClick={() => setPriorityFilters({})}
+                    className={motion.pressable}
+                    style={{ display: 'block', textAlign: 'center' as const, marginTop: 6, padding: 7, borderRadius: 6, border: '1px solid #dfe3ea', font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}
+                  >
+                    Clear
+                  </span>
+                )}
+              </div>
+            )}
+          </span>
+
+          <span style={{ position: 'relative', marginLeft: 'auto', flex: 'none' }}>
+            <span
+              onClick={() => { setCreateOpen((v) => !v); setPriorityFilterOpen(false); }}
+              className={`${motion.pressable} ${motion.btnPrimary}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+            >
+              <PlusIcon size={11} /> New task
+            </span>
+            {createOpen && (
+              <div className={motion.popIn} style={{ position: 'absolute', right: 0, top: 40, width: 320, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 14, zIndex: 60 }} onClick={(e) => e.stopPropagation()}>
+                <div style={{ font: '700 12.5px/1 Inter,sans-serif', color: '#23272d', marginBottom: 10 }}>New task</div>
+                <input
+                  autoFocus
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) createTask(); if (e.key === 'Escape') setCreateOpen(false); }}
+                  placeholder="What needs to get done?"
+                  className={motion.focusRing}
+                  style={{ width: '100%', padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12.5px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                />
+                <textarea
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Add more detail (optional)"
+                  rows={2}
+                  className={motion.focusRing}
+                  style={{ width: '100%', marginTop: 8, padding: '8px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'none' as const, fontFamily: 'inherit' }}
+                />
+
+                <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginTop: 11 }}>Priority</div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                  {(['High', 'Medium', 'Low'] as const).map((p) => (
+                    <span
+                      key={p}
+                      onClick={() => setNewPriority(p)}
+                      className={motion.pressable}
+                      style={{ flex: 1, textAlign: 'center' as const, padding: '6px 0', borderRadius: 6, border: `1px solid ${newPriority === p ? PRIORITY_COLOR[p] : '#dfe3ea'}`, background: newPriority === p ? PRIORITY_COLOR[p] + '14' : '#fff', font: '600 11px/1 Inter,sans-serif', color: newPriority === p ? PRIORITY_COLOR[p] : '#6b7178', cursor: 'pointer' }}
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
+                  <select
+                    value={newAssigneeId}
+                    onChange={(e) => setNewAssigneeId(e.target.value)}
+                    className={motion.focusRing}
+                    style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
+                  >
+                    {DEFAULT_ASSIGNEES.map((a) => (
+                      <option key={a.id} value={a.id}>{a.id === 'self' ? 'Me' : a.name}</option>
+                    ))}
+                    <option value="unassigned">Unassigned</option>
+                  </select>
+                  <input
+                    value={newDue}
+                    onChange={(e) => setNewDue(e.target.value)}
+                    placeholder="Due (optional)"
+                    className={motion.focusRing}
+                    style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <span onClick={() => setCreateOpen(false)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ flex: 1, textAlign: 'center' as const, padding: '8px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11.5px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
+                  <span
+                    onClick={createTask}
+                    className={newTitle.trim() ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
+                    style={{ flex: 1, textAlign: 'center' as const, padding: '8px', borderRadius: 7, background: newTitle.trim() ? '#77469b' : '#eee7f5', color: newTitle.trim() ? '#fff' : '#c3b3d6', font: '600 11.5px/1 Inter,sans-serif', cursor: newTitle.trim() ? 'pointer' : 'default' }}
+                  >
+                    Create task
+                  </span>
+                </div>
+              </div>
+            )}
           </span>
         </div>
       </div>

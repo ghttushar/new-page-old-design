@@ -155,6 +155,14 @@ export function MoreVertIcon({ size = 14, color = '#6b7178' }: IconProps) {
   );
 }
 
+export function PlusIcon({ size = 12, color = '#fff' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M8 2.5v11M2.5 8h11" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ChevronDownIcon({ size = 9, color = '#9aa0a8' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">

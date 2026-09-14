@@ -9,6 +9,12 @@ export const STATUS_COLOR: Record<TaskStatus, string> = {
   done: '#3f7d6a',
 };
 
+export const PRIORITY_COLOR: Record<'High' | 'Medium' | 'Low', string> = {
+  High: '#b3453f',
+  Medium: '#a8763f',
+  Low: '#9aa0a8',
+};
+
 /** Plane/Linear-style status glyph — an empty ring, a half-filled pie, or a filled check — instead of just a colored word. */
 export function StatusCircleIcon({ status, size = 14 }: { status: TaskStatus; size?: number }) {
   const color = STATUS_COLOR[status];
@@ -76,7 +82,8 @@ function AlertMark({ size, color }: { size: number; color: string }) {
 export function OriginGlyph({ origin, size = 17 }: { origin: TaskOrigin; size?: number }) {
   const bg = origin === 'alert' ? '#b3453f' : origin === 'meeting' ? '#ffffff' : origin === 'generative' ? '#5f3880' : '#eceef1';
   const needsRing = bg === '#ffffff' || bg === '#eceef1';
-  const iconSize = Math.round(size * 0.58);
+  // The Meet mark reads small at the same ratio as a single-tone glyph — give it more of the badge to fill.
+  const iconSize = Math.round(size * (origin === 'meeting' ? 0.8 : 0.6));
   return (
     <HoverTip label={ORIGIN_LABEL[origin]}>
       <span

@@ -6,7 +6,7 @@ import {
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
 import { AssignIcon, CloseIcon, ChevronDownIcon } from '../alerts/icons';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import { StatusCircleIcon, OriginGlyph, STATUS_COLOR } from './work-station-icons';
+import { StatusCircleIcon, OriginGlyph, STATUS_COLOR, PRIORITY_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -78,6 +78,13 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ flex: '0 0 74px', font: '500 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>Priority</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 9px 3px 6px', borderRadius: 999, background: PRIORITY_COLOR[task.priority] + '14' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: PRIORITY_COLOR[task.priority], flex: 'none' }} />
+              <span style={{ font: '600 12px/1 Inter,sans-serif', color: PRIORITY_COLOR[task.priority] }}>{task.priority}</span>
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ flex: '0 0 74px', font: '500 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>Due</span>
             <span style={{ font: '600 12px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#3d434b') }}>{task.due}</span>
           </div>
@@ -138,18 +145,18 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
       </div>
 
       <div style={{ padding: '13px 20px', borderTop: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const, flex: 'none' }}>
-        <span onClick={() => setAssignMenuOpen((v) => !v)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
-          <AssignIcon size={12} /> Assign to someone else
-        </span>
-        <span onClick={onOpenJiva} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 12px', border: '1.5px solid #77469b', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: jivaOpen ? '#fff' : '#77469b', cursor: 'pointer', background: jivaOpen ? '#77469b' : '#fff' }}>
-          <DiamondMascot size={13} /> Ask Jiva
-        </span>
         {task.origin === 'alert' && (
           <span onClick={() => onOpenAlert?.(task.alertId!)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>View alert</span>
         )}
         {task.origin === 'meeting' && (
           <span onClick={() => onOpenMeeting?.(task.meetingId!)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>View meeting</span>
         )}
+        <span onClick={() => setAssignMenuOpen((v) => !v)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
+          <AssignIcon size={12} /> Assign to
+        </span>
+        <span onClick={onOpenJiva} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: 'auto', padding: '9px 14px', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#fff', background: jivaOpen ? '#5f3880' : '#77469b', cursor: 'pointer' }}>
+          <DiamondMascot size={13} /> Ask Jiva
+        </span>
       </div>
     </div>
   );
