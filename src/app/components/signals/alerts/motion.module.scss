@@ -133,6 +133,21 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   animation: backdropIn 200ms $ease-out;
 }
 
+// Side peek drawer (Work-station task detail) — slides in from the right edge.
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.slideInRight {
+  animation: slideInRight 220ms $ease-out;
+}
+
 // Toasts — bridge an instant notification into view instead of popping.
 @keyframes toastIn {
   from {
@@ -179,7 +194,7 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     transition: none;
     &:active { transform: none; }
   }
-  .popIn, .popInTop, .popInBottomLeft, .popInBottomRight, .overlayIn, .backdropIn, .toastIn, .contentFadeIn {
+  .popIn, .popInTop, .popInBottomLeft, .popInBottomRight, .overlayIn, .backdropIn, .toastIn, .contentFadeIn, .slideInRight {
     animation-duration: 1ms;
   }
   .accordionRow {
