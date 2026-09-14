@@ -6,15 +6,10 @@ import {
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
 import { AssignIcon, CloseIcon, ChevronDownIcon } from '../alerts/icons';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import { StatusCircleIcon, OriginGlyph, STATUS_COLOR, PRIORITY_COLOR } from './work-station-icons';
+import { StatusCircleIcon, OriginGlyph, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
-const STATUS_LABEL: Record<TaskStatus, string> = {
-  open: 'Open',
-  in_progress: 'In progress',
-  done: 'Done',
-};
 const STATUS_ORDER: TaskStatus[] = ['open', 'in_progress', 'done'];
 const PRIORITY_ORDER: TaskPriority[] = ['High', 'Medium', 'Low'];
 

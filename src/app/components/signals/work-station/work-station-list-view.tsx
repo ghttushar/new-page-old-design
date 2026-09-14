@@ -3,7 +3,7 @@ import type { WorkstationTask } from '@/constants/signals/prototype-data';
 import { Avatar } from '../alerts/assign-menu';
 import { ChevronDownIcon } from '../alerts/icons';
 import { HoverTip } from '../alerts/hover-tip';
-import { StatusCircleIcon, OriginGlyph, ContextSourceStack } from './work-station-icons';
+import { StatusCircleIcon, OriginGlyph, ContextSourceStack, STATUS_COLOR, STATUS_LABEL } from './work-station-icons';
 import motion from '../alerts/motion.module.scss';
 
 function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: WorkstationTask; selected: boolean; onSelect: () => void; onCycleStatus: () => void }) {
@@ -19,18 +19,19 @@ function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: Workstatio
         boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer',
       }}
     >
-      <HoverTip label="Click to advance status">
-        <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', borderRadius: '50%' }}>
-          <StatusCircleIcon status={task.status} />
-        </span>
-      </HoverTip>
       <span style={{ flex: 1, minWidth: 0, font: `${task.status === 'done' ? '400' : '500'} 12.5px/1.4 Inter,sans-serif`, color: task.status === 'done' ? '#9aa0a8' : '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
         {task.text}
       </span>
       <span style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
         {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={20} /> : <OriginGlyph origin={task.origin} size={16} />}
       </span>
-      <span style={{ font: '500 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#9aa0a8'), flex: 'none', width: 96, textAlign: 'right' as const, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <HoverTip label="Click to advance status">
+        <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 5px', borderRadius: 999, background: STATUS_COLOR[task.status] + '14', cursor: 'pointer', flex: 'none', width: 92, justifyContent: 'center' }}>
+          <StatusCircleIcon status={task.status} size={12} />
+          <span style={{ font: '600 10.5px/1 Inter,sans-serif', color: STATUS_COLOR[task.status], whiteSpace: 'nowrap' as const }}>{STATUS_LABEL[task.status]}</span>
+        </span>
+      </HoverTip>
+      <span style={{ font: '500 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#9aa0a8'), flex: 'none', width: 60, textAlign: 'right' as const, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {task.due}
       </span>
       <span style={{ flex: 'none', display: 'flex' }}><Avatar name={task.assignee} size={22} vivid={task.assignee !== 'Unassigned'} /></span>

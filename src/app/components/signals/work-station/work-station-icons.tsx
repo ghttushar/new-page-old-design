@@ -9,6 +9,12 @@ export const STATUS_COLOR: Record<TaskStatus, string> = {
   done: '#3f7d6a',
 };
 
+export const STATUS_LABEL: Record<TaskStatus, string> = {
+  open: 'Open',
+  in_progress: 'In progress',
+  done: 'Done',
+};
+
 export const PRIORITY_COLOR: Record<'High' | 'Medium' | 'Low', string> = {
   High: '#b3453f',
   Medium: '#a8763f',
