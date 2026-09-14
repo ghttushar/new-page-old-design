@@ -7,6 +7,7 @@ import { DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
 import { WorkStationListView } from './work-station-list-view';
 import { WorkStationBoardView } from './work-station-board-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
+import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
 import { ListViewIcon, BoardViewIcon } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
@@ -15,6 +16,8 @@ function assigneeNameFor(id: string): string {
   const a = DEFAULT_ASSIGNEES.find((d) => d.id === id);
   return id === 'self' ? 'You' : a?.name ?? id;
 }
+
+const NEXT_STATUS: Record<TaskStatus, TaskStatus> = { open: 'in_progress', in_progress: 'done', done: 'open' };
 
 interface Props {
   onOpenAlert?: (id: string) => void;
@@ -25,11 +28,15 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
   const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
   const [view, setView] = useState<'list' | 'board'>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [jivaOpen, setJivaOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [personFilter, setPersonFilter] = useState('');
   const [overdueOnly, setOverdueOnly] = useState(false);
 
+  const selectTask = (id: string) => { setSelectedId(id); setJivaOpen(false); };
+
   const setStatus = (id: string, status: TaskStatus) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+  const cycleStatus = (id: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: NEXT_STATUS[t.status] } : t)));
 
   const reassign = (id: string, a: AssigneeOption) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, assignee: a.id === 'self' ? 'You' : a.name, assigneeId: a.id } : t)));
@@ -48,7 +55,8 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
   };
 
   const assignedToMe = tasks.filter((t) => t.assignee === 'You').filter(matches);
-  const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You').filter(matches);
+  const unassignedTasks = tasks.filter((t) => t.assignee === 'Unassigned').filter(matches);
+  const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You' && t.assignee !== 'Unassigned').filter(matches);
 
   const overdueCount = useMemo(() => tasks.filter((t) => t.overdue).length, [tasks]);
   const selectedTask = tasks.find((t) => t.id === selectedId) ?? null;
@@ -83,6 +91,8 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
             </span>
           </div>
 
+          <span style={{ width: 1, height: 22, background: '#e6e8ec', flex: 'none' }} />
+
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -105,32 +115,56 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
           <span
             onClick={() => setOverdueOnly((v) => !v)}
             className={`${motion.pressable} ${motion.btnSecondary}`}
-            style={{ padding: '8px 13px', border: `1px solid ${overdueOnly ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, background: overdueOnly ? '#f9f7fc' : '#fff', font: '500 12px/1 Inter,sans-serif', color: overdueOnly ? '#5f3880' : '#3d434b', cursor: 'pointer', flex: 'none', whiteSpace: 'nowrap' as const }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 13px', border: `1px solid ${overdueOnly ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, background: overdueOnly ? '#f9f7fc' : '#fff', font: '500 12px/1 Inter,sans-serif', color: overdueOnly ? '#5f3880' : '#3d434b', cursor: 'pointer', flex: 'none', whiteSpace: 'nowrap' as const }}
           >
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
             Overdue only
           </span>
         </div>
       </div>
 
-      <div className={view === 'list' ? scrollStyles.sleekScroll : undefined} style={{ flex: 1, minHeight: 0, overflowY: view === 'list' ? 'auto' : 'hidden' }}>
-        {view === 'list' ? (
-          <WorkStationListView assignedToMe={assignedToMe} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={setSelectedId} />
+      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        {jivaOpen && selectedTask ? (
+          <>
+            <WorkStationDetailPanel
+              key={selectedTask.id}
+              task={selectedTask}
+              onClose={() => { setSelectedId(null); setJivaOpen(false); }}
+              onReassign={(a) => reassign(selectedTask.id, a)}
+              onSetStatus={(s) => setStatus(selectedTask.id, s)}
+              onOpenAlert={onOpenAlert}
+              onOpenMeeting={onOpenMeeting}
+              onOpenJiva={() => setJivaOpen((v) => !v)}
+              jivaOpen={jivaOpen}
+            />
+            <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} />
+          </>
         ) : (
-          <WorkStationBoardView assignedToMe={assignedToMe} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={setSelectedId} />
+          <>
+            <div className={view === 'list' ? scrollStyles.sleekScroll : undefined} style={{ flex: 1, minWidth: 0, overflowY: view === 'list' ? 'auto' : 'hidden' }}>
+              {view === 'list' ? (
+                <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} />
+              ) : (
+                <WorkStationBoardView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} />
+              )}
+            </div>
+
+            {selectedTask && (
+              <WorkStationDetailPanel
+                key={selectedTask.id}
+                task={selectedTask}
+                onClose={() => setSelectedId(null)}
+                onReassign={(a) => reassign(selectedTask.id, a)}
+                onSetStatus={(s) => setStatus(selectedTask.id, s)}
+                onOpenAlert={onOpenAlert}
+                onOpenMeeting={onOpenMeeting}
+                onOpenJiva={() => setJivaOpen((v) => !v)}
+                jivaOpen={jivaOpen}
+              />
+            )}
+          </>
         )}
       </div>
-
-      {selectedTask && (
-        <WorkStationDetailPanel
-          key={selectedTask.id}
-          task={selectedTask}
-          onClose={() => setSelectedId(null)}
-          onReassign={(a) => reassign(selectedTask.id, a)}
-          onSetStatus={(s) => setStatus(selectedTask.id, s)}
-          onOpenAlert={onOpenAlert}
-          onOpenMeeting={onOpenMeeting}
-        />
-      )}
     </div>
   );
 }

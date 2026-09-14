@@ -1,5 +1,6 @@
 import type { WorkstationTask, TaskStatus } from '@/constants/signals/prototype-data';
 import { Avatar } from '../alerts/assign-menu';
+import { HoverTip } from '../alerts/hover-tip';
 import { StatusCircleIcon, OriginGlyph } from './work-station-icons';
 import motion from '../alerts/motion.module.scss';
 
@@ -10,22 +11,40 @@ const COLUMNS: { status: TaskStatus; label: string }[] = [
 ];
 
 interface BoardTask extends WorkstationTask {
-  relation: 'to-me' | 'by-me';
+  relation: 'to-me' | 'by-me' | 'unassigned';
 }
 
-function BoardCard({ task, selected, onSelect }: { task: BoardTask; selected: boolean; onSelect: () => void }) {
+const RELATION_LABEL: Record<BoardTask['relation'], string> = {
+  'to-me': 'To me',
+  'by-me': 'By me',
+  unassigned: 'Unassigned',
+};
+const RELATION_COLOR: Record<BoardTask['relation'], string> = {
+  'to-me': '#77469b',
+  'by-me': '#5c7f9e',
+  unassigned: '#a8763f',
+};
+
+function BoardCard({ task, selected, onSelect, onCycleStatus }: { task: BoardTask; selected: boolean; onSelect: () => void; onCycleStatus: () => void }) {
   return (
     <div
       onClick={onSelect}
       className={`${motion.cardHover} ${motion.rowHover}`}
       style={{ padding: '11px 12px', border: `1px solid ${selected ? '#c9b6dd' : '#eceef1'}`, borderRadius: 8, background: selected ? '#faf8fd' : '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 9 }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <OriginGlyph origin={task.origin} />
-        <span style={{ font: '600 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: task.relation === 'to-me' ? '#77469b' : '#5c7f9e' }}>
-          {task.relation === 'to-me' ? 'To me' : 'By me'}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <OriginGlyph origin={task.origin} size={16} />
+        <span style={{ font: '600 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: RELATION_COLOR[task.relation] }}>
+          {RELATION_LABEL[task.relation]}
         </span>
-        {task.overdue && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: '#b3453f', flex: 'none' }} />}
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+          {task.overdue && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b3453f', flex: 'none' }} />}
+          <HoverTip label="Click to advance status">
+            <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', borderRadius: '50%' }}>
+              <StatusCircleIcon status={task.status} />
+            </span>
+          </HoverTip>
+        </span>
       </div>
       <div style={{ font: `${task.status === 'done' ? '400' : '500'} 12.5px/1.4 Inter,sans-serif`, color: task.status === 'done' ? '#9aa0a8' : '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none' }}>
         {task.text}
@@ -39,15 +58,18 @@ function BoardCard({ task, selected, onSelect }: { task: BoardTask; selected: bo
   );
 }
 
-export function WorkStationBoardView({ assignedToMe, assignedByMe, selectedId, onSelect }: {
+export function WorkStationBoardView({ assignedToMe, unassigned, assignedByMe, selectedId, onSelect, onCycleStatus }: {
   assignedToMe: WorkstationTask[];
+  unassigned: WorkstationTask[];
   assignedByMe: WorkstationTask[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onCycleStatus: (id: string) => void;
 }) {
   const all: BoardTask[] = [
     ...assignedToMe.map((t) => ({ ...t, relation: 'to-me' as const })),
     ...assignedByMe.map((t) => ({ ...t, relation: 'by-me' as const })),
+    ...unassigned.map((t) => ({ ...t, relation: 'unassigned' as const })),
   ];
 
   return (
@@ -58,15 +80,15 @@ export function WorkStationBoardView({ assignedToMe, assignedByMe, selectedId, o
           <div key={col.status} style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 4px', flex: 'none' }}>
               <StatusCircleIcon status={col.status} />
-              <span style={{ font: '700 11.5px/1 Inter,sans-serif', color: '#23272d' }}>{col.label}</span>
-              <span style={{ font: '500 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>{items.length}</span>
+              <span style={{ font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#464646' }}>{col.label}</span>
+              <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{items.length}</span>
             </div>
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: '6px 4px', background: '#fafbfd', borderRadius: 8, border: '1px solid #f1f2f4' }}>
               {items.length === 0 && (
                 <div style={{ padding: '20px 10px', textAlign: 'center', font: '400 11.5px/1.6 Inter,sans-serif', color: '#c3c7cd' }}>No tasks</div>
               )}
               {items.map((t) => (
-                <BoardCard key={t.id} task={t} selected={selectedId === t.id} onSelect={() => onSelect(t.id)} />
+                <BoardCard key={t.id} task={t} selected={selectedId === t.id} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} />
               ))}
             </div>
           </div>

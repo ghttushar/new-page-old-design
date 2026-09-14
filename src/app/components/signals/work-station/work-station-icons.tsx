@@ -1,4 +1,7 @@
-import type { TaskStatus } from '@/constants/signals/prototype-data';
+import type { TaskStatus, TaskOrigin } from '@/constants/signals/prototype-data';
+import { SparkleIcon } from '../alerts/icons';
+import { GoogleMeetMark } from '../alerts/source-icon';
+import { HoverTip } from '../alerts/hover-tip';
 
 const STATUS_COLOR: Record<TaskStatus, string> = {
   open: '#9aa0a8',
@@ -49,17 +52,45 @@ export function BoardViewIcon({ size = 14, color = '#6b7178' }: { size?: number;
   );
 }
 
-/** Small pill icon for the task's origin — mirrors the badge glyph vocabulary used in Alerts/Meetings so the three surfaces read as one system. */
-export function OriginGlyph({ origin, size = 12 }: { origin: 'alert' | 'meeting' | 'generative' | 'direct'; size?: number }) {
-  const color = origin === 'alert' ? '#b3453f' : origin === 'meeting' ? '#3874ff' : origin === 'generative' ? '#5f3880' : '#9aa0a8';
-  if (origin === 'alert') {
-    return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 1.5l7 12.5H1z" stroke={color} strokeWidth="1.3" strokeLinejoin="round" /><path d="M8 6.5v3.2M8 11.7v.1" stroke={color} strokeWidth="1.3" strokeLinecap="round" /></svg>;
-  }
-  if (origin === 'meeting') {
-    return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><rect x="1.5" y="4" width="8.5" height="7.2" rx="1.3" stroke={color} strokeWidth="1.3" /><path d="M10 7l4.1-2.4c.4-.2.9.1.9.5v5.6c0 .4-.5.7-.9.5L10 9z" stroke={color} strokeWidth="1.3" strokeLinejoin="round" /></svg>;
-  }
-  if (origin === 'generative') {
-    return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 1.5l1.4 4.1L13.5 7l-4.1 1.4L8 12.5l-1.4-4.1L2.5 7l4.1-1.4z" fill={color} /></svg>;
-  }
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M4 8h8" stroke={color} strokeWidth="1.4" strokeLinecap="round" /></svg>;
+const ORIGIN_LABEL: Record<TaskOrigin, string> = {
+  alert: 'From an alert',
+  meeting: 'From a meeting',
+  generative: 'Generative task — Jiva can draft this',
+  direct: 'Created directly',
+};
+
+/** Filled warning-triangle mark, white-on-colour — same stroke language as the rest of the Alerts icon set. */
+function AlertMark({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.8l6.6 11.4H1.4z" fill={color} />
+    </svg>
+  );
+}
+
+/**
+ * Origin badge — a circular colour-coded disc exactly like the source badges on the
+ * Alerts row (`SourceIcon`/`SourceBadge`), reusing their real marks (Jiva's sparkle,
+ * Google Meet's camera) instead of inventing a parallel icon language for Workstation.
+ */
+export function OriginGlyph({ origin, size = 17 }: { origin: TaskOrigin; size?: number }) {
+  const bg = origin === 'alert' ? '#b3453f' : origin === 'meeting' ? '#ffffff' : origin === 'generative' ? '#5f3880' : '#eceef1';
+  const needsRing = bg === '#ffffff' || bg === '#eceef1';
+  const iconSize = Math.round(size * 0.58);
+  return (
+    <HoverTip label={ORIGIN_LABEL[origin]}>
+      <span
+        style={{
+          width: size, height: size, borderRadius: '50%', background: bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
+          boxShadow: needsRing ? '0 0 0 1.5px #fff, 0 0 0 2px #e6e8ec' : '0 0 0 1.5px #fff',
+        }}
+      >
+        {origin === 'alert' && <AlertMark size={iconSize} color="#fff" />}
+        {origin === 'meeting' && <GoogleMeetMark size={iconSize} />}
+        {origin === 'generative' && <SparkleIcon size={iconSize} color="#fff" />}
+        {origin === 'direct' && <span style={{ width: Math.round(iconSize * 0.75), height: 2, borderRadius: 1, background: '#9aa0a8' }} />}
+      </span>
+    </HoverTip>
+  );
 }
