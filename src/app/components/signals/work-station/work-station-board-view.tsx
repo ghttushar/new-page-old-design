@@ -1,7 +1,7 @@
 import type { WorkstationTask, TaskStatus } from '@/constants/signals/prototype-data';
 import { Avatar } from '../alerts/assign-menu';
 import { HoverTip } from '../alerts/hover-tip';
-import { StatusCircleIcon, OriginGlyph } from './work-station-icons';
+import { StatusCircleIcon, OriginGlyph, STATUS_COLOR } from './work-station-icons';
 import motion from '../alerts/motion.module.scss';
 
 const COLUMNS: { status: TaskStatus; label: string }[] = [
@@ -29,8 +29,14 @@ function BoardCard({ task, selected, onSelect, onCycleStatus }: { task: BoardTas
   return (
     <div
       onClick={onSelect}
-      className={`${motion.cardHover} ${motion.rowHover}`}
-      style={{ padding: '11px 12px', border: `1px solid ${selected ? '#c9b6dd' : '#eceef1'}`, borderRadius: 8, background: selected ? '#faf8fd' : '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 9 }}
+      className={motion.cardHover}
+      style={{
+        padding: '11px 12px',
+        border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1',
+        borderRadius: 9, background: selected ? '#faf8fd' : '#fff',
+        boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer',
+        display: 'flex', flexDirection: 'column', gap: 9,
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <OriginGlyph origin={task.origin} size={16} />
@@ -76,16 +82,18 @@ export function WorkStationBoardView({ assignedToMe, unassigned, assignedByMe, s
     <div style={{ display: 'flex', gap: 14, padding: '4px 20px 20px', height: '100%', minHeight: 0 }}>
       {COLUMNS.map((col) => {
         const items = all.filter((t) => t.status === col.status);
+        const accent = STATUS_COLOR[col.status];
         return (
           <div key={col.status} style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 4px', flex: 'none' }}>
+            <div style={{ height: 2.5, borderRadius: 2, background: accent, opacity: 0.5, flex: 'none', margin: '0 4px 8px' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0 4px 8px', flex: 'none' }}>
               <StatusCircleIcon status={col.status} />
               <span style={{ font: '700 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#464646' }}>{col.label}</span>
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{items.length}</span>
             </div>
-            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: '6px 4px', background: '#fafbfd', borderRadius: 8, border: '1px solid #f1f2f4' }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 9, padding: '2px 4px 6px', background: `${accent}08`, borderRadius: 9, border: '1px solid #f1f2f4' }}>
               {items.length === 0 && (
-                <div style={{ padding: '20px 10px', textAlign: 'center', font: '400 11.5px/1.6 Inter,sans-serif', color: '#c3c7cd' }}>No tasks</div>
+                <div style={{ margin: '2px 0', padding: '20px 10px', textAlign: 'center', border: '1px dashed #e6e8ec', borderRadius: 9, font: '400 11.5px/1.6 Inter,sans-serif', color: '#c3c7cd' }}>No tasks</div>
               )}
               {items.map((t) => (
                 <BoardCard key={t.id} task={t} selected={selectedId === t.id} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} />

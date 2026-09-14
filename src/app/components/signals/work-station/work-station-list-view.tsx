@@ -10,8 +10,14 @@ function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: Workstatio
   return (
     <div
       onClick={onSelect}
-      className={motion.rowHover}
-      style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 20px', margin: '0 8px', borderRadius: 7, cursor: 'pointer', background: selected ? '#f6f4fa' : 'transparent' }}
+      className={motion.cardHover}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 11,
+        margin: '7px 14px', padding: '11px 14px',
+        border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1',
+        borderRadius: 9, background: selected ? '#f9f7fc' : '#fff',
+        boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer',
+      }}
     >
       <HoverTip label="Click to advance status">
         <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', borderRadius: '50%' }}>
@@ -35,8 +41,8 @@ function TaskGroup({ label, color, tasks, selectedId, onSelect, onCycleStatus, e
 }) {
   const [open, setOpen] = useState(true);
   return (
-    <div style={{ paddingTop: 6 }}>
-      <div onClick={() => setOpen((v) => !v)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px', margin: '0 8px', borderRadius: 7, cursor: 'pointer' }}>
+    <div style={{ paddingTop: 10 }}>
+      <div onClick={() => setOpen((v) => !v)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', margin: '0 14px', borderRadius: 6, cursor: 'pointer' }}>
         <span style={{ display: 'flex', transform: open ? 'none' : 'rotate(-90deg)', transition: 'transform 160ms ease-out' }}>
           <ChevronDownIcon size={9} color="#6b7178" />
         </span>
@@ -47,7 +53,7 @@ function TaskGroup({ label, color, tasks, selectedId, onSelect, onCycleStatus, e
       <div className={`${motion.accordionRow} ${open ? motion.accordionRowOpen : ''}`}>
         <div>
           {tasks.length === 0 && (
-            <div style={{ padding: '10px 20px 14px 46px', font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>{emptyText}</div>
+            <div style={{ margin: '2px 14px 4px', padding: '10px 14px', border: '1px dashed #e6e8ec', borderRadius: 9, font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>{emptyText}</div>
           )}
           {tasks.map((t) => (
             <TaskRow key={t.id} task={t} selected={selectedId === t.id} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} />

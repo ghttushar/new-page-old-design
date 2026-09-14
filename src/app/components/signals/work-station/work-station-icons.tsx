@@ -3,7 +3,7 @@ import { SparkleIcon } from '../alerts/icons';
 import { GoogleMeetMark } from '../alerts/source-icon';
 import { HoverTip } from '../alerts/hover-tip';
 
-const STATUS_COLOR: Record<TaskStatus, string> = {
+export const STATUS_COLOR: Record<TaskStatus, string> = {
   open: '#9aa0a8',
   in_progress: '#a8763f',
   done: '#3f7d6a',

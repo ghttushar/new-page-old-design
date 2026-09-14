@@ -6,7 +6,7 @@ import {
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
 import { AssignIcon, CloseIcon, ChevronDownIcon } from '../alerts/icons';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import { StatusCircleIcon, OriginGlyph } from './work-station-icons';
+import { StatusCircleIcon, OriginGlyph, STATUS_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -36,7 +36,7 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
 
   return (
     <div className={motion.slideInRight} style={{ flex: '0 0 420px', maxWidth: '46%', background: '#fff', borderLeft: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 9, flex: 'none' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 9, flex: 'none', background: 'radial-gradient(circle at 88% -20%, rgba(119,70,155,.06), transparent 55%)' }}>
         <OriginGlyph origin={task.origin} size={19} />
         <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>
           {task.origin === 'alert' ? 'From an alert' : task.origin === 'meeting' ? 'From a meeting' : task.origin === 'generative' ? 'Generative task' : 'Direct task'}
@@ -62,11 +62,11 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ flex: '0 0 74px', font: '500 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>Status</span>
-            <span onClick={() => setStatusMenuOpen((v) => !v)} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', position: 'relative' }}>
+            <span onClick={() => setStatusMenuOpen((v) => !v)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 9px 3px 6px', borderRadius: 999, background: STATUS_COLOR[task.status] + '14', cursor: 'pointer', position: 'relative' }}>
               <StatusCircleIcon status={task.status} />
-              <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#3d434b' }}>{STATUS_LABEL[task.status]}</span>
+              <span style={{ font: '600 12px/1 Inter,sans-serif', color: STATUS_COLOR[task.status] }}>{STATUS_LABEL[task.status]}</span>
               {statusMenuOpen && (
-                <div className={motion.popIn} style={{ position: 'absolute', left: 0, top: 22, width: 160, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 50 }} onClick={(e) => e.stopPropagation()}>
+                <div className={motion.popIn} style={{ position: 'absolute', left: 0, top: 28, width: 160, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 50 }} onClick={(e) => e.stopPropagation()}>
                   {STATUS_ORDER.map((s) => (
                     <div key={s} onClick={() => { onSetStatus(s); setStatusMenuOpen(false); }} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderRadius: 6, cursor: 'pointer' }}>
                       <StatusCircleIcon status={s} />
@@ -83,12 +83,12 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
+        <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f2f4' }}>
           <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Description</div>
           <div style={{ font: '400 12.5px/1.65 Inter,sans-serif', color: '#464646', marginTop: 8 }}>{task.description}</div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
+        <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f2f4' }}>
           <div onClick={() => setContextOpen((v) => !v)} className={motion.rowHover} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', margin: '0 -6px', padding: '2px 6px', borderRadius: 6 }}>
             <span style={{ display: 'flex', transform: contextOpen ? 'none' : 'rotate(-90deg)', transition: 'transform 160ms ease-out' }}>
               <ChevronDownIcon size={9} color="#6b7178" />
@@ -117,7 +117,7 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
+        <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f2f4' }}>
           <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Activity</div>
           <div style={{ marginTop: 10, position: 'relative' }}>
             {task.logs.length > 1 && <span style={{ position: 'absolute', left: 3, top: 6, bottom: 6, width: 1, background: '#e6e8ec' }} />}

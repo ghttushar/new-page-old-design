@@ -8,7 +8,7 @@ import { WorkStationListView } from './work-station-list-view';
 import { WorkStationBoardView } from './work-station-board-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
-import { ListViewIcon, BoardViewIcon } from './work-station-icons';
+import { ListViewIcon, BoardViewIcon, STATUS_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -59,6 +59,11 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
   const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You' && t.assignee !== 'Unassigned').filter(matches);
 
   const overdueCount = useMemo(() => tasks.filter((t) => t.overdue).length, [tasks]);
+  const statusCounts = useMemo(() => ({
+    open: tasks.filter((t) => t.status === 'open').length,
+    in_progress: tasks.filter((t) => t.status === 'in_progress').length,
+    done: tasks.filter((t) => t.status === 'done').length,
+  }), [tasks]);
   const selectedTask = tasks.find((t) => t.id === selectedId) ?? null;
 
   return (
@@ -70,6 +75,14 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
             <div style={{ font: '400 11.5px/1.5 Inter,sans-serif', color: '#9aa0a8', marginTop: 2 }}>
               {tasks.length} task{tasks.length === 1 ? '' : 's'}{overdueCount > 0 ? ` · ${overdueCount} overdue` : ''}
             </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+            {([['open', 'Open'], ['in_progress', 'In progress'], ['done', 'Done']] as const).map(([key, label]) => (
+              <span key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 999, background: STATUS_COLOR[key] + '14', font: '600 10.5px/1 Inter,sans-serif', color: STATUS_COLOR[key] }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: STATUS_COLOR[key], flex: 'none' }} />
+                {statusCounts[key]} {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -141,7 +154,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
           </>
         ) : (
           <>
-            <div className={view === 'list' ? scrollStyles.sleekScroll : undefined} style={{ flex: 1, minWidth: 0, overflowY: view === 'list' ? 'auto' : 'hidden' }}>
+            <div className={view === 'list' ? scrollStyles.sleekScroll : undefined} style={{ flex: 1, minWidth: 0, overflowY: view === 'list' ? 'auto' : 'hidden', background: '#fafbfc', borderRight: selectedTask ? '1px solid #eceef1' : 'none' }}>
               {view === 'list' ? (
                 <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} />
               ) : (
