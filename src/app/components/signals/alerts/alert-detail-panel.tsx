@@ -11,7 +11,6 @@ import { formatAlertValue, explainAlertValue } from './format-money';
 import { getDisplayItems } from './items-util';
 import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
-import { EmptyAlertGraphic } from './empty-alert-graphic';
 import { AlertBadgeRow } from './alert-badge-row';
 import { DetailFooterBar } from './detail-footer-bar';
 import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from './icons';
@@ -37,7 +36,7 @@ interface Props {
   /** Unused — every alert now renders the same detail layout. Kept optional so existing call sites don't need to change. */
   isFirstAlert?: boolean;
   onOpenAskJiva?: () => void;
-  /** Unused — the empty state no longer shows a "jump back in" shortcut list. Kept optional so existing call sites don't need to change. */
+  /** Jumps to a specific alert — used by the empty state's category rows to open that category's top alert. */
   onSelectAlert?: (id: string) => void;
 }
 
@@ -52,17 +51,44 @@ const CATEGORY_COLORS: Record<string, string> = {
   Reviews: '#e78a2e',
 };
 
-/** Top 5 alert categories by count, for the empty-state "at a glance" tiles. */
-const CATEGORY_METRICS: { category: string; count: number }[] = (() => {
-  const counts = new Map<string, number>();
-  PROTOTYPE_ALERTS.forEach((a) => counts.set(a.category, (counts.get(a.category) ?? 0) + 1));
-  return Array.from(counts.entries())
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+/** Alert categories by count (busiest first), for the empty-state overview — each carries its top (highest-priority) alert so the row can jump straight to it. */
+const CATEGORY_METRICS: { category: string; count: number; topAlertId: string }[] = (() => {
+  const byCategory = new Map<string, PrototypeAlert[]>();
+  PROTOTYPE_ALERTS.forEach((a) => {
+    const list = byCategory.get(a.category) ?? [];
+    list.push(a);
+    byCategory.set(a.category, list);
+  });
+  return Array.from(byCategory.entries())
+    .map(([category, alerts]) => ({
+      category,
+      count: alerts.length,
+      topAlertId: (alerts.find((a) => a.priority === 'High') ?? alerts[0]).id,
+    }))
+    .sort((a, b) => b.count - a.count);
 })();
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva }: Props) {
+const TOTAL_ALERT_COUNT = PROTOTYPE_ALERTS.length;
+const CRITICAL_ALERT_COUNT = PROTOTYPE_ALERTS.filter((a) => a.priority === 'High').length;
+const AT_RISK_TOTAL = PROTOTYPE_ALERTS.reduce((sum, a) => sum + (a.valueNum < 0 ? Math.abs(a.valueNum) : 0), 0);
+
+function fmtCompactValue(n: number): string {
+  if (n < 1000) return `$${n.toLocaleString()}`;
+  const k = n / 1000;
+  return k >= 1000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${k.toFixed(k >= 100 ? 0 : 1)}K`;
+}
+
+function StatTile({ topBorder, label, value, valueColor, sub }: { topBorder: string; label: string; value: string; valueColor?: string; sub: string }) {
+  return (
+    <div style={{ background: '#fff', padding: '13px 14px', borderTop: `3px solid ${topBorder}` }}>
+      <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{label}</div>
+      <div style={{ font: '700 20px/1 Inter,sans-serif', color: valueColor || '#23272d', marginTop: 8 }}>{value}</div>
+      <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{sub}</div>
+    </div>
+  );
+}
+
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onSelectAlert }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
@@ -83,20 +109,34 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   }, [sel?.id]);
 
   if (!sel) {
+    const maxCategoryCount = CATEGORY_METRICS[0]?.count ?? 1;
     return (
-      <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: 'radial-gradient(circle at 18% 8%, rgba(119,70,155,.06), transparent 45%), #fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
-          <EmptyAlertGraphic />
-          <div style={{ font: '700 19px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 22 }}>Select an alert to get started</div>
-          <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 7, maxWidth: 320, textAlign: 'center' }}>The reasoning, impact and recommended strategy open here.</div>
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+        <div className={scrollStyles.sleekScroll} style={{ height: '100%', overflowY: 'auto', padding: '26px 28px' }}>
+          <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Alerts overview</div>
+          <div style={{ font: '700 18px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 8, maxWidth: 460 }}>Select an alert, or jump into a category below, to see the reasoning, impact and recommended strategy.</div>
 
-          <div style={{ width: '100%', maxWidth: 460, marginTop: 32 }}>
-            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8', textAlign: 'center' }}>Alerts by category</div>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${CATEGORY_METRICS.length},1fr)`, gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 20, maxWidth: 460 }}>
+            <StatTile topBorder="#b3453f" label="Critical alerts" value={String(CRITICAL_ALERT_COUNT)} sub={`of ${TOTAL_ALERT_COUNT} total`} />
+            <StatTile topBorder="#b3453f" label="At risk" value={fmtCompactValue(AT_RISK_TOTAL)} valueColor="#b3453f" sub="across open alerts" />
+            <StatTile topBorder="#77469b" label="Categories" value={String(CATEGORY_METRICS.length)} sub="need attention" />
+          </div>
+
+          <div style={{ marginTop: 28 }}>
+            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>By category</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
               {CATEGORY_METRICS.map((m) => (
-                <div key={m.category} style={{ background: '#fff', padding: '12px 6px', textAlign: 'center', borderTop: `2px solid ${CATEGORY_COLORS[m.category] ?? '#77469b'}` }}>
-                  <div style={{ font: '700 18px/1 Inter,sans-serif', color: '#23272d' }}>{m.count}</div>
-                  <div style={{ font: '500 10px/1.3 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{m.category}</div>
+                <div
+                  key={m.category}
+                  onClick={() => onSelectAlert?.(m.topAlertId)}
+                  className={motion.cardHover}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', border: '1px solid #eceef1', borderLeft: `3px solid ${CATEGORY_COLORS[m.category] ?? '#77469b'}`, borderRadius: 8, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
+                >
+                  <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d', flex: '0 0 130px' }}>{m.category}</span>
+                  <span style={{ flex: 1, minWidth: 0, height: 6, borderRadius: 3, background: '#f1f2f4', overflow: 'hidden' }}>
+                    <span style={{ display: 'block', height: '100%', width: `${Math.max(8, Math.round((m.count / maxCategoryCount) * 100))}%`, background: CATEGORY_COLORS[m.category] ?? '#77469b', borderRadius: 3 }} />
+                  </span>
+                  <span style={{ font: '700 13px/1 Inter,sans-serif', color: '#23272d', flex: 'none', width: 22, textAlign: 'right' as const }}>{m.count}</span>
                 </div>
               ))}
             </div>
