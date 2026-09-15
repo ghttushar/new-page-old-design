@@ -130,9 +130,10 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                   key={m.category}
                   onClick={() => onSelectAlert?.(m.topAlertId)}
                   className={motion.cardHover}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', border: '1px solid #eceef1', borderLeft: `3px solid ${CATEGORY_COLORS[m.category] ?? '#77469b'}`, borderRadius: 8, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
                 >
-                  <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d', flex: '0 0 130px' }}>{m.category}</span>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: CATEGORY_COLORS[m.category] ?? '#77469b', flex: 'none' }} />
+                  <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d', flex: '0 0 122px' }}>{m.category}</span>
                   <span style={{ flex: 1, minWidth: 0, height: 6, borderRadius: 3, background: '#f1f2f4', overflow: 'hidden' }}>
                     <span style={{ display: 'block', height: '100%', width: `${Math.max(8, Math.round((m.count / maxCategoryCount) * 100))}%`, background: CATEGORY_COLORS[m.category] ?? '#77469b', borderRadius: 3 }} />
                   </span>
