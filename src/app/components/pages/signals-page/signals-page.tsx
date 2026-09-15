@@ -216,10 +216,11 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
                 onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
                 onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
                 onFilteredChange={setFilteredAlertIds}
+                equalWidth={globalJivaOpen}
               />
               {detailPanel}
               {globalJivaOpen && (
-                <AskJivaPanel key={globalJivaAlert.id} alert={globalJivaAlert} onClose={() => setGlobalJivaOpen(false)} />
+                <AskJivaPanel key={globalJivaAlert.id} alert={globalJivaAlert} onClose={() => setGlobalJivaOpen(false)} equalWidth />
               )}
             </>
           )}
