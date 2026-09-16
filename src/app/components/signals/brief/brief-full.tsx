@@ -138,7 +138,7 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
                 <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{m.meta}</div>
                 {m.progress !== undefined && (
                   <div style={{ height: 3, borderRadius: 2, background: '#f1f2f4', marginTop: 8, overflow: 'hidden' }}>
-                    <div style={{ width: `${m.progress}%`, height: '100%', background: m.progressColor, transition: 'width 300ms ease-out' }} />
+                    <div style={{ width: '100%', height: '100%', background: m.progressColor, transform: `scaleX(${m.progress / 100})`, transformOrigin: 'left', transition: 'transform 300ms ease-out' }} />
                   </div>
                 )}
               </div>
