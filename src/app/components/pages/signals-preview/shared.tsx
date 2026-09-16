@@ -27,7 +27,7 @@ export const MANY_ASSIGNEES = [
 ];
 
 export const PREVIEW_PAGES: { path: string; label: string; note: string }[] = [
-  { path: '/signals-preview/signals', label: 'Alerts & Meetings', note: 'Every Alerts and Meetings screen, panel and menu as static frames — nothing to click through.' },
+  { path: '/signals-preview/signals', label: 'Alerts, Meetings & Work-station', note: 'Every Alerts, Meetings and Work-station screen, panel and menu as static frames — nothing to click through.' },
 ];
 
 export function PreviewNav({ current }: { current: string }) {

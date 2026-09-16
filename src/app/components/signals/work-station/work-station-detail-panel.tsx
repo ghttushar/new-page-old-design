@@ -24,13 +24,15 @@ interface Props {
   onOpenMeeting?: (id: string) => void;
   onOpenJiva: () => void;
   jivaOpen: boolean;
+  /** Forces the Context section expanded on mount — for the design-handoff preview, not used by the real app. */
+  initialContextOpen?: boolean;
 }
 
-export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus, onSetPriority, onSetDue, onOpenAlert, onOpenMeeting, onOpenJiva, jivaOpen }: Props) {
+export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus, onSetPriority, onSetDue, onOpenAlert, onOpenMeeting, onOpenJiva, jivaOpen, initialContextOpen = false }: Props) {
   const [assignMenuOpen, setAssignMenuOpen] = useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [priorityMenuOpen, setPriorityMenuOpen] = useState(false);
-  const [contextOpen, setContextOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(initialContextOpen);
   const [dueEditing, setDueEditing] = useState(false);
   const [dueDraft, setDueDraft] = useState(task.due);
   const linkedAlert = task.origin === 'alert' && task.alertId ? PROTOTYPE_ALERTS.find((a) => a.id === task.alertId) : undefined;

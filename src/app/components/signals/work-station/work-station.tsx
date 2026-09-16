@@ -27,18 +27,30 @@ const PRIORITY_FILTER_COLOR: Record<string, string> = {
 interface Props {
   onOpenAlert?: (id: string) => void;
   onOpenMeeting?: (id: string) => void;
+  /** Forces the List/Board toggle on mount — for the design-handoff preview, not used by the real app. */
+  initialView?: 'list' | 'board';
+  /** Forces a task selected (docking the detail panel) on mount — for the design-handoff preview, not used by the real app. */
+  initialSelectedId?: string | null;
+  /** Forces the Ask Jiva panel open on mount — for the design-handoff preview, not used by the real app. */
+  initialJivaOpen?: boolean;
+  /** Forces the Priority filter popover open on mount — for the design-handoff preview, not used by the real app. */
+  initialPriorityFilterOpen?: boolean;
+  /** Forces the New task popover open on mount — for the design-handoff preview, not used by the real app. */
+  initialCreateOpen?: boolean;
+  /** Forces the detail panel's Context section expanded on mount — for the design-handoff preview, not used by the real app. */
+  initialDetailContextOpen?: boolean;
 }
 
-export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
+export function WorkStation({ onOpenAlert, onOpenMeeting, initialView = 'list', initialSelectedId = null, initialJivaOpen = false, initialPriorityFilterOpen = false, initialCreateOpen = false, initialDetailContextOpen = false }: Props) {
   const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
-  const [view, setView] = useState<'list' | 'board'>('list');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [jivaOpen, setJivaOpen] = useState(false);
+  const [view, setView] = useState<'list' | 'board'>(initialView);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
+  const [jivaOpen, setJivaOpen] = useState(initialJivaOpen);
   const [search, setSearch] = useState('');
   const [personFilter, setPersonFilter] = useState('');
-  const [priorityFilterOpen, setPriorityFilterOpen] = useState(false);
+  const [priorityFilterOpen, setPriorityFilterOpen] = useState(initialPriorityFilterOpen);
   const [priorityFilters, setPriorityFilters] = useState<Record<string, boolean>>({});
-  const [createOpen, setCreateOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(initialCreateOpen);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newAssigneeId, setNewAssigneeId] = useState('self');
@@ -291,6 +303,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
               onOpenMeeting={onOpenMeeting}
               onOpenJiva={() => setJivaOpen((v) => !v)}
               jivaOpen={jivaOpen}
+              initialContextOpen={initialDetailContextOpen}
             />
             <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} />
           </>
@@ -317,6 +330,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting }: Props) {
                 onOpenMeeting={onOpenMeeting}
                 onOpenJiva={() => setJivaOpen((v) => !v)}
                 jivaOpen={jivaOpen}
+                initialContextOpen={initialDetailContextOpen}
               />
             )}
           </>

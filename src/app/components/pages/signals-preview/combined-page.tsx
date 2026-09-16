@@ -13,13 +13,14 @@ import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
 import { MeetingMOM } from '../../signals/meetings/meeting-mom';
 import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-panel';
+import { WorkStation } from '../../signals/work-station/work-station';
 import { PreviewShell, Frame, SectionHeading, noop, noopId, firstAlert, normalAlert, imageAlert, noValueAlert, MANY_ASSIGNEES, containFixed } from './shared';
 
 export default function CombinedPreviewPage() {
   const [itemsModalOpen, setItemsModalOpen] = useState(true);
 
   return (
-    <PreviewShell current="/signals-preview/signals" intro="Every Alerts and Meetings screen, panel and menu as its own static frame — nothing here needs to be clicked to reveal the next state.">
+    <PreviewShell current="/signals-preview/signals" intro="Every Alerts, Meetings and Work-station screen, panel and menu as its own static frame — nothing here needs to be clicked to reveal the next state.">
       <SectionHeading>Alerts</SectionHeading>
 
       <Frame label="List + Detail — nothing selected" note="empty state shows a 5-tile 'Alerts by category' breakdown (top 5 categories by count)">
@@ -180,6 +181,56 @@ export default function CombinedPreviewPage() {
       <Frame label="MOM — already sent" note="the footer's primary button is replaced by a 'Sent to client' confirmation">
         <div style={{ height: 760, display: 'flex' }}>
           <MeetingMOM meetingId="m5" onGoWorkstation={noop} />
+        </div>
+      </Frame>
+
+      <SectionHeading>Work-station</SectionHeading>
+
+      <Frame label="List view — default" note="Assigned to me / Assigned by me / Unassigned groups, status chips, priority filter, search">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} />
+        </div>
+      </Frame>
+
+      <Frame label="List view — task selected" note="the docked detail panel sits beside the list, not on top of it; card-style rows with the overlapping context-source badge stack">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialSelectedId="t1" />
+        </div>
+      </Frame>
+
+      <Frame label="List view — Context section expanded" note="collapsed by default; expands inline in the card with written context copy plus the jump-to-source link">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialSelectedId="t1" initialDetailContextOpen />
+        </div>
+      </Frame>
+
+      <Frame label="Priority filter open" note="High/Medium/Low/Generative/Overdue checkboxes, colour-coded per option">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialPriorityFilterOpen />
+        </div>
+      </Frame>
+
+      <Frame label="New task popover open" note="title, description, priority pills, assignee and due — created task is auto-selected">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialCreateOpen />
+        </div>
+      </Frame>
+
+      <Frame label="Board view — default" note="Open / In progress / Done columns with a status-colour accent strip and tinted drop zone">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialView="board" />
+        </div>
+      </Frame>
+
+      <Frame label="Board view — task selected" note="the same docked detail panel as List view, alongside the kanban columns">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialView="board" initialSelectedId="t1" />
+        </div>
+      </Frame>
+
+      <Frame label="Ask Jiva panel open" note="same pattern as Alerts/Meetings — the list disappears, detail shifts left, Jiva chat takes the right column">
+        <div style={{ height: 760, display: 'flex' }}>
+          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialSelectedId="t1" initialJivaOpen />
         </div>
       </Frame>
     </PreviewShell>
