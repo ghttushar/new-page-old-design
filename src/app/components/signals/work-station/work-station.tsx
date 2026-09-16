@@ -4,7 +4,7 @@ import {
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
-import { PlusIcon } from '../alerts/icons';
+import { PlusIcon, SparkleIcon } from '../alerts/icons';
 import { WorkStationListView } from './work-station-list-view';
 import { WorkStationBoardView } from './work-station-board-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
@@ -113,6 +113,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialView = 'list', 
   const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You' && t.assignee !== 'Unassigned').filter(matches);
 
   const overdueCount = useMemo(() => tasks.filter((t) => t.overdue).length, [tasks]);
+  const jivaCount = useMemo(() => tasks.filter((t) => t.origin === 'generative').length, [tasks]);
   const statusCounts = useMemo(() => ({
     open: tasks.filter((t) => t.status === 'open').length,
     in_progress: tasks.filter((t) => t.status === 'in_progress').length,
@@ -137,6 +138,11 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialView = 'list', 
                 {statusCounts[key]} {label}
               </span>
             ))}
+            {jivaCount > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 999, background: '#f3eefa', font: '600 10.5px/1 Inter,sans-serif', color: '#5f3880' }}>
+                <SparkleIcon size={9} /> {jivaCount} from Jiva
+              </span>
+            )}
           </div>
         </div>
 
@@ -190,7 +196,15 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialView = 'list', 
             </span>
             {priorityFilterOpen && (
               <div className={motion.popInTop} style={{ position: 'absolute', left: 0, top: 40, width: 190, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.16)', padding: 10, zIndex: 60 }} onClick={(e) => e.stopPropagation()}>
-                {(['High', 'Medium', 'Low', 'Generative', 'Overdue'] as const).map((k) => (
+                {(['High', 'Medium', 'Low'] as const).map((k) => (
+                  <div key={k} onClick={() => togglePriorityFilter(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '6px 8px', borderRadius: 6 }}>
+                    <span style={{ width: 13, height: 13, borderRadius: 3, border: `1.5px solid ${priorityFilters[k] ? PRIORITY_FILTER_COLOR[k] : '#cfd4dc'}`, background: priorityFilters[k] ? PRIORITY_FILTER_COLOR[k] : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
+                    <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
+                  </div>
+                ))}
+                <div style={{ height: 1, background: '#f1f2f4', margin: '6px 0' }} />
+                <div style={{ font: '600 9px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', padding: '0 8px 4px' }}>Origin</div>
+                {(['Generative', 'Overdue'] as const).map((k) => (
                   <div key={k} onClick={() => togglePriorityFilter(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '6px 8px', borderRadius: 6 }}>
                     <span style={{ width: 13, height: 13, borderRadius: 3, border: `1.5px solid ${priorityFilters[k] ? PRIORITY_FILTER_COLOR[k] : '#cfd4dc'}`, background: priorityFilters[k] ? PRIORITY_FILTER_COLOR[k] : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
                     <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>

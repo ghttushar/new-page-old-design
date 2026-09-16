@@ -13,7 +13,7 @@ import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { AlertBadgeRow } from './alert-badge-row';
 import { DetailFooterBar } from './detail-footer-bar';
-import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, BackArrowIcon } from './icons';
+import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, BackArrowIcon, SparkleIcon, AiDraftBadge } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 
@@ -415,7 +415,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
         <div style={{ height: '100%', overflowY: 'auto', padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ font: '600 14px/1 Inter,sans-serif', color: '#23272d' }}>Review generated content</span>
-            <span style={{ padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880' }}>AI DRAFT · NOT PUBLISHED</span>
+            <AiDraftBadge label="AI DRAFT · NOT PUBLISHED" />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 14 }}>
             <div style={{ background: '#fff', padding: 15 }}>
@@ -467,8 +467,14 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
 
         {/* Body */}
         <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* No section heading here by design — just the flowing explanation (root cause folded in) */}
-          <div style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#464646' }}>{sel.why} {sel.root}</div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <SparkleIcon size={11} />
+              <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Jiva's analysis</span>
+            </div>
+            <div className={motion.contentFadeIn} style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#464646' }}>{sel.why}</div>
+            <div className={motion.contentFadeIn} style={{ font: '400 13px/1.6 Inter,sans-serif', color: '#464646', marginTop: 4, animationDelay: '110ms', animationFillMode: 'backwards' }}>{sel.root}</div>
+          </div>
 
           {/* Strategy picker — the decision this whole card exists to support, so it gets a primary border instead of blending in with the reference cards around it */}
           <div style={{ border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
@@ -479,7 +485,15 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               <div key={o.id} onClick={() => setSelectedOptionId(o.id)} className={motion.rowHover} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', border: optId === o.id ? '4px solid #77469b' : '1px solid #dfe3ea', flex: 'none', marginTop: 2, transition: 'border 140ms ease-out' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.isOther ? 'Ask Jiva' : o.label}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' as const }}>
+                    <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.isOther ? 'Ask Jiva' : o.label}</span>
+                    {o.recommended && <AiDraftBadge label="Jiva recommends" />}
+                  </span>
+                  {(o.expected || o.confidence !== undefined) && (
+                    <div style={{ font: '400 11px/1.4 Inter,sans-serif', color: '#9aa0a8', marginTop: 3 }}>
+                      {o.expected ? `Est. ${o.expected}` : ''}{o.expected && o.confidence !== undefined ? ' · ' : ''}{o.confidence !== undefined ? `${o.confidence}% confidence` : ''}
+                    </div>
+                  )}
                   {o.isMeetingAsk && optId === o.id && (
                     <span
                       onClick={(e) => { e.stopPropagation(); setActionPickerOpen(true); }}

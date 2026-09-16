@@ -4,7 +4,7 @@ import {
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
-import { AssignIcon, CloseIcon, ChevronDownIcon } from '../alerts/icons';
+import { AssignIcon, CloseIcon, ChevronDownIcon, SparkleIcon, AiDraftBadge } from '../alerts/icons';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import { StatusCircleIcon, OriginGlyph, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
@@ -127,6 +127,19 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
           <div style={{ font: '400 12.5px/1.65 Inter,sans-serif', color: '#464646', marginTop: 8 }}>{task.description}</div>
         </div>
 
+        {task.origin === 'generative' && (
+          <div style={{ marginTop: 16, padding: '13px 14px', borderRadius: 8, border: '1px solid #e6ddf0', background: 'linear-gradient(180deg, rgba(119,70,155,.05), transparent)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
+              <AiDraftBadge label="JIVA-FLAGGED" />
+              <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#3d2a52' }}>Jiva flagged this from account activity</span>
+            </div>
+            <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>No single alert or meeting produced it directly — ask Jiva to draft a first pass whenever you're ready.</div>
+            <span onClick={onOpenJiva} className={`${motion.pressable} ${motion.btnPrimary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, padding: '8px 13px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 11px/1 Inter,sans-serif', cursor: 'pointer' }}>
+              <DiamondMascot size={12} /> Draft it
+            </span>
+          </div>
+        )}
+
         <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f2f4' }}>
           <div onClick={() => setContextOpen((v) => !v)} className={motion.rowHover} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', margin: '0 -6px', padding: '2px 6px', borderRadius: 6 }}>
             <span style={{ display: 'flex', transform: contextOpen ? 'none' : 'rotate(-90deg)', transition: 'transform 160ms ease-out' }}>
@@ -157,12 +170,9 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
                 </>
               )}
               {task.origin === 'generative' && (
-                <>
-                  <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
-                    Jiva generated this from the surrounding account activity — no single alert or meeting produced it directly. Jiva can draft a first pass whenever you're ready.
-                  </div>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '4px 9px', borderRadius: 5, background: '#f3eefa', font: '600 10px/1.5 Inter,sans-serif', color: '#5f3880', alignSelf: 'flex-start' as const }}><OriginGlyph origin="generative" size={14} /> Generative task</span>
-                </>
+                <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
+                  Synthesized from patterns across recent alerts and meetings on this account, rather than tied to any one of them.
+                </div>
               )}
               {task.origin === 'direct' && (
                 <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>
@@ -178,15 +188,24 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
           <div style={{ marginTop: 10, position: 'relative' }}>
             {task.logs.length > 1 && <span style={{ position: 'absolute', left: 3, top: 6, bottom: 6, width: 1, background: '#e6e8ec' }} />}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {task.logs.map((l, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, position: 'relative' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#c9b6dd', marginTop: 3, flex: 'none', zIndex: 1 }} />
-                  <div>
-                    <div style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#464646' }}>{l.text}</div>
-                    <div style={{ font: '400 10.5px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 3 }}>{l.time}</div>
+              {task.logs.map((l, i) => {
+                const byJiva = l.text.toLowerCase().includes('jiva');
+                return (
+                  <div key={i} style={{ display: 'flex', gap: 10, position: 'relative' }}>
+                    {byJiva ? (
+                      <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#f3eefa', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: -3, marginLeft: -3.5, flex: 'none', zIndex: 1 }}>
+                        <SparkleIcon size={8} />
+                      </span>
+                    ) : (
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#c9b6dd', marginTop: 3, flex: 'none', zIndex: 1 }} />
+                    )}
+                    <div>
+                      <div style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#464646' }}>{l.text}</div>
+                      <div style={{ font: '400 10.5px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 3 }}>{l.time}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

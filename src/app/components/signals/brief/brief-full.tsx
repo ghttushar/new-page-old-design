@@ -58,7 +58,14 @@ export function BriefFull({ onAlertClick, onMeetingClick, subScreen, onNudgeOpen
           {JIVA_ACTIVITY.map((j) => (
             <div key={j.id} style={{ padding: '14px 18px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ font: '600 13px/1.45 Inter,sans-serif', color: '#23272d' }}>{j.label}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
+                  <span style={{ font: '600 13px/1.45 Inter,sans-serif', color: '#23272d' }}>{j.label}</span>
+                  {j.status === 'done' ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: '#eef6f3', font: '600 9px/1.5 Inter,sans-serif', color: '#3f7d6a', flex: 'none' }}>✓ Jiva handled this</span>
+                  ) : (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: '#fdf3e8', font: '600 9px/1.5 Inter,sans-serif', color: '#a8763f', flex: 'none' }}>Needs your review</span>
+                  )}
+                </div>
                 <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{j.detail} · {j.time}</div>
               </div>
               {j.impact && (

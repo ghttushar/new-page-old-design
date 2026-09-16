@@ -2106,12 +2106,14 @@ export interface JivaActivityItem {
   impactColor?: string;
   time: string;
   alertId?: string;
+  /** 'done' = Jiva already acted autonomously, nothing pending. 'needs-review' = Jiva drafted/escalated something that's still waiting on you. */
+  status: 'done' | 'needs-review';
 }
 
 export const JIVA_ACTIVITY: JivaActivityItem[] = [
-  { id: 'ja1', label: 'Reordered inventory on 3 at-risk SKUs', detail: 'Verified over 7 days on units sold', impact: '+$6,200', impactColor: '#3f7d6a', time: '06:02 AM', alertId: 'a3' },
-  { id: 'ja2', label: 'Escalated the missing-main-image suppression', detail: 'Sent to Catalog with a drafted white-background image, awaiting your review', impact: '−$3,400 at risk', impactColor: '#b3453f', time: '06:22 AM', alertId: 'a15' },
-  { id: 'ja3', label: 'Drafted a follow-up email to Wellbeing Nutrition', detail: 'On the two listings suppressed for image compliance — ready to send', time: '07:05 AM', alertId: 'a4' },
+  { id: 'ja1', label: 'Reordered inventory on 3 at-risk SKUs', detail: 'Verified over 7 days on units sold', impact: '+$6,200', impactColor: '#3f7d6a', time: '06:02 AM', alertId: 'a3', status: 'done' },
+  { id: 'ja2', label: 'Escalated the missing-main-image suppression', detail: 'Sent to Catalog with a drafted white-background image, awaiting your review', impact: '−$3,400 at risk', impactColor: '#b3453f', time: '06:22 AM', alertId: 'a15', status: 'needs-review' },
+  { id: 'ja3', label: 'Drafted a follow-up email to Wellbeing Nutrition', detail: 'On the two listings suppressed for image compliance — ready to send', time: '07:05 AM', alertId: 'a4', status: 'needs-review' },
 ];
 
 /** Catalog of metrics the Dashboard's KPI cards can be reassigned to. */

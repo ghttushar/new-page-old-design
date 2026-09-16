@@ -33,6 +33,7 @@ export function WorkStationAskJivaPanel({ task, onClose }: Props) {
   ]);
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState('Reading the task…');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,6 +42,9 @@ export function WorkStationAskJivaPanel({ task, onClose }: Props) {
 
   const reply = (question: string): string => {
     const q = question.toLowerCase();
+    if (q.includes('draft')) {
+      return `Here's a first pass: "${task.text}" — ${task.description} Tell me what to change, or paste this straight into the task.`;
+    }
     if (q.includes('status') || q.includes('progress')) {
       return `It's currently ${STATUS_LABEL[task.status].toLowerCase()}${task.overdue ? ', and overdue' : ''}. ${task.due}, assigned to ${task.assignee}.`;
     }
@@ -60,13 +64,15 @@ export function WorkStationAskJivaPanel({ task, onClose }: Props) {
     setMessages((prev) => [...prev, userMsg]);
     setDraft('');
     setTyping(true);
+    setThinkingStep('Reading the task…');
+    window.setTimeout(() => setThinkingStep('Checking the context…'), 450);
     window.setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [...prev, { id: `j${Date.now()}`, from: 'jiva', text: reply(text) }]);
     }, 900);
   };
 
-  const suggestions = ["What's this about?", 'What should I do next?', "What's the status?"];
+  const suggestions = ["What's this about?", 'What should I do next?', "What's the status?", 'Draft it'];
 
   return (
     <div className={motion.contentFadeIn} style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
@@ -105,10 +111,13 @@ export function WorkStationAskJivaPanel({ task, onClose }: Props) {
         {typing && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <span style={{ flex: 'none', marginTop: 2 }}><DiamondMascot size={20} /></span>
-            <div style={{ display: 'flex', gap: 4, padding: '11px 14px', borderRadius: 12, borderTopLeftRadius: 4, background: '#f6f4fa' }}>
-              {[0, 1, 2].map((i) => (
-                <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#b9a3cf', animation: `workstationJivaTypingDot 1.1s ${i * 0.15}s ease-in-out infinite` }} />
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 14px', borderRadius: 12, borderTopLeftRadius: 4, background: '#f6f4fa' }}>
+              <span style={{ display: 'flex', gap: 4 }}>
+                {[0, 1, 2].map((i) => (
+                  <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#b9a3cf', animation: `workstationJivaTypingDot 1.1s ${i * 0.15}s ease-in-out infinite` }} />
+                ))}
+              </span>
+              <span style={{ font: '500 11px/1 Inter,sans-serif', color: '#8a7fa8' }}>{thinkingStep}</span>
             </div>
           </div>
         )}

@@ -33,7 +33,7 @@ function BoardCard({ task, selected, onSelect, onCycleStatus }: { task: BoardTas
       style={{
         padding: '11px 12px',
         border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1',
-        borderRadius: 9, background: selected ? '#faf8fd' : '#fff',
+        borderRadius: 9, background: selected ? '#faf8fd' : task.origin === 'generative' ? 'linear-gradient(135deg, rgba(119,70,155,.05), #fff 60%)' : '#fff',
         boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer',
         display: 'flex', flexDirection: 'column', gap: 9,
       }}

@@ -15,7 +15,7 @@ function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: Workstatio
         display: 'flex', alignItems: 'center', gap: 11,
         margin: '7px 14px', padding: '11px 14px',
         border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1',
-        borderRadius: 9, background: selected ? '#f9f7fc' : '#fff',
+        borderRadius: 9, background: selected ? '#f9f7fc' : task.origin === 'generative' ? 'linear-gradient(135deg, rgba(119,70,155,.05), #fff 60%)' : '#fff',
         boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer',
       }}
     >

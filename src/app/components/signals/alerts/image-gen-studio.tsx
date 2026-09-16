@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PrototypeAlert } from '@/constants/signals/prototype-data';
-import { SparkleIcon, CheckIcon, ChevronDownIcon, BackArrowIcon } from './icons';
+import { SparkleIcon, CheckIcon, ChevronDownIcon, BackArrowIcon, AiDraftBadge } from './icons';
 import motion from './motion.module.scss';
 import scrollStyles from './alerts-scroll.module.scss';
 
@@ -94,7 +94,7 @@ export function ImageGenStudio({ alert, onBack, onPublish }: Props) {
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'center', gap: 10, flex: 'none' }}>
         <span onClick={onBack} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: '2px 4px' }}><BackArrowIcon size={14} /></span>
         <span style={{ font: '700 14px/1 Inter,sans-serif', color: '#23272d' }}>Image Studio</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880' }}><SparkleIcon size={9} /> JIVA</span>
+        <AiDraftBadge label="JIVA" />
         <span style={{ position: 'relative', marginLeft: 'auto' }}>
           <span onClick={() => setToolMenuOpen((v) => !v)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>
             {tool} <ChevronDownIcon size={8} />
@@ -134,11 +134,14 @@ export function ImageGenStudio({ alert, onBack, onPublish }: Props) {
                 </div>
               )}
               {t.images && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 8, width: 340 }}>
-                  {t.images.map((img) => (
-                    <ImageTile key={img.id} img={img} selected={selectedImageId === img.id} onSelect={() => setSelectedImageId(img.id)} />
-                  ))}
-                </div>
+                <>
+                  <div style={{ marginTop: 8 }}><AiDraftBadge label="AI GENERATED" /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 8, width: 340 }}>
+                    {t.images.map((img) => (
+                      <ImageTile key={img.id} img={img} selected={selectedImageId === img.id} onSelect={() => setSelectedImageId(img.id)} />
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>

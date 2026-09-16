@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { PrototypeAlert } from '@/constants/signals/prototype-data';
 import type { ActionType } from '@/constants/signals/action-types.constants';
-import { SparkleIcon, BackArrowIcon, CloseIcon } from './icons';
+import { BackArrowIcon, CloseIcon, AiDraftBadge } from './icons';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 
@@ -87,7 +87,7 @@ export function ComposeMail({ alert, actionType, variant = 'overlay', onClose, o
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 10, flex: 'none' }}>
         {variant === 'inline' && <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer' }}><BackArrowIcon size={14} /></span>}
         <span style={{ font: '700 14px/1 Inter,sans-serif', color: '#23272d' }}>New message</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880' }}><SparkleIcon size={9} /> DRAFTED BY JIVA</span>
+        <AiDraftBadge label="DRAFTED BY JIVA" />
         {variant === 'overlay' && <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', marginLeft: 'auto', cursor: 'pointer', padding: '0 4px' }}><CloseIcon size={13} /></span>}
       </div>
 

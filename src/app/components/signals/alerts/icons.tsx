@@ -12,6 +12,15 @@ export function SparkleIcon({ size = 12, color = '#5f3880' }: IconProps) {
   );
 }
 
+/** One consistent "Jiva made this" pill — reused everywhere content is AI-generated instead of each surface inventing its own badge. */
+export function AiDraftBadge({ label = 'AI DRAFT', icon = true }: { label?: string; icon?: boolean }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: '#f3eefa', font: '600 9px/1.5 Inter,sans-serif', color: '#5f3880', whiteSpace: 'nowrap' as const }}>
+      {icon && <SparkleIcon size={9} />} {label}
+    </span>
+  );
+}
+
 export function DiamondIcon({ size = 9, color = '#5f3880' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">

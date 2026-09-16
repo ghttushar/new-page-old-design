@@ -33,6 +33,7 @@ export function AskJivaPanel({ alert, onClose, equalWidth = false }: Props) {
   ]);
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState('Reading the alert…');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,6 +61,8 @@ export function AskJivaPanel({ alert, onClose, equalWidth = false }: Props) {
     setMessages((prev) => [...prev, userMsg]);
     setDraft('');
     setTyping(true);
+    setThinkingStep('Reading the alert…');
+    window.setTimeout(() => setThinkingStep('Checking the numbers…'), 450);
     window.setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [...prev, { id: `j${Date.now()}`, from: 'jiva', text: reply(text) }]);
@@ -105,10 +108,13 @@ export function AskJivaPanel({ alert, onClose, equalWidth = false }: Props) {
         {typing && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <span style={{ flex: 'none', marginTop: 2 }}><DiamondMascot size={20} /></span>
-            <div style={{ display: 'flex', gap: 4, padding: '11px 14px', borderRadius: 12, borderTopLeftRadius: 4, background: '#f6f4fa' }}>
-              {[0, 1, 2].map((i) => (
-                <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#b9a3cf', animation: `askJivaTypingDot 1.1s ${i * 0.15}s ease-in-out infinite` }} />
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 14px', borderRadius: 12, borderTopLeftRadius: 4, background: '#f6f4fa' }}>
+              <span style={{ display: 'flex', gap: 4 }}>
+                {[0, 1, 2].map((i) => (
+                  <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#b9a3cf', animation: `askJivaTypingDot 1.1s ${i * 0.15}s ease-in-out infinite` }} />
+                ))}
+              </span>
+              <span style={{ font: '500 11px/1 Inter,sans-serif', color: '#8a7fa8' }}>{thinkingStep}</span>
             </div>
           </div>
         )}
