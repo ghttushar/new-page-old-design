@@ -186,19 +186,19 @@ export default function CombinedPreviewPage() {
 
       <SectionHeading>Work-station</SectionHeading>
 
-      <Frame label="List view — default" note="Assigned to me / Assigned by me / Unassigned groups, status chips, priority filter, search">
+      <Frame label="Workstation — default" note="Assigned to me / Assigned by me / Unassigned groups, priority filter, search">
         <div style={{ height: 760, display: 'flex' }}>
           <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} />
         </div>
       </Frame>
 
-      <Frame label="List view — task selected" note="the docked detail panel sits beside the list, not on top of it; card-style rows with the overlapping context-source badge stack">
+      <Frame label="Workstation — task selected" note="the docked detail panel sits beside the list, not on top of it; card-style rows with the overlapping context-source badge stack">
         <div style={{ height: 760, display: 'flex' }}>
           <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialSelectedId="t1" />
         </div>
       </Frame>
 
-      <Frame label="List view — Context section expanded" note="collapsed by default; expands inline in the card with written context copy plus the jump-to-source link">
+      <Frame label="Workstation — Context section expanded" note="collapsed by default; expands inline in the card with written context copy plus the jump-to-source link">
         <div style={{ height: 760, display: 'flex' }}>
           <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialSelectedId="t1" initialDetailContextOpen />
         </div>
@@ -216,19 +216,7 @@ export default function CombinedPreviewPage() {
         </div>
       </Frame>
 
-      <Frame label="Board view — default" note="Open / In progress / Done columns with a status-colour accent strip and tinted drop zone">
-        <div style={{ height: 760, display: 'flex' }}>
-          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialView="board" />
-        </div>
-      </Frame>
-
-      <Frame label="Board view — task selected" note="the same docked detail panel as List view, alongside the kanban columns">
-        <div style={{ height: 760, display: 'flex' }}>
-          <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialView="board" initialSelectedId="t1" />
-        </div>
-      </Frame>
-
-      <Frame label="Ask Jiva panel open" note="same pattern as Alerts/Meetings — the list disappears, detail shifts left, Jiva chat takes the right column">
+<Frame label="Ask Jiva panel open" note="same pattern as Alerts/Meetings — the list disappears, detail shifts left, Jiva chat takes the right column">
         <div style={{ height: 760, display: 'flex' }}>
           <WorkStation onOpenAlert={noopId} onOpenMeeting={noopId} initialSelectedId="t1" initialJivaOpen />
         </div>

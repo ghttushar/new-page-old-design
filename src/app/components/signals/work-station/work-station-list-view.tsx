@@ -12,26 +12,26 @@ function TaskRow({ task, selected, onSelect, onCycleStatus }: { task: Workstatio
       onClick={onSelect}
       className={motion.cardHover}
       style={{
-        display: 'flex', alignItems: 'center', gap: 11,
-        margin: '7px 14px', padding: '11px 14px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        margin: '10px 12px', padding: '14px 16px',
         border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1',
-        borderRadius: 9, background: selected ? '#f9f7fc' : task.origin === 'generative' ? 'linear-gradient(135deg, rgba(119,70,155,.05), #fff 60%)' : '#fff',
+        borderRadius: 10, background: selected ? '#f9f7fc' : task.origin === 'generative' ? 'linear-gradient(135deg, rgba(119,70,155,.05), #fff 60%)' : '#fff',
         boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer',
       }}
     >
-      <span style={{ flex: 1, minWidth: 0, font: `${task.status === 'done' ? '400' : '500'} 12.5px/1.4 Inter,sans-serif`, color: task.status === 'done' ? '#9aa0a8' : '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+      <span style={{ flex: 1, minWidth: 0, font: `${task.status === 'done' ? '400' : '600'} 14px/1.35 Inter,sans-serif`, color: task.status === 'done' ? '#9aa0a8' : '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
         {task.text}
       </span>
       <span style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
         {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={20} /> : <OriginGlyph origin={task.origin} size={16} />}
       </span>
       <HoverTip label="Click to advance status">
-        <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 5px', borderRadius: 999, background: STATUS_COLOR[task.status] + '14', cursor: 'pointer', flex: 'none', width: 92, justifyContent: 'center' }}>
+        <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px 4px 6px', borderRadius: 999, background: STATUS_COLOR[task.status] + '14', cursor: 'pointer', flex: 'none', width: 96, justifyContent: 'center' }}>
           <StatusCircleIcon status={task.status} size={12} />
-          <span style={{ font: '600 10.5px/1 Inter,sans-serif', color: STATUS_COLOR[task.status], whiteSpace: 'nowrap' as const }}>{STATUS_LABEL[task.status]}</span>
+          <span style={{ font: '600 11px/1 Inter,sans-serif', color: STATUS_COLOR[task.status], whiteSpace: 'nowrap' as const }}>{STATUS_LABEL[task.status]}</span>
         </span>
       </HoverTip>
-      <span style={{ font: '500 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#9aa0a8'), flex: 'none', width: 60, textAlign: 'right' as const, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <span style={{ font: '600 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#8a919b'), flex: 'none', width: 60, textAlign: 'right' as const, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {task.due}
       </span>
       <span style={{ flex: 'none', display: 'flex' }}><Avatar name={task.assignee} size={22} vivid={task.assignee !== 'Unassigned'} /></span>

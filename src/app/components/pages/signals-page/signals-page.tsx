@@ -16,9 +16,7 @@ import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-pan
 import { WorkStation } from '../../signals/work-station/work-station';
 import { CalendarPopover } from '../../signals/common/calendar-popover';
 import { AccountFilterDropdown } from '../../signals/common/account-filter-dropdown';
-import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, type PrototypeAlert, type LoggedActionItem, type MpBrand } from '@/constants/signals/prototype-data';
-import DiamondMascot from '../../common/diamond-mascot/diamond-mascot';
-import motion from '../../signals/alerts/motion.module.scss';
+import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, type LoggedActionItem, type MpBrand } from '@/constants/signals/prototype-data';
 
 export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKey } = {}) {
   const [activeTab, setActiveTab] = useState<SignalTabKey>(initialTab);
@@ -41,13 +39,10 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
   const [resolvedAlertIds, setResolvedAlertIds] = useState<Set<string>>(new Set());
   const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
   const [askJivaOpen, setAskJivaOpen] = useState(false);
-  const [globalJivaOpen, setGlobalJivaOpen] = useState(false);
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
   // The Ask Jiva variation is a one-alert concept demo, anchored to whichever alert leads today's list.
   const firstAlertId = PROTOTYPE_ALERTS.find((a) => a.day === 'today')?.id ?? PROTOTYPE_ALERTS[0]?.id;
-  // The header's persistent Ask Jiva button has no alert of its own to anchor to — fall back to whichever one is selected, or the top alert otherwise.
-  const globalJivaAlert = selectedAlert ?? PROTOTYPE_ALERTS.find((a) => a.id === firstAlertId) ?? PROTOTYPE_ALERTS[0];
 
   const logAction = useCallback((item: LoggedActionItem) => {
     setLoggedActions((prev) => [item, ...prev]);
@@ -86,7 +81,6 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     setBriefFullSubScreen('main');
     setBriefViewMode('brief');
     setAskJivaOpen(false);
-    setGlobalJivaOpen(false);
   }, []);
 
   const openAlert = useCallback((id: string) => {
@@ -195,7 +189,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
         onDismiss={() => markResolved(selectedAlertId)}
         onUndoExecute={handleUndoExecute}
         isFirstAlert={!!selectedAlertId && selectedAlertId === firstAlertId}
-        onOpenAskJiva={() => { setAskJivaOpen(true); setGlobalJivaOpen(false); }}
+        onOpenAskJiva={() => setAskJivaOpen(true)}
         onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
       />
     );
@@ -216,12 +210,8 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
                 onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
                 onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
                 onFilteredChange={setFilteredAlertIds}
-                equalWidth={globalJivaOpen}
               />
               {detailPanel}
-              {globalJivaOpen && (
-                <AskJivaPanel key={globalJivaAlert.id} alert={globalJivaAlert} onClose={() => setGlobalJivaOpen(false)} equalWidth />
-              )}
             </>
           )}
         </div>
@@ -297,16 +287,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     <div className={styles.signalsPage}>
       <div className={styles.header}>
         <span className={styles.headerTitle}>Signals</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span
-            onClick={() => { goTab('alerts'); setAskJivaOpen(false); setGlobalJivaOpen((v) => !v); }}
-            className={`${motion.pressable} ${motion.btnPrimary}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: globalJivaOpen ? '#5f3880' : '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
-          >
-            <DiamondMascot size={15} /> Ask Jiva
-          </span>
-          <div className={styles.avatarCircle} />
-        </div>
+        <div className={styles.avatarCircle} />
       </div>
 
       <nav className={styles.tabBar}>
