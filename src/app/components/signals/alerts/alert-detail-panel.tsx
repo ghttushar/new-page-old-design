@@ -13,9 +13,20 @@ import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { AlertBadgeRow } from './alert-badge-row';
 import { DetailFooterBar } from './detail-footer-bar';
-import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, BackArrowIcon, SparkleIcon, AiDraftBadge } from './icons';
+import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge } from './icons';
+import { SignalsEmptyState } from '../common/signals-empty-state';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
+
+function AlertGlyphIcon({ color }: { color: string }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.5l6.5 11.5H1.5L8 1.5z" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M8 6.5v3" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="8" cy="11.3" r=".9" fill={color} />
+    </svg>
+  );
+}
 
 interface Props {
   alert: PrototypeAlert | null;
@@ -36,8 +47,8 @@ interface Props {
   /** Unused — every alert now renders the same detail layout. Kept optional so existing call sites don't need to change. */
   isFirstAlert?: boolean;
   onOpenAskJiva?: () => void;
-  /** Jumps to a specific alert — used by the empty state's category rows to open that category's top alert. */
-  onSelectAlert?: (id: string) => void;
+  /** Applies a category as the alert list's active filter — used by the empty state's category cards. */
+  onFilterCategory?: (category: string) => void;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -68,19 +79,7 @@ const CATEGORY_METRICS: { category: string; count: number; topAlertId: string }[
     .sort((a, b) => b.count - a.count);
 })();
 
-/** Total conic-gradient sweep for the donut design — computed once per render from whatever metrics are passed in. */
-function buildDonutGradient(metrics: { category: string; count: number }[], total: number): string {
-  let acc = 0;
-  const stops = metrics.map((m) => {
-    const start = (acc / total) * 360;
-    acc += m.count;
-    const end = (acc / total) * 360;
-    return `${CATEGORY_COLORS[m.category] ?? '#77469b'} ${start}deg ${end}deg`;
-  });
-  return `conic-gradient(${stops.join(', ')})`;
-}
-
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onSelectAlert }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onFilterCategory }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
@@ -91,7 +90,6 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   const [imageStudioOpen, setImageStudioOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [lastLogged, setLastLogged] = useState<{ label: string; sent: boolean } | null>(null);
-  const [categoryDesignIndex, setCategoryDesignIndex] = useState(0);
 
   useEffect(() => {
     setActionPickerOpen(false);
@@ -102,143 +100,21 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   }, [sel?.id]);
 
   if (!sel) {
-    const maxCategoryCount = CATEGORY_METRICS[0]?.count ?? 1;
-    const totalAlerts = CATEGORY_METRICS.reduce((sum, m) => sum + m.count, 0);
-    const jump = (id: string) => onSelectAlert?.(id);
-
-    const designs: { name: string; content: React.ReactNode }[] = [
-      {
-        name: 'Bars',
-        content: (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {CATEGORY_METRICS.map((m) => (
-              <div
-                key={m.category}
-                onClick={() => jump(m.topAlertId)}
-                className={motion.cardHover}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
-              >
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: CATEGORY_COLORS[m.category] ?? '#77469b', flex: 'none' }} />
-                <span style={{ font: '600 13px/1 Inter,sans-serif', color: '#23272d', flex: '0 0 122px' }}>{m.category}</span>
-                <span style={{ flex: 1, minWidth: 0, height: 6, borderRadius: 3, background: '#f1f2f4', overflow: 'hidden' }}>
-                  <span style={{ display: 'block', height: '100%', width: `${Math.max(8, Math.round((m.count / maxCategoryCount) * 100))}%`, background: CATEGORY_COLORS[m.category] ?? '#77469b', borderRadius: 3 }} />
-                </span>
-                <span style={{ font: '700 13px/1 Inter,sans-serif', color: '#23272d', flex: 'none', width: 22, textAlign: 'right' as const }}>{m.count}</span>
-              </div>
-            ))}
-          </div>
-        ),
-      },
-      {
-        name: 'Tiles',
-        content: (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-            {CATEGORY_METRICS.map((m) => (
-              <div
-                key={m.category}
-                onClick={() => jump(m.topAlertId)}
-                className={motion.cardHover}
-                style={{ padding: '16px 10px', border: '1px solid #eceef1', borderRadius: 9, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', textAlign: 'center' as const }}
-              >
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: CATEGORY_COLORS[m.category] ?? '#77469b', display: 'inline-block' }} />
-                <div style={{ font: '700 22px/1 Inter,sans-serif', color: '#23272d', marginTop: 10 }}>{m.count}</div>
-                <div style={{ font: '500 11px/1.3 Inter,sans-serif', color: '#6b7178', marginTop: 6 }}>{m.category}</div>
-              </div>
-            ))}
-          </div>
-        ),
-      },
-      {
-        name: 'Donut',
-        content: (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
-            <div style={{ width: 148, height: 148, borderRadius: '50%', background: buildDonutGradient(CATEGORY_METRICS, totalAlerts), flex: 'none', position: 'relative' as const }}>
-              <div style={{ position: 'absolute', inset: 24, borderRadius: '50%', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ font: '700 20px/1 Inter,sans-serif', color: '#23272d' }}>{totalAlerts}</div>
-                <div style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 3 }}>alerts</div>
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {CATEGORY_METRICS.map((m) => (
-                <div key={m.category} onClick={() => jump(m.topAlertId)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 8px', borderRadius: 6, cursor: 'pointer' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: CATEGORY_COLORS[m.category] ?? '#77469b', flex: 'none' }} />
-                  <span style={{ font: '500 12.5px/1 Inter,sans-serif', color: '#3d434b', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{m.category}</span>
-                  <span style={{ font: '700 12.5px/1 Inter,sans-serif', color: '#23272d', flex: 'none' }}>{m.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ),
-      },
-      {
-        name: 'Ranked',
-        content: (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {CATEGORY_METRICS.map((m, i) => (
-              <div
-                key={m.category}
-                onClick={() => jump(m.topAlertId)}
-                className={motion.rowHover}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 6px', borderBottom: i < CATEGORY_METRICS.length - 1 ? '1px solid #f1f2f4' : 'none', cursor: 'pointer' }}
-              >
-                <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#c3c7cd', flex: 'none', width: 18 }}>{String(i + 1).padStart(2, '0')}</span>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: CATEGORY_COLORS[m.category] ?? '#77469b', flex: 'none' }} />
-                <span style={{ font: '600 13.5px/1 Inter,sans-serif', color: '#23272d', flex: 1 }}>{m.category}</span>
-                <span style={{ font: '700 16px/1 Inter,sans-serif', color: '#23272d' }}>{m.count}</span>
-              </div>
-            ))}
-          </div>
-        ),
-      },
-      {
-        name: 'Cards',
-        content: (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
-            {CATEGORY_METRICS.map((m) => (
-              <div
-                key={m.category}
-                onClick={() => jump(m.topAlertId)}
-                className={motion.cardHover}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', border: '1px solid #eceef1', borderRadius: 9, background: '#fff', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
-              >
-                <span style={{ width: 36, height: 36, borderRadius: 9, background: (CATEGORY_COLORS[m.category] ?? '#77469b') + '14', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-                  <span style={{ font: '700 14px/1 Inter,sans-serif', color: CATEGORY_COLORS[m.category] ?? '#77469b' }}>{m.count}</span>
-                </span>
-                <span style={{ font: '600 13px/1.3 Inter,sans-serif', color: '#23272d' }}>{m.category}</span>
-              </div>
-            ))}
-          </div>
-        ),
-      },
-    ];
-    const design = designs[categoryDesignIndex % designs.length];
-
     return (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-        <div className={scrollStyles.sleekScroll} style={{ height: '100%', overflowY: 'auto', padding: '26px 28px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>By category — {design.name}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span
-                onClick={() => setCategoryDesignIndex((i) => (i - 1 + designs.length) % designs.length)}
-                className={motion.pressable}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: 6, border: '1px solid #dfe3ea', background: '#fff', cursor: 'pointer' }}
-              >
-                <BackArrowIcon size={11} />
-              </span>
-              <span style={{ font: '500 10.5px/1 Inter,sans-serif', color: '#9aa0a8', minWidth: 26, textAlign: 'center' as const }}>{categoryDesignIndex + 1}/{designs.length}</span>
-              <span
-                onClick={() => setCategoryDesignIndex((i) => (i + 1) % designs.length)}
-                className={motion.pressable}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: 6, border: '1px solid #dfe3ea', background: '#fff', cursor: 'pointer', transform: 'scaleX(-1)' }}
-              >
-                <BackArrowIcon size={11} />
-              </span>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 16 }}>{design.content}</div>
-        </div>
+        <SignalsEmptyState
+          icon={<AlertGlyphIcon color="#77469b" />}
+          title="Select an alert to view details"
+          subtitle="Here's a quick overview of your alerts and how many fall into each category. Click a category to filter the list."
+          categories={CATEGORY_METRICS.map((m) => ({
+            key: m.category,
+            label: m.category,
+            count: m.count,
+            unit: m.count === 1 ? 'alert' : 'alerts',
+            color: CATEGORY_COLORS[m.category] ?? '#77469b',
+            onClick: () => onFilterCategory?.(m.category),
+          }))}
+        />
       </div>
     );
   }

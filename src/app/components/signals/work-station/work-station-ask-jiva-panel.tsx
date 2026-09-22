@@ -75,7 +75,7 @@ export function WorkStationAskJivaPanel({ task, onClose }: Props) {
   const suggestions = ["What's this about?", 'What should I do next?', "What's the status?", 'Draft it'];
 
   return (
-    <div className={motion.contentFadeIn} style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+    <div className={motion.contentFadeIn} style={{ flex: '0 0 35%', maxWidth: '35%', minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 10, flex: 'none', background: 'linear-gradient(180deg, rgba(119,70,155,.05), transparent)' }}>
         <DiamondMascot size={26} />
         <div style={{ minWidth: 0 }}>

@@ -1,17 +1,42 @@
 import { useState } from 'react';
 import {
-  PROTOTYPE_ALERTS, MEETING_DETAILS,
+  PROTOTYPE_ALERTS, MEETING_DETAILS, MEETING_LIST,
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
 import { CloseIcon, ChevronDownIcon, SparkleIcon, AiDraftBadge } from '../alerts/icons';
+import { SourceIcon, SourceBadge } from '../alerts/source-icon';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import { StatusCircleIcon, OriginGlyph, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
+import { StatusCircleIcon, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
 const STATUS_ORDER: TaskStatus[] = ['open', 'in_progress', 'done'];
 const PRIORITY_ORDER: TaskPriority[] = ['High', 'Medium', 'Low'];
+
+/** The time-range tail of a meeting's "Today, 1 November · 10:30 – 11:15 AM" label — a compact timestamp for the small context card. */
+function extractMeetingTime(dateTimeLabel: string | undefined): string {
+  if (!dateTimeLabel) return '';
+  const parts = dateTimeLabel.split('·');
+  return parts[parts.length - 1].trim();
+}
+
+function slug(s: string): string {
+  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+/** The account this task's context traces back to — from its linked alert or meeting — used to synthesize a plausible email domain / Slack channel for the mock email and Slack cards. */
+function accountFor(task: WorkstationTask, linkedAlert?: { account: string }): string | undefined {
+  if (linkedAlert) return linkedAlert.account;
+  if (task.meetingId) return MEETING_LIST.find((m) => m.id === task.meetingId)?.account;
+  return undefined;
+}
+
+function emailAddressFor(name: string, account?: string): string {
+  const [first, ...rest] = name.trim().toLowerCase().split(/\s+/);
+  const local = rest.length ? `${first}.${rest[rest.length - 1]}` : first;
+  return `${local}@${account ? slug(account) : 'company'}.com`;
+}
 
 interface Props {
   task: WorkstationTask;
@@ -40,7 +65,7 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
   const linkedMeeting = task.origin === 'meeting' && task.meetingId ? MEETING_DETAILS[task.meetingId] : undefined;
 
   return (
-    <div className={motion.slideInRight} style={{ flex: '0 0 420px', maxWidth: '46%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className={motion.slideInRight} style={{ flex: 1, minWidth: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f2f4', display: 'flex', alignItems: 'flex-start', gap: 12, flex: 'none', background: 'radial-gradient(circle at 88% -20%, rgba(119,70,155,.06), transparent 55%)' }}>
         <span style={{ flex: 1, minWidth: 0, font: `${task.status === 'done' ? '500' : '600'} 15px/1.4 Inter,sans-serif`, color: '#23272d', textDecoration: task.status === 'done' ? 'line-through' : 'none' }}>{task.text}</span>
         <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: 4, flex: 'none' }}><CloseIcon size={13} /></span>
@@ -148,26 +173,97 @@ export function WorkStationDetailPanel({ task, onClose, onReassign, onSetStatus,
           </div>
           <div className={`${motion.accordionRow} ${contextOpen ? motion.accordionRowOpen : ''}`}>
             <div style={{ paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {task.origin === 'alert' && (
-                <>
-                  <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
+              {task.contextSources?.length ? (
+                task.contextSources.map((source, i) => {
+                  const account = accountFor(task, linkedAlert);
+                  if (source === 'meeting') {
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => task.meetingId && onOpenMeeting?.(task.meetingId)}
+                        className={`${motion.pressable} ${motion.cardHover}`}
+                        style={{ padding: '11px 13px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+                      >
+                        <SourceBadge source="meeting" size={22} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ font: '600 13px/1.4 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{task.meetingLabel ?? 'Meeting'}</div>
+                          <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 2 }}>{linkedMeeting?.attendees?.[0]?.name ?? 'Host TBD'}</div>
+                        </div>
+                        <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#6b7178', flex: 'none' }}>{extractMeetingTime(linkedMeeting?.dateTimeLabel)}</span>
+                      </div>
+                    );
+                  }
+                  const log = task.logs.find((l) => l.text.toLowerCase().includes(source));
+                  const sender = task.createdBy;
+                  if (source === 'email') {
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => {}}
+                        className={`${motion.pressable} ${motion.cardHover}`}
+                        style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                          <SourceBadge source="email" size={18} />
+                          <span style={{ flex: 1, minWidth: 0, font: '600 11.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>Re: {task.text}</span>
+                          <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>{log?.time ?? ''}</span>
+                        </div>
+                        <div style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{emailAddressFor(sender, account)}</div>
+                        <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                          {log?.text ?? 'Followed up over email.'}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => {}}
+                      className={`${motion.pressable} ${motion.cardHover}`}
+                      style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <SourceBadge source="slack" size={18} />
+                        <span style={{ flex: 1, minWidth: 0, font: '600 11.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{`#${account ? slug(account) : 'team'}-pod`}</span>
+                        <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>{log?.time ?? ''}</span>
+                      </div>
+                      <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', marginTop: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                        <span style={{ fontWeight: 600, color: '#3d434b' }}>{sender}: </span>
+                        {log?.text ?? 'Discussed in Slack.'}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : task.origin === 'alert' ? (
+                <div
+                  onClick={() => onOpenAlert?.(task.alertId!)}
+                  className={`${motion.pressable} ${motion.cardHover}`}
+                  style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <SourceIcon origin={linkedAlert?.originType ?? 'anarix'} size={13} />
+                    <span style={{ flex: 1, minWidth: 0, font: '600 11.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{linkedAlert?.account ?? 'Alert'}</span>
+                    <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>{linkedAlert?.time}</span>
+                  </div>
+                  <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', marginTop: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                    <span style={{ fontWeight: 600, color: '#3d434b' }}>{linkedAlert?.title ?? task.alertId}: </span>
                     {linkedAlert?.aiSummary ?? `Raised from an alert on ${linkedAlert?.account ?? 'this account'}.`}
                   </div>
-                  <span onClick={() => onOpenAlert?.(task.alertId!)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>
-                    <OriginGlyph origin="alert" size={15} /> {linkedAlert?.title ?? task.alertId} →
-                  </span>
-                </>
-              )}
-              {task.origin === 'meeting' && (
-                <>
-                  <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
-                    {linkedMeeting?.agenda ?? `Came out of the "${task.meetingLabel}" meeting.`}
+                </div>
+              ) : task.origin === 'meeting' ? (
+                <div
+                  onClick={() => onOpenMeeting?.(task.meetingId!)}
+                  className={`${motion.pressable} ${motion.cardHover}`}
+                  style={{ padding: '11px 13px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+                >
+                  <SourceBadge source="meeting" size={22} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ font: '600 13px/1.4 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{task.meetingLabel}</div>
+                    <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 2 }}>{linkedMeeting?.attendees?.[0]?.name ?? 'Host TBD'}</div>
                   </div>
-                  <span onClick={() => onOpenMeeting?.(task.meetingId!)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }} onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}>
-                    <OriginGlyph origin="meeting" size={15} /> {task.meetingLabel} →
-                  </span>
-                </>
-              )}
+                  <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#6b7178', flex: 'none' }}>{extractMeetingTime(linkedMeeting?.dateTimeLabel)}</span>
+                </div>
+              ) : null}
               {task.origin === 'generative' && (
                 <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
                   Synthesized from patterns across recent alerts and meetings on this account, rather than tied to any one of them.

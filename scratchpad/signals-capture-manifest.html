@@ -1,0 +1,605 @@
+<title>Signals Capture Manifest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ground: #f7f6f9;
+    --surface: #ffffff;
+    --surface-2: #fbfafd;
+    --border: #e3e0ea;
+    --border-soft: #ece9f1;
+    --ink: #23272d;
+    --ink-muted: #6b7178;
+    --ink-faint: #767c86;
+    --accent: #77469b;
+    --accent-soft: #f3eefa;
+    --accent-strong: #5f3880;
+    --good: #2f6b58;
+    --good-soft: #eaf5f1;
+    --flag: #8a5a25;
+    --flag-soft: #fbf3e8;
+    --shadow: 0 1px 2px rgba(35, 25, 50, 0.04);
+    --shadow-lift: 0 12px 28px rgba(35, 25, 50, 0.14);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #17151d;
+      --surface: #201d28;
+      --surface-2: #262231;
+      --border: #362f45;
+      --border-soft: #2c2736;
+      --ink: #ede9f2;
+      --ink-muted: #a79db8;
+      --ink-faint: #948aa6;
+      --accent: #b28fd1;
+      --accent-soft: #2f2740;
+      --accent-strong: #d3bbe8;
+      --good: #7fd2b6;
+      --good-soft: #1f3730;
+      --flag: #e0b17d;
+      --flag-soft: #3a2f22;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-lift: 0 16px 36px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #17151d;
+    --surface: #201d28;
+    --surface-2: #262231;
+    --border: #362f45;
+    --border-soft: #2c2736;
+    --ink: #ede9f2;
+    --ink-muted: #a79db8;
+    --ink-faint: #948aa6;
+    --accent: #b28fd1;
+    --accent-soft: #2f2740;
+    --accent-strong: #d3bbe8;
+    --good: #7fd2b6;
+    --good-soft: #1f3730;
+    --flag: #e0b17d;
+    --flag-soft: #3a2f22;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-lift: 0 16px 36px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font: 400 14px/1.55 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  h1, h2, h3 { font-family: 'Archivo', system-ui, sans-serif; text-wrap: balance; margin: 0; }
+  code, .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  a { color: var(--accent-strong); }
+
+  .shell {
+    display: flex;
+    align-items: flex-start;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+    gap: 32px;
+  }
+
+  /* ---------- Header ---------- */
+  .page-header {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 34px 24px 0;
+  }
+  .eyebrow {
+    font: 600 11px/1 'IBM Plex Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-top: 8px;
+  }
+  .page-header p {
+    max-width: 62ch;
+    color: var(--ink-muted);
+    margin-top: 10px;
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+  .header-bottom {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .progress-wrap { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px; }
+  .progress-track {
+    flex: 1;
+    height: 7px;
+    border-radius: 99px;
+    background: var(--border-soft);
+    overflow: hidden;
+    min-width: 140px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 260ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .progress-label {
+    font: 600 13px/1 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .reset-btn {
+    font: 500 12.5px/1 'IBM Plex Sans', sans-serif;
+    color: var(--ink-muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+  .reset-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .reset-btn:focus-visible, a:focus-visible, .rail-link:focus-visible, .row summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  /* ---------- Layout: rail + content ---------- */
+  .rail {
+    position: sticky;
+    top: 28px;
+    flex: 0 0 216px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  .rail-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--ink-muted);
+    font: 500 13px/1.3 'IBM Plex Sans', sans-serif;
+    transition: background 150ms ease, color 150ms ease;
+  }
+  .rail-link:hover { background: var(--surface-2); color: var(--ink); }
+  .rail-count {
+    font: 500 11px/1 'IBM Plex Mono', monospace;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    flex: none;
+  }
+  .rail-count.done { color: var(--good); }
+
+  .content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 40px; }
+
+  section.tab-section { scroll-margin-top: 20px; }
+  .section-head { margin-bottom: 14px; }
+  .section-head .eyebrow { display: block; }
+  .section-head h2 { font-size: 19px; margin-top: 4px; }
+  .section-head .note { color: var(--ink-faint); font-size: 12.5px; margin-top: 5px; max-width: 68ch; }
+
+  .screens { display: flex; flex-direction: column; gap: 8px; }
+
+  .row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+  .row-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    cursor: pointer;
+  }
+  .row-main input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+
+  .box {
+    flex: none;
+    width: 19px;
+    height: 19px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .row.done .box { background: var(--good); border-color: var(--good); }
+  .box svg { opacity: 0; transform: scale(0.6); transition: opacity 120ms ease, transform 120ms ease; }
+  .row.done .box svg { opacity: 1; transform: scale(1); }
+
+  .row-body { flex: 1; min-width: 0; }
+  .row-title-line { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .row-title {
+    font: 600 13.5px/1.4 'IBM Plex Sans', sans-serif;
+    color: var(--ink);
+  }
+  .row.done .row-title { color: var(--ink-muted); }
+
+  .chip {
+    font: 600 11px/1.3 'IBM Plex Mono', monospace;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 4px;
+    flex: none;
+  }
+  .chip.flag { background: var(--flag-soft); color: var(--flag); }
+  .chip.captured { background: var(--good-soft); color: var(--good); }
+
+  .trigger {
+    display: block;
+    margin-top: 3px;
+    font: 500 11.5px/1.5 'IBM Plex Mono', monospace;
+    color: var(--accent);
+  }
+  .trigger.is-flag { color: var(--flag); }
+
+  .elements {
+    margin-top: 7px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    transition: opacity 150ms ease;
+  }
+  .row.done .elements { opacity: 0.55; }
+  .elements b { color: var(--ink); font-weight: 600; }
+
+  .shared-note {
+    background: var(--accent-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--accent-strong);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    color: var(--ink-faint);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  footer code { background: var(--surface-2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 860px) {
+    .shell { flex-direction: column; }
+    .rail { position: static; flex-direction: row; flex-wrap: wrap; max-height: none; width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="page-header">
+  <span class="eyebrow">Signals · design handoff</span>
+  <h1>Signals Capture Manifest</h1>
+  <p>Every screen, state and variation in the Signals feature (Brief, Alerts, Meetings, Work-station) plus the Campaign Manager bulk-upload flow — one row per thing to open in the app and pull into Figma with <strong>html.to.design</strong>. Work top to bottom, check a row off once its frame exists in Figma. Progress is saved in this browser only.</p>
+  <div class="header-bottom">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0 / 0 captured</span>
+    </div>
+    <button class="reset-btn" id="resetBtn" type="button">Reset progress</button>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Jump to section"></nav>
+  <main class="content" id="content"></main>
+</div>
+
+<footer>
+  Rows tagged <span class="chip flag" style="display:inline-block;vertical-align:middle;">code-only</span> aren't reachable by clicking anything in the running app — they're wired up in the code but nothing currently calls them. To view one, open the file named in its note and either temporarily change the initial state it mentions, or call the prop/handler directly from React DevTools, capture the screen, then revert the change. Everything else is one click, hover or drag away from where you already are.
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'signals-capture-manifest-v1';
+
+  var SECTIONS = [
+    {
+      id: 'global', tab: 'Global chrome',
+      note: 'Present on every Signals screen — capture once, reuse as a Figma component rather than redrawing it in each frame.',
+      screens: [
+        { id: 'g1', name: 'Left sidebar navigation', trigger: 'Always visible',
+          elements: '<b>Signals</b> entry now shows the Jiva mascot icon (the diamond-shaped coral mascot), no separate "JIVA" entry beneath it anymore · Profitability, Advertising, Day Parting, Rules, Catalog, AMC, Business Intelligence, Settings, Reports groups below it, each expandable' },
+        { id: 'g2', name: 'Signals header + tab bar', trigger: 'Always visible on any Signals tab',
+          elements: '"Signals" page title, avatar circle (top right) · tab row: Brief / Alerts / Meetings / Work-station with active-tab underline · right side of that same row: a context toggle that changes per tab (Brief/Dashboard, or Normal/Speed, or nothing) plus the date-range button' },
+        { id: 'g3', name: 'Date-range popover', trigger: 'Click the date-range button in the tab bar',
+          elements: 'Month label with ‹ › navigation arrows · 7-column day grid with today highlighted · "Today" and "This week" buttons at the bottom' },
+        { id: 'g4', name: 'Toast notification', trigger: 'After logging an action, sending mail, creating a task, sending a reminder, uploading, etc. — fires from many places, capture once',
+          elements: 'Dark rounded pill, bottom-right of the panel · small icon, one line of message text, small X to dismiss · clears itself after ~2.5–3s' },
+      ],
+    },
+    {
+      id: 'brief', tab: 'Brief',
+      note: 'The "Brief / Dashboard" toggle lives in the tab bar, top right.',
+      screens: [
+        { id: 'b1', name: 'Brief — default', trigger: 'Default landing screen when you open Signals',
+          elements: '<b>Summary card</b>: date/time line, one-sentence headline, 4-column stat grid (Critical alerts, At risk, Verified gain, Meetings today — each with an icon and a colored top edge) · <b>"While you were away"</b> card: Jiva-activity rows, each with a label, detail+time, an optional impact value, an optional "View impact" button · <b>"High-priority alerts"</b> card: 5 rows (dot, title, meta, value, "Review" button) plus a "View all 12" header link · <b>"Messages"</b> card: source-brand icon, sender name with unread dot, subject, preview line, timestamp, plus an unread count in the header · <b>"Today\'s meetings"</b> card: time, title, meta, a thin progress bar, and a trailing action that changes by row — a solid "Prepare" button, plain "Ready" text, or muted grey text — plus an "All meetings" header link' },
+        { id: 'b2', name: 'Brief — Nudge panel', flag: 'code-only',
+          trigger: "src/app/components/signals/brief/brief-full.tsx — the onNudgeOpen prop is wired but no button in the file calls it. Call it once from React DevTools (or add a temporary button) to view.",
+          elements: 'Third column, same height as the other two: "Nudge Ritvik on Slack" header, one paragraph of context, a mini alert-summary card, a boxed message preview, "Send nudge" and "Cancel" buttons' },
+        { id: 'b3', name: 'Brief — No-integration state', flag: 'code-only',
+          trigger: "src/app/components/pages/signals-page/signals-page.tsx — change the useState initial value for briefState from 'full' to 'nointeg'.",
+          elements: '3-column stat header (Critical alerts, At risk, Verified gain) · "Top alerts" card · dashed-border "Meetings are switched off" card with Google Calendar and Meeting bot "Connect" rows · "Account goals" card with two progress bars · "Your engagement" card (9-day streak, 7-bar strip)' },
+        { id: 'b4', name: 'Brief — Onboarding, step 1 of 4', flag: 'code-only',
+          trigger: "src/app/components/pages/signals-page/signals-page.tsx — change the useState initial value for briefState to 'onboard'.",
+          elements: 'Progress bar + "Step 1 of 4" · highlighted "Account goals" card: Metric / Target / By fields already filled, a ghost "add another metric" row, "Save and continue" and "Skip for now" buttons · three locked step rows below (Calendar, WhatsApp or Slack, Meeting bot), each numbered with a "Connect" button or two' },
+        { id: 'b5', name: 'Dashboard', trigger: 'Click "Dashboard" in the tab-bar toggle',
+          elements: 'Tiny streak strip, top right (day count + 9 mini bars) · 5 reassignable KPI cards, each with a colored left edge, a metric label with a dropdown chevron, a trend pill, the value, and a prev-7-days line · "14-day trend" card: 5 metric-switcher pills, a big value with a trend arrow, and a filled sparkline chart · "Account goals" card (progress bars) · "Recent actions & impact" card (dot, label, impact value, meta line, per row)' },
+        { id: 'b6', name: 'Dashboard — KPI metric picker open', trigger: 'Click any KPI card\'s label (the small caps text with the chevron)',
+          elements: 'Dropdown list of swappable metrics, each with a color dot; the currently-shown metric is highlighted' },
+      ],
+    },
+    {
+      id: 'alerts', tab: 'Alerts',
+      note: 'The "Normal / Speed" toggle lives in the tab bar, top right. The list panel on the left is shared by both modes.',
+      screens: [
+        { id: 'a1', name: 'List panel', trigger: 'Always visible in Normal mode; present but not the focus in Speed mode',
+          elements: 'Search input · "Filter" button with an active-filter count badge · rows grouped under "TODAY" / "YESTERDAY" headers, each with its own count · each alert row: value, impact string (plus a dotted-underline breakdown link that opens the Items modal), title, a badge row (Priority pill · divider · Category pill · divider · marketplace circle(s) · divider · source circle + a repeat icon + a meeting icon, each only if relevant), timestamp, a "⋯" menu, and an Assign icon button · resolved rows get a green "Resolved" badge and dim slightly · empty state: "No alerts match"' },
+        { id: 'a1b', name: 'List panel — Filter popover open', trigger: 'Click "Filter"',
+          elements: 'Impact-value row (>/</= operator toggle + a $ amount input) · Category checkbox list · Source checkbox list · Priority checkbox list (each with its colored dot) · "Clear all" button' },
+        { id: 'a1c', name: 'List panel — row "⋯" menu open', trigger: 'Click the ⋯ on any alert row',
+          elements: 'Main menu: Share, Dismiss · Share submenu: Email, Workspace · pod option(s)' },
+        { id: 'a1d', name: 'List panel — row Assign', trigger: 'Click the Assign (person) icon on a row',
+          elements: 'Small assignees ≤15: an inline searchable dropdown attached to the row · larger lists: a centered full "Assign to" popup modal with its own search field' },
+        { id: 'a2', name: 'Detail panel — empty', trigger: 'Open the Alerts tab with nothing selected',
+          elements: 'Animated mark graphic that tilts with the mouse · "Select an alert to get started" heading + one line of subtext · "Jump back in" list of 3 clickable high-priority alerts with their values' },
+        { id: 'a3', name: 'Detail panel — normal alert', trigger: 'Click any alert in the list other than the first row under Today',
+          elements: '<b>Header</b>: Priority + Category badges, divider, marketplace icon(s), divider, source icon + repeat/meeting icons, divider, country · account, timestamp — then title, subheader, value with an info icon, and a Verified/Estimated tag · <b>"Why it happened"</b> — one merged paragraph, no card border · <b>"Business impact"</b> — heading with a 2-column Revenue/Confidence stat grid below it · <b>"AI summary"</b> — collapsed by default, a chevron expands it · <b>"Choose your strategy"</b> — the one section with a visible purple border: an optional recommended-action-type badge, then radio rows (label, optional "Recommended" tag, description, est. impact + confidence), a "Choose action type" link on Other/Meeting-ask rows, and Execute + Dismiss buttons at the bottom · <b>"Affected items"</b> card — first 4 rows plus a "Show all N" link · <b>sticky footer</b> — Assign, Share, and a "Rate these results" thumbs up/down' },
+        { id: 'a3b', name: 'Detail panel — thumbs-down feedback popover', trigger: 'Click the thumbs-down in the sticky footer',
+          elements: '"Help us make it better for you" heading, a feedback textarea, Send and Cancel buttons' },
+        { id: 'a4', name: 'Detail panel — first alert, Ask Jiva variation', trigger: 'Click the first alert in today\'s list',
+          elements: 'Simplified header — just title, subheader, value + info icon, and timestamp, none of the badges or icons from the normal header · an "Ask Jiva about this alert" card in place of the AI summary section · everything else (Why it happened, Business impact, Choose your strategy, sticky footer) is the same as a normal alert' },
+        { id: 'a4b', name: 'Ask Jiva chat panel', trigger: 'Click the "Ask Jiva about this alert" card',
+          elements: 'Replaces the entire list-panel column (same width/position), with a close (X) in its header · greeting message from Jiva · a row of suggested-question chips (shown until the first reply) · scrolling message thread with user/assistant bubbles · text input + send button at the bottom' },
+        { id: 'a5', name: 'Detail panel — executing', trigger: 'Click Execute on a direct-commit strategy option',
+          elements: 'Status dot + "Applying changes" / "Completed" label, percentage on the right · alert title · a filling progress bar · helper line ("You can leave this alert…") · an "Undo" button while under 100%, replaced by "View impact report" once it completes' },
+        { id: 'a6', name: 'Detail panel — report', trigger: 'Click "View impact report" once an execution completes',
+          elements: '"Verified over 7 days…" label · a recovered-dollar headline · a before/after/change table (Conversion, Net profit) · "Back to alerts" button' },
+        { id: 'a7', name: 'Detail panel — generative review', trigger: 'Choose a non-image generative strategy option, e.g. rewriting listing copy, then Generate & review',
+          elements: '"Review generated content" heading + "AI DRAFT · NOT PUBLISHED" tag · a 2-column Live-now vs. Proposed-editable compare, the proposed side an editable textarea · a "Compliance passed" tag · Approve-and-publish / Cancel buttons' },
+        { id: 'a8', name: 'Image Studio', trigger: 'Choose a strategy option whose recommended action generates an image, then Execute',
+          elements: 'Tool-picker dropdown (3 tools) · a dashed "Use suggested prompt" chip (first turn only) · chat thread with a generating-dots state and, once ready, a 2×2 grid of selectable image results · text input with an attach icon and a send button · finalize bar: "Use [X] & publish" (disabled until an image is picked) and Cancel' },
+        { id: 'a9', name: 'Action Picker', trigger: 'Choose the "Do something else" / meeting-ask option on any alert, then Execute (or Share → this flow)',
+          elements: 'Search field over a category-grouped list of action types (a few tagged EMAIL or IMAGE GEN) · after picking one: a note textarea, a due-date field, an assignee dropdown, then "Save action", "Back", and "Send as email instead"' },
+        { id: 'a10', name: 'Compose Mail', trigger: 'Pick an email-flavored action type, or Share → Email',
+          elements: 'To / Cc / Bcc tag-inputs ("Add Cc" / "Add Bcc" links when hidden) · Subject field · body textarea, pre-drafted · "Drafted by Jiva" tag · Send / Discard buttons · a brief "Sent" confirmation state after sending' },
+        { id: 'a11', name: 'Items Modal', trigger: 'Click a "Show all N" or item-breakdown link on any alert',
+          elements: 'Search field · </> operator + a $ threshold field · a responsive multi-column grid of item rows (name, impact value) · a "Showing X of Y" counter' },
+        { id: 'a12', name: 'Speed Mode — card', trigger: 'Switch the tab-bar toggle to "Speed"',
+          elements: 'Position/total progress bar across the top · a fanned stack of cards behind the active one · draggable header (badges/icons, value + info icon, title, subheader, account, a drag-handle dot grid) · APPROVE / DENY stamps that fade in as you drag · a utility row (Assign, Share, Rate thumbs) · two-column body — left: an "Approving will…" summary card, a "Choose a different option" expandable list, a "Why it happened · root cause" expandable (still two separate boxes here), an "AI summary" expandable; right: always-visible Window / Revenue / Confidence stat tiles plus a "Show all items" link · large circular Deny (✕) and Approve (✓) buttons below the card' },
+        { id: 'a12b', name: 'Speed Mode — flash overlay', trigger: 'Click Approve or Deny, or swipe the card',
+          elements: 'A translucent overlay with a colored circular icon and "Approved" / "Denied" text, before the next card slides in' },
+        { id: 'a12c', name: 'Speed Mode — empty', trigger: 'Approve or deny every card in the current queue',
+          elements: 'Green check icon, "All caught up" heading, one line of subtext' },
+        { id: 'a12d', name: 'Speed Mode — overlay modals', trigger: 'Action Picker, Compose Mail, Image Studio, Items Modal and the large Assign popup all reopen here too',
+          elements: 'Same content as their Normal-mode versions (rows a8–a11, a1d), but centered as a floating modal over the card instead of filling an inline panel — worth one capture each for the modal chrome if you want the frame styling, otherwise reuse the Normal-mode content' },
+      ],
+    },
+    {
+      id: 'meetings', tab: 'Meetings',
+      note: 'No tab-bar toggle — one continuous flow: list → detail → prep → presentation, plus a separate minutes screen.',
+      screens: [
+        { id: 'm1', name: 'List panel', trigger: 'Default view of the Meetings tab',
+          elements: 'Search field · "Needs discussion only" toggle · Upcoming / Completed tabs · each row: time, account tag, a readiness percentage, title, "N alerts mapped · N tasks open" meta, a thin progress bar, and a "Details" button — completed rows show a "Verify MOM" button instead' },
+        { id: 'm2', name: 'Detail panel — empty', trigger: 'Open Meetings with nothing selected',
+          elements: '"Select a meeting" empty state, matching the Alerts empty-state style' },
+        { id: 'm3', name: 'Detail panel — populated', trigger: 'Click any meeting in the list',
+          elements: 'Header: date/time, title, attendees, a resolved-percentage ring and bar · "Prepare for meeting" button · "Attach an alert" button opening a searchable popover · a 2-column Agenda / Account-study card · "Important metric changes" stat grid · "Linked alerts" list (clicking a row jumps to that alert\'s Detail panel in Alerts)' },
+        { id: 'm4', name: 'Prep', trigger: 'Click "Prepare for meeting"',
+          elements: 'Back link + breadcrumb · "Preparation summary" header with a "Create presentation" button · an Account-performance stat grid · 2-column Positives / Negatives lists · a "Relevant alerts, actions & impact" table · "Discussion points" card with inline-editable rows and a "+ Add a discussion point" row' },
+        { id: 'm5', name: 'Presentation', trigger: 'Click "Create presentation" from Prep',
+          elements: 'Back link · header with the title, a "View report in MCP" button (has its own opening → opened state), and an "Edit" toggle · Section 1 (metrics grid), Section 2 (account-study prose), Section 3 (actions table), Section 4 (the asks — becomes an editable textarea in Edit mode) · a dashed "Pre-populated MCP prompt" box' },
+        { id: 'm6', name: 'MOM (minutes)', trigger: 'Click "Verify MOM" on a completed meeting in the list',
+          elements: 'Back link · header · an editable summary paragraph · a decisions list · a tasks table · "Send MOM to client" button with a sent-confirmation state · a task count in the header' },
+      ],
+    },
+    {
+      id: 'workstation', tab: 'Work-station',
+      note: 'One screen, no sub-modes or toggles.',
+      screens: [
+        { id: 'w1', name: 'Work-station', trigger: 'Default view of the Work-station tab',
+          elements: '<b>Left, "Assigned to me"</b> card: a done-count header, then rows of title + meta (from/meeting, ETA or due date, a "you sent a reminder…" note where relevant), with the trailing control changing by status — Accept/Decline buttons while pending, a green "Done" pill once done, or an Accepted↔In progress↔Done status dropdown in between · <b>top right, streak strip</b>: Jiva mascot, an N-day streak count, a 5-day bar strip for the work week · <b>bottom right, "Assigned by me"</b> card: an outstanding-count header plus a "Create task" button that expands an inline form (textarea, assignee dropdown, ETA field, Create/Assign button), then rows of avatar + title + status pill + assignee + ETA, each with a "Send reminder" button' },
+        { id: 'w2', name: 'Streak celebration', trigger: 'Move any task in "Assigned to me" to Done',
+          elements: 'A short confetti burst confined to the streak card, the mascot pulses slightly, and a small speech-bubble pops up above it with a one-line congratulatory quip — clears itself after ~2.4s, so have the capture tool ready before you toggle the task' },
+      ],
+    },
+    {
+      id: 'campaign-manager', tab: 'Campaign Manager', note: 'Advertising module, not under the Signals tabs — included because its bulk-upload flow was redesigned this round.',
+      screens: [
+        { id: 'c1', name: 'Edit-mode bulk actions bar', trigger: 'Advertising → Campaign Manager, switch the View/Edit toggle above a campaign table to "Edit"',
+          elements: 'View/Edit toggle · a row of bulk-action buttons (Active, Pause, Tag, End Date, Daily Budget, Total Budget, Bulk Edit Upload) · Cancel / Save on the right' },
+        { id: 'c2', name: 'Bulk Edit Upload popup', trigger: 'Click "Bulk Edit Upload" in that bar',
+          elements: 'Header, subtitle, close button · "Download data" section (Download All / Download with Filters) · a drag-and-drop zone with a browse link · file rows, one already seeded in each state so you can capture all three at once — validating (purple progress sweep), failed (red error callout with a "show all N issues" toggle), and validated — plus uploading/uploaded once you trigger Upload · footer: a ready-count, Cancel, and Upload' },
+      ],
+    },
+    {
+      id: 'shared', tab: 'Shared components', note: 'Not separate frames — build each of these once as a reusable Figma component, since they repeat across nearly every screen above.',
+      screens: [
+        { id: 's1', name: 'HoverTip', trigger: 'Hover almost any icon or truncated title across Alerts/Meetings',
+          elements: 'Dark rounded pill, small arrow-free tooltip that flips above/below and clamps horizontally so it never runs off-screen' },
+        { id: 's2', name: 'Icon set', trigger: 'n/a — used throughout',
+          elements: 'Sparkle, Diamond, Assign, Share, Dismiss, Check, X, Thumb up/down, Envelope, Workspace grid, Close, Back arrow, Bolt, Repeat (a duplicate/stack glyph — not a refresh icon), Meeting (a video-camera glyph — not a calendar), Info, Chevron down' },
+        { id: 's3', name: 'Marketplace &amp; source badges', trigger: 'n/a — the small colored circles next to every alert title',
+          elements: 'Amazon (grey circle, white glyph), Walmart (blue circle, white spark), Anarix (purple circle, white mark), Jiva (teal circle), Meeting (blue circle, camera glyph), Email (slate circle), Slack (white circle, official 4-color mark), Google Workspace (white circle, official 4-color "G")' },
+        { id: 's4', name: 'Jiva mascot', trigger: 'n/a — appears at several sizes',
+          elements: 'The coral diamond mascot with fixed eyes, used in the nav (20px), the streak card (34px / 24px in the celebration bubble), and the Ask Jiva entry point and chat header (26px / 20px)' },
+      ],
+    },
+  ];
+
+  var content = document.getElementById('content');
+  var rail = document.getElementById('rail');
+  var state = {};
+
+  try {
+    state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch (e) { state = {}; }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function checkSvg() {
+    return '<svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 8.2l3.3 3.3L13 4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  SECTIONS.forEach(function (section) {
+    var railLink = document.createElement('a');
+    railLink.className = 'rail-link';
+    railLink.href = '#sec-' + section.id;
+    railLink.innerHTML = '<span>' + section.tab + '</span><span class="rail-count mono" id="count-' + section.id + '">0/0</span>';
+    rail.appendChild(railLink);
+
+    var sec = document.createElement('section');
+    sec.className = 'tab-section';
+    sec.id = 'sec-' + section.id;
+
+    var head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = '<span class="eyebrow">' + section.tab + '</span><h2>' + section.tab + '</h2>' +
+      (section.note ? '<div class="note">' + section.note + '</div>' : '');
+    sec.appendChild(head);
+
+    if (section.id === 'shared') {
+      var note = document.createElement('div');
+      note.className = 'shared-note';
+      note.textContent = 'Build these as Figma components before you start on the screens above — every screen references at least one.';
+      sec.appendChild(note);
+    }
+
+    var list = document.createElement('div');
+    list.className = 'screens';
+
+    section.screens.forEach(function (screen) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.dataset.id = screen.id;
+
+      var main = document.createElement('label');
+      main.className = 'row-main';
+
+      var box = document.createElement('span');
+      box.className = 'box';
+      box.innerHTML = checkSvg();
+
+      var input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = !!state[screen.id];
+
+      var body = document.createElement('div');
+      body.className = 'row-body';
+
+      var titleLine = document.createElement('div');
+      titleLine.className = 'row-title-line';
+      titleLine.innerHTML = '<span class="row-title">' + screen.name + '</span>' +
+        (screen.flag ? '<span class="chip flag">' + screen.flag + '</span>' : '');
+      body.appendChild(titleLine);
+
+      var trig = document.createElement('span');
+      trig.className = 'trigger' + (screen.flag ? ' is-flag' : '');
+      trig.textContent = screen.trigger;
+      body.appendChild(trig);
+
+      var els = document.createElement('div');
+      els.className = 'elements';
+      els.innerHTML = screen.elements;
+      body.appendChild(els);
+
+      main.appendChild(input);
+      main.appendChild(box);
+      main.appendChild(body);
+      row.appendChild(main);
+      list.appendChild(row);
+
+      function sync() {
+        row.classList.toggle('done', input.checked);
+      }
+      sync();
+
+      input.addEventListener('change', function () {
+        state[screen.id] = input.checked;
+        save();
+        sync();
+        updateCounts();
+      });
+    });
+
+    sec.appendChild(list);
+    content.appendChild(sec);
+  });
+
+  var ALL_IDS = SECTIONS.reduce(function (acc, s) { return acc.concat(s.screens.map(function (sc) { return sc.id; })); }, []);
+
+  function updateCounts() {
+    var totalDone = 0, totalAll = ALL_IDS.length;
+    SECTIONS.forEach(function (section) {
+      var done = section.screens.filter(function (sc) { return !!state[sc.id]; }).length;
+      var total = section.screens.length;
+      totalDone += done;
+      var el = document.getElementById('count-' + section.id);
+      if (el) {
+        el.textContent = done + '/' + total;
+        el.classList.toggle('done', done === total && total > 0);
+      }
+    });
+    document.getElementById('progressLabel').textContent = totalDone + ' / ' + totalAll + ' captured';
+    document.getElementById('progressFill').style.transform = 'scaleX(' + (totalAll ? (totalDone / totalAll) : 0) + ')';
+  }
+
+  updateCounts();
+
+  var resetBtn = document.getElementById('resetBtn');
+  var resetArmed = false;
+  var resetTimer = null;
+  resetBtn.addEventListener('click', function () {
+    if (!resetArmed) {
+      resetArmed = true;
+      resetBtn.textContent = 'Click again to clear all';
+      resetTimer = window.setTimeout(function () {
+        resetArmed = false;
+        resetBtn.textContent = 'Reset progress';
+      }, 4000);
+      return;
+    }
+    window.clearTimeout(resetTimer);
+    resetArmed = false;
+    resetBtn.textContent = 'Reset progress';
+    state = {};
+    save();
+    document.querySelectorAll('.row-main input[type="checkbox"]').forEach(function (input) {
+      input.checked = false;
+      input.closest('.row').classList.remove('done');
+    });
+    updateCounts();
+  });
+})();
+</script>

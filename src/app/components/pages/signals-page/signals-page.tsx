@@ -3,7 +3,6 @@ import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
 import { SIGNAL_TABS, type SignalTabKey, type BriefState } from '@/constants/signals/tabs.constants';
 import { BriefFull } from '../../signals/brief/brief-full';
-import { BriefDashboard } from '../../signals/brief/brief-dashboard';
 import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
 import { BriefOnboard } from '../../signals/brief/brief-onboard';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
@@ -30,15 +29,15 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
   const [filterMarketplaces, setFilterMarketplaces] = useState<MpBrand[]>([]);
   const [filterCountries, setFilterCountries] = useState<string[]>([]);
   const [filterBrands, setFilterBrands] = useState<string[]>([]);
-  const [briefFullSubScreen, setBriefFullSubScreen] = useState<'main' | 'nudge'>('main');
   const [alertPhase, setAlertPhase] = useState<'view' | 'executing' | 'report' | 'genReview'>('view');
   const [execProgress, setExecProgress] = useState(0);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
   const [loggedActions, setLoggedActions] = useState<LoggedActionItem[]>([]);
-  const [briefViewMode, setBriefViewMode] = useState<'brief' | 'dashboard'>('brief');
   const [resolvedAlertIds, setResolvedAlertIds] = useState<Set<string>>(new Set());
   const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
   const [askJivaOpen, setAskJivaOpen] = useState(false);
+  const [applyCategoryFilter, setApplyCategoryFilter] = useState<{ category: string; nonce: number } | null>(null);
+  const [applyMeetingFilter, setApplyMeetingFilter] = useState<{ kind: 'day' | 'status' | 'mom' | 'clear'; value?: string; nonce: number } | null>(null);
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
   // The Ask Jiva variation is a one-alert concept demo, anchored to whichever alert leads today's list.
@@ -78,8 +77,6 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     setSelectedMeetingId(null);
     setMeetingAskJivaOpen(false);
     setAlertPhase('view');
-    setBriefFullSubScreen('main');
-    setBriefViewMode('brief');
     setAskJivaOpen(false);
   }, []);
 
@@ -154,18 +151,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
         <div style={{ flex: 1, minHeight: 0 }}>
-          {briefViewMode === 'dashboard' ? (
-            <BriefDashboard />
-          ) : (
-            <BriefFull
-              onAlertClick={openAlert}
-              onMeetingClick={() => { goTab('meetings'); }}
-              subScreen={briefFullSubScreen}
-              onNudgeOpen={() => setBriefFullSubScreen('nudge')}
-              onNudgeClose={() => setBriefFullSubScreen('main')}
-              onScopeChange={() => {}}
-            />
-          )}
+          <BriefFull />
         </div>
       </div>
     );
@@ -190,7 +176,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
         onUndoExecute={handleUndoExecute}
         isFirstAlert={!!selectedAlertId && selectedAlertId === firstAlertId}
         onOpenAskJiva={() => setAskJivaOpen(true)}
-        onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); }}
+        onFilterCategory={(category) => setApplyCategoryFilter({ category, nonce: Date.now() })}
       />
     );
 
@@ -210,6 +196,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
                 onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
                 onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
                 onFilteredChange={setFilteredAlertIds}
+                applyCategoryFilter={applyCategoryFilter}
               />
               {detailPanel}
             </>
@@ -225,7 +212,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     const detailPanel = isCompleted ? (
       <MeetingMOM meetingId={selectedMeetingId} onGoWorkstation={() => goTab('workstation')} />
     ) : (
-      <MeetingDetailPanel meetingId={selectedMeetingId} onCreatePresentation={() => setMeetingAskJivaOpen(true)} />
+      <MeetingDetailPanel meetingId={selectedMeetingId} onCreatePresentation={() => setMeetingAskJivaOpen(true)} onFilterCategory={(f) => setApplyMeetingFilter({ ...f, nonce: Date.now() })} />
     );
 
     return (
@@ -237,7 +224,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
           </>
         ) : (
           <>
-            <MeetingListPanel selectedMeetingId={selectedMeetingId} onSelectMeeting={openMeeting} />
+            <MeetingListPanel selectedMeetingId={selectedMeetingId} onSelectMeeting={openMeeting} applyFilter={applyMeetingFilter} />
             {detailPanel}
           </>
         )}
@@ -260,29 +247,6 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     }
   };
 
-  const viewToggle = activeTab === 'brief'
-    ? (
-      <div style={{ display: 'flex', padding: 3, background: '#f1f2f4', borderRadius: 8, gap: 2 }}>
-        {(['brief', 'dashboard'] as const).map((m) => (
-          <span
-            key={m}
-            onClick={() => setBriefViewMode(m)}
-            style={{
-              padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
-              font: '600 11.5px/1 Inter,sans-serif',
-              color: briefViewMode === m ? '#5f3880' : '#6b7178',
-              background: briefViewMode === m ? '#fff' : 'transparent',
-              boxShadow: briefViewMode === m ? '0 1px 4px rgba(20,24,33,.12)' : 'none',
-              transition: 'all .15s ease',
-            }}
-          >
-            {m === 'brief' ? 'Brief' : 'Dashboard'}
-          </span>
-        ))}
-      </div>
-    )
-    : null;
-
   return (
     <div className={styles.signalsPage}>
       <div className={styles.header}>
@@ -303,7 +267,6 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
           ))}
         </div>
         <div className={styles.tabBarRight}>
-          {viewToggle}
           <span style={{ position: 'relative' }}>
             <button className={styles.dateRangeBtn} onClick={() => setAccountFilterOpen(!accountFilterOpen)}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5L2 3z" stroke="#5f3880" strokeWidth="1.4" strokeLinejoin="round" /></svg>

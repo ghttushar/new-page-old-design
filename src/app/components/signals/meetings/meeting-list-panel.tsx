@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MEETING_LIST, COMPLETED_MEETINGS, type MeetingListItem, type CompletedMeeting } from '@/constants/signals/prototype-data';
 import { ChevronDownIcon } from '../alerts/icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
@@ -11,6 +11,8 @@ interface Props {
   initialFilterOpen?: boolean;
   /** Forces the given day groups collapsed on mount — for the design-handoff preview, not used by the real app. */
   initialCollapsedGroups?: Partial<Record<GroupKey, boolean>>;
+  /** A filter to apply from outside (e.g. the empty state's category cards) — bump `nonce` to reapply. */
+  applyFilter?: { kind: 'day' | 'status' | 'mom' | 'clear'; value?: string; nonce: number } | null;
 }
 
 type GroupKey = 'today' | 'tomorrow' | 'earlier';
@@ -30,12 +32,13 @@ function groupFor(dateLabel: string): GroupKey {
   return 'earlier';
 }
 
-export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false, initialCollapsedGroups }: Props) {
+export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false, initialCollapsedGroups, applyFilter = null }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [accountFilters, setAccountFilters] = useState<Record<string, boolean>>({});
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({});
   const [momFilters, setMomFilters] = useState<Record<string, boolean>>({});
+  const [dayFilter, setDayFilter] = useState<GroupKey | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<GroupKey, boolean>>>(initialCollapsedGroups ?? {});
   const toggleGroup = (key: GroupKey) => setCollapsedGroups((p) => ({ ...p, [key]: !p[key] }));
 
@@ -43,10 +46,20 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
   const toggleStatus = (k: string) => setStatusFilters((p) => ({ ...p, [k]: !p[k] }));
   const toggleMom = (k: string) => setMomFilters((p) => ({ ...p, [k]: !p[k] }));
 
+  useEffect(() => {
+    if (!applyFilter) return;
+    if (applyFilter.kind === 'day') { setDayFilter(applyFilter.value as GroupKey); setStatusFilters({}); setMomFilters({}); }
+    else if (applyFilter.kind === 'status') { setStatusFilters({ [applyFilter.value!]: true }); setDayFilter(null); setMomFilters({}); }
+    else if (applyFilter.kind === 'mom') { setMomFilters({ [applyFilter.value!]: true }); setDayFilter(null); setStatusFilters({}); }
+    else { setDayFilter(null); setStatusFilters({}); setMomFilters({}); setAccountFilters({}); }
+    setSearch('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyFilter?.nonce]);
+
   const activeAccounts = Object.keys(accountFilters).filter((k) => accountFilters[k]);
   const activeStatus = Object.keys(statusFilters).filter((k) => statusFilters[k]);
   const activeMom = Object.keys(momFilters).filter((k) => momFilters[k]);
-  const filterCount = activeAccounts.length + activeStatus.length + activeMom.length;
+  const filterCount = activeAccounts.length + activeStatus.length + activeMom.length + (dayFilter ? 1 : 0);
 
   const q = search.trim().toLowerCase();
 
@@ -55,9 +68,10 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
       if (q && !(m.title + ' ' + m.account).toLowerCase().includes(q)) return false;
       if (activeAccounts.length && !activeAccounts.includes(m.account)) return false;
       if (activeStatus.length && !activeStatus.includes('Upcoming')) return false;
+      if (dayFilter && groupFor(m.dateLabel) !== dayFilter) return false;
       return true;
     });
-  }, [q, activeAccounts, activeStatus]);
+  }, [q, activeAccounts, activeStatus, dayFilter]);
 
   const filteredCompleted = useMemo(() => {
     return COMPLETED_MEETINGS.filter((m) => {
@@ -65,9 +79,10 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
       if (activeAccounts.length && !activeAccounts.includes(m.account)) return false;
       if (activeStatus.length && !activeStatus.includes('Completed')) return false;
       if (activeMom.length && !activeMom.includes(m.momStatus)) return false;
+      if (dayFilter && groupFor(m.dateLabel) !== dayFilter) return false;
       return true;
     });
-  }, [q, activeAccounts, activeStatus, activeMom]);
+  }, [q, activeAccounts, activeStatus, activeMom, dayFilter]);
 
   const grouped = useMemo(() => {
     const map: Record<GroupKey, { upcoming: MeetingListItem[]; completed: CompletedMeeting[] }> = {
@@ -114,6 +129,14 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
                 </div>
               ))}
             </FilterSection>
+            <FilterSection label="Day">
+              {GROUP_ORDER.map(({ key, label }) => (
+                <div key={key} onClick={() => setDayFilter((p) => (p === key ? null : key))} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '4px 6px', margin: '0 -6px', borderRadius: 6 }}>
+                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: dayFilter === key ? '#77469b' : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
+                  <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{label}</span>
+                </div>
+              ))}
+            </FilterSection>
             <FilterSection label="Status">
               {['Upcoming', 'Completed'].map((k) => (
                 <div key={k} onClick={() => toggleStatus(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '4px 6px', margin: '0 -6px', borderRadius: 6 }}>
@@ -131,7 +154,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
               ))}
             </FilterSection>
             <span
-              onClick={() => { setSearch(''); setAccountFilters({}); setStatusFilters({}); setMomFilters({}); }}
+              onClick={() => { setSearch(''); setAccountFilters({}); setStatusFilters({}); setMomFilters({}); setDayFilter(null); }}
               className={motion.pressable}
               style={{ display: 'block', textAlign: 'center', padding: 9, borderRadius: 6, border: '1px solid #dfe3ea', font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = '#f9f7fc'; e.currentTarget.style.borderColor = '#c9b6dd'; }}

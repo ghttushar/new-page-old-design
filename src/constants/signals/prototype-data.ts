@@ -1659,22 +1659,6 @@ export const BRIEFING_ALERTS: BriefingAlert[] = [
   { id: 'a-bb', valueNum: 0, valueLabel: 'no impact measured', dotColor: '#c8ccd2', title: 'Buy-box share improved on 6 ASINs', meta: 'Low · Boldfit · 05:55', actionLabel: '' },
 ];
 
-export interface BriefingMeeting {
-  time: string;
-  title: string;
-  meta: string;
-  progress?: number;
-  progressColor?: string;
-  actionLabel: string;
-  actionStyle: 'primary' | 'ready' | 'muted';
-}
-
-export const BRIEFING_MEETINGS: BriefingMeeting[] = [
-  { time: '10:30', title: 'Nutrabay · Weekly review', meta: '4 alerts · 2 tasks · 55% prepared', progress: 55, progressColor: '#a8763f', actionLabel: 'Prepare', actionStyle: 'primary' },
-  { time: '14:00', title: 'Wellbeing Nutrition · QBR prep', meta: '1 alert · deck ready', progress: 100, progressColor: '#3f7d6a', actionLabel: 'Ready', actionStyle: 'ready' },
-  { time: '17:00', title: 'Internal · Pod standup', meta: 'No alerts linked', actionLabel: 'No alerts linked', actionStyle: 'muted' },
-];
-
 export interface EngagementDay {
   active: boolean;
   label: string;
@@ -2012,6 +1996,7 @@ export interface PrepRecord {
   negatives: string[];
   actions: PrepAction[];
   discussion: string[];
+  tasks: MomTaskItem[];
 }
 
 /** Keyed by MeetingListItem.id — everything the Prep/Presentation flow shows for that meeting. */
@@ -2037,6 +2022,11 @@ export const PREP_RECORDS: Record<string, PrepRecord> = {
       'Sign off new bullet copy on the six hero ASINs, worth about $5,300 a month.',
       'Confirm Q4 promo dates before the 8 November lock.',
     ],
+    tasks: [
+      { task: 'Chase the Q4 promo calendar from Rahul before the 8 November lock', assignee: 'Ritvik Sharma', due: '25 Oct', status: 'Work-station' },
+      { task: 'Get sign-off on the new bullet copy for six hero ASINs', assignee: 'Priya Nair · client', due: '3 Nov', status: 'Email' },
+      { task: 'Draft the PIM approval-gate proposal to stop the recurring overwrite', assignee: 'Ritvik Sharma', due: '29 Oct', status: 'Work-station' },
+    ],
   },
   m2: {
     positives: [
@@ -2057,6 +2047,11 @@ export const PREP_RECORDS: Record<string, PrepRecord> = {
       'Model Q4 stock cover at two scenarios before committing inventory.',
       'Agree a pre-flight compliance check so this doesn\'t recur.',
     ],
+    tasks: [
+      { task: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed', assignee: 'You', due: '3 Nov', status: 'Work-station' },
+      { task: 'Model Q4 stock cover at two scenarios for the hero range', assignee: 'You', due: '7 Nov', status: 'Work-station' },
+      { task: 'Confirm timeline for the replacement creative sign-off', assignee: 'Aditi Rao · client', due: '5 Nov', status: 'Email' },
+    ],
   },
   m3: {
     positives: [
@@ -2076,6 +2071,11 @@ export const PREP_RECORDS: Record<string, PrepRecord> = {
       'Close out both outstanding compliance documents this week.',
       'Lock Q4 stock commitments given the profitability miss.',
     ],
+    tasks: [
+      { task: 'Get an updated payment method on file before ad spend resumes', assignee: 'Sneha Kapoor · client', due: '4 Nov', status: 'Email' },
+      { task: 'Close out both outstanding compliance documents with Amazon', assignee: 'Unassigned', due: 'Set date', status: 'Work-station' },
+      { task: 'Lock Q4 stock commitments given the profitability miss', assignee: 'Unassigned', due: 'Set date', status: 'Work-station' },
+    ],
   },
 };
 
@@ -2083,18 +2083,18 @@ export const PREP_RECORDS: Record<string, PrepRecord> = {
 export interface BriefMessage {
   id: string;
   channel: Extract<AlertSource, 'email' | 'slack' | 'workspace'>;
-  from: string;
-  subject: string;
-  preview: string;
+  channelName: string;
+  sender: string;
+  message: string;
   time: string;
   unread: boolean;
 }
 
 export const BRIEF_MESSAGES: BriefMessage[] = [
-  { id: 'msg1', channel: 'email', from: 'Priya Nair · Nutrabay', subject: 'Re: PIM approval gate', preview: "Yes, let's add the gate — can your team scope the effort by Friday?", time: '08:12 AM', unread: true },
-  { id: 'msg2', channel: 'slack', from: '#nutrabay-pod', subject: 'Ritvik Sharma', preview: 'Heads up — I moved the 10:30 to 11:00, same agenda.', time: '07:50 AM', unread: true },
-  { id: 'msg3', channel: 'workspace', from: 'Wellbeing Nutrition pod', subject: 'Creative review thread', preview: 'Aditi shared the replacement creative for the two suppressed ASINs.', time: '07:20 AM', unread: false },
-  { id: 'msg4', channel: 'email', from: 'Sneha Kapoor · Boldfit', subject: 'Q4 promo calendar', preview: 'Attaching the draft calendar — need your sign-off before the lock.', time: 'Yesterday, 6:40 PM', unread: false },
+  { id: 'msg1', channel: 'email', channelName: 'Email', sender: 'Priya Nair · Nutrabay', message: "Yes, let's add the gate — can your team scope the effort by Friday?", time: '08:12 AM', unread: true },
+  { id: 'msg2', channel: 'slack', channelName: '#nutrabay-pod', sender: 'Ritvik Sharma', message: 'Heads up — I moved the 10:30 to 11:00, same agenda.', time: '07:50 AM', unread: true },
+  { id: 'msg3', channel: 'workspace', channelName: 'Wellbeing Nutrition pod', sender: 'Aditi Rao', message: 'Shared the replacement creative for the two suppressed ASINs.', time: '07:20 AM', unread: false },
+  { id: 'msg4', channel: 'email', channelName: 'Email', sender: 'Sneha Kapoor · Boldfit', message: 'Attaching the draft calendar — need your sign-off before the lock.', time: 'Yesterday, 6:40 PM', unread: false },
 ];
 
 /** What Jiva did autonomously while the user was away — the "peak" payoff moment on the Brief page. */
@@ -2106,14 +2106,19 @@ export interface JivaActivityItem {
   impactColor?: string;
   time: string;
   alertId?: string;
+  /** Same category taxonomy as PrototypeAlert.category — lets "At risk" and "Verified gain" bifurcate the same way on the Brief page. */
+  category: string;
   /** 'done' = Jiva already acted autonomously, nothing pending. 'needs-review' = Jiva drafted/escalated something that's still waiting on you. */
   status: 'done' | 'needs-review';
 }
 
 export const JIVA_ACTIVITY: JivaActivityItem[] = [
-  { id: 'ja1', label: 'Reordered inventory on 3 at-risk SKUs', detail: 'Verified over 7 days on units sold', impact: '+$6,200', impactColor: '#3f7d6a', time: '06:02 AM', alertId: 'a3', status: 'done' },
-  { id: 'ja2', label: 'Escalated the missing-main-image suppression', detail: 'Sent to Catalog with a drafted white-background image, awaiting your review', impact: '−$3,400 at risk', impactColor: '#b3453f', time: '06:22 AM', alertId: 'a15', status: 'needs-review' },
-  { id: 'ja3', label: 'Drafted a follow-up email to Wellbeing Nutrition', detail: 'On the two listings suppressed for image compliance — ready to send', time: '07:05 AM', alertId: 'a4', status: 'needs-review' },
+  { id: 'ja1', label: 'Reordered inventory on 3 at-risk SKUs', detail: 'Verified over 7 days on units sold', impact: '+$6,200', impactColor: '#3f7d6a', time: '06:02 AM', alertId: 'a3', category: 'Inventory', status: 'done' },
+  { id: 'ja2', label: 'Escalated the missing-main-image suppression', detail: 'Sent to Catalog with a drafted white-background image, awaiting your review', impact: '−$3,400 at risk', impactColor: '#b3453f', time: '06:22 AM', alertId: 'a15', category: 'Catalog', status: 'needs-review' },
+  { id: 'ja3', label: 'Drafted a follow-up email to Wellbeing Nutrition', detail: 'On the two listings suppressed for image compliance — ready to send', time: '07:05 AM', alertId: 'a4', category: 'Catalog', status: 'needs-review' },
+  { id: 'ja4', label: 'Paused ad spend on an underperforming Boldfit SKU', detail: 'ACOS had drifted 3x above target over the past 4 days', impact: '+$1,150 saved', impactColor: '#3f7d6a', time: '05:40 AM', category: 'Advertising', status: 'done' },
+  { id: 'ja5', label: 'Flagged a price parity violation across the Boldfit catalog', detail: "Detected a mismatch against the client's own site pricing", impact: '−$42,600 at risk', impactColor: '#b3453f', time: '05:20 AM', alertId: 'a5', category: 'Profitability', status: 'needs-review' },
+  { id: 'ja6', label: 'Updated the negative keyword list on two campaigns', detail: 'Removed 14 non-converting search terms flagged overnight', time: '06:48 AM', category: 'Advertising', status: 'done' },
 ];
 
 /** Catalog of metrics the Dashboard's KPI cards can be reassigned to. */

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   WORKSTATION_TASKS,
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption,
@@ -8,7 +8,8 @@ import { PlusIcon } from '../alerts/icons';
 import { WorkStationListView } from './work-station-list-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
-import { PRIORITY_COLOR } from './work-station-icons';
+import { PRIORITY_COLOR, ListViewIcon } from './work-station-icons';
+import { SignalsEmptyState } from '../common/signals-empty-state';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -22,6 +23,12 @@ const NEXT_STATUS: Record<TaskStatus, TaskStatus> = { open: 'in_progress', in_pr
 const PRIORITY_FILTER_COLOR: Record<string, string> = {
   ...PRIORITY_COLOR, Generative: '#5f3880', Overdue: '#b3453f',
 };
+
+/** Category filters the empty-state cards apply — kept separate from priority/person filters since they're mutually exclusive facets. */
+const QUICK_FILTER_LABEL = {
+  'to-me': 'Assigned to me', 'by-me': 'Assigned by me', unassigned: 'Unassigned',
+  overdue: 'Overdue', in_progress: 'In progress', done: 'Done',
+} as const;
 
 interface Props {
   onOpenAlert?: (id: string) => void;
@@ -46,6 +53,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
   const [personFilter, setPersonFilter] = useState('');
   const [priorityFilterOpen, setPriorityFilterOpen] = useState(initialPriorityFilterOpen);
   const [priorityFilters, setPriorityFilters] = useState<Record<string, boolean>>({});
+  const [categoryQuickFilter, setCategoryQuickFilter] = useState<keyof typeof QUICK_FILTER_LABEL | null>(null);
   const [createOpen, setCreateOpen] = useState(initialCreateOpen);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -100,6 +108,16 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
     } else if (personFilter) {
       if (t.assignee !== assigneeNameFor(personFilter)) return false;
     }
+    if (categoryQuickFilter) {
+      const isMatch =
+        categoryQuickFilter === 'to-me' ? t.assignee === 'You' :
+        categoryQuickFilter === 'by-me' ? (t.createdBy === 'You' && t.assignee !== 'You' && t.assignee !== 'Unassigned') :
+        categoryQuickFilter === 'unassigned' ? t.assignee === 'Unassigned' :
+        categoryQuickFilter === 'overdue' ? !!t.overdue :
+        categoryQuickFilter === 'in_progress' ? t.status === 'in_progress' :
+        t.status === 'done';
+      if (!isMatch) return false;
+    }
     if (q && !(t.text + ' ' + t.assignee).toLowerCase().includes(q)) return false;
     return true;
   };
@@ -107,33 +125,55 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
   const assignedToMe = tasks.filter((t) => t.assignee === 'You').filter(matches);
   const unassignedTasks = tasks.filter((t) => t.assignee === 'Unassigned').filter(matches);
   const assignedByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You' && t.assignee !== 'Unassigned').filter(matches);
+  const overdueTasks = tasks.filter((t) => t.overdue);
+  const inProgressTasks = tasks.filter((t) => t.status === 'in_progress');
+  const doneTasks = tasks.filter((t) => t.status === 'done');
+  // Unfiltered totals for the empty-state cards — independent of categoryQuickFilter so clicking one card doesn't shrink the others' counts.
+  const totalToMe = tasks.filter((t) => t.assignee === 'You').length;
+  const totalByMe = tasks.filter((t) => t.createdBy === 'You' && t.assignee !== 'You' && t.assignee !== 'Unassigned').length;
+  const totalUnassigned = tasks.filter((t) => t.assignee === 'Unassigned').length;
 
-  const overdueCount = useMemo(() => tasks.filter((t) => t.overdue).length, [tasks]);
   const selectedTask = tasks.find((t) => t.id === selectedId) ?? null;
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
-      <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #e6e8ec', flex: 'none' }}>
-        <div>
-          <div style={{ font: '700 17px/1.3 Inter,sans-serif', color: '#23272d' }}>Workstation</div>
-          <div style={{ font: '400 11.5px/1.5 Inter,sans-serif', color: '#9aa0a8', marginTop: 2 }}>
-            {tasks.length} task{tasks.length === 1 ? '' : 's'}{overdueCount > 0 ? ` · ${overdueCount} overdue` : ''}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, flexWrap: 'wrap' as const }}>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tasks"
-            className={motion.focusRing}
-            style={{ flex: '1 1 180px', minWidth: 140, padding: '8px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+    <div style={{ height: '100%', display: 'flex', gap: 16 }}>
+      {jivaOpen && selectedTask ? (
+        <>
+          <WorkStationDetailPanel
+            key={selectedTask.id}
+            task={selectedTask}
+            onClose={() => { setSelectedId(null); setJivaOpen(false); }}
+            onReassign={(a) => reassign(selectedTask.id, a)}
+            onSetStatus={(s) => setStatus(selectedTask.id, s)}
+            onSetPriority={(p) => setPriority(selectedTask.id, p)}
+            onSetDue={(d) => setDue(selectedTask.id, d)}
+            onOpenAlert={onOpenAlert}
+            onOpenMeeting={onOpenMeeting}
+            onOpenJiva={() => setJivaOpen((v) => !v)}
+            jivaOpen={jivaOpen}
+            initialContextOpen={initialDetailContextOpen}
           />
+          <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} />
+        </>
+      ) : (
+        <>
+          <div style={{ flex: '0 0 35%', maxWidth: '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
+              <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search tasks"
+                  className={motion.focusRing}
+                  style={{ flex: 1, minWidth: 0, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                />
           <span style={{ position: 'relative', flex: 'none' }}>
             <span
               onClick={() => { setPriorityFilterOpen((v) => !v); setCreateOpen(false); }}
-              className={`${motion.pressable} ${motion.btnSecondary}`}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 13px', border: `1px solid ${activePriorityFilters.length || personFilter ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, background: activePriorityFilters.length || personFilter ? '#f9f7fc' : '#fff', font: '500 12px/1 Inter,sans-serif', color: activePriorityFilters.length || personFilter ? '#5f3880' : '#3d434b', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+              className={motion.pressable}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 16px', border: `1px solid ${priorityFilterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: priorityFilterOpen ? '#f9f7fc' : '#fff', whiteSpace: 'nowrap' as const, transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
+              onMouseEnter={(e) => { if (!priorityFilterOpen) e.currentTarget.style.background = '#fafbfd'; }}
+              onMouseLeave={(e) => { if (!priorityFilterOpen) e.currentTarget.style.background = '#fff'; }}
             >
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
               Filter{activePriorityFilters.length + (personFilter ? 1 : 0) ? ` (${activePriorityFilters.length + (personFilter ? 1 : 0)})` : ''}
@@ -173,7 +213,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
                 </div>
                 {(activePriorityFilters.length > 0 || personFilter) && (
                   <span
-                    onClick={() => { setPriorityFilters({}); setPersonFilter(''); }}
+                    onClick={() => { setPriorityFilters({}); setPersonFilter(''); setCategoryQuickFilter(null); }}
                     className={motion.pressable}
                     style={{ display: 'block', textAlign: 'center' as const, marginTop: 6, padding: 7, borderRadius: 6, border: '1px solid #dfe3ea', font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}
                   >
@@ -184,92 +224,105 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
             )}
           </span>
 
-          <span style={{ position: 'relative', marginLeft: 'auto', flex: 'none' }}>
-            <span
-              onClick={() => { setCreateOpen((v) => !v); setPriorityFilterOpen(false); }}
-              className={`${motion.pressable} ${motion.btnPrimary}`}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
-            >
-              <PlusIcon size={11} /> New task
-            </span>
-            {createOpen && (
-              <div className={motion.popIn} style={{ position: 'absolute', right: 0, top: 40, width: 320, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 14, zIndex: 60 }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ font: '700 12.5px/1 Inter,sans-serif', color: '#23272d', marginBottom: 10 }}>New task</div>
-                <input
-                  autoFocus
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) createTask(); if (e.key === 'Escape') setCreateOpen(false); }}
-                  placeholder="What needs to get done?"
-                  className={motion.focusRing}
-                  style={{ width: '100%', padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12.5px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
-                />
-                <textarea
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Add more detail (optional)"
-                  rows={2}
-                  className={motion.focusRing}
-                  style={{ width: '100%', marginTop: 8, padding: '8px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'none' as const, fontFamily: 'inherit' }}
-                />
-
-                <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginTop: 11 }}>Priority</div>
-                <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                  {(['High', 'Medium', 'Low'] as const).map((p) => (
-                    <span
-                      key={p}
-                      onClick={() => setNewPriority(p)}
-                      className={motion.pressable}
-                      style={{ flex: 1, textAlign: 'center' as const, padding: '6px 0', borderRadius: 6, border: `1px solid ${newPriority === p ? PRIORITY_COLOR[p] : '#dfe3ea'}`, background: newPriority === p ? PRIORITY_COLOR[p] + '14' : '#fff', font: '600 11px/1 Inter,sans-serif', color: newPriority === p ? PRIORITY_COLOR[p] : '#6b7178', cursor: 'pointer' }}
-                    >
-                      {p}
-                    </span>
-                  ))}
-                </div>
-
-                <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
-                  <select
-                    value={newAssigneeId}
-                    onChange={(e) => setNewAssigneeId(e.target.value)}
-                    className={motion.focusRing}
-                    style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
-                  >
-                    {DEFAULT_ASSIGNEES.map((a) => (
-                      <option key={a.id} value={a.id}>{a.id === 'self' ? 'Me' : a.name}</option>
-                    ))}
-                    <option value="unassigned">Unassigned</option>
-                  </select>
-                  <input
-                    value={newDue}
-                    onChange={(e) => setNewDue(e.target.value)}
-                    placeholder="Due (optional)"
-                    className={motion.focusRing}
-                    style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <span onClick={() => setCreateOpen(false)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ flex: 1, textAlign: 'center' as const, padding: '8px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11.5px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
+                <span style={{ position: 'relative', flex: 'none' }}>
                   <span
-                    onClick={createTask}
-                    className={newTitle.trim() ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
-                    style={{ flex: 1, textAlign: 'center' as const, padding: '8px', borderRadius: 7, background: newTitle.trim() ? '#77469b' : '#eee7f5', color: newTitle.trim() ? '#fff' : '#c3b3d6', font: '600 11.5px/1 Inter,sans-serif', cursor: newTitle.trim() ? 'pointer' : 'default' }}
+                    onClick={() => { setCreateOpen((v) => !v); setPriorityFilterOpen(false); }}
+                    className={`${motion.pressable} ${motion.btnPrimary}`}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                   >
-                    Create task
+                    <PlusIcon size={11} /> New task
+                  </span>
+                  {createOpen && (
+                    <div className={motion.popIn} style={{ position: 'absolute', right: 0, top: 40, width: 320, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 14, zIndex: 60 }} onClick={(e) => e.stopPropagation()}>
+                      <div style={{ font: '700 12.5px/1 Inter,sans-serif', color: '#23272d', marginBottom: 10 }}>New task</div>
+                      <input
+                        autoFocus
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) createTask(); if (e.key === 'Escape') setCreateOpen(false); }}
+                        placeholder="What needs to get done?"
+                        className={motion.focusRing}
+                        style={{ width: '100%', padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12.5px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                      />
+                      <textarea
+                        value={newDescription}
+                        onChange={(e) => setNewDescription(e.target.value)}
+                        placeholder="Add more detail (optional)"
+                        rows={2}
+                        className={motion.focusRing}
+                        style={{ width: '100%', marginTop: 8, padding: '8px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'none' as const, fontFamily: 'inherit' }}
+                      />
+
+                      <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginTop: 11 }}>Priority</div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                        {(['High', 'Medium', 'Low'] as const).map((p) => (
+                          <span
+                            key={p}
+                            onClick={() => setNewPriority(p)}
+                            className={motion.pressable}
+                            style={{ flex: 1, textAlign: 'center' as const, padding: '6px 0', borderRadius: 6, border: `1px solid ${newPriority === p ? PRIORITY_COLOR[p] : '#dfe3ea'}`, background: newPriority === p ? PRIORITY_COLOR[p] + '14' : '#fff', font: '600 11px/1 Inter,sans-serif', color: newPriority === p ? PRIORITY_COLOR[p] : '#6b7178', cursor: 'pointer' }}
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
+                        <select
+                          value={newAssigneeId}
+                          onChange={(e) => setNewAssigneeId(e.target.value)}
+                          className={motion.focusRing}
+                          style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
+                        >
+                          {DEFAULT_ASSIGNEES.map((a) => (
+                            <option key={a.id} value={a.id}>{a.id === 'self' ? 'Me' : a.name}</option>
+                          ))}
+                          <option value="unassigned">Unassigned</option>
+                        </select>
+                        <input
+                          value={newDue}
+                          onChange={(e) => setNewDue(e.target.value)}
+                          placeholder="Due (optional)"
+                          className={motion.focusRing}
+                          style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                        <span onClick={() => setCreateOpen(false)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ flex: 1, textAlign: 'center' as const, padding: '8px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11.5px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
+                        <span
+                          onClick={createTask}
+                          className={newTitle.trim() ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
+                          style={{ flex: 1, textAlign: 'center' as const, padding: '8px', borderRadius: 7, background: newTitle.trim() ? '#77469b' : '#eee7f5', color: newTitle.trim() ? '#fff' : '#c3b3d6', font: '600 11.5px/1 Inter,sans-serif', cursor: newTitle.trim() ? 'pointer' : 'default' }}
+                        >
+                          Create task
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </span>
+              </div>
+              {categoryQuickFilter && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 6px 4px 10px', borderRadius: 999, background: '#f9f7fc', border: '1px solid #e3d8f0', font: '600 11px/1 Inter,sans-serif', color: '#5f3880' }}>
+                    {QUICK_FILTER_LABEL[categoryQuickFilter]}
+                    <span onClick={() => setCategoryQuickFilter(null)} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', cursor: 'pointer', color: '#5f3880' }}>
+                      <svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+                    </span>
                   </span>
                 </div>
-              </div>
-            )}
-          </span>
-        </div>
-      </div>
+              )}
+            </div>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', gap: 16 }}>
-        {jivaOpen && selectedTask ? (
-          <>
+            <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} />
+            </div>
+          </div>
+
+          {selectedTask ? (
             <WorkStationDetailPanel
               key={selectedTask.id}
               task={selectedTask}
-              onClose={() => { setSelectedId(null); setJivaOpen(false); }}
+              onClose={() => setSelectedId(null)}
               onReassign={(a) => reassign(selectedTask.id, a)}
               onSetStatus={(s) => setStatus(selectedTask.id, s)}
               onSetPriority={(p) => setPriority(selectedTask.id, p)}
@@ -280,33 +333,25 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
               jivaOpen={jivaOpen}
               initialContextOpen={initialDetailContextOpen}
             />
-            <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} />
-          </>
-        ) : (
-          <>
-            <div className={scrollStyles.sleekScroll} style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: '#fafbfc' }}>
-              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} />
-            </div>
-
-            {selectedTask && (
-              <WorkStationDetailPanel
-                key={selectedTask.id}
-                task={selectedTask}
-                onClose={() => setSelectedId(null)}
-                onReassign={(a) => reassign(selectedTask.id, a)}
-                onSetStatus={(s) => setStatus(selectedTask.id, s)}
-                onSetPriority={(p) => setPriority(selectedTask.id, p)}
-                onSetDue={(d) => setDue(selectedTask.id, d)}
-                onOpenAlert={onOpenAlert}
-                onOpenMeeting={onOpenMeeting}
-                onOpenJiva={() => setJivaOpen((v) => !v)}
-                jivaOpen={jivaOpen}
-                initialContextOpen={initialDetailContextOpen}
+          ) : (
+            <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+              <SignalsEmptyState
+                icon={<ListViewIcon size={16} color="#77469b" />}
+                title="Select a task to view details"
+                subtitle="Here's a quick overview of your work-station. Click a category to filter the list."
+                categories={[
+                  { key: 'to-me', label: 'Assigned to me', count: totalToMe, unit: 'tasks', color: '#77469b', onClick: () => setCategoryQuickFilter('to-me') },
+                  { key: 'by-me', label: 'Assigned by me', count: totalByMe, unit: 'tasks', color: '#5c7f9e', onClick: () => setCategoryQuickFilter('by-me') },
+                  { key: 'unassigned', label: 'Unassigned', count: totalUnassigned, unit: 'tasks', color: '#a8763f', onClick: () => setCategoryQuickFilter('unassigned') },
+                  { key: 'overdue', label: 'Overdue', count: overdueTasks.length, unit: 'tasks', color: '#b3453f', onClick: () => setCategoryQuickFilter('overdue') },
+                  { key: 'in-progress', label: 'In progress', count: inProgressTasks.length, unit: 'tasks', color: '#0071ce', onClick: () => setCategoryQuickFilter('in_progress') },
+                  { key: 'done', label: 'Done', count: doneTasks.length, unit: 'tasks', color: '#3f7d6a', onClick: () => setCategoryQuickFilter('done') },
+                ]}
               />
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

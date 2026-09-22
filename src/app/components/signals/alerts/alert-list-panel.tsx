@@ -21,9 +21,11 @@ interface Props {
   initialYesterdayCollapsed?: boolean;
   /** Splits this column evenly with its siblings instead of the usual fixed ~35% — used only when list, detail and Ask Jiva are all showing at once. */
   equalWidth?: boolean;
+  /** A category to apply as the sole active filter — bump `nonce` to reapply the same category again (e.g. from the empty state's category cards). */
+  applyCategoryFilter?: { category: string; nonce: number } | null;
 }
 
-export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, equalWidth = false }: Props) {
+export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, equalWidth = false, applyCategoryFilter = null }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -38,6 +40,16 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
   const [yesterdayCollapsed, setYesterdayCollapsed] = useState(initialYesterdayCollapsed);
 
   const assignAlert = (id: string, a: AssigneeOption) => setAssignedTo((m) => ({ ...m, [id]: a }));
+
+  useEffect(() => {
+    if (!applyCategoryFilter) return;
+    setCategoryFilters({ [applyCategoryFilter.category]: true });
+    setPriorityFilters({});
+    setSourceFilters({});
+    setValueThreshold('');
+    setSearch('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyCategoryFilter?.nonce]);
 
   const filtered = useMemo(() => {
     return PROTOTYPE_ALERTS.filter((al) => {

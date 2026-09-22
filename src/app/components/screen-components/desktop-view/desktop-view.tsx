@@ -33,6 +33,7 @@ import JivaPage from '../../pages/jiva-page/jiva-page';
 import PopupPreviewPage from '../../pages/popup-preview/popup-preview';
 import SignalsPreviewIndex from '../../pages/signals-preview/index';
 import SignalsCombinedPreviewPage from '../../pages/signals-preview/combined-page';
+import SignalsNextPage from '../../pages/signals-next-page/signals-next-page';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
 import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
 import MaintenancePage from '../../pages/maintenance-page/maintenance-page';
@@ -56,6 +57,7 @@ export default function DesktopView() {
 
   useChatbotData({ enabled: isSidebarVisible && isHeaderVisible, pageDetails });
   const [isJivaPage, setisJivaPage] = useState(false);
+  const isSignalsNextPage = location.pathname.startsWith('/signals-next');
 
   useEffect(() => {
     setIsSidebarVisible(shouldShowSidebar(location.pathname));
@@ -68,7 +70,7 @@ export default function DesktopView() {
       <ToastMessageQueue />
       <div className={styles.body}>
         {isSidebarVisible === true ? (
-          <Sidebar isHover={isChatbotOpen === true || isJivaPage} />
+          <Sidebar isHover={isChatbotOpen === true || isJivaPage} forceCollapsed={isSignalsNextPage} />
         ) : null}
         <div className={styles.main}>
           {isHeaderVisible && isJivaPage === false && (
@@ -235,6 +237,7 @@ export default function DesktopView() {
               <Route path="/user/*" element={<UserAuthWrapper />} />
               <Route path="/custom-table/*" element={<CustomTablePage />} />
               <Route path="/signals" element={<SignalsPageWrapper />} />
+              <Route path="/signals-next" element={<SignalsNextPage />} />
               <Route path="/signal/:id" element={<PrivateRoute component={<SignalDetailWrapper />} />} />
               <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="/popup-preview" element={<PopupPreviewPage />} />
