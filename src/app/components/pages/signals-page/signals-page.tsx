@@ -37,7 +37,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
   const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
   const [askJivaOpen, setAskJivaOpen] = useState(false);
   const [applyCategoryFilter, setApplyCategoryFilter] = useState<{ category: string; nonce: number } | null>(null);
-  const [applyMeetingFilter, setApplyMeetingFilter] = useState<{ kind: 'day' | 'status' | 'mom' | 'clear'; value?: string; nonce: number } | null>(null);
+  const [applyMeetingFilter, setApplyMeetingFilter] = useState<{ kind: 'day' | 'status' | 'clear'; value?: string; nonce: number } | null>(null);
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
   // The Ask Jiva variation is a one-alert concept demo, anchored to whichever alert leads today's list.
@@ -177,6 +177,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
         isFirstAlert={!!selectedAlertId && selectedAlertId === firstAlertId}
         onOpenAskJiva={() => setAskJivaOpen(true)}
         onFilterCategory={(category) => setApplyCategoryFilter({ category, nonce: Date.now() })}
+        onBack={() => setSelectedAlertId(null)}
       />
     );
 
@@ -210,9 +211,9 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     const isCompleted = selectedMeetingId ? COMPLETED_MEETINGS.some((m) => m.id === selectedMeetingId) : false;
 
     const detailPanel = isCompleted ? (
-      <MeetingMOM meetingId={selectedMeetingId} onGoWorkstation={() => goTab('workstation')} />
+      <MeetingMOM meetingId={selectedMeetingId} onGoWorkstation={() => goTab('workstation')} onBack={() => setSelectedMeetingId(null)} />
     ) : (
-      <MeetingDetailPanel meetingId={selectedMeetingId} onCreatePresentation={() => setMeetingAskJivaOpen(true)} onFilterCategory={(f) => setApplyMeetingFilter({ ...f, nonce: Date.now() })} />
+      <MeetingDetailPanel meetingId={selectedMeetingId} onCreatePresentation={() => setMeetingAskJivaOpen(true)} onFilterCategory={(f) => setApplyMeetingFilter({ ...f, nonce: Date.now() })} onOpenMeeting={openMeeting} onBack={() => setSelectedMeetingId(null)} />
     );
 
     return (

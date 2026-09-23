@@ -12,7 +12,7 @@ interface Props {
   /** Forces the given day groups collapsed on mount — for the design-handoff preview, not used by the real app. */
   initialCollapsedGroups?: Partial<Record<GroupKey, boolean>>;
   /** A filter to apply from outside (e.g. the empty state's category cards) — bump `nonce` to reapply. */
-  applyFilter?: { kind: 'day' | 'status' | 'mom' | 'clear'; value?: string; nonce: number } | null;
+  applyFilter?: { kind: 'day' | 'status' | 'clear'; value?: string; nonce: number } | null;
 }
 
 type GroupKey = 'today' | 'tomorrow' | 'earlier';
@@ -24,7 +24,35 @@ const GROUP_ORDER: { key: GroupKey; label: string }[] = [
 ];
 
 const ALL_ACCOUNTS = Array.from(new Set([...MEETING_LIST, ...COMPLETED_MEETINGS].map((m) => m.account)));
-const ALL_MOM_STATUSES = Array.from(new Set(COMPLETED_MEETINGS.map((m) => m.momStatus)));
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function plainDate(d: Date): string {
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+/** Overview rows show a real date instead of "Today"/"Yesterday"/a weekday name — computed when the label doesn't already carry one. */
+function displayDate(dateLabel: string): string {
+  const now = new Date();
+  if (dateLabel.startsWith('Today')) {
+    return dateLabel.slice(5).replace(/^\s*·\s*/, '') || plainDate(now);
+  }
+  if (dateLabel.startsWith('Tomorrow')) {
+    const rest = dateLabel.slice(8).replace(/^\s*·\s*/, '');
+    if (rest) return rest;
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    return plainDate(tomorrow);
+  }
+  if (dateLabel.startsWith('Yesterday')) {
+    const rest = dateLabel.slice(9).replace(/^\s*·\s*/, '');
+    if (rest) return rest;
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    return plainDate(yesterday);
+  }
+  const weekdayPrefix = dateLabel.match(/^[A-Za-z]+\s*·\s*(.+)$/);
+  return weekdayPrefix ? weekdayPrefix[1] : dateLabel;
+}
 
 function groupFor(dateLabel: string): GroupKey {
   if (dateLabel.startsWith('Today')) return 'today';
@@ -37,29 +65,25 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [accountFilters, setAccountFilters] = useState<Record<string, boolean>>({});
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({});
-  const [momFilters, setMomFilters] = useState<Record<string, boolean>>({});
   const [dayFilter, setDayFilter] = useState<GroupKey | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<GroupKey, boolean>>>(initialCollapsedGroups ?? {});
   const toggleGroup = (key: GroupKey) => setCollapsedGroups((p) => ({ ...p, [key]: !p[key] }));
 
   const toggleAccount = (k: string) => setAccountFilters((p) => ({ ...p, [k]: !p[k] }));
   const toggleStatus = (k: string) => setStatusFilters((p) => ({ ...p, [k]: !p[k] }));
-  const toggleMom = (k: string) => setMomFilters((p) => ({ ...p, [k]: !p[k] }));
 
   useEffect(() => {
     if (!applyFilter) return;
-    if (applyFilter.kind === 'day') { setDayFilter(applyFilter.value as GroupKey); setStatusFilters({}); setMomFilters({}); }
-    else if (applyFilter.kind === 'status') { setStatusFilters({ [applyFilter.value!]: true }); setDayFilter(null); setMomFilters({}); }
-    else if (applyFilter.kind === 'mom') { setMomFilters({ [applyFilter.value!]: true }); setDayFilter(null); setStatusFilters({}); }
-    else { setDayFilter(null); setStatusFilters({}); setMomFilters({}); setAccountFilters({}); }
+    if (applyFilter.kind === 'day') { setDayFilter(applyFilter.value as GroupKey); setStatusFilters({}); }
+    else if (applyFilter.kind === 'status') { setStatusFilters({ [applyFilter.value!]: true }); setDayFilter(null); }
+    else { setDayFilter(null); setStatusFilters({}); setAccountFilters({}); }
     setSearch('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applyFilter?.nonce]);
 
   const activeAccounts = Object.keys(accountFilters).filter((k) => accountFilters[k]);
   const activeStatus = Object.keys(statusFilters).filter((k) => statusFilters[k]);
-  const activeMom = Object.keys(momFilters).filter((k) => momFilters[k]);
-  const filterCount = activeAccounts.length + activeStatus.length + activeMom.length + (dayFilter ? 1 : 0);
+  const filterCount = activeAccounts.length + activeStatus.length + (dayFilter ? 1 : 0);
 
   const q = search.trim().toLowerCase();
 
@@ -78,11 +102,10 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
       if (q && !(m.title + ' ' + m.account).toLowerCase().includes(q)) return false;
       if (activeAccounts.length && !activeAccounts.includes(m.account)) return false;
       if (activeStatus.length && !activeStatus.includes('Completed')) return false;
-      if (activeMom.length && !activeMom.includes(m.momStatus)) return false;
       if (dayFilter && groupFor(m.dateLabel) !== dayFilter) return false;
       return true;
     });
-  }, [q, activeAccounts, activeStatus, activeMom, dayFilter]);
+  }, [q, activeAccounts, activeStatus, dayFilter]);
 
   const grouped = useMemo(() => {
     const map: Record<GroupKey, { upcoming: MeetingListItem[]; completed: CompletedMeeting[] }> = {
@@ -145,16 +168,8 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
                 </div>
               ))}
             </FilterSection>
-            <FilterSection label="MOM status">
-              {ALL_MOM_STATUSES.map((k) => (
-                <div key={k} onClick={() => toggleMom(k)} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', padding: '4px 6px', margin: '0 -6px', borderRadius: 6 }}>
-                  <span style={{ width: 13, height: 13, borderRadius: 3, border: '1.5px solid #cfd4dc', background: momFilters[k] ? '#77469b' : '#fff', flex: 'none', transition: 'background 120ms ease-out' }} />
-                  <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#464646' }}>{k}</span>
-                </div>
-              ))}
-            </FilterSection>
             <span
-              onClick={() => { setSearch(''); setAccountFilters({}); setStatusFilters({}); setMomFilters({}); setDayFilter(null); }}
+              onClick={() => { setSearch(''); setAccountFilters({}); setStatusFilters({}); setDayFilter(null); }}
               className={motion.pressable}
               style={{ display: 'block', textAlign: 'center', padding: 9, borderRadius: 6, border: '1px solid #dfe3ea', font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = '#f9f7fc'; e.currentTarget.style.borderColor = '#c9b6dd'; }}
@@ -252,6 +267,19 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
 }
 
 function UpcomingRow({ m, selected, onSelect }: { m: MeetingListItem; selected: boolean; onSelect: () => void }) {
+  return (
+    <div
+      onClick={onSelect}
+      className={motion.cardHover}
+      style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
+    >
+      <div style={{ font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>{m.timeRange} · {displayDate(m.dateLabel)}</div>
+      <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{m.title}</div>
+    </div>
+  );
+}
+
+function CompletedRow({ m, selected, onSelect }: { m: CompletedMeeting; selected: boolean; onSelect: () => void }) {
   const allDone = m.tasksTotal > 0 && m.tasksCompleted === m.tasksTotal;
   return (
     <div
@@ -260,28 +288,10 @@ function UpcomingRow({ m, selected, onSelect }: { m: MeetingListItem; selected: 
       style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-        <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646' }}>{m.timeRange}</span>
-        <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{m.dateLabel}</span>
-      </div>
-      <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{m.title}</div>
-      <div style={{ marginTop: 9, font: '600 11px/1 Inter,sans-serif', color: allDone ? '#3f7d6a' : '#a8763f' }}>
-        {m.tasksCompleted}/{m.tasksTotal} task{m.tasksTotal === 1 ? '' : 's'} completed
-      </div>
-    </div>
-  );
-}
-
-function CompletedRow({ m, selected, onSelect }: { m: CompletedMeeting; selected: boolean; onSelect: () => void }) {
-  return (
-    <div
-      onClick={onSelect}
-      className={motion.cardHover}
-      style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer' }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-        <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#464646' }}>{m.timeRange}</span>
-        <span style={{ padding: '2px 7px', borderRadius: 4, background: m.momColor + '1a', font: '600 10px/1.5 Inter,sans-serif', color: m.momColor }}>{m.momStatus}</span>
-        <span style={{ marginLeft: 'auto', font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{m.dateLabel}</span>
+        <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#9aa0a8' }}>{m.timeRange} · {displayDate(m.dateLabel)}</span>
+        <span style={{ marginLeft: 'auto', font: '600 11px/1 Inter,sans-serif', color: allDone ? '#3f7d6a' : '#a8763f' }}>
+          {m.tasksCompleted}/{m.tasksTotal} task{m.tasksTotal === 1 ? '' : 's'} completed
+        </span>
       </div>
       <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>{m.title}</div>
     </div>
