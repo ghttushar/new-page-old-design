@@ -5,11 +5,11 @@ import {
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
 import { PlusIcon } from '../alerts/icons';
-import { WorkStationListView } from './work-station-list-view';
+import { WorkStationListView, type GroupKey } from './work-station-list-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
-import { PRIORITY_COLOR, ListViewIcon } from './work-station-icons';
-import { SignalsEmptyState } from '../common/signals-empty-state';
+import { PRIORITY_COLOR } from './work-station-icons';
+import { ConnectedEmptyHero } from '../common/connected-empty-hero';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -43,9 +43,21 @@ interface Props {
   initialCreateOpen?: boolean;
   /** Forces the detail panel's Context section expanded on mount — for the design-handoff preview, not used by the real app. */
   initialDetailContextOpen?: boolean;
+  /** Forces the detail panel's Activity section expanded on mount — for the design-handoff preview, not used by the real app. */
+  initialDetailActivityOpen?: boolean;
+  /** Forces the detail panel's Activity comment composer open on mount — for the design-handoff preview, not used by the real app. */
+  initialDetailCommentComposerOpen?: boolean;
+  /** Forces one of the detail panel's field dropdowns (Assignee/Status/Priority/Due) open on mount — for the design-handoff preview, not used by the real app. */
+  initialDetailFieldOpen?: 'assignee' | 'status' | 'priority' | 'due';
+  /** Which list group tab starts expanded — for the design-handoff preview, not used by the real app. */
+  initialActiveGroup?: GroupKey;
 }
 
-export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = null, initialJivaOpen = false, initialPriorityFilterOpen = false, initialCreateOpen = false, initialDetailContextOpen = false }: Props) {
+export function WorkStation({
+  onOpenAlert, onOpenMeeting, initialSelectedId = null, initialJivaOpen = false, initialPriorityFilterOpen = false,
+  initialCreateOpen = false, initialDetailContextOpen = false, initialDetailActivityOpen = false,
+  initialDetailCommentComposerOpen = false, initialDetailFieldOpen, initialActiveGroup = 'to-me',
+}: Props) {
   const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [jivaOpen, setJivaOpen] = useState(initialJivaOpen);
@@ -69,6 +81,15 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
   const setDue = (id: string, due: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, due, overdue: false, dueColor: undefined } : t)));
   const togglePriorityFilter = (k: string) => setPriorityFilters((p) => ({ ...p, [k]: !p[k] }));
 
+  const [remindedName, setRemindedName] = useState<string | null>(null);
+  const remindAssignee = (id: string) => {
+    const target = tasks.find((t) => t.id === id);
+    if (!target) return;
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, logs: [...t.logs, { time: 'Just now', text: `You sent a reminder to ${t.assignee}`, by: 'You' }] } : t)));
+    setRemindedName(target.assignee);
+    setTimeout(() => setRemindedName((cur) => (cur === target.assignee ? null : cur)), 2600);
+  };
+
   const createTask = () => {
     const title = newTitle.trim();
     if (!title) return;
@@ -80,7 +101,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
       assigneeId: newAssigneeId === 'unassigned' ? undefined : newAssigneeId,
       createdBy: 'You', due: newDue.trim() || 'No due date', overdue: false,
       status: 'open', origin: 'direct',
-      logs: [{ time: 'Just now', text: 'Created directly' }],
+      logs: [{ time: 'Just now', text: 'Created directly', by: 'You' }],
     };
     setTasks((prev) => [task, ...prev]);
     selectTask(id);
@@ -136,7 +157,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
   const selectedTask = tasks.find((t) => t.id === selectedId) ?? null;
 
   return (
-    <div style={{ height: '100%', display: 'flex', gap: 16 }}>
+    <div style={{ height: '100%', display: 'flex', gap: 16, position: 'relative' }}>
       {jivaOpen && selectedTask ? (
         <>
           <WorkStationDetailPanel
@@ -151,7 +172,14 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
             onOpenMeeting={onOpenMeeting}
             onOpenJiva={() => setJivaOpen((v) => !v)}
             jivaOpen={jivaOpen}
+            onRemind={() => remindAssignee(selectedTask.id)}
             initialContextOpen={initialDetailContextOpen}
+            initialActivityOpen={initialDetailActivityOpen}
+            initialCommentComposerOpen={initialDetailCommentComposerOpen}
+            initialAssignMenuOpen={initialDetailFieldOpen === 'assignee'}
+            initialStatusMenuOpen={initialDetailFieldOpen === 'status'}
+            initialPriorityMenuOpen={initialDetailFieldOpen === 'priority'}
+            initialDueMenuOpen={initialDetailFieldOpen === 'due'}
           />
           <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} />
         </>
@@ -165,13 +193,13 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search tasks"
                   className={motion.focusRing}
-                  style={{ flex: 1, minWidth: 0, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
+                  style={{ flex: 1, minWidth: 0, height: 34, boxSizing: 'border-box' as const, padding: '0 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
                 />
           <span style={{ position: 'relative', flex: 'none' }}>
             <span
               onClick={() => { setPriorityFilterOpen((v) => !v); setCreateOpen(false); }}
               className={motion.pressable}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 16px', border: `1px solid ${priorityFilterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 6, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: priorityFilterOpen ? '#f9f7fc' : '#fff', whiteSpace: 'nowrap' as const, transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, height: 34, boxSizing: 'border-box' as const, padding: '0 16px', border: `1px solid ${priorityFilterOpen ? '#77469b' : '#dfe3ea'}`, borderRadius: 7, font: '500 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: priorityFilterOpen ? '#f9f7fc' : '#fff', whiteSpace: 'nowrap' as const, transition: 'background 140ms ease-out, border-color 140ms ease-out' }}
               onMouseEnter={(e) => { if (!priorityFilterOpen) e.currentTarget.style.background = '#fafbfd'; }}
               onMouseLeave={(e) => { if (!priorityFilterOpen) e.currentTarget.style.background = '#fff'; }}
             >
@@ -228,7 +256,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
                   <span
                     onClick={() => { setCreateOpen((v) => !v); setPriorityFilterOpen(false); }}
                     className={`${motion.pressable} ${motion.btnPrimary}`}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, height: 34, boxSizing: 'border-box' as const, padding: '0 14px', border: '1px solid transparent', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                   >
                     <PlusIcon size={11} /> New task
                   </span>
@@ -314,7 +342,7 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
             </div>
 
             <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} />
+              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} />
             </div>
           </div>
 
@@ -331,14 +359,19 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
               onOpenMeeting={onOpenMeeting}
               onOpenJiva={() => setJivaOpen((v) => !v)}
               jivaOpen={jivaOpen}
+              onRemind={() => remindAssignee(selectedTask.id)}
               initialContextOpen={initialDetailContextOpen}
+              initialActivityOpen={initialDetailActivityOpen}
+              initialCommentComposerOpen={initialDetailCommentComposerOpen}
+              initialAssignMenuOpen={initialDetailFieldOpen === 'assignee'}
+              initialStatusMenuOpen={initialDetailFieldOpen === 'status'}
+              initialPriorityMenuOpen={initialDetailFieldOpen === 'priority'}
+              initialDueMenuOpen={initialDetailFieldOpen === 'due'}
             />
           ) : (
             <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-              <SignalsEmptyState
-                icon={<ListViewIcon size={16} color="#77469b" />}
-                title="Select a task to view details"
-                subtitle="Here's a quick overview of your work-station. Click a category to filter the list."
+              <ConnectedEmptyHero
+                subtitle="Every alert, meeting and message that touches your accounts, pulled into one work-station."
                 categories={[
                   { key: 'to-me', label: 'Assigned to me', count: totalToMe, unit: 'tasks', color: '#77469b', onClick: () => setCategoryQuickFilter('to-me') },
                   { key: 'by-me', label: 'Assigned by me', count: totalByMe, unit: 'tasks', color: '#5c7f9e', onClick: () => setCategoryQuickFilter('by-me') },
@@ -351,6 +384,13 @@ export function WorkStation({ onOpenAlert, onOpenMeeting, initialSelectedId = nu
             </div>
           )}
         </>
+      )}
+
+      {remindedName && (
+        <div className={motion.toastIn} style={{ position: 'absolute', right: 20, bottom: 20, padding: '12px 16px', borderRadius: 9, background: '#23272d', color: '#fff', font: '500 12px/1.4 Inter,sans-serif', boxShadow: '0 12px 28px rgba(20,24,33,.28)', zIndex: 250, display: 'flex', alignItems: 'center', gap: 9 }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#8fd9bd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          Reminder sent to {remindedName}
+        </div>
       )}
     </div>
   );

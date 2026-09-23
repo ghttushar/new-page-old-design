@@ -1699,6 +1699,8 @@ export type TaskOrigin = 'alert' | 'meeting' | 'generative' | 'direct';
 export interface WorkstationLogEntry {
   time: string;
   text: string;
+  /** Who logged this — a person's display name, or 'Jiva' for an automatic update. */
+  by: string;
 }
 
 export type TaskPriority = 'High' | 'Medium' | 'Low';
@@ -1736,56 +1738,56 @@ export const WORKSTATION_TASKS: WorkstationTask[] = [
     description: 'Priya signed off on the proposed bullet copy for the six hero ASINs during the QBR prep call. Publish it and confirm Amazon has re-indexed the listings before the next check-in.',
     priority: 'High', contextSources: ['meeting', 'email', 'slack'],
     assignee: 'You', assigneeId: 'self', createdBy: 'Priya Nair', due: '3 Nov', dueColor: '#b3453f', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
-    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }, { time: '1 day ago', text: 'Priya confirmed sign-off over email' }],
+    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call', by: 'Jiva' }, { time: '1 day ago', text: 'Priya confirmed sign-off over email', by: 'Priya Nair' }],
   },
   {
     id: 't2', text: 'Model Q4 stock cover at two scenarios for the hero range',
     description: "Wellbeing's stock cover sits below their usual comfort line. Build a base case and a conservative case for Q4 so the account team can commit inventory with confidence.",
     priority: 'Medium', contextSources: ['meeting', 'email'],
     assignee: 'You', assigneeId: 'self', createdBy: 'You', due: '7 Nov', overdue: false, status: 'in_progress', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
-    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }, { time: 'Yesterday', text: 'Started the base-case model' }],
+    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call', by: 'Jiva' }, { time: 'Yesterday', text: 'Started the base-case model', by: 'You' }],
   },
   {
     id: 't3', text: 'Chase the Q4 promo calendar from Rahul before the 8 November lock',
     description: "Nutrabay's Q4 promo calendar is overdue. Without it the promo slots can't be locked in time for the 8 November deadline.",
     priority: 'High', contextSources: ['meeting'],
     assignee: 'You', assigneeId: 'self', createdBy: 'You', due: '25 Oct', dueColor: '#b3453f', overdue: true, status: 'in_progress', origin: 'meeting', meetingId: 'm1', meetingLabel: 'Weekly performance review',
-    logs: [{ time: '9 days ago', text: 'Created from Weekly performance review' }, { time: '2 hours ago', text: 'You sent a reminder to Rahul' }],
+    logs: [{ time: '9 days ago', text: 'Created from Weekly performance review', by: 'Jiva' }, { time: '2 hours ago', text: 'You sent a reminder to Rahul', by: 'You' }],
   },
   {
     id: 't4', text: 'Place inventory reorder for the three at-risk SKUs',
     description: 'Three SKUs were flagged as at-risk of stocking out. Reorder placed and verified against the units-sold trend over the following week.',
     priority: 'Medium',
     assignee: 'You', assigneeId: 'self', createdBy: 'You', due: '30 Oct', dueColor: '#3f7d6a', overdue: false, status: 'done', origin: 'alert', alertId: 'a3',
-    logs: [{ time: '3 days ago', text: 'Created from alert: Inventory reorder on three SKUs came back verified' }, { time: '2 days ago', text: 'Reorder placed' }, { time: 'Yesterday', text: 'Verified over 7 days on units sold' }],
+    logs: [{ time: '3 days ago', text: 'Created from alert: Inventory reorder on three SKUs came back verified', by: 'Jiva' }, { time: '2 days ago', text: 'Reorder placed', by: 'Jiva' }, { time: 'Yesterday', text: 'Verified over 7 days on units sold', by: 'Jiva' }],
   },
   {
     id: 't5', text: 'Send the October performance summary to Sneha',
     description: "Draft and send Sneha a short October wrap-up covering GMV, margin, and the content incident — she asked for this ahead of the board pack.",
     priority: 'Low',
     assignee: 'You', assigneeId: 'self', createdBy: 'You', due: '29 Oct', dueColor: '#3f7d6a', overdue: false, status: 'done', origin: 'generative',
-    logs: [{ time: '4 days ago', text: 'Created directly' }, { time: '3 days ago', text: 'Drafted with Jiva' }, { time: '3 days ago', text: 'Sent to Sneha' }],
+    logs: [{ time: '4 days ago', text: 'Created directly', by: 'You' }, { time: '3 days ago', text: 'Drafted with Jiva', by: 'Jiva' }, { time: '3 days ago', text: 'Sent to Sneha', by: 'You' }],
   },
   {
     id: 't6', text: 'Draft replacement creative for the two suppressed Wellbeing ASINs',
     description: 'Both suppressed listings need a compliant white-background main image before they can be reinstated. Generate a draft for review.',
     priority: 'High',
     assignee: 'Mike Torres', assigneeId: 'mike', createdBy: 'You', due: '5 Nov', overdue: false, status: 'open', origin: 'generative',
-    logs: [{ time: '2 days ago', text: 'Created from alert: Two listings suppressed on image compliance' }],
+    logs: [{ time: '2 days ago', text: 'Created from alert: Two listings suppressed on image compliance', by: 'Jiva' }],
   },
   {
     id: 't7', text: 'Pull the competitor price benchmark for the Q4 planning deck',
     description: "Boldfit's Q4 planning call flagged the need for a competitor price benchmark on the hero range before the profitability discussion.",
     priority: 'Medium',
     assignee: 'Sarah Kim', assigneeId: 'sarah', createdBy: 'You', due: '4 Nov', dueColor: '#b3453f', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm3', meetingLabel: 'Q4 planning and inventory commitments',
-    logs: [{ time: '1 day ago', text: 'Created from Q4 planning and inventory commitments' }],
+    logs: [{ time: '1 day ago', text: 'Created from Q4 planning and inventory commitments', by: 'Jiva' }],
   },
   {
     id: 't8', text: 'Confirm a pre-flight compliance check before the next creative push',
     description: 'Agreed at the QBR to add a compliance check before any future creative goes live, to stop the recurring suppression pattern. Needs an owner.',
     priority: 'Low',
     assignee: 'Unassigned', createdBy: 'You', due: '8 Nov', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
-    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call' }],
+    logs: [{ time: '2 days ago', text: 'Created from QBR preparation call', by: 'Jiva' }],
   },
 ];
 
@@ -1819,7 +1821,6 @@ export interface MeetingListItem {
 export const MEETING_LIST: MeetingListItem[] = [
   { id: 'm1', timeRange: '10:30 – 11:15 AM', account: 'Nutrabay', title: 'Weekly performance review', tasksCompleted: 2, tasksTotal: 5, isToday: true, dateLabel: 'Today' },
   { id: 'm2', timeRange: '2:00 – 2:30 PM', account: 'Wellbeing', title: 'QBR preparation call', tasksCompleted: 3, tasksTotal: 3, isToday: true, dateLabel: 'Today' },
-  { id: 'm3', timeRange: '11:00 AM – 12:00 PM', account: 'Boldfit', title: 'Q4 planning and inventory commitments', tasksCompleted: 0, tasksTotal: 4, isToday: false, dateLabel: 'Monday · 3 November' },
 ];
 
 export interface MeetingStat {
@@ -1883,24 +1884,6 @@ export const MEETING_DETAILS: Record<string, MeetingDetail> = {
       { label: 'Stock cover', value: '5 wks', trend: 'below target', trendColor: '#a8763f' },
     ],
   },
-  m3: {
-    dateTimeLabel: 'Monday, 3 November · 11:00 AM – 12:00 PM',
-    attendees: [
-      { name: 'Karan Mehta', role: 'Founder' },
-      { name: 'Isha Verma', role: 'Finance' },
-    ],
-    lastMet: 'last met 6 October',
-    resolvedPct: 8,
-    resolvedColor: '#b3453f',
-    agenda: 'Q4 planning and inventory commitments for Boldfit — the profitability forecast miss, two open compliance documents, the declined card blocking ad spend, and locking Q4 stock levels.',
-    accountStudy: 'Profitability is trending down across the portfolio ahead of Q4, compounded by a declined payment method that has already paused advertising once this month. Two compliance documents are still outstanding with Amazon. This meeting is under-prepared — start here first.',
-    metrics: [
-      { label: 'GMV', value: '$268k', trend: 'down 3.1%', trendColor: '#b3453f' },
-      { label: 'Net margin', value: '11.2%', trend: 'down 2.4 pt', trendColor: '#b3453f' },
-      { label: 'ROAS', value: '3.9', trend: 'down 0.4', trendColor: '#b3453f' },
-      { label: 'Ad spend', value: '$0', trend: 'card declined', trendColor: '#b3453f' },
-    ],
-  },
 };
 
 export interface CompletedMeeting {
@@ -1915,18 +1898,26 @@ export interface CompletedMeeting {
   momStatus: string;
   momColor: string;
   dateLabel: string;
+  /** Follow-up task completion — shown on the completed-meeting overview row (upcoming rows show prep progress instead). */
+  tasksCompleted: number;
+  tasksTotal: number;
 }
 
 export const COMPLETED_MEETINGS: CompletedMeeting[] = [
-  { id: 'm4', timeRange: '3:00 – 3:44 PM', account: 'Wellbeing', title: 'Quarterly business review', alertsMapped: 3, tasksExtracted: 4, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM unsent', momColor: '#a8763f', dateLabel: 'Yesterday · 31 October' },
-  { id: 'm5', timeRange: '10:30 – 11:20 AM', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 5, tasksExtracted: 3, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM sent', momColor: '#3f7d6a', dateLabel: '25 October' },
+  { id: 'm6', timeRange: '9:00 – 9:35 AM', account: 'Boldfit', title: 'Weekly sync', alertsMapped: 2, tasksExtracted: 2, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM unsent', momColor: '#a8763f', dateLabel: 'Today', tasksCompleted: 0, tasksTotal: 2 },
+  { id: 'm3', timeRange: '11:00 AM – 12:00 PM', account: 'Boldfit', title: 'Q4 planning and inventory commitments', alertsMapped: 2, tasksExtracted: 3, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM unsent', momColor: '#a8763f', dateLabel: 'Yesterday · 31 October', tasksCompleted: 3, tasksTotal: 3 },
+  { id: 'm4', timeRange: '3:00 – 3:44 PM', account: 'Wellbeing', title: 'Quarterly business review', alertsMapped: 3, tasksExtracted: 4, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM unsent', momColor: '#a8763f', dateLabel: 'Yesterday · 31 October', tasksCompleted: 0, tasksTotal: 4 },
+  { id: 'm5', timeRange: '10:30 – 11:20 AM', account: 'Nutrabay', title: 'Weekly performance review', alertsMapped: 5, tasksExtracted: 3, status: 'Completed', statusColor: '#3f7d6a', momStatus: 'MOM sent', momColor: '#3f7d6a', dateLabel: '25 October', tasksCompleted: 2, tasksTotal: 3 },
 ];
 
 export interface MomTaskItem {
   task: string;
   assignee: string;
   due: string;
-  status: string;
+  /** Delivery channel — Anarix users see it in Work-station, others get it by email. */
+  channel: string;
+  /** Real completion state, same vocabulary as Work-station tasks. */
+  status: TaskStatus;
 }
 
 export interface MomRecord {
@@ -1938,10 +1929,51 @@ export interface MomRecord {
   summary: string;
   decisions: string[];
   tasks: MomTaskItem[];
+  /** % of follow-up work resolved since the meeting — shown in the completed-meeting detail header (upcoming meetings show prep readiness instead). */
+  resolvedPct: number;
+  resolvedColor: string;
 }
 
 /** Keyed by CompletedMeeting.id. */
 export const MOM_RECORDS: Record<string, MomRecord> = {
+  m3: {
+    completedLabel: 'Completed 12:00 PM',
+    transcriptMeta: 'From transcript · 60 minutes · 2 attendees',
+    title: 'Boldfit · Q4 planning and inventory commitments',
+    dateLabel: '31 October 2025',
+    sent: false,
+    summary: 'Covered the Q4 profitability forecast miss across the portfolio, the declined card that had already paused advertising once this month, and the two compliance documents still outstanding with Amazon. Ad account access is otherwise clean — the decline is a card issue, not a policy flag. Closed the meeting with the new payment method live, both compliance documents filed, and Q4 stock levels locked.',
+    decisions: [
+      'Get an updated payment method on file before ad spend resumes.',
+      'Close out both outstanding compliance documents this week.',
+      'Lock Q4 stock commitments given the profitability miss.',
+    ],
+    tasks: [
+      { task: 'Get an updated payment method on file before ad spend resumes', assignee: 'Sneha Kapoor · client', due: '1 Nov', channel: 'Email', status: 'done' },
+      { task: 'Close out both outstanding compliance documents with Amazon', assignee: 'Ritvik Sharma', due: '1 Nov', channel: 'Work-station', status: 'done' },
+      { task: 'Lock Q4 stock commitments given the profitability miss', assignee: 'Ritvik Sharma', due: '31 Oct', channel: 'Work-station', status: 'done' },
+    ],
+    resolvedPct: 100,
+    resolvedColor: '#3f7d6a',
+  },
+  m6: {
+    completedLabel: 'Completed 9:35 AM',
+    transcriptMeta: 'From transcript · 35 minutes · 3 attendees',
+    title: 'Boldfit · Weekly sync',
+    dateLabel: 'Today',
+    sent: false,
+    summary: 'Walked through the Q4 profitability forecast miss and confirmed the declined card is a billing issue, not a policy flag. The team is still waiting on an updated payment method before ad spend can resume. One of the two outstanding compliance documents was submitted; the second is still with legal.',
+    decisions: [
+      'Resume ad spend the same day the new card is confirmed on file.',
+      'Escalate the second compliance document internally if not filed by Friday.',
+    ],
+    tasks: [
+      { task: 'Confirm the new payment method is live on the ad account', assignee: 'Sneha Kapoor · client', due: '24 Sep', channel: 'Email', status: 'in_progress' },
+      { task: 'Follow up on the second outstanding compliance document', assignee: 'Unassigned', due: 'Set date', channel: 'Work-station', status: 'open' },
+    ],
+    resolvedPct: 50,
+    resolvedColor: '#a8763f',
+  },
   m4: {
     completedLabel: 'Completed 3:44 PM',
     transcriptMeta: 'From transcript · 44 minutes · 4 attendees',
@@ -1955,18 +1987,20 @@ export const MOM_RECORDS: Record<string, MomRecord> = {
       'Q4 stock cover to be modelled at two scenarios before the next review.',
     ],
     tasks: [
-      { task: 'Model Q4 stock cover at two scenarios', assignee: 'Ritvik Sharma', due: '7 Nov', status: 'Work-station' },
-      { task: 'Send replacement creative for two suppressed ASINs', assignee: 'Priya Nair · client', due: '4 Nov', status: 'Email' },
-      { task: 'Publish approved bullet copy on 6 hero ASINs', assignee: 'Ritvik Sharma', due: '3 Nov', status: 'Work-station' },
-      { task: 'Share updated compliance checklist', assignee: 'Aditi Rao · client', due: '5 Nov', status: 'Email' },
+      { task: 'Model Q4 stock cover at two scenarios', assignee: 'Ritvik Sharma', due: '7 Nov', channel: 'Work-station', status: 'open' },
+      { task: 'Send replacement creative for two suppressed ASINs', assignee: 'Priya Nair · client', due: '4 Nov', channel: 'Email', status: 'in_progress' },
+      { task: 'Publish approved bullet copy on 6 hero ASINs', assignee: 'Ritvik Sharma', due: '3 Nov', channel: 'Work-station', status: 'in_progress' },
+      { task: 'Share updated compliance checklist', assignee: 'Aditi Rao · client', due: '5 Nov', channel: 'Email', status: 'open' },
     ],
+    resolvedPct: 0,
+    resolvedColor: '#9aa0a8',
   },
   m5: {
     completedLabel: 'Completed 11:20 AM',
     transcriptMeta: 'From transcript · 50 minutes · 3 attendees',
     title: 'Nutrabay · Weekly performance review',
-    dateLabel: '25 October 2025 · sent to client',
-    sent: true,
+    dateLabel: '25 October 2025',
+    sent: false,
     summary: 'Reviewed the week-over-week dip in conversion on the hero range, traced to a client catalogue push that overwrote optimised bullet copy. Agreed to revert immediately and raised the recurring-overwrite pattern as a process risk. Inventory reorder on three SKUs was confirmed verified. No new asks from the client this week.',
     decisions: [
       'Revert the 27 Oct bullet copy on the affected ASINs immediately.',
@@ -1974,10 +2008,12 @@ export const MOM_RECORDS: Record<string, MomRecord> = {
       'Continue weekly cadence at the same time next week.',
     ],
     tasks: [
-      { task: 'Revert bullet copy to the 27 Oct version', assignee: 'Ritvik Sharma', due: '26 Oct', status: 'Work-station' },
-      { task: 'Draft the PIM approval-gate proposal for the client', assignee: 'Ritvik Sharma', due: '29 Oct', status: 'Work-station' },
-      { task: 'Confirm re-index completed on reverted ASINs', assignee: 'Priya Nair · client', due: '28 Oct', status: 'Email' },
+      { task: 'Revert bullet copy to the 27 Oct version', assignee: 'Ritvik Sharma', due: '26 Oct', channel: 'Work-station', status: 'done' },
+      { task: 'Draft the PIM approval-gate proposal for the client', assignee: 'Ritvik Sharma', due: '29 Oct', channel: 'Work-station', status: 'done' },
+      { task: 'Confirm re-index completed on reverted ASINs', assignee: 'Priya Nair · client', due: '28 Oct', channel: 'Email', status: 'in_progress' },
     ],
+    resolvedPct: 67,
+    resolvedColor: '#a8763f',
   },
 };
 
@@ -1987,8 +2023,9 @@ export interface PrepAction {
   impact: string;
   impactColor: string;
   impactStyle?: string;
-  state: string;
-  stateColor: string;
+  /** Who took the action, and when — shown under the action text in place of a separate status column. */
+  by: string;
+  date: string;
 }
 
 export interface PrepRecord {
@@ -1996,7 +2033,6 @@ export interface PrepRecord {
   negatives: string[];
   actions: PrepAction[];
   discussion: string[];
-  tasks: MomTaskItem[];
 }
 
 /** Keyed by MeetingListItem.id — everything the Prep/Presentation flow shows for that meeting. */
@@ -2013,19 +2049,14 @@ export const PREP_RECORDS: Record<string, PrepRecord> = {
       'Q4 promo calendar is a week overdue and the 8 November lock is close.',
     ],
     actions: [
-      { alert: 'Net profit down 12% on 14 ASINs', action: 'Reverted to 27 Oct copy', impact: '+$7,100', impactColor: '#464646', impactStyle: 'italic', state: 'Running', stateColor: '#a8763f' },
-      { alert: 'Inventory reorder · 3 SKUs', action: 'Reorder placed Thursday', impact: '+$6,200', impactColor: '#3f7d6a', state: 'Verified', stateColor: '#3f7d6a' },
-      { alert: 'Bullet copy under-performing', action: 'Awaiting client sign-off', impact: '+$5,300', impactColor: '#464646', impactStyle: 'italic', state: 'Proposed', stateColor: '#6b7178' },
+      { alert: 'Net profit down 12% on 14 ASINs', action: 'Reverted to 27 Oct copy', impact: '+$7,100', impactColor: '#464646', impactStyle: 'italic', by: 'Ritvik Sharma', date: '27 Oct' },
+      { alert: 'Inventory reorder · 3 SKUs', action: 'Reorder placed Thursday', impact: '+$6,200', impactColor: '#3f7d6a', by: 'You', date: '24 Oct' },
+      { alert: 'Bullet copy under-performing', action: 'Awaiting client sign-off', impact: '+$5,300', impactColor: '#464646', impactStyle: 'italic', by: 'Priya Nair · client', date: '3 Nov' },
     ],
     discussion: [
       'Route catalogue pushes through an approval gate — third recurrence this week.',
       'Sign off new bullet copy on the six hero ASINs, worth about $5,300 a month.',
       'Confirm Q4 promo dates before the 8 November lock.',
-    ],
-    tasks: [
-      { task: 'Chase the Q4 promo calendar from Rahul before the 8 November lock', assignee: 'Ritvik Sharma', due: '25 Oct', status: 'Work-station' },
-      { task: 'Get sign-off on the new bullet copy for six hero ASINs', assignee: 'Priya Nair · client', due: '3 Nov', status: 'Email' },
-      { task: 'Draft the PIM approval-gate proposal to stop the recurring overwrite', assignee: 'Ritvik Sharma', due: '29 Oct', status: 'Work-station' },
     ],
   },
   m2: {
@@ -2040,41 +2071,12 @@ export const PREP_RECORDS: Record<string, PrepRecord> = {
       'GMV is flat quarter over quarter while the suppression is unresolved.',
     ],
     actions: [
-      { alert: 'Two listings suppressed on image compliance', action: 'Replacement creative drafted, awaiting sign-off', impact: '+$6,380', impactColor: '#464646', impactStyle: 'italic', state: 'Proposed', stateColor: '#6b7178' },
+      { alert: 'Two listings suppressed on image compliance', action: 'Replacement creative drafted, awaiting sign-off', impact: '+$6,380', impactColor: '#464646', impactStyle: 'italic', by: 'You', date: '2 Nov' },
     ],
     discussion: [
       'Confirm timeline for the replacement creative sign-off.',
       'Model Q4 stock cover at two scenarios before committing inventory.',
       'Agree a pre-flight compliance check so this doesn\'t recur.',
-    ],
-    tasks: [
-      { task: 'Publish approved bullet copy on the six hero ASINs and confirm re-index completed', assignee: 'You', due: '3 Nov', status: 'Work-station' },
-      { task: 'Model Q4 stock cover at two scenarios for the hero range', assignee: 'You', due: '7 Nov', status: 'Work-station' },
-      { task: 'Confirm timeline for the replacement creative sign-off', assignee: 'Aditi Rao · client', due: '5 Nov', status: 'Email' },
-    ],
-  },
-  m3: {
-    positives: [
-      'Ad account access is otherwise clean — the decline is a card issue, not a policy flag.',
-    ],
-    negatives: [
-      'Profitability forecast down across the entire portfolio ahead of Q4.',
-      'Declined card has already paused advertising once this month.',
-      'Two compliance documents remain outstanding with Amazon.',
-    ],
-    actions: [
-      { alert: 'Q4 profitability forecast down across the entire Boldfit portfolio', action: 'Awaiting Q4 planning decisions', impact: '−$1.4M', impactColor: '#b3453f', state: 'Open', stateColor: '#b3453f' },
-      { alert: 'Credit card on file declined', action: 'Client notified, new card pending', impact: '—', impactColor: '#6b7178', state: 'Open', stateColor: '#b3453f' },
-    ],
-    discussion: [
-      'Get an updated payment method on file before ad spend resumes.',
-      'Close out both outstanding compliance documents this week.',
-      'Lock Q4 stock commitments given the profitability miss.',
-    ],
-    tasks: [
-      { task: 'Get an updated payment method on file before ad spend resumes', assignee: 'Sneha Kapoor · client', due: '4 Nov', status: 'Email' },
-      { task: 'Close out both outstanding compliance documents with Amazon', assignee: 'Unassigned', due: 'Set date', status: 'Work-station' },
-      { task: 'Lock Q4 stock commitments given the profitability miss', assignee: 'Unassigned', due: 'Set date', status: 'Work-station' },
     ],
   },
 };

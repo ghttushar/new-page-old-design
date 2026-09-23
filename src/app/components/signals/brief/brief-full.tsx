@@ -206,10 +206,10 @@ export function BriefFull() {
       </div>
 
       {expandedStat === 'atRisk' && (
-        <BreakdownPanel title="At Risk, by Category" subtitle="Total at-risk value across all categories · click a category to view its alerts" items={AT_RISK_BY_CATEGORY} insight={AT_RISK_INSIGHT} />
+        <BreakdownPanel title="At Risk, by Category" subtitle="Total at-risk value across all categories · click a category to view its alerts" items={AT_RISK_BY_CATEGORY} insight={AT_RISK_INSIGHT} flat />
       )}
       {expandedStat === 'verifiedGain' && (
-        <BreakdownPanel title="Verified Gain, by Category" subtitle="Total verified gain across all categories · click a category to view its alerts" items={VERIFIED_GAIN_BY_CATEGORY} insight={VERIFIED_GAIN_INSIGHT} />
+        <BreakdownPanel title="Verified Gain, by Category" subtitle="Total verified gain across all categories · click a category to view its alerts" items={VERIFIED_GAIN_BY_CATEGORY} insight={VERIFIED_GAIN_INSIGHT} flat />
       )}
 
       {/* While you were away — what Jiva did, and the impact so far */}
@@ -268,11 +268,17 @@ function KpiCard({
   );
 }
 
-function BreakdownPanel({ title, subtitle, items, insight }: { title: string; subtitle: string; items: BreakdownItem[]; insight: { title: string; body: string } }) {
+function BreakdownPanel({ title, subtitle, items, insight, flat = false }: { title: string; subtitle: string; items: BreakdownItem[]; insight: { title: string; body: string }; flat?: boolean }) {
   const total = items.reduce((sum, it) => sum + it.value, 0);
   const shares = randomShares(items);
   const angles = shareAngles(shares);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  // Flat charts render as true circles with no extruded "wall" layer — 3D ones keep the elliptical tilt + shadow duplicate.
+  const outerRx = flat ? 74 : PIE_OUTER_RX;
+  const outerRy = flat ? 74 : PIE_OUTER_RY;
+  const innerRx = flat ? 38 : PIE_INNER_RX;
+  const innerRy = flat ? 38 : PIE_INNER_RY;
+  const depth = flat ? 0 : PIE_DEPTH;
   return (
     <div className={motion.contentFadeIn} style={{ padding: 20, borderRadius: 12, background: '#fff', border: '1px solid #eceef1' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -289,19 +295,21 @@ function BreakdownPanel({ title, subtitle, items, insight }: { title: string; su
         <div style={{ flex: '0 1 calc(65% - 30px)', minWidth: 320, display: 'flex', gap: 28, alignItems: 'center' }}>
           <div style={{ width: 188, height: 156, flex: 'none', position: 'relative' as const }}>
             <svg width={188} height={156} viewBox="0 0 188 156" style={{ overflow: 'visible' as const }}>
-              {/* Static shadow "wall" — always resting, gives every wedge its extruded rim. */}
-              <g>
-                {items.map((it, i) => {
-                  const { a0, a1 } = angles[i];
-                  const d = annularSectorPath(PIE_CX, PIE_CY, PIE_OUTER_RX, PIE_OUTER_RY, PIE_INNER_RX, PIE_INNER_RY, a0, a1);
-                  return <path key={`shadow-${it.label}`} d={d} fill={shadeColor(it.color, -0.35)} style={{ transform: `translate(0px, ${PIE_DEPTH}px)` }} />;
-                })}
-              </g>
+              {/* Static shadow "wall" — always resting, gives every wedge its extruded rim. Skipped entirely for flat 2D charts. */}
+              {!flat && (
+                <g>
+                  {items.map((it, i) => {
+                    const { a0, a1 } = angles[i];
+                    const d = annularSectorPath(PIE_CX, PIE_CY, outerRx, outerRy, innerRx, innerRy, a0, a1);
+                    return <path key={`shadow-${it.label}`} d={d} fill={shadeColor(it.color, -0.35)} style={{ transform: `translate(0px, ${depth}px)` }} />;
+                  })}
+                </g>
+              )}
               {/* Static top faces — never move, so hovering never loses the pointer and never leaves a gap. */}
               <g>
                 {items.map((it, i) => {
                   const { a0, a1 } = angles[i];
-                  const d = annularSectorPath(PIE_CX, PIE_CY, PIE_OUTER_RX, PIE_OUTER_RY, PIE_INNER_RX, PIE_INNER_RY, a0, a1);
+                  const d = annularSectorPath(PIE_CX, PIE_CY, outerRx, outerRy, innerRx, innerRy, a0, a1);
                   return (
                     <path
                       key={`top-${it.label}`}
@@ -318,14 +326,14 @@ function BreakdownPanel({ title, subtitle, items, insight }: { title: string; su
               </g>
               {/* Raised duplicates — pointer-events off, transform/filter animated via CSS transition for the hover-lift. */}
               <g style={{ pointerEvents: 'none' as const }}>
-                {items.map((it, i) => {
+                {!flat && items.map((it, i) => {
                   const { a0, a1 } = angles[i];
                   const mid = (((a0 + a1) / 2) * Math.PI) / 180;
                   const raised = hoveredIdx === i;
                   const dx = raised ? Math.sin(mid) * PIE_EXPLODE : 0;
                   const dy = raised ? -Math.cos(mid) * PIE_EXPLODE - PIE_LIFT : 0;
-                  const d = annularSectorPath(PIE_CX, PIE_CY, PIE_OUTER_RX, PIE_OUTER_RY, PIE_INNER_RX, PIE_INNER_RY, a0, a1);
-                  return <path key={`rshadow-${it.label}`} d={d} fill={shadeColor(it.color, -0.35)} style={{ transform: `translate(${dx}px, ${PIE_DEPTH + dy}px)`, transition: `transform 280ms ${PIE_EASE}` }} />;
+                  const d = annularSectorPath(PIE_CX, PIE_CY, outerRx, outerRy, innerRx, innerRy, a0, a1);
+                  return <path key={`rshadow-${it.label}`} d={d} fill={shadeColor(it.color, -0.35)} style={{ transform: `translate(${dx}px, ${depth + dy}px)`, transition: `transform 280ms ${PIE_EASE}` }} />;
                 })}
                 {items.map((it, i) => {
                   const { a0, a1 } = angles[i];
@@ -333,7 +341,7 @@ function BreakdownPanel({ title, subtitle, items, insight }: { title: string; su
                   const raised = hoveredIdx === i;
                   const dx = raised ? Math.sin(mid) * PIE_EXPLODE : 0;
                   const dy = raised ? -Math.cos(mid) * PIE_EXPLODE - PIE_LIFT : 0;
-                  const d = annularSectorPath(PIE_CX, PIE_CY, PIE_OUTER_RX, PIE_OUTER_RY, PIE_INNER_RX, PIE_INNER_RY, a0, a1);
+                  const d = annularSectorPath(PIE_CX, PIE_CY, outerRx, outerRy, innerRx, innerRy, a0, a1);
                   return (
                     <path
                       key={`rtop-${it.label}`}
@@ -351,7 +359,7 @@ function BreakdownPanel({ title, subtitle, items, insight }: { title: string; su
                 })}
               </g>
             </svg>
-            <div style={{ position: 'absolute', left: PIE_CX - PIE_INNER_RX, top: PIE_CY - PIE_INNER_RY, width: PIE_INNER_RX * 2, height: PIE_INNER_RY * 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' as const }}>
+            <div style={{ position: 'absolute', left: PIE_CX - innerRx, top: PIE_CY - innerRy, width: innerRx * 2, height: innerRy * 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' as const }}>
               <div style={{ font: '700 17px/1 Inter,sans-serif', color: '#111827' }}>{formatCompactDollars(total)}</div>
               <div style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 4 }}>total</div>
             </div>

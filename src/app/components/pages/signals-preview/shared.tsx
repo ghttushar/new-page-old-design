@@ -28,6 +28,7 @@ export const MANY_ASSIGNEES = [
 
 export const PREVIEW_PAGES: { path: string; label: string; note: string }[] = [
   { path: '/signals-preview/signals', label: 'Alerts, Meetings & Work-station', note: 'Every Alerts, Meetings and Work-station screen, panel and menu as static frames — nothing to click through.' },
+  { path: '/signals-preview/updates', label: 'Recent updates', note: 'Everything added or redesigned in the latest pass — Work-station task rows and detail-panel field editors, the Activity comment thread, the due-date calendar, and the Meetings list/upcoming/completed screens.' },
 ];
 
 export function PreviewNav({ current }: { current: string }) {

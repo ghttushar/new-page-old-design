@@ -47,7 +47,7 @@ function OrbitIcon({ icon, dotColors }: { icon: React.ReactNode; dotColors: stri
   );
 }
 
-function CategoryCard({ label, count, unit, color, onClick }: EmptyStateCategory) {
+export function CategoryCard({ label, count, unit, color, onClick }: EmptyStateCategory) {
   return (
     <div
       onClick={onClick}

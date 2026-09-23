@@ -13,20 +13,10 @@ import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { AlertBadgeRow } from './alert-badge-row';
 import { DetailFooterBar } from './detail-footer-bar';
-import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge } from './icons';
-import { SignalsEmptyState } from '../common/signals-empty-state';
+import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge, BackArrowIcon } from './icons';
+import { ConnectedEmptyHero } from '../common/connected-empty-hero';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
-
-function AlertGlyphIcon({ color }: { color: string }) {
-  return (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-      <path d="M8 1.5l6.5 11.5H1.5L8 1.5z" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M8 6.5v3" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
-      <circle cx="8" cy="11.3" r=".9" fill={color} />
-    </svg>
-  );
-}
 
 interface Props {
   alert: PrototypeAlert | null;
@@ -49,6 +39,8 @@ interface Props {
   onOpenAskJiva?: () => void;
   /** Applies a category as the alert list's active filter — used by the empty state's category cards. */
   onFilterCategory?: (category: string) => void;
+  /** Deselects the current alert, returning to the empty state — the panel's "Back" button. */
+  onBack?: () => void;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -79,7 +71,7 @@ const CATEGORY_METRICS: { category: string; count: number; topAlertId: string }[
     .sort((a, b) => b.count - a.count);
 })();
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onFilterCategory }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onFilterCategory, onBack }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
@@ -102,9 +94,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   if (!sel) {
     return (
       <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
-        <SignalsEmptyState
-          icon={<AlertGlyphIcon color="#77469b" />}
-          title="Select an alert to view details"
+        <ConnectedEmptyHero
+          title="Your alerts."
           subtitle="Here's a quick overview of your alerts and how many fall into each category. Click a category to filter the list."
           categories={CATEGORY_METRICS.map((m) => ({
             key: m.category,
@@ -322,6 +313,9 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
       <div key={sel.id} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         {/* Header — badges/marketplace/source match the Alerts row exactly (shared AlertBadgeRow), so the two never diverge */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
+          <span onClick={onBack} className={motion.pressable} style={{ display: 'inline-flex', marginBottom: 12, cursor: 'pointer' }}>
+            <BackArrowIcon size={18} color="#3d434b" />
+          </span>
           <div style={{ marginBottom: 12 }}>
             <AlertBadgeRow al={sel} size={20} showAccount />
           </div>

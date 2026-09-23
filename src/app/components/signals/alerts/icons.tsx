@@ -179,3 +179,12 @@ export function ChevronDownIcon({ size = 9, color = '#9aa0a8' }: IconProps) {
     </svg>
   );
 }
+
+export function BellIcon({ size = 13, color = '#6b7178' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.8c-2 0-3.4 1.6-3.4 3.9 0 3.4-1.1 4.3-1.1 4.9 0 .3.2.5.5.5h8c.3 0 .5-.2.5-.5 0-.6-1.1-1.5-1.1-4.9 0-2.3-1.4-3.9-3.4-3.9z" stroke={color} strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M6.3 13.2c.3.7.9 1.1 1.7 1.1s1.4-.4 1.7-1.1" stroke={color} strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
