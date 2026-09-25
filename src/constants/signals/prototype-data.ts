@@ -2128,6 +2128,8 @@ export interface DashboardMetric {
   id: string;
   label: string;
   value: string;
+  /** Same figure as `value`, as a real number — `value` is pre-formatted ($, %, K/M suffixes) for direct display and isn't safe to parse back; charts need this instead for bar heights / line points. */
+  numericValue: number;
   trend: string;
   trendUp: boolean;
   prevLabel: string;
@@ -2135,14 +2137,118 @@ export interface DashboardMetric {
 }
 
 export const DASHBOARD_METRICS: DashboardMetric[] = [
-  { id: 'ad-spend', label: 'Ad spend', value: '$8,456', trend: '16.9%', trendUp: true, prevLabel: 'Prev 7 days: $7,235', color: '#77469b' },
-  { id: 'ad-sales', label: 'Ad sales', value: '$38,235', trend: '17.8%', trendUp: true, prevLabel: 'Prev 7 days: $32,457', color: '#3f7d6a' },
-  { id: 'ad-units', label: 'Ad units', value: '1,203', trend: '10.7%', trendUp: true, prevLabel: 'Prev 7 days: 1,087', color: '#5c7f9e' },
-  { id: 'roas', label: 'ROAS', value: '4.52', trend: '0.7%', trendUp: true, prevLabel: 'Prev 7 days: 4.49', color: '#a8763f' },
-  { id: 'impressions', label: 'Impressions', value: '1.2M', trend: '13.4%', trendUp: true, prevLabel: 'Prev 7 days: 1,098,234', color: '#b3453f' },
-  { id: 'clicks', label: 'Clicks', value: '42,180', trend: '9.2%', trendUp: true, prevLabel: 'Prev 7 days: 38,630', color: '#8a7fa8' },
-  { id: 'ctr', label: 'CTR', value: '3.51%', trend: '2.1%', trendUp: false, prevLabel: 'Prev 7 days: 3.59%', color: '#5f9e8a' },
-  { id: 'cvr', label: 'CVR', value: '6.9%', trend: '4.4%', trendUp: true, prevLabel: 'Prev 7 days: 6.6%', color: '#3f7d6a' },
-  { id: 'acos', label: 'ACOS', value: '22.1%', trend: '1.8%', trendUp: false, prevLabel: 'Prev 7 days: 21.7%', color: '#b3453f' },
-  { id: 'tacos', label: 'TACOS', value: '9.4%', trend: '0.9%', trendUp: true, prevLabel: 'Prev 7 days: 9.5%', color: '#77469b' },
+  { id: 'ad-spend', label: 'Ad spend', value: '$8,456', numericValue: 8456, trend: '16.9%', trendUp: true, prevLabel: 'Prev 7 days: $7,235', color: '#77469b' },
+  { id: 'ad-sales', label: 'Ad sales', value: '$38,235', numericValue: 38235, trend: '17.8%', trendUp: true, prevLabel: 'Prev 7 days: $32,457', color: '#3f7d6a' },
+  { id: 'ad-units', label: 'Ad units', value: '1,203', numericValue: 1203, trend: '10.7%', trendUp: true, prevLabel: 'Prev 7 days: 1,087', color: '#5c7f9e' },
+  { id: 'roas', label: 'ROAS', value: '4.52', numericValue: 4.52, trend: '0.7%', trendUp: true, prevLabel: 'Prev 7 days: 4.49', color: '#a8763f' },
+  { id: 'impressions', label: 'Impressions', value: '1.2M', numericValue: 1200000, trend: '13.4%', trendUp: true, prevLabel: 'Prev 7 days: 1,098,234', color: '#b3453f' },
+  { id: 'clicks', label: 'Clicks', value: '42,180', numericValue: 42180, trend: '9.2%', trendUp: true, prevLabel: 'Prev 7 days: 38,630', color: '#8a7fa8' },
+  { id: 'ctr', label: 'CTR', value: '3.51%', numericValue: 3.51, trend: '2.1%', trendUp: false, prevLabel: 'Prev 7 days: 3.59%', color: '#5f9e8a' },
+  { id: 'cvr', label: 'CVR', value: '6.9%', numericValue: 6.9, trend: '4.4%', trendUp: true, prevLabel: 'Prev 7 days: 6.6%', color: '#3f7d6a' },
+  { id: 'acos', label: 'ACOS', value: '22.1%', numericValue: 22.1, trend: '1.8%', trendUp: false, prevLabel: 'Prev 7 days: 21.7%', color: '#b3453f' },
+  { id: 'tacos', label: 'TACOS', value: '9.4%', numericValue: 9.4, trend: '0.9%', trendUp: true, prevLabel: 'Prev 7 days: 9.5%', color: '#77469b' },
+];
+
+/** The five change categories the morning brief surfaces across the whole platform, not just Signals. */
+export type PlatformChangeCategory = 'Rules action changes' | 'MCP Agents changes' | 'Users made changes' | 'Keywords harvesting' | 'Dayparting rule actions';
+
+export interface PlatformChangeItem {
+  time: string;
+  category: PlatformChangeCategory;
+  title: string;
+  detail: string;
+  impact: string;
+  impactColor: string;
+}
+
+/** What changed overnight across rules, agents, people, keyword discovery, and scheduling — the "while you were away" feed for the whole platform. */
+export const PLATFORM_CHANGE_TIMELINE: PlatformChangeItem[] = [
+  { time: '05:40 AM', category: 'Rules action changes', title: 'Bid ceilings tightened on 18 campaigns', detail: 'Rules reduced keyword and product target bids on Nutrabay where ACOS crossed the 28% guardrail for two consecutive windows.', impact: 'Spend trimmed by $6.8K while preserving 94% of revenue volume.', impactColor: '#3f7d6a' },
+  { time: '06:15 AM', category: 'MCP Agents changes', title: 'Agent reconciled budget pacing anomalies', detail: 'The budget-monitor agent found campaigns spending too fast on Amazon US and moved six of them into a conservative pacing band.', impact: 'Prevented 4 campaigns from exhausting budget before peak evening hours.', impactColor: '#3f7d6a' },
+  { time: '07:05 AM', category: 'Users made changes', title: 'Team raised daily budgets on top movers', detail: 'Priya and Mike increased budget on Nutrabay’s hero SKUs and two Wellbeing Nutrition products after this morning’s stock check.', impact: 'Adds room for roughly $21K in incremental ad-attributed sales today.', impactColor: '#464646' },
+  { time: '07:42 AM', category: 'Keywords harvesting', title: 'High-converting search terms promoted', detail: '43 search terms moved from discovery into manual campaigns, exact match preferred for terms above 4.5x ROAS.', impact: 'New keywords contributed $9.6K in yesterday-attributed sales during the test window.', impactColor: '#3f7d6a' },
+  { time: '08:10 AM', category: 'Dayparting rule actions', title: 'Midday and evening schedules rebalanced', detail: 'The system shifted budget weight away from 1–5 AM and increased coverage from 10 AM–2 PM and 6 PM–9 PM.', impact: 'Hourly ROAS improved from 4.8x to 5.6x across the adjusted windows.', impactColor: '#3f7d6a' },
+  { time: '08:35 AM', category: 'Rules action changes', title: 'Auto-pause guardrail fired on a Boldfit SKU', detail: 'ACOS drifted 3x above target for four straight days, so the standing rule paused spend automatically.', impact: '+$1,150 saved before the next review.', impactColor: '#3f7d6a' },
+  { time: '08:52 AM', category: 'MCP Agents changes', title: 'Catalog agent drafted a compliance fix', detail: 'A replacement white-background image was generated for the two Wellbeing Nutrition listings suppressed on image compliance — awaiting your review.', impact: '−$3,400 still at risk until approved.', impactColor: '#b3453f' },
+];
+
+export interface BriefTrendPoint {
+  day: string;
+  revenue: number;
+  adSales: number;
+  spend: number;
+  roas: number;
+  acos: number;
+}
+
+/** Seven-day series behind the Brief dashboard's revenue/efficiency charts — one shared shape so every trend widget can share an x-axis. */
+export const BRIEF_TREND_SERIES: BriefTrendPoint[] = [
+  { day: 'Thu', revenue: 352, adSales: 141, spend: 34, roas: 4.16, acos: 24.0 },
+  { day: 'Fri', revenue: 367, adSales: 149, spend: 32, roas: 4.65, acos: 21.5 },
+  { day: 'Sat', revenue: 381, adSales: 154, spend: 34, roas: 4.52, acos: 22.1 },
+  { day: 'Sun', revenue: 344, adSales: 132, spend: 31, roas: 4.26, acos: 23.5 },
+  { day: 'Mon', revenue: 389, adSales: 163, spend: 33, roas: 4.94, acos: 20.2 },
+  { day: 'Tue', revenue: 406, adSales: 172, spend: 34, roas: 5.06, acos: 19.8 },
+  { day: 'Wed', revenue: 429, adSales: 197, spend: 36, roas: 5.42, acos: 18.4 },
+];
+
+export interface BriefHourlyPoint { hour: string; revenue: number; spend: number; roas: number }
+
+/** Intraday shape for the dayparting widget — mirrors the windows Dayparting rule actions actually shifted budget across. */
+export const BRIEF_HOURLY_SERIES: BriefHourlyPoint[] = [
+  { hour: '12a', revenue: 9, spend: 2.4, roas: 3.8 },
+  { hour: '3a', revenue: 7, spend: 1.8, roas: 3.9 },
+  { hour: '6a', revenue: 18, spend: 3.6, roas: 5.0 },
+  { hour: '9a', revenue: 48, spend: 7.2, roas: 6.7 },
+  { hour: '12p', revenue: 67, spend: 10.8, roas: 6.2 },
+  { hour: '3p', revenue: 74, spend: 12.4, roas: 6.0 },
+  { hour: '6p', revenue: 51, spend: 9.8, roas: 5.2 },
+  { hour: '9p', revenue: 27, spend: 5.6, roas: 4.8 },
+];
+
+export interface KeywordFunnelStage { stage: string; terms: number }
+
+export const KEYWORD_FUNNEL: KeywordFunnelStage[] = [
+  { stage: 'Discovered', terms: 284 },
+  { stage: 'Qualified', terms: 126 },
+  { stage: 'Promoted', terms: 43 },
+  { stage: 'Negatives', terms: 28 },
+];
+
+export interface ActionMixItem { source: PlatformChangeCategory; count: number; impact: string }
+
+/** Counts behind the "Action mix" donut — the same five categories as PLATFORM_CHANGE_TIMELINE. */
+export const ACTION_MIX: ActionMixItem[] = [
+  { source: 'Rules action changes', count: 126, impact: '+$18.4K protected' },
+  { source: 'MCP Agents changes', count: 58, impact: '21 checks completed' },
+  { source: 'Users made changes', count: 34, impact: '8 budget edits' },
+  { source: 'Keywords harvesting', count: 71, impact: '43 promoted' },
+  { source: 'Dayparting rule actions', count: 23, impact: '9 schedules changed' },
+];
+
+export interface ChannelHealth { name: string; revenue: string; delta: string; roas: string; acos: string; budget: number; status: string }
+
+/** Per-marketplace health for the Brief's channel widget — the same channels AccountFilterDropdown lets a user scope to. */
+export const CHANNEL_HEALTH: ChannelHealth[] = [
+  { name: 'Amazon', revenue: '$246.9K', delta: '+15.8%', roas: '5.8x', acos: '17.2%', budget: 78, status: 'Scaling efficiently' },
+  { name: 'Walmart', revenue: '$122.4K', delta: '+9.1%', roas: '4.9x', acos: '20.5%', budget: 69, status: 'Strong mid-day lift' },
+  { name: 'DTC store', revenue: '$59.3K', delta: '+6.4%', roas: '3.7x', acos: '27.1%', budget: 61, status: 'Conversion rate stable' },
+];
+
+export interface BriefRecommendation { priority: 'Do first' | 'Optimize' | 'Watch'; title: string; detail: string }
+
+/** The operator's morning priority stack, ranked — feeds both the "Recommended actions" widget and the mixed/written narrative copy. */
+export const BRIEF_RECOMMENDATIONS: BriefRecommendation[] = [
+  { priority: 'Do first', title: 'Protect today’s peak hours', detail: 'Increase budgets on campaigns already above 70% utilization and still above 4.5x ROAS before late-morning traffic builds.' },
+  { priority: 'Optimize', title: 'Move exact-match winners faster', detail: 'The newly harvested keywords are converting quickly — graduate the best 12 into higher-control manual campaigns.' },
+  { priority: 'Watch', title: 'Audit overnight spend', detail: 'Dayparting improved efficiency, but 1–5 AM still shows weak conversion on two Walmart campaigns.' },
+];
+
+export interface BriefTopMover { name: string; area: string; sales: string; change: string; reason: string }
+
+export const BRIEF_TOP_MOVERS: BriefTopMover[] = [
+  { name: 'Nutrabay Whey Protein 1kg', area: 'Amazon Sponsored Products', sales: '$64.2K', change: '+24.6%', reason: 'Exact-match harvests and higher afternoon availability' },
+  { name: 'Wellbeing Nutrition Gummies', area: 'Walmart Manual Campaigns', sales: '$31.8K', change: '+17.2%', reason: 'Bid multiplier increase on mobile placements' },
+  { name: 'Boldfit Resistance Bands', area: 'DTC Store', sales: '$18.9K', change: '+11.5%', reason: 'Better attach rate after PDP merchandising update' },
+  { name: 'Nutrabay Mass Gainer 3kg', area: 'Amazon Auto Campaigns', sales: '$12.7K', change: '-8.3%', reason: 'Budget constrained before evening traffic peak' },
 ];

@@ -13,7 +13,7 @@ import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { AlertBadgeRow } from './alert-badge-row';
 import { DetailFooterBar } from './detail-footer-bar';
-import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge, BackArrowIcon } from './icons';
+import { AssignIcon, ShareIcon, ThumbUpIcon, ThumbDownIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge, CloseIcon } from './icons';
 import { ConnectedEmptyHero } from '../common/connected-empty-hero';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
@@ -313,11 +313,16 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
       <div key={sel.id} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         {/* Header — badges/marketplace/source match the Alerts row exactly (shared AlertBadgeRow), so the two never diverge */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
-          <span onClick={onBack} className={motion.pressable} style={{ display: 'inline-flex', marginBottom: 12, cursor: 'pointer' }}>
-            <BackArrowIcon size={18} color="#3d434b" />
-          </span>
-          <div style={{ marginBottom: 12 }}>
-            <AlertBadgeRow al={sel} size={20} showAccount />
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <AlertBadgeRow al={sel} size={20} showAccount />
+            </div>
+            <span onClick={onBack} className={motion.pressable} style={{ display: 'flex', flex: 'none', cursor: 'pointer', padding: 3, borderRadius: 6 }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <CloseIcon size={15} color="#6b7178" />
+            </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
             <div style={{ minWidth: 0 }}>

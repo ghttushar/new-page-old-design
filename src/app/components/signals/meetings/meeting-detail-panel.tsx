@@ -4,7 +4,7 @@ import { Avatar } from '../alerts/assign-menu';
 import { HoverTip } from '../alerts/hover-tip';
 import { DetailFooterBar } from '../alerts/detail-footer-bar';
 import { ConnectedEmptyHero } from '../common/connected-empty-hero';
-import { BackArrowIcon } from '../alerts/icons';
+import { CloseIcon } from '../alerts/icons';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -64,9 +64,6 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation, onFilterCa
     <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       {/* Header */}
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
-        <span onClick={onBack} className={motion.pressable} style={{ display: 'inline-flex', marginBottom: 12, cursor: 'pointer' }}>
-          <BackArrowIcon size={18} color="#3d434b" />
-        </span>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -96,6 +93,12 @@ export function MeetingDetailPanel({ meetingId, onCreatePresentation, onFilterCa
               </span>
             )}
           </div>
+          <span onClick={onBack} className={motion.pressable} style={{ display: 'flex', flex: 'none', cursor: 'pointer', padding: 3, borderRadius: 6 }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <CloseIcon size={15} color="#6b7178" />
+          </span>
         </div>
       </div>
 

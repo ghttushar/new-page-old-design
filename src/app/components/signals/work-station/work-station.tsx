@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   WORKSTATION_TASKS,
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption,
@@ -8,8 +8,10 @@ import { PlusIcon } from '../alerts/icons';
 import { WorkStationListView, type GroupKey } from './work-station-list-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
+import { WorkStationCollapsedRail } from './work-station-collapsed-rail';
 import { PRIORITY_COLOR } from './work-station-icons';
 import { ConnectedEmptyHero } from '../common/connected-empty-hero';
+import { ResizeHandle, useResizableColumn } from '../common/resizable-column';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -33,6 +35,8 @@ const QUICK_FILTER_LABEL = {
 interface Props {
   onOpenAlert?: (id: string) => void;
   onOpenMeeting?: (id: string) => void;
+  /** Set by the global "Ask Jiva" header button — opens (or closes) this tab's list/detail/Jiva 3-column view regardless of local state, picking a task to anchor to if none is selected yet. */
+  forceJivaOpen?: boolean;
   /** Forces a task selected (docking the detail panel) on mount — for the design-handoff preview, not used by the real app. */
   initialSelectedId?: string | null;
   /** Forces the Ask Jiva panel open on mount — for the design-handoff preview, not used by the real app. */
@@ -54,13 +58,24 @@ interface Props {
 }
 
 export function WorkStation({
-  onOpenAlert, onOpenMeeting, initialSelectedId = null, initialJivaOpen = false, initialPriorityFilterOpen = false,
+  onOpenAlert, onOpenMeeting, forceJivaOpen = false, initialSelectedId = null, initialJivaOpen = false, initialPriorityFilterOpen = false,
   initialCreateOpen = false, initialDetailContextOpen = false, initialDetailActivityOpen = false,
   initialDetailCommentComposerOpen = false, initialDetailFieldOpen, initialActiveGroup = 'to-me',
 }: Props) {
   const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [jivaOpen, setJivaOpen] = useState(initialJivaOpen);
+
+  useEffect(() => {
+    setJivaOpen(forceJivaOpen);
+    if (forceJivaOpen) {
+      setSelectedId((cur) => cur ?? tasks.find((t) => t.assignee === 'You')?.id ?? tasks[0]?.id ?? null);
+    }
+    // Reacts only to the global button's own toggles, not to every local task/selection change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forceJivaOpen]);
+  const listCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160 });
+  const jivaCol = useResizableColumn({ defaultWidth: 340, minWidth: 260, maxWidth: 480, edge: 'left' });
   const [search, setSearch] = useState('');
   const [personFilter, setPersonFilter] = useState('');
   const [priorityFilterOpen, setPriorityFilterOpen] = useState(initialPriorityFilterOpen);
@@ -158,34 +173,10 @@ export function WorkStation({
 
   return (
     <div style={{ height: '100%', display: 'flex', gap: 16, position: 'relative' }}>
-      {jivaOpen && selectedTask ? (
-        <>
-          <WorkStationDetailPanel
-            key={selectedTask.id}
-            task={selectedTask}
-            onClose={() => { setSelectedId(null); setJivaOpen(false); }}
-            onReassign={(a) => reassign(selectedTask.id, a)}
-            onSetStatus={(s) => setStatus(selectedTask.id, s)}
-            onSetPriority={(p) => setPriority(selectedTask.id, p)}
-            onSetDue={(d) => setDue(selectedTask.id, d)}
-            onOpenAlert={onOpenAlert}
-            onOpenMeeting={onOpenMeeting}
-            onOpenJiva={() => setJivaOpen((v) => !v)}
-            jivaOpen={jivaOpen}
-            onRemind={() => remindAssignee(selectedTask.id)}
-            initialContextOpen={initialDetailContextOpen}
-            initialActivityOpen={initialDetailActivityOpen}
-            initialCommentComposerOpen={initialDetailCommentComposerOpen}
-            initialAssignMenuOpen={initialDetailFieldOpen === 'assignee'}
-            initialStatusMenuOpen={initialDetailFieldOpen === 'status'}
-            initialPriorityMenuOpen={initialDetailFieldOpen === 'priority'}
-            initialDueMenuOpen={initialDetailFieldOpen === 'due'}
-          />
-          <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} />
-        </>
+      {listCol.collapsed ? (
+        <WorkStationCollapsedRail onExpand={listCol.expand} />
       ) : (
-        <>
-          <div style={{ flex: '0 0 35%', maxWidth: '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
+      <div style={{ flex: `0 0 ${listCol.width}px`, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
               <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
                 <input
@@ -345,12 +336,14 @@ export function WorkStation({
               <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} />
             </div>
           </div>
+      )}
 
+          <div style={{ position: 'relative' as const, display: 'flex', flex: 1, minWidth: 0, height: '100%' }}>
           {selectedTask ? (
             <WorkStationDetailPanel
               key={selectedTask.id}
               task={selectedTask}
-              onClose={() => setSelectedId(null)}
+              onClose={() => { setSelectedId(null); setJivaOpen(false); }}
               onReassign={(a) => reassign(selectedTask.id, a)}
               onSetStatus={(s) => setStatus(selectedTask.id, s)}
               onSetPriority={(p) => setPriority(selectedTask.id, p)}
@@ -383,8 +376,15 @@ export function WorkStation({
               />
             </div>
           )}
-        </>
-      )}
+          <ResizeHandle dragHandleProps={listCol.dragHandleProps} active={listCol.dragging} side="left" />
+          </div>
+
+          {jivaOpen && selectedTask && (
+            <div style={{ position: 'relative' as const, display: 'flex', flex: `0 0 ${jivaCol.width}px`, height: '100%' }}>
+              <ResizeHandle dragHandleProps={jivaCol.dragHandleProps} active={jivaCol.dragging} side="left" />
+              <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} width={jivaCol.width} />
+            </div>
+          )}
 
       {remindedName && (
         <div className={motion.toastIn} style={{ position: 'absolute', right: 20, bottom: 20, padding: '12px 16px', borderRadius: 9, background: '#23272d', color: '#fff', font: '500 12px/1.4 Inter,sans-serif', boxShadow: '0 12px 28px rgba(20,24,33,.28)', zIndex: 250, display: 'flex', alignItems: 'center', gap: 9 }}>

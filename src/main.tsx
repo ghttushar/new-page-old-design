@@ -5,6 +5,8 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './app/app';
 import { AuthWrapper } from './app/components/hoc/auth-wrapper';
 import './index.css'; // RE-DEPLOY
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 import store from './redux/store';
 
 const root = ReactDOM.createRoot(

@@ -14,10 +14,13 @@ interface ChatMessage {
 interface Props {
   meetingId: string;
   onClose: () => void;
+  /** Splits this column evenly with its siblings instead of the usual fixed ~35% — used only when list, detail and Ask Jiva are all showing at once. */
+  /** Explicit pixel width from the drag-resize handle — supersedes the default fixed ~35%. */
+  width?: number;
 }
 
 /** Ask-Jiva-about-this-meeting variant — builds the client presentation through chat instead of a static deck screen; occupies the exact footprint of the meeting list column it replaces. */
-export function AskJivaMeetingPanel({ meetingId, onClose }: Props) {
+export function AskJivaMeetingPanel({ meetingId, onClose, width }: Props) {
   const meeting = MEETING_LIST.find((m) => m.id === meetingId)!;
   const detail = MEETING_DETAILS[meetingId];
   const record = PREP_RECORDS[meetingId];
@@ -61,7 +64,7 @@ export function AskJivaMeetingPanel({ meetingId, onClose }: Props) {
   const suggestions = ['What should I raise?', 'What are the risks?', 'What are we asking for?'];
 
   return (
-    <div className={motion.contentFadeIn} style={{ flex: '0 0 35%', maxWidth: '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+    <div className={motion.contentFadeIn} style={{ flex: width ? `0 0 ${width}px` : '0 0 35%', maxWidth: width ? 'none' : '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 10, flex: 'none', background: 'linear-gradient(180deg, rgba(119,70,155,.05), transparent)' }}>
         <DiamondMascot size={26} />
         <div style={{ minWidth: 0 }}>

@@ -47,6 +47,14 @@
         ],
         "createdAt": "2026-09-09T14:21:40.176Z",
         "reason": "checker paired dark-theme --ink/--ink-muted tokens against the light-theme --surface; verified both are defined only inside mutually-exclusive prefers-color-scheme/[data-theme] blocks that always swap background+text together, so this pairing never renders live. Real contrast issues (light-mode ink-faint, flag, dark-mode ink-faint) were found separately and fixed by darkening/lightening those tokens."
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "src/app/components/pages/signals-page/signals-page.tsx"
+        ],
+        "createdAt": "2026-09-24T14:09:15.976Z"
       }
     ]
   }

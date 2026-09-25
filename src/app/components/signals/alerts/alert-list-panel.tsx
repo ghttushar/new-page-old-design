@@ -20,12 +20,13 @@ interface Props {
   /** Forces the Yesterday group collapsed on mount — for the design-handoff preview, not used by the real app. */
   initialYesterdayCollapsed?: boolean;
   /** Splits this column evenly with its siblings instead of the usual fixed ~35% — used only when list, detail and Ask Jiva are all showing at once. */
-  equalWidth?: boolean;
+  /** Explicit pixel width from the drag-resize handle — supersedes the default fixed ~35%. */
+  width?: number;
   /** A category to apply as the sole active filter — bump `nonce` to reapply the same category again (e.g. from the empty state's category cards). */
   applyCategoryFilter?: { category: string; nonce: number } | null;
 }
 
-export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, equalWidth = false, applyCategoryFilter = null }: Props) {
+export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, width, applyCategoryFilter = null }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -93,7 +94,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
   };
 
   return (
-    <div style={{ flex: equalWidth ? '1 1 0%' : '0 0 35%', maxWidth: equalWidth ? 'none' : '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
+    <div style={{ flex: width ? `0 0 ${width}px` : '0 0 35%', maxWidth: width ? 'none' : '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
         <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search alerts, ASINs, campaigns" className={motion.focusRing} style={{ flex: 1, minWidth: 0, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }} />

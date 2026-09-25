@@ -148,6 +148,22 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   animation: slideInRight 220ms $ease-out;
 }
 
+// Bottom sheets — already docked to the viewport edge via fixed positioning, so (like
+// slideInRight) this is a small arrival nudge, not a full off-screen slide.
+@keyframes slideUpSheet {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.slideUpSheet {
+  animation: slideUpSheet 220ms $ease-out;
+}
+
 // Toasts — bridge an instant notification into view instead of popping.
 @keyframes toastIn {
   from {
@@ -194,7 +210,7 @@ $ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     transition: none;
     &:active { transform: none; }
   }
-  .popIn, .popInTop, .popInBottomLeft, .popInBottomRight, .overlayIn, .backdropIn, .toastIn, .contentFadeIn, .slideInRight {
+  .popIn, .popInTop, .popInBottomLeft, .popInBottomRight, .overlayIn, .backdropIn, .toastIn, .contentFadeIn, .slideInRight, .slideUpSheet {
     animation-duration: 1ms;
   }
   .accordionRow {

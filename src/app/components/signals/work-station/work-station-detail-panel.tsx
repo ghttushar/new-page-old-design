@@ -4,7 +4,7 @@ import {
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption, type WorkstationLogEntry,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
-import { BackArrowIcon, ChevronDownIcon, SparkleIcon, BellIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from '../alerts/icons';
+import { CloseIcon, ChevronDownIcon, BellIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from '../alerts/icons';
 import { SourceIcon, SourceBadge } from '../alerts/source-icon';
 import { DueDatePopover } from '../common/due-date-popover';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
@@ -99,14 +99,19 @@ export function WorkStationDetailPanel({
   return (
     <div className={motion.slideInRight} style={{ flex: 1, minWidth: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4', flex: 'none', background: 'radial-gradient(circle at 88% -20%, rgba(119,70,155,.06), transparent 55%)' }}>
-        <span onClick={onClose} className={motion.pressable} style={{ display: 'inline-flex', marginBottom: 12, cursor: 'pointer' }}>
-          <BackArrowIcon size={18} color="#3d434b" />
-        </span>
-        <div style={{ font: '600 15px/1.4 Inter,sans-serif', color: '#23272d' }}>{task.text}</div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ font: '600 15px/1.4 Inter,sans-serif', color: '#23272d' }}>{task.text}</div>
+          <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', flex: 'none', cursor: 'pointer', padding: 3, borderRadius: 6, marginTop: -2, marginRight: -3 }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <CloseIcon size={15} color="#6b7178" />
+          </span>
+        </div>
       </div>
 
       <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '18px 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 14, rowGap: 16, padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10, background: '#fafbfd' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 14, rowGap: 16, padding: '14px 16px', border: '1px solid #eceef1', borderRadius: 10 }}>
           <div>
             <div style={{ font: '600 9.5px/1 Inter,sans-serif', letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginBottom: 8 }}>Assignee</div>
             <span onClick={() => setAssignMenuOpen((v) => !v)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer', position: 'relative', border: '1px solid #e6e8ec', borderRadius: 7, padding: '5px 9px 5px 7px', background: '#fff' }}>
@@ -298,25 +303,26 @@ export function WorkStationDetailPanel({
             <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Activity</span>
           </div>
           <div className={`${motion.accordionRow} ${activityOpen ? motion.accordionRowOpen : ''}`}>
-            <div style={{ paddingTop: 10, position: 'relative' }}>
-              <span style={{ position: 'absolute', left: 7.5, top: 6, bottom: 6, width: 1, background: '#e6e8ec' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* No padding-top on this outer, clipped element — the accordion's collapsed height is
+               `min-height:0` plus whatever this element's own box contributes, so any padding here
+               becomes a guaranteed-visible residual sliver even while "closed". DiamondMascot is a
+               square rotated 45° into a diamond, so its visual bounding box extends further above its
+               nominal top than a plain circle/dot would — with a residual sliver present, that rotated
+               tip was the thing poking through. Moving the gap to a margin one level deeper still
+               collapses cleanly, because then there's no residual space for anything to peek into. */}
+            <div style={{ position: 'relative', overflow: 'hidden' }}>
+              {activityOpen && <span style={{ position: 'absolute', left: 10.5, top: 6, bottom: 6, width: 1, background: '#e6e8ec' }} />}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 10 }}>
                 {activityEntries.map((l, i) => {
                   const byJiva = l.by === 'Jiva';
                   return (
                     <div key={i} style={{ display: 'flex', gap: 10, position: 'relative' }}>
-                      <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', zIndex: 1 }}>
-                        {byJiva ? (
-                          <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#f3eefa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <SparkleIcon size={8} />
-                          </span>
-                        ) : (
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#c9b6dd' }} />
-                        )}
+                      <span style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', zIndex: 1 }}>
+                        {byJiva ? <DiamondMascot size={22} /> : <Avatar name={l.by} size={22} vivid />}
                       </span>
                       <div>
                         <div style={{ font: '500 13px/1.5 Inter,sans-serif', color: '#3d434b' }}>{l.text}</div>
-                        <div style={{ font: '400 11.5px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 4 }}>{l.time} ({l.by})</div>
+                        <div style={{ font: '400 11.5px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 4 }}>{l.time}</div>
                       </div>
                     </div>
                   );
@@ -324,8 +330,8 @@ export function WorkStationDetailPanel({
 
                 {commentComposerOpen ? (
                   <div style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'flex-start' }}>
-                    <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', zIndex: 1 }}>
-                      <Avatar name="You" size={14} vivid />
+                    <span style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', zIndex: 1 }}>
+                      <Avatar name="You" size={22} vivid />
                     </span>
                     <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 8 }}>
                       <input
@@ -347,9 +353,9 @@ export function WorkStationDetailPanel({
                   </div>
                 ) : (
                   <div onClick={() => setCommentComposerOpen(true)} className={`${motion.pressable} ${motion.rowHover}`} style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', cursor: 'pointer', padding: '4px 0', borderRadius: 6 }}>
-                    <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', zIndex: 1 }}>
-                      <span style={{ width: 14, height: 14, borderRadius: '50%', border: '1px dashed #c9b6dd', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
-                        <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#a58cc0' }}>+</span>
+                    <span style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', zIndex: 1 }}>
+                      <span style={{ width: 18, height: 18, borderRadius: '50%', border: '1px dashed #c9b6dd', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+                        <span style={{ font: '700 12px/1 Inter,sans-serif', color: '#a58cc0' }}>+</span>
                       </span>
                     </span>
                     <span style={{ font: '500 13px/1 Inter,sans-serif', color: '#9aa0a8' }}>Add a comment…</span>

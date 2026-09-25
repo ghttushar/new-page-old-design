@@ -30,7 +30,7 @@ export function BriefNoIntegration({ onAlertClick }: Props) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: '#e6e8ec', border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
             <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Critical alerts</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#23272d', marginTop: 8 }}>3</div></div>
             <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>At risk</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#b3453f', marginTop: 8 }}>$18,420</div></div>
-            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Verified gain</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#3f7d6a', marginTop: 8 }}>$6,200</div></div>
+            <div style={{ background: '#fff', padding: 14 }}><div style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>Opportunity</div><div style={{ font: '600 20px/1 Inter,sans-serif', color: '#3f7d6a', marginTop: 8 }}>$6,200</div></div>
           </div>
         </div>
 

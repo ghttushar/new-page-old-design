@@ -188,3 +188,49 @@ export function BellIcon({ size = 13, color = '#6b7178' }: IconProps) {
     </svg>
   );
 }
+
+/** Six-dot grip — a drag handle, reused by any widget/card that supports reordering. */
+export function GripIcon({ size = 12, color = '#9aa0a8' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      {[5, 8.5, 12].flatMap((cy) => [5, 11].map((cx) => (
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.15" fill={color} />
+      )))}
+    </svg>
+  );
+}
+
+export function TrashIcon({ size = 13, color = '#b3453f' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5l.6 8.4a1 1 0 0 0 1 .9h3.8a1 1 0 0 0 1-.9l.6-8.4" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function SearchIcon({ size = 13, color = '#9aa0a8' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <circle cx="7" cy="7" r="4.3" stroke={color} strokeWidth="1.4" />
+      <path d="M13.2 13.2l-2.9-2.9" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function PencilIcon({ size = 13, color = '#6b7178' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M10.5 2.5l3 3-8 8-3.6.6.6-3.6z" stroke={color} strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M9.3 3.7l3 3" stroke={color} strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+export function ResetIcon({ size = 13, color = '#6b7178' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M13 8A5 5 0 1 1 11.3 4.2" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M13.2 2.4V5.6H10" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

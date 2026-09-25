@@ -13,6 +13,9 @@ interface Props {
   initialCollapsedGroups?: Partial<Record<GroupKey, boolean>>;
   /** A filter to apply from outside (e.g. the empty state's category cards) — bump `nonce` to reapply. */
   applyFilter?: { kind: 'day' | 'status' | 'clear'; value?: string; nonce: number } | null;
+  /** Splits this column evenly with its siblings instead of the usual fixed ~35% — used only when list, detail and Ask Jiva are all showing at once. */
+  /** Explicit pixel width from the drag-resize handle — supersedes the default fixed ~35%. */
+  width?: number;
 }
 
 type GroupKey = 'today' | 'tomorrow' | 'earlier';
@@ -60,7 +63,7 @@ function groupFor(dateLabel: string): GroupKey {
   return 'earlier';
 }
 
-export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false, initialCollapsedGroups, applyFilter = null }: Props) {
+export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFilterOpen = false, initialCollapsedGroups, applyFilter = null, width }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [accountFilters, setAccountFilters] = useState<Record<string, boolean>>({});
@@ -121,7 +124,7 @@ export function MeetingListPanel({ selectedMeetingId, onSelectMeeting, initialFi
   const totalMatches = filteredUpcoming.length + filteredCompleted.length;
 
   return (
-    <div style={{ flex: '0 0 35%', maxWidth: '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
+    <div style={{ flex: width ? `0 0 ${width}px` : '0 0 35%', maxWidth: width ? 'none' : '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
         <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
           <input

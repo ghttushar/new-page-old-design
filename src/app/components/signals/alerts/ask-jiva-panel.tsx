@@ -16,14 +16,15 @@ interface Props {
   alert: PrototypeAlert;
   onClose: () => void;
   /** Splits this column evenly with its siblings instead of the usual fixed ~35% — used only when list, detail and Ask Jiva are all showing at once. */
-  equalWidth?: boolean;
+  /** Explicit pixel width from the drag-resize handle — supersedes the default fixed ~35%. */
+  width?: number;
 }
 
 /**
  * Concept variation: chat with Jiva about one alert, occupying the exact footprint
  * of the alert list column it replaces (not a floating overlay on top of the page).
  */
-export function AskJivaPanel({ alert, onClose, equalWidth = false }: Props) {
+export function AskJivaPanel({ alert, onClose, width }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'm0',
@@ -72,7 +73,7 @@ export function AskJivaPanel({ alert, onClose, equalWidth = false }: Props) {
   const suggestions = ['Why did this happen?', 'What should I do?', "What's this worth?"];
 
   return (
-    <div className={motion.contentFadeIn} style={{ flex: equalWidth ? '1 1 0%' : '0 0 35%', maxWidth: equalWidth ? 'none' : '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
+    <div className={motion.contentFadeIn} style={{ flex: width ? `0 0 ${width}px` : '0 0 35%', maxWidth: width ? 'none' : '35%', minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', alignItems: 'center', gap: 10, flex: 'none', background: 'linear-gradient(180deg, rgba(119,70,155,.05), transparent)' }}>
         <DiamondMascot size={26} />
         <div style={{ minWidth: 0 }}>
