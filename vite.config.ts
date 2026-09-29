@@ -8,7 +8,7 @@ export default defineConfig({
   cacheDir: './node_modules/.vite/anarix-ui',
 
   server: {
-    port: 4200,
+    port: process.env.PORT ? Number(process.env.PORT) : 4200,
     host: 'localhost',
   },
 

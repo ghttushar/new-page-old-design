@@ -1,0 +1,1660 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+// ---- Page shell ----
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: $background-color;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 128rem;
+  margin: 0 auto;
+  padding: $spacing-20;
+  gap: 2.4rem;
+  box-sizing: border-box;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  max-width: 100rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-16;
+  flex: none;
+}
+
+.backButton {
+  background: none;
+  border: 1px solid $border-color-2;
+  border-radius: 0.6rem;
+  padding: 1rem 2rem;
+  font-family: $font-family;
+  font-size: $font-size-12;
+  font-weight: $font-weight-600;
+  color: $main-text;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.errorBanner {
+  background: #fdecec;
+  border: 1px solid #f3c6c6;
+  border-radius: 0.6rem;
+  padding: $spacing-12 $spacing-16;
+  color: #b3453f;
+  font-size: $font-size-10;
+  margin-bottom: $spacing-16;
+
+  ul {
+    margin: 0.4rem 0 0;
+    padding-left: 1.6rem;
+  }
+}
+
+.inlineError {
+  color: #b3453f;
+  font-size: 0.88rem;
+  font-weight: $font-weight-600;
+}
+
+.choiceCardDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.recommendedRibbon {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  font-size: 0.72rem;
+  font-weight: $font-weight-700;
+  color: $primary-color-variant-2;
+  background: $alt-primary-color;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+}
+
+.editLink {
+  background: none;
+  border: none;
+  color: $primary-color;
+  font-family: $font-family;
+  font-size: 0.88rem;
+  font-weight: $font-weight-600;
+  cursor: pointer;
+  margin-bottom: $spacing-10;
+}
+
+.toolbarLink {
+  background: none;
+  border: none;
+  color: $primary-color;
+  font-family: $font-family;
+  font-size: 0.86rem;
+  font-weight: $font-weight-600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.reviewChipWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.categoryList {
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+}
+
+.categoryRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid $background-color-3;
+  cursor: pointer;
+  font-size: 0.9rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  input {
+    width: 1.4rem;
+    height: 1.4rem;
+    accent-color: $primary-color;
+    cursor: pointer;
+    flex: none;
+  }
+}
+
+// ---- Setup screen ----
+
+.setupScreen {
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-40 $spacing-20;
+}
+
+.setupHeader {
+  text-align: center;
+  margin-bottom: $spacing-20;
+}
+
+.setupCard {
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 1rem;
+  padding: $spacing-20 $spacing-20 2.4rem;
+  width: 100%;
+  max-width: 80rem;
+}
+
+.setupSectionTitle {
+  font-size: $font-size-14;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.setupSectionDescription {
+  font-size: 0.9rem;
+  color: $sub-text-2;
+  margin: 0.3rem 0 $spacing-16;
+}
+
+.setupMarketplaceGrid,
+.setupAdTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-12;
+}
+
+.setupAdTypeGrid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.setupMarketplaceCard {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-12;
+  text-align: left;
+  padding: $spacing-16;
+  border: 1.5px solid $border-color-4;
+  border-radius: 0.8rem;
+  background: $foreground-color;
+  cursor: pointer;
+  font-family: $font-family;
+  position: relative;
+  transition: border-color 0.15s ease-out, background 0.15s ease-out;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-color-variant-3;
+    background: $primary-color-tint-1;
+  }
+}
+
+.setupMarketplaceCardActive {
+  border-color: $primary-color;
+  background: $hover-bg-color-1;
+}
+
+.setupMarketplaceLogo {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.6rem;
+  background: $background-color-2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.setupAdTypeIcon {
+  font-size: 1.8rem;
+  flex: none;
+}
+
+.setupMarketplaceTitle {
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.setupMarketplaceDescription {
+  font-size: 0.86rem;
+  color: $sub-text-2;
+  margin-top: 0.3rem;
+  line-height: 1.4;
+}
+
+.setupSoonPill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: $font-weight-600;
+  color: $sub-text-4;
+  background: $background-color-3;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  margin-top: 0.3rem;
+}
+
+.setupCheckBadge {
+  margin-left: auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: $primary-color;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  font-size: 1.1rem;
+}
+
+.setupFooter {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.8rem;
+}
+
+// ---- Products step ----
+
+.productFilterRow {
+  display: flex;
+  gap: $spacing-12;
+
+  > *:first-child {
+    flex: 1;
+  }
+}
+
+.selectionToolbar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-16;
+}
+
+.toolbarSpacer {
+  flex: 1;
+}
+
+.toolbarResultCount {
+  font-size: 0.82rem;
+  color: $sub-text-4;
+}
+
+.productTableHeader,
+.productRow {
+  display: grid;
+  grid-template-columns: 3rem 2fr 1fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 0.9fr 0.7fr;
+  align-items: center;
+  gap: $spacing-8;
+}
+
+.productTableHeader {
+  font-size: 0.78rem;
+  font-weight: $font-weight-600;
+  color: $sub-text-4;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.8rem 0.4rem;
+  border-bottom: 1px solid $border-color-4;
+}
+
+.productTableBody {
+  max-height: 34rem;
+  overflow-y: auto;
+}
+
+.productRow {
+  padding: 0.8rem 0.4rem;
+  border-bottom: 1px solid $background-color-3;
+  cursor: pointer;
+  font-size: 0.86rem;
+
+  &:hover {
+    background: $background-color-2;
+  }
+}
+
+.productRowDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
+.productCheckboxCell {
+  display: flex;
+
+  input {
+    width: 1.5rem;
+    height: 1.5rem;
+    accent-color: $primary-color;
+    cursor: pointer;
+  }
+}
+
+.productNameCell {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  min-width: 0;
+}
+
+.productThumb {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  flex: none;
+}
+
+.productName {
+  font-size: 0.88rem;
+  font-weight: $font-weight-600;
+  color: $main-text;
+}
+
+.productSku {
+  font-size: 0.78rem;
+  color: $sub-text-4;
+  margin-top: 0.1rem;
+}
+
+.productSkuCell {
+  font-size: 0.82rem;
+  color: $sub-text-2;
+}
+
+.productEmpty {
+  padding: $spacing-20;
+  text-align: center;
+  color: $sub-text-4;
+  font-size: $font-size-10;
+}
+
+.tablePagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-16;
+  font-size: 0.86rem;
+  color: $sub-text-2;
+
+  button {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    border: 1px solid $border-color-3;
+    background: $foreground-color;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.groupingImpact {
+  display: flex;
+  gap: $spacing-20;
+  font-size: 0.86rem;
+  color: $sub-text-2;
+  padding-top: $spacing-8;
+  border-top: 1px dashed $border-color-4;
+
+  span {
+    font-weight: $font-weight-600;
+  }
+}
+
+// ---- Recommendation banner (Targeting / Structure / Rules) ----
+
+.recommendedBanner {
+  background: $primary-color-tint-1;
+  border: 1px solid $alt-primary-color;
+  border-radius: 0.8rem;
+  padding: $spacing-16;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+}
+
+.recommendedBannerTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: $font-size-9;
+  font-weight: $font-weight-700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: $primary-color-variant-2;
+}
+
+.recommendedBannerPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.recommendedBannerPill {
+  background: #fff;
+  border: 1px solid $alt-primary-color;
+  color: $primary-color-variant-2;
+  font-size: 0.85rem;
+  font-weight: $font-weight-600;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+}
+
+.strategyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-12;
+}
+
+// ---- Structure step ----
+
+.structureOptionsNote {
+  font-size: 0.84rem;
+  color: $sub-text-4;
+  margin: $spacing-4 0 $spacing-12;
+}
+
+.structureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-12;
+  margin-bottom: $spacing-16;
+}
+
+.structureCard {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+  text-align: left;
+  padding: $spacing-16;
+  border: 1.5px solid $border-color-4;
+  border-radius: 0.8rem;
+  background: $foreground-color;
+  cursor: pointer;
+  font-family: $font-family;
+  position: relative;
+  transition: border-color 0.15s ease-out, background 0.15s ease-out;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-color-variant-3;
+  }
+}
+
+.structureCardActive {
+  border-color: $primary-color;
+  background: $hover-bg-color-1;
+  box-shadow: 0 0 0 3px rgba(119, 70, 155, 0.12);
+}
+
+.structureCardCustom {
+  background: linear-gradient(135deg, $primary-color-tint-1, #fff);
+  border-style: dashed;
+  border-color: $primary-color-variant-3;
+}
+
+.structureCardHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+}
+
+.structureCardTitle {
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  flex: 1;
+  min-width: 0;
+}
+
+.structureMiniTree {
+  font-size: 0.78rem;
+  font-family: 'Courier New', monospace;
+  color: $sub-text-3;
+  background: $background-color-2;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  line-height: 1.6;
+}
+
+.structureCardUseCase {
+  font-size: 0.82rem;
+  color: $sub-text-2;
+  line-height: 1.4;
+}
+
+.structureCardCounts {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.structureStatRow {
+  display: flex;
+  gap: 2rem;
+  margin-top: auto;
+  padding-top: $spacing-10;
+}
+
+.structureStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.structureStatValue {
+  font-size: $font-size-20;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  line-height: 1.2;
+}
+
+.structureStatLabel {
+  font-size: 0.78rem;
+  color: $sub-text-4;
+  margin-top: 0.1rem;
+}
+
+// ---- Structure step: tree diagrams ----
+
+.treeDiagram {
+  display: flex;
+  align-items: stretch;
+  gap: $spacing-12;
+  background: $background-color-2;
+  border-radius: 0.6rem;
+  padding: $spacing-10 $spacing-12;
+}
+
+.treeDiagramCompact {
+  padding: $spacing-8 $spacing-10;
+}
+
+.treeMultiProduct {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.treeRootCol {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+.treeBranchCol {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-left: $spacing-12;
+  border-left: 1.5px solid $border-color-3;
+}
+
+.treeBranchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
+  flex-wrap: wrap;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1.2rem;
+    top: 50%;
+    width: 1.2rem;
+    height: 1.5px;
+    background: $border-color-3;
+  }
+}
+
+.treeArrowLine {
+  flex: none;
+  width: 0.9rem;
+  height: 1.5px;
+  background: $border-color-3;
+}
+
+.treeNode {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid $alt-primary-color;
+  color: $primary-color-variant-2;
+  font-size: 0.7rem;
+  font-weight: $font-weight-600;
+  padding: 0.32rem 0.6rem;
+  border-radius: 0.45rem;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+.treeNodeRoot {
+  background: $primary-color-tint-1;
+  border-color: $primary-color-variant-3;
+}
+
+.treeNodeLeaf {
+  background: $background-color-3;
+  border-color: $border-color-3;
+  color: $sub-text-3;
+  font-weight: $font-weight-500;
+}
+
+.treeInlineLeafGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.treeEllipsis {
+  color: $sub-text-4;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  padding-left: 0.4rem;
+}
+
+// ---- Structure step: configuration impact bar ----
+
+.configImpactBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-16;
+  background: $background-color-2;
+  border-radius: 0.8rem;
+  padding: $spacing-12 $spacing-16;
+  margin-top: $spacing-4;
+}
+
+.configImpactIcon {
+  flex: none;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.6rem;
+  background: $alt-primary-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.configImpactTitleBlock {
+  flex: none;
+  width: 18rem;
+}
+
+.configImpactTitle {
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.configImpactSubtitle {
+  font-size: 0.8rem;
+  color: $sub-text-2;
+  margin-top: 0.1rem;
+}
+
+.configImpactStats {
+  flex: 1;
+  display: flex;
+  gap: $spacing-40;
+  padding-left: $spacing-16;
+  border-left: 1px solid $border-color-4;
+}
+
+.configImpactStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.configImpactStatValue {
+  font-size: $font-size-20;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.configImpactStatLabel {
+  font-size: 0.78rem;
+  color: $sub-text-4;
+  margin-top: 0.1rem;
+}
+
+.structureUnavailableNote {
+  font-size: 0.8rem;
+  color: #b3453f;
+  line-height: 1.4;
+}
+
+.structureCardSelectButton {
+  margin-top: auto;
+  align-self: flex-start;
+  font-size: 0.86rem;
+  font-weight: $font-weight-700;
+  color: $primary-color;
+}
+
+// ---- Jiva drawer ----
+
+.jivaBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 33, 0.3);
+  z-index: 260;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.jivaDrawer {
+  width: min(52rem, 100vw);
+  background: #fff;
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: -12px 0 32px rgba(20, 24, 33, 0.16);
+}
+
+.jivaHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-12;
+  padding: $spacing-16 $spacing-20;
+  border-bottom: 1px solid $border-color-4;
+}
+
+.jivaHeaderTitle {
+  font-size: $font-size-14;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.jivaHeaderSubtitle {
+  font-size: 0.85rem;
+  color: $sub-text-2;
+  margin-top: 0.2rem;
+}
+
+.jivaCloseButton {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: $sub-text-4;
+  cursor: pointer;
+}
+
+.jivaBody {
+  padding: $spacing-20;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-16;
+}
+
+.jivaTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid $border-color-2;
+  border-radius: 0.6rem;
+  padding: $spacing-12;
+  font-family: $font-family;
+  font-size: $font-size-12;
+  color: $main-text;
+  resize: vertical;
+  outline: none;
+
+  &:focus {
+    border-color: $primary-color;
+  }
+}
+
+.jivaExampleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.jivaExampleChip {
+  background: $background-color-3;
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-family: $font-family;
+  font-size: 0.85rem;
+  color: $sub-text-2;
+  cursor: pointer;
+
+  &:hover {
+    background: $alt-primary-color;
+    color: $primary-color-variant-2;
+  }
+}
+
+.jivaGenerateButton {
+  align-self: flex-start;
+  background: $primary-color;
+  color: #fff;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  font-family: $font-family;
+  font-size: 0.9rem;
+  font-weight: $font-weight-700;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.jivaSecondaryButton {
+  background: none;
+  border: 1px solid $border-color-2;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  font-family: $font-family;
+  font-size: 0.9rem;
+  font-weight: $font-weight-600;
+  color: $main-text;
+  cursor: pointer;
+}
+
+.jivaResponseHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $primary-color-variant-2;
+}
+
+.jivaResponseNote {
+  font-size: 0.86rem;
+  color: $sub-text-2;
+}
+
+.jivaTreeList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-16;
+}
+
+.jivaTreeProduct {
+  background: $background-color-2;
+  border-radius: 0.6rem;
+  padding: $spacing-12;
+}
+
+.jivaTreeProductName {
+  font-size: $font-size-10;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  margin-bottom: 0.5rem;
+}
+
+.jivaTreeCampaign {
+  font-size: 0.85rem;
+  font-family: 'Courier New', monospace;
+  color: $sub-text-2;
+  padding: 0.15rem 0;
+}
+
+.jivaActionRow {
+  display: flex;
+  gap: $spacing-10;
+}
+
+// ---- Rules step ----
+
+.recommendedRuleBanner {
+  background: $primary-color-tint-1;
+  border: 1px solid $alt-primary-color;
+  border-radius: 0.8rem;
+  padding: $spacing-16;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-12;
+}
+
+.recommendedRuleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-12;
+}
+
+.ruleName {
+  font-size: $font-size-10;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.ruleDescriptionSmall {
+  font-size: 0.85rem;
+  color: $sub-text-2;
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+
+.ruleList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+}
+
+.ruleCard {
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  padding: $spacing-12 $spacing-16;
+}
+
+.ruleCardIncompatible {
+  opacity: 0.6;
+  background: $background-color-2;
+}
+
+.ruleCardMain {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-10;
+  cursor: pointer;
+
+  input {
+    margin-top: 0.3rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    accent-color: $primary-color;
+    flex: none;
+  }
+}
+
+.ruleCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.ruleCardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  flex-wrap: wrap;
+}
+
+.ruleIncompatibleNote {
+  font-size: 0.82rem;
+  color: #b3453f;
+  margin-top: 0.4rem;
+}
+
+.ruleExpandedDetail {
+  margin-top: $spacing-10;
+  padding-top: $spacing-10;
+  border-top: 1px dashed $border-color-4;
+  font-size: 0.85rem;
+  color: $sub-text-2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  strong {
+    color: $main-text;
+  }
+}
+
+.manageRulesNote {
+  font-size: 0.85rem;
+  color: $sub-text-4;
+  text-align: center;
+}
+
+.manageRulesLink {
+  color: $primary-color;
+  font-weight: $font-weight-600;
+}
+
+.applyToRow {
+  display: flex;
+  gap: $spacing-20;
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: $main-text;
+  cursor: pointer;
+
+  input {
+    width: 1.5rem;
+    height: 1.5rem;
+    accent-color: $primary-color;
+    cursor: pointer;
+  }
+}
+
+.ruleSummaryList {
+  border-top: 1px dashed $border-color-4;
+  padding-top: $spacing-12;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ruleSummaryHeading {
+  font-size: $font-size-10;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.ruleSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: $sub-text-2;
+}
+
+// ---- Preview step ----
+
+.viewSwitch {
+  display: flex;
+  border: 1px solid $border-color-2;
+  border-radius: 0.6rem;
+  overflow: hidden;
+
+  button {
+    background: $foreground-color;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    font-family: $font-family;
+    font-size: 0.85rem;
+    font-weight: $font-weight-600;
+    color: $sub-text-2;
+    cursor: pointer;
+
+    &:first-child {
+      border-right: 1px solid $border-color-2;
+    }
+  }
+}
+
+.viewSwitchActive {
+  background: $primary-color !important;
+  color: #fff !important;
+}
+
+.previewCampaignList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+}
+
+.previewCampaignBlock {
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.previewCampaignRow {
+  display: grid;
+  grid-template-columns: 2rem 2fr auto auto 10rem auto;
+  align-items: center;
+  gap: $spacing-10;
+  padding: $spacing-10 $spacing-12;
+}
+
+.treeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: $sub-text-3;
+}
+
+.previewCampaignName {
+  font-size: 0.9rem;
+  font-weight: $font-weight-600;
+  color: $main-text;
+}
+
+.previewCampaignTargets {
+  font-size: 0.8rem;
+  color: $sub-text-4;
+  white-space: nowrap;
+}
+
+.previewAdGroupList {
+  padding: 0 $spacing-12 $spacing-12 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+}
+
+.previewAdGroup {
+  background: $background-color-2;
+  border-radius: 0.5rem;
+  padding: $spacing-10;
+}
+
+.previewAdGroupName {
+  font-size: 0.82rem;
+  font-family: 'Courier New', monospace;
+  color: $sub-text-3;
+  margin-bottom: 0.4rem;
+}
+
+.previewTargetRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: $spacing-8;
+  align-items: center;
+  font-size: 0.84rem;
+  color: $sub-text-2;
+  padding: 0.3rem 0;
+}
+
+.previewTargetMeta {
+  color: $sub-text-4;
+}
+
+.previewTargetMore {
+  font-size: 0.78rem;
+  color: $sub-text-4;
+  margin-top: 0.3rem;
+}
+
+.previewTable {
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.previewTableHeader,
+.previewTableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: $spacing-10;
+  padding: 0.7rem 1rem;
+  align-items: center;
+}
+
+.previewTableHeader {
+  background: $background-color-2;
+  font-size: 0.78rem;
+  font-weight: $font-weight-600;
+  color: $sub-text-4;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.previewTableRow {
+  border-top: 1px solid $background-color-3;
+  font-size: 0.88rem;
+  color: $main-text;
+}
+
+.budgetAllocationFooter {
+  display: flex;
+  align-items: center;
+  gap: $spacing-16;
+  font-size: 0.88rem;
+  color: $sub-text-2;
+  font-weight: $font-weight-600;
+  padding-top: $spacing-10;
+}
+
+.validationList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.validationRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-8;
+  font-size: 0.9rem;
+  color: $main-text;
+}
+
+.validationOk {
+  color: #27ae60;
+  font-weight: $font-weight-700;
+}
+
+.validationFail {
+  color: #b3453f;
+  font-weight: $font-weight-700;
+}
+
+// ---- Creation & result ----
+
+.creationScreen {
+  max-width: 60rem;
+  margin: $spacing-40 auto;
+}
+
+.creationTitle {
+  font-size: $font-size-18;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  margin-bottom: $spacing-20;
+}
+
+.creationStageList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-12;
+}
+
+.creationStageRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-12;
+  font-size: $font-size-12;
+  color: $main-text;
+}
+
+.creationActiveIcon {
+  color: $primary-color;
+  font-size: 1.1rem;
+}
+
+.creationPendingIcon {
+  color: $border-color-2;
+  font-size: 1.1rem;
+}
+
+.creationPartialIcon {
+  color: #a8763f;
+  font-weight: $font-weight-700;
+}
+
+.creationStageLabel {
+  flex: 1;
+}
+
+.creationStageCount {
+  color: $sub-text-4;
+  font-size: 0.86rem;
+}
+
+.successScreen {
+  max-width: 64rem;
+  margin: $spacing-20 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $spacing-8;
+}
+
+.successIcon {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  background: $primary-color;
+  color: #fff;
+  font-size: $font-size-24;
+  box-shadow: 0 0 0 1.2rem #{$alt-primary-color}80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-8;
+}
+
+.successIconWarning {
+  background: #fdf3e0;
+  color: #a8763f;
+}
+
+.successTitle {
+  font-size: $font-size-20;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.successSubtitle {
+  font-size: $font-size-12;
+  color: $sub-text-2;
+  max-width: 50rem;
+  margin-bottom: $spacing-16;
+}
+
+.footerButtonRow {
+  display: flex;
+  gap: $spacing-12;
+}
+
+.partialFailureTable {
+  width: 100%;
+  border: 1px solid $border-color-4;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  margin-bottom: $spacing-16;
+  text-align: left;
+}
+
+.infoCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-12;
+  background: $background-color-2;
+  border-radius: 0.8rem;
+  padding: $spacing-16;
+  margin-bottom: $spacing-16;
+  text-align: left;
+  width: 100%;
+}
+
+.infoCalloutIcon {
+  flex: none;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.6rem;
+  background: $alt-primary-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.infoCalloutTitle {
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  margin-bottom: 0.3rem;
+}
+
+.infoCalloutBody {
+  font-size: 0.88rem;
+  color: $sub-text-2;
+  line-height: 1.5;
+}
+
+// ---- Setup screen (v2) ----
+
+.setupHeader2 {
+  margin-bottom: $spacing-16;
+}
+
+.setupEyebrow {
+  font-size: 0.8rem;
+  font-weight: $font-weight-700;
+  color: $sub-text-4;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.setupHeadline {
+  font-size: $font-size-24;
+  font-weight: $font-weight-700;
+  color: $main-text;
+  margin-top: 0.3rem;
+}
+
+.setupHeadlineSub {
+  font-size: $font-size-12;
+  color: $sub-text-2;
+  margin-top: 0.6rem;
+  max-width: 70rem;
+  line-height: 1.5;
+}
+
+.setupSubsection {
+  display: flex;
+  gap: $spacing-12;
+  margin-bottom: 2.4rem;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.setupNumberBadge {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  border: 1.5px solid $primary-color;
+  color: $primary-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-12;
+  font-weight: $font-weight-700;
+  flex: none;
+}
+
+.setupSubsectionBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.setupRadio {
+  margin-left: auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1.5px solid $border-color-2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.setupRadioActive {
+  border-color: $primary-color;
+}
+
+.setupRadioDot {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: $primary-color;
+}
+
+// ---- Structure Custom card (v2) ----
+
+.jivaAskButton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fff;
+  border: 1px solid $alt-primary-color;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1.1rem;
+  font-family: $font-family;
+  font-size: 0.86rem;
+  font-weight: $font-weight-600;
+  color: $primary-color-variant-2;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+
+  svg:last-child {
+    margin-left: auto;
+  }
+
+  &:hover {
+    background: $primary-color-tint-1;
+  }
+}
+
+.jivaExamplePillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.jivaExamplePill {
+  font-size: 0.76rem;
+  color: $sub-text-4;
+  background: $background-color-3;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+}
+
+// ---- Footer button group ----
+
+.footerRightGroup {
+  display: flex;
+  gap: $spacing-12;
+}
+
+// ---- Preview: overview card ----
+
+.overviewCard {
+  background: $foreground-color;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  padding: $spacing-16;
+  margin-bottom: $spacing-16;
+}
+
+.overviewHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-12;
+  margin-bottom: $spacing-16;
+}
+
+.overviewIcon {
+  flex: none;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.6rem;
+  background: $alt-primary-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overviewTitleBlock {
+  flex: 1;
+  min-width: 0;
+}
+
+.overviewTitleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-10;
+}
+
+.overviewTitle {
+  font-size: $font-size-14;
+  font-weight: $font-weight-700;
+  color: $main-text;
+}
+
+.overviewDescription {
+  font-size: 0.86rem;
+  color: $sub-text-2;
+  margin-top: 0.3rem;
+  line-height: 1.4;
+}
+
+.overviewMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-16;
+  padding-top: $spacing-16;
+  border-top: 1px solid $background-color-3;
+}
+
+.overviewMetaLabel {
+  font-size: 0.76rem;
+  color: $sub-text-4;
+  margin-bottom: 0.3rem;
+}
+
+.overviewMetaValue {
+  font-size: 0.9rem;
+  font-weight: $font-weight-600;
+  color: $main-text;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+// ---- Preview: products / structure tables ----
+
+.previewProductsTableHeader,
+.previewProductsTableRow {
+  display: grid;
+  grid-template-columns: 3rem 3fr 1fr 1fr 1.2fr;
+  gap: $spacing-10;
+  padding: 0.7rem 1rem;
+  align-items: center;
+}
+
+.previewStructureTableHeader,
+.previewStructureTableRow {
+  display: grid;
+  grid-template-columns: 3rem 2.4fr 1fr 1fr 1fr 1.3fr 1fr;
+  gap: $spacing-10;
+  padding: 0.7rem 1rem;
+  align-items: center;
+}
+
+.previewProductsTableHeader,
+.previewStructureTableHeader {
+  background: $background-color-2;
+  font-size: 0.76rem;
+  font-weight: $font-weight-600;
+  color: $sub-text-4;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.previewProductsTableRow,
+.previewStructureTableRow {
+  border-top: 1px solid $background-color-3;
+  font-size: 0.86rem;
+  color: $main-text;
+}

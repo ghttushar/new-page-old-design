@@ -5,7 +5,8 @@
       "name": "anarix-ui",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["nx", "serve", "anarix-ui"],
-      "port": 4200
+      "port": 4200,
+      "autoPort": true
     }
   ]
 }

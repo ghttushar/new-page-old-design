@@ -68,6 +68,11 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
           feature: FeaturesEnum.ADVERTISING,
         },
         {
+          key: FeatureRoutes.CAMPAIGN_CREATOR,
+          primaryText: 'Campaign Creator',
+          feature: FeaturesEnum.ADVERTISING_CAMPAIGN_CREATOR,
+        },
+        {
           key: FeatureRoutes.ADVERTISING_IMPACT_ANALYSIS,
           primaryText: 'Impact Analysis',
           feature: FeaturesEnum.ADVERTISING_IMPACT_ANALYSIS,

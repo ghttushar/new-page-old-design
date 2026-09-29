@@ -236,6 +236,7 @@ export enum DISABLE_TOOLTIP {
 
 export enum PAGE_TITLE_TOOLTIPS {
   ADVERTISING = 'Manage and analyze the performance of your advertising campaigns.',
+  CAMPAIGN_CREATOR = 'Create Sponsored Products campaigns with AI-recommended targeting and structure.',
   CATALOG_HOME = 'View your product catalog, including pricing, inventory, listing quality, and more.',
   IMPACT_ANALYSIS = 'Identify and measure what impacted your campaign performance.',
   TARGETING_ACTIONS = 'Review suggested keyword actions based on campaign data and search behavior.',

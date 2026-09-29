@@ -25,6 +25,7 @@ import PrivateRoute from '../../private-route/private-route';
 import KeywordActionWrapper from '../keyword-actions-page/keyword-action-wrapper';
 import AdvertisingTypesWrapper from './advertising-types-wrapper';
 import AnalysisWrapper from './analysis-page/analysis-page-wrapper';
+import CampaignCreator from './campaign-creator/campaign-creator';
 import ComparisonPage from './comparison-page/comparison-page';
 
 export function AdvertisingWrapper() {
@@ -138,6 +139,15 @@ export function AdvertisingWrapper() {
       <Route
         path="/campaign-manager/*"
         element={<PrivateRoute component={<AdvertisingTypesWrapper />} />}
+      />
+      <Route
+        path="/campaign-creator/*"
+        element={
+          <PrivateRoute
+            component={<CampaignCreator />}
+            feature={FeaturesEnum.ADVERTISING_CAMPAIGN_CREATOR}
+          />
+        }
       />
       <Route path="*" element={<Navigate to="campaign-manager" replace />} />
     </Routes>

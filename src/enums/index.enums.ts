@@ -1,5 +1,6 @@
 export enum PageTitleEnum {
   ADVERTISING = 'Advertising',
+  CAMPAIGN_CREATOR = 'Campaign Creator',
   CATALOG_HOME = 'Catalog',
   IMPACT_ANALYSIS = 'Impact Analysis',
   TARGETING_ACTIONS = 'Targeting Actions',

@@ -18,6 +18,7 @@ export enum FeaturesEnum {
   ADVERTISING_IMPACT_ANALYSIS = 'advertising-impact-analysis',
   ADVERTISING_IMPACT_ANALYSIS_AMAZON = 'advertising-impact-analysis-amazon',
   ADVERTISING_IMPACT_ANALYSIS_WALMART = 'advertising-impact-analysis-walmart',
+  ADVERTISING_CAMPAIGN_CREATOR = 'advertising-campaign-creator',
   AMAZON_MARKETING_CLOUD = 'amazon-marketing-cloud',
 
   // Dayparting
@@ -112,6 +113,7 @@ export enum FeatureRoutes {
   DAYPARTING_SETUP = 'day-parting-setup',
   DAYPARTING_CAMPAIGNS = 'campaigns',
   CAMPAIGN_MANAGER = `campaign-manager`,
+  CAMPAIGN_CREATOR = `campaign-creator`,
   QUERIES = `queries`,
   JOB_LIST = `job-list`,
   HISTORY = `history`,
