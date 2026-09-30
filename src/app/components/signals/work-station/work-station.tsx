@@ -65,11 +65,20 @@ export function WorkStation({
   const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [jivaOpen, setJivaOpen] = useState(initialJivaOpen);
+  const [readTaskIds, setReadTaskIds] = useState<Set<string>>(new Set(initialSelectedId ? [initialSelectedId] : []));
+  const markTaskRead = (id: string | null) => {
+    if (!id) return;
+    setReadTaskIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  };
 
   useEffect(() => {
     setJivaOpen(forceJivaOpen);
     if (forceJivaOpen) {
-      setSelectedId((cur) => cur ?? tasks.find((t) => t.assignee === 'You')?.id ?? tasks[0]?.id ?? null);
+      setSelectedId((cur) => {
+        const next = cur ?? tasks.find((t) => t.assignee === 'You')?.id ?? tasks[0]?.id ?? null;
+        markTaskRead(next);
+        return next;
+      });
     }
     // Reacts only to the global button's own toggles, not to every local task/selection change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,13 +96,26 @@ export function WorkStation({
   const [newAssigneeId, setNewAssigneeId] = useState('self');
   const [newPriority, setNewPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
   const [newDue, setNewDue] = useState('');
+  /** Free-text context notes — starts with one empty field; typing into the last one for the first
+   * time opens up a new empty field below it, so there's always exactly one blank field to fill next. */
+  const [newContextNotes, setNewContextNotes] = useState<string[]>(['']);
+  const updateNewContextNote = (i: number, value: string) => {
+    setNewContextNotes((prev) => {
+      const wasEmpty = !prev[i]?.trim();
+      const next = prev.map((n, idx) => (idx === i ? value : n));
+      if (i === prev.length - 1 && wasEmpty && value.trim()) next.push('');
+      return next;
+    });
+  };
 
-  const selectTask = (id: string) => { setSelectedId(id); setJivaOpen(false); };
+  const selectTask = (id: string) => { setSelectedId(id); setJivaOpen(false); markTaskRead(id); };
 
   const setStatus = (id: string, status: TaskStatus) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   const cycleStatus = (id: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: NEXT_STATUS[t.status] } : t)));
   const setPriority = (id: string, priority: TaskPriority) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, priority } : t)));
   const setDue = (id: string, due: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, due, overdue: false, dueColor: undefined } : t)));
+  const setText = (id: string, text: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
+  const setDescription = (id: string, description: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, description } : t)));
   const togglePriorityFilter = (k: string) => setPriorityFilters((p) => ({ ...p, [k]: !p[k] }));
 
   const [remindedName, setRemindedName] = useState<string | null>(null);
@@ -112,6 +134,7 @@ export function WorkStation({
     const task: WorkstationTask = {
       id, text: title, description: newDescription.trim() || title,
       priority: newPriority,
+      contextNotes: newContextNotes.map((n) => n.trim()).filter(Boolean).length ? newContextNotes.map((n) => n.trim()).filter(Boolean) : undefined,
       assignee: newAssigneeId === 'unassigned' ? 'Unassigned' : assigneeNameFor(newAssigneeId),
       assigneeId: newAssigneeId === 'unassigned' ? undefined : newAssigneeId,
       createdBy: 'You', due: newDue.trim() || 'No due date', overdue: false,
@@ -126,6 +149,7 @@ export function WorkStation({
     setNewAssigneeId('self');
     setNewPriority('Medium');
     setNewDue('');
+    setNewContextNotes(['']);
   };
 
   const reassign = (id: string, a: AssigneeOption) => {
@@ -286,6 +310,20 @@ export function WorkStation({
                         ))}
                       </div>
 
+                      <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginTop: 11 }}>Add context (optional)</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                        {newContextNotes.map((note, i) => (
+                          <input
+                            key={i}
+                            value={note}
+                            onChange={(e) => updateNewContextNote(i, e.target.value)}
+                            placeholder="Add a note…"
+                            className={motion.focusRing}
+                            style={{ width: '100%', padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none', boxSizing: 'border-box' as const }}
+                          />
+                        ))}
+                      </div>
+
                       <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
                         <select
                           value={newAssigneeId}
@@ -333,7 +371,7 @@ export function WorkStation({
             </div>
 
             <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} />
+              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} readTaskIds={readTaskIds} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} />
             </div>
           </div>
       )}
@@ -348,6 +386,8 @@ export function WorkStation({
               onSetStatus={(s) => setStatus(selectedTask.id, s)}
               onSetPriority={(p) => setPriority(selectedTask.id, p)}
               onSetDue={(d) => setDue(selectedTask.id, d)}
+              onSetText={(t) => setText(selectedTask.id, t)}
+              onSetDescription={(d) => setDescription(selectedTask.id, d)}
               onOpenAlert={onOpenAlert}
               onOpenMeeting={onOpenMeeting}
               onOpenJiva={() => setJivaOpen((v) => !v)}

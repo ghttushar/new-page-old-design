@@ -4,8 +4,12 @@ import {
   type WorkstationTask, type TaskStatus, type TaskPriority, type AssigneeOption, type WorkstationLogEntry,
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
-import { CloseIcon, ChevronDownIcon, BellIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from '../alerts/icons';
+import { CloseIcon, ChevronDownIcon, BellIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge, PencilIcon } from '../alerts/icons';
 import { SourceIcon, SourceBadge } from '../alerts/source-icon';
+import { formatAlertValue, explainAlertValue } from '../alerts/format-money';
+import { getDisplayItems } from '../alerts/items-util';
+import { ValueInfoIcon } from '../alerts/value-info-icon';
+import { ItemsModal } from '../alerts/items-modal';
 import { DueDatePopover } from '../common/due-date-popover';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import { StatusCircleIcon, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
@@ -47,6 +51,8 @@ interface Props {
   onSetStatus: (s: TaskStatus) => void;
   onSetPriority: (p: TaskPriority) => void;
   onSetDue: (due: string) => void;
+  onSetText: (text: string) => void;
+  onSetDescription: (description: string) => void;
   onOpenAlert?: (id: string) => void;
   onOpenMeeting?: (id: string) => void;
   onOpenJiva: () => void;
@@ -70,7 +76,7 @@ interface Props {
 }
 
 export function WorkStationDetailPanel({
-  task, onClose, onReassign, onSetStatus, onSetPriority, onSetDue, onOpenAlert, onOpenMeeting, onOpenJiva, jivaOpen, onRemind,
+  task, onClose, onReassign, onSetStatus, onSetPriority, onSetDue, onSetText, onSetDescription, onOpenAlert, onOpenMeeting, onOpenJiva, jivaOpen, onRemind,
   initialContextOpen = false, initialActivityOpen = false, initialAssignMenuOpen = false, initialStatusMenuOpen = false,
   initialPriorityMenuOpen = false, initialDueMenuOpen = false, initialCommentComposerOpen = false,
 }: Props) {
@@ -80,6 +86,23 @@ export function WorkStationDetailPanel({
   const [contextOpen, setContextOpen] = useState(initialContextOpen);
   const [activityOpen, setActivityOpen] = useState(initialActivityOpen);
   const [dueMenuOpen, setDueMenuOpen] = useState(initialDueMenuOpen);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(task.text);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState(task.description);
+
+  function saveTitle() {
+    const next = titleDraft.trim();
+    if (next && next !== task.text) onSetText(next);
+    else setTitleDraft(task.text);
+    setEditingTitle(false);
+  }
+
+  function saveDescription() {
+    const next = descriptionDraft.trim();
+    if (next !== task.description) onSetDescription(next);
+    setEditingDescription(false);
+  }
   const [comments, setComments] = useState<WorkstationLogEntry[]>([]);
   const [commentComposerOpen, setCommentComposerOpen] = useState(initialCommentComposerOpen);
   const [shareOpen, setShareOpen] = useState(false);
@@ -87,6 +110,11 @@ export function WorkStationDetailPanel({
   const linkedAlert = task.origin === 'alert' && task.alertId ? PROTOTYPE_ALERTS.find((a) => a.id === task.alertId) : undefined;
   const linkedMeeting = task.origin === 'meeting' && task.meetingId ? MEETING_DETAILS[task.meetingId] : undefined;
   const activityEntries = [...task.logs, ...comments];
+  const [optId, setOptId] = useState<string | undefined>(() => linkedAlert?.options.find((o) => o.recommended)?.id ?? linkedAlert?.options[0]?.id);
+  const [alertExecuted, setAlertExecuted] = useState(false);
+  const [alertDismissed, setAlertDismissed] = useState(false);
+  const [itemsModalOpen, setItemsModalOpen] = useState(false);
+  const [alertToast, setAlertToast] = useState<string | null>(null);
 
   function postComment() {
     const text = commentDraft.trim();
@@ -96,11 +124,55 @@ export function WorkStationDetailPanel({
     setCommentComposerOpen(false);
   }
 
+  function flashAlertToast(label: string) {
+    setAlertToast(label);
+    window.setTimeout(() => setAlertToast(null), 3200);
+  }
+
+  function handleExecuteAlert() {
+    if (alertExecuted) return;
+    setAlertExecuted(true);
+    flashAlertToast(`Logged: ${linkedAlert?.options.find((o) => o.id === optId)?.label ?? 'action'}`);
+  }
+
+  function handleDismissAlert() {
+    if (alertDismissed) return;
+    setAlertDismissed(true);
+    flashAlertToast('Dismissed');
+  }
+
   return (
-    <div className={motion.slideInRight} style={{ flex: 1, minWidth: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className={motion.slideInRight} style={{ flex: 1, minWidth: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4', flex: 'none', background: 'radial-gradient(circle at 88% -20%, rgba(119,70,155,.06), transparent 55%)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ font: '600 15px/1.4 Inter,sans-serif', color: '#23272d' }}>{task.text}</div>
+          {editingTitle ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={saveTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveTitle();
+                if (e.key === 'Escape') { setTitleDraft(task.text); setEditingTitle(false); }
+              }}
+              className={motion.focusRing}
+              style={{ flex: 1, minWidth: 0, font: '600 15px/1.4 Inter,sans-serif', color: '#23272d', border: '1px solid #dfe3ea', borderRadius: 6, padding: '4px 7px', outline: 'none', fontFamily: 'inherit' }}
+            />
+          ) : (
+            <div
+              onClick={() => setEditingTitle(true)}
+              className={motion.rowHover}
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 7, flex: 1, minWidth: 0, cursor: 'pointer', padding: '4px 7px', margin: '-4px -7px', borderRadius: 6 }}
+            >
+              <span style={{ font: '600 15px/1.4 Inter,sans-serif', color: '#23272d' }}>
+                {linkedAlert && !linkedAlert.hideValue && (
+                  <span style={{ color: linkedAlert.valueNum < 0 ? '#b3453f' : '#1e8449' }}>{formatAlertValue(linkedAlert.valueNum)}{' '}</span>
+                )}
+                {task.text}
+              </span>
+              <span style={{ flex: 'none', marginTop: 4, opacity: 0.5 }}><PencilIcon size={11} /></span>
+            </div>
+          )}
           <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', flex: 'none', cursor: 'pointer', padding: 3, borderRadius: 6, marginTop: -2, marginRight: -3 }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -177,9 +249,99 @@ export function WorkStationDetailPanel({
         </div>
 
         <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f2f4' }}>
-          <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Description</div>
-          <div style={{ font: '400 12.5px/1.65 Inter,sans-serif', color: '#464646', marginTop: 8 }}>{task.description}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.09em', textTransform: 'uppercase' as const, color: '#6b7178' }}>Description</span>
+            {linkedAlert && !linkedAlert.hideValue && <ValueInfoIcon label={explainAlertValue(linkedAlert)} size={11} />}
+          </div>
+          {editingDescription ? (
+            <textarea
+              autoFocus
+              value={descriptionDraft}
+              onChange={(e) => setDescriptionDraft(e.target.value)}
+              onBlur={saveDescription}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') { setDescriptionDraft(task.description); setEditingDescription(false); }
+              }}
+              className={motion.focusRing}
+              rows={3}
+              style={{ width: '100%', boxSizing: 'border-box' as const, resize: 'vertical' as const, marginTop: 8, font: '400 12.5px/1.65 Inter,sans-serif', color: '#464646', border: '1px solid #dfe3ea', borderRadius: 7, padding: '8px 10px', outline: 'none', fontFamily: 'inherit' }}
+            />
+          ) : (
+            <div
+              onClick={() => setEditingDescription(true)}
+              className={motion.rowHover}
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 7, cursor: 'pointer', marginTop: 8, padding: '4px 7px', margin: '8px -7px 0', borderRadius: 6 }}
+            >
+              <div style={{ flex: 1, font: '400 12.5px/1.65 Inter,sans-serif', color: task.description ? '#464646' : '#9aa0a8' }}>{task.description || 'Add a description…'}</div>
+              <span style={{ flex: 'none', marginTop: 3, opacity: 0.5 }}><PencilIcon size={11} /></span>
+            </div>
+          )}
+
+          {linkedAlert && (
+            <div style={{ display: 'flex', gap: 7, marginTop: 12 }}>
+              <span style={{ flex: 'none', marginTop: 3 }}><SparkleIcon size={11} /></span>
+              <div style={{ font: '400 12.5px/1.65 Inter,sans-serif', color: '#464646' }}>{linkedAlert.why} {linkedAlert.root}</div>
+            </div>
+          )}
         </div>
+
+        {linkedAlert && (
+          <div style={{ marginTop: 20 }}>
+            {linkedAlert.options.length > 0 && (
+              <div style={{ marginTop: 14, border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid #eee3f6', background: '#fbfafd' }}>
+                  <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Suggested actions</span>
+                </div>
+                {linkedAlert.options.map((o) => (
+                  <div key={o.id} onClick={() => setOptId(o.id)} className={motion.rowHover} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
+                    <span style={{ width: 14, height: 14, borderRadius: '50%', border: optId === o.id ? '4px solid #77469b' : '1px solid #dfe3ea', flex: 'none', marginTop: 2, transition: 'border 140ms ease-out' }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' as const }}>
+                        <span style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d' }}>{o.isOther ? 'Ask Jiva' : o.label}</span>
+                        {o.recommended && <AiDraftBadge label="Jiva recommends" />}
+                      </span>
+                      {(o.expected || o.confidence !== undefined) && (
+                        <div style={{ font: '400 11px/1.4 Inter,sans-serif', color: '#9aa0a8', marginTop: 3 }}>
+                          {o.expected ? `Est. ${o.expected}` : ''}{o.expected && o.confidence !== undefined ? ' · ' : ''}{o.confidence !== undefined ? `${o.confidence}% confidence` : ''}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 9, background: '#fafbfd' }}>
+                  <span onClick={handleExecuteAlert} className={alertExecuted ? undefined : motion.btnPrimary} style={{ padding: '10px 16px', borderRadius: 7, background: alertExecuted ? '#eef0f3' : '#77469b', color: alertExecuted ? '#9aa0a8' : '#fff', font: '600 12px/1 Inter,sans-serif', cursor: alertExecuted ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke={alertExecuted ? '#9aa0a8' : '#fff'} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    {alertExecuted ? 'Logged' : 'Execute'}
+                  </span>
+                  <span onClick={handleDismissAlert} className={alertDismissed ? undefined : motion.btnSecondary} style={{ padding: '9px 14px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: alertDismissed ? '#9aa0a8' : '#3d434b', cursor: alertDismissed ? 'default' : 'pointer' }}>
+                    {alertDismissed ? 'Dismissed' : 'Dismiss'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {linkedAlert.items.length > 0 && (
+              <div style={{ marginTop: 14, border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Affected items</span>
+                  <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{linkedAlert.itemsCount} total</span>
+                </div>
+                {getDisplayItems(linkedAlert).slice(0, 4).map((it, i) => (
+                  <div key={i} style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 11, borderBottom: '1px solid #f1f2f4' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{it.name}</div>
+                      <div style={{ font: '400 10.5px/1.4 Inter,sans-serif', color: '#9aa0a8', marginTop: 1 }}>ASIN {it.sku}</div>
+                    </div>
+                    <span style={{ font: '600 12px/1 Inter,sans-serif', color: it.color, flex: 'none' }}>{it.impact}</span>
+                  </div>
+                ))}
+                <div onClick={() => setItemsModalOpen(true)} className={motion.rowHover} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b' }}>Show all {linkedAlert.itemsCount} →</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f2f4' }}>
           <div onClick={() => setContextOpen((v) => !v)} className={motion.rowHover} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', margin: '0 -6px', padding: '2px 6px', borderRadius: 6 }}>
@@ -251,21 +413,21 @@ export function WorkStationDetailPanel({
                     </div>
                   );
                 })
+              ) : task.contextNotes?.length ? (
+                task.contextNotes.map((note, i) => (
+                  <div key={i} style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', font: '400 12px/1.5 Inter,sans-serif', color: '#464646' }}>
+                    {note}
+                  </div>
+                ))
               ) : task.origin === 'alert' ? (
                 <div
                   onClick={() => onOpenAlert?.(task.alertId!)}
                   className={`${motion.pressable} ${motion.cardHover}`}
-                  style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer' }}
+                  style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <SourceIcon origin={linkedAlert?.originType ?? 'anarix'} size={13} />
-                    <span style={{ flex: 1, minWidth: 0, font: '600 11.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{linkedAlert?.account ?? 'Alert'}</span>
-                    <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>{linkedAlert?.time}</span>
-                  </div>
-                  <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', marginTop: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
-                    <span style={{ fontWeight: 600, color: '#3d434b' }}>{linkedAlert?.title ?? task.alertId}: </span>
-                    {linkedAlert?.aiSummary ?? `Raised from an alert on ${linkedAlert?.account ?? 'this account'}.`}
-                  </div>
+                  <SourceIcon origin={linkedAlert?.originType ?? 'anarix'} size={13} />
+                  <span style={{ flex: 1, minWidth: 0, font: '600 11.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{linkedAlert?.account ?? 'Alert'} · {linkedAlert?.title ?? task.alertId}</span>
+                  <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b', flex: 'none' }}>Open alert →</span>
                 </div>
               ) : task.origin === 'meeting' ? (
                 <div
@@ -395,11 +557,19 @@ export function WorkStationDetailPanel({
               </div>
             )}
           </span>
-          {task.origin === 'alert' && (
-            <span onClick={() => onOpenAlert?.(task.alertId!)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ textAlign: 'center' as const, padding: '9px 12px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', flex: 'none' }}>View alert</span>
-          )}
         </div>
       </div>
+
+      {itemsModalOpen && linkedAlert && (
+        <ItemsModal items={getDisplayItems(linkedAlert)} itemCount={linkedAlert.itemsCount} breakdown={linkedAlert.itemsBreakdown} onClose={() => setItemsModalOpen(false)} />
+      )}
+
+      {alertToast && (
+        <div className={motion.toastIn} style={{ position: 'absolute', right: 20, bottom: 70, padding: '12px 16px', borderRadius: 9, background: '#23272d', color: '#fff', font: '500 12px/1.4 Inter,sans-serif', boxShadow: '0 12px 28px rgba(20,24,33,.28)', zIndex: 250, display: 'flex', alignItems: 'center', gap: 9 }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#8fd9bd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          {alertToast}
+        </div>
+      )}
     </div>
   );
 }

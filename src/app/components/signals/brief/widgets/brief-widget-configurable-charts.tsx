@@ -108,26 +108,31 @@ function EmptyChartState({ kind, onCustomize }: { kind: WidgetKind; onCustomize:
   );
 }
 
-function SeriesLegendChip({ color, label, onEdit }: { color: string; label: string; onEdit: () => void }) {
+function SeriesLegendChip({ color, label, onEdit }: { color: string; label: string; onEdit?: () => void }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 6px 4px 8px', borderRadius: 999, background: '#f5f6f8', font: '500 10.5px/1.4 Inter,sans-serif', color: '#3d434b' }}>
       <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, flex: 'none' }} />
       {label}
-      <span
-        onClick={onEdit}
-        className={motion.pressable}
-        title="Edit with Jiva"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: 4, cursor: 'pointer', opacity: 0.5, flex: 'none' }}
-        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-        onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
-      >
-        <PencilIcon size={9} color="#6b7178" />
-      </span>
+      {onEdit && (
+        <span
+          onClick={onEdit}
+          className={motion.pressable}
+          title="Edit with Jiva"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: 4, cursor: 'pointer', opacity: 0.5, flex: 'none' }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
+        >
+          <PencilIcon size={9} color="#6b7178" />
+        </span>
+      )}
     </span>
   );
 }
 
-export function ChartSeriesBody({ kind, config, onCustomize, onEditSeries }: { kind: WidgetKind; config: Record<string, unknown>; onCustomize: () => void; onEditSeries: (seriesId: string) => void }) {
+/** `onEditSeries` is only ever passed for the Custom widget — every other chart-family kind here is
+ * either a Component Library reference card or a Dashboard Template card, neither of which is
+ * Jiva-editable, so their legend/table pencils simply don't render when it's omitted. */
+export function ChartSeriesBody({ kind, config, onCustomize, onEditSeries }: { kind: WidgetKind; config: Record<string, unknown>; onCustomize: () => void; onEditSeries?: (seriesId: string) => void }) {
   const series = chartSeries(config);
   if (series.length === 0) return <EmptyChartState kind={kind} onCustomize={onCustomize} />;
 
@@ -145,7 +150,7 @@ export function ChartSeriesBody({ kind, config, onCustomize, onEditSeries }: { k
             <DonutChart data={data.map((d) => ({ label: d.label, value: d.value, color: d.color }))} />
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, flex: 'none' }}>
-            {data.map((d) => <SeriesLegendChip key={d.seriesId} color={d.color} label={d.label} onEdit={() => onEditSeries(d.seriesId)} />)}
+            {data.map((d) => <SeriesLegendChip key={d.seriesId} color={d.color} label={d.label} onEdit={onEditSeries ? () => onEditSeries(d.seriesId) : undefined} />)}
           </div>
         </div>
       );
@@ -187,16 +192,18 @@ export function ChartSeriesBody({ kind, config, onCustomize, onEditSeries }: { k
                       <td style={{ ...td, fontWeight: 700, color: '#111827' }}>{d.value.toLocaleString()}</td>
                     )}
                     <td style={td}>
-                      <span
-                        onClick={() => onEditSeries(d.seriesId)}
-                        className={motion.pressable}
-                        title="Edit with Jiva"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, cursor: 'pointer', opacity: 0.45 }}
-                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.45')}
-                      >
-                        <PencilIcon size={9} color="#6b7178" />
-                      </span>
+                      {onEditSeries && (
+                        <span
+                          onClick={() => onEditSeries(d.seriesId)}
+                          className={motion.pressable}
+                          title="Edit with Jiva"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, cursor: 'pointer', opacity: 0.45 }}
+                          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.45')}
+                        >
+                          <PencilIcon size={9} color="#6b7178" />
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -234,7 +241,7 @@ export function ChartSeriesBody({ kind, config, onCustomize, onEditSeries }: { k
           </ResponsiveContainer>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, flex: 'none' }}>
-          {data.map((d) => <SeriesLegendChip key={d.seriesId} color={d.color} label={d.label} onEdit={() => onEditSeries(d.seriesId)} />)}
+          {data.map((d) => <SeriesLegendChip key={d.seriesId} color={d.color} label={d.label} onEdit={onEditSeries ? () => onEditSeries(d.seriesId) : undefined} />)}
         </div>
       </div>
     );
@@ -263,7 +270,7 @@ export function ChartSeriesBody({ kind, config, onCustomize, onEditSeries }: { k
       <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, flex: 'none' }}>
         {series.map((s) => {
           const field = catalog.find((f) => f.id === s.metricId);
-          return <SeriesLegendChip key={s.id} color={s.color} label={field?.label ?? s.metricId} onEdit={() => onEditSeries(s.id)} />;
+          return <SeriesLegendChip key={s.id} color={s.color} label={field?.label ?? s.metricId} onEdit={onEditSeries ? () => onEditSeries(s.id) : undefined} />;
         })}
       </div>
     </div>

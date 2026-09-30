@@ -29,6 +29,13 @@ export function AlertBadgeRow({ al, size = 20, showTime = true, showAccount = fa
         <MarketplaceBadge brand={al.mpBrand} size={size} style={{ borderRadius: 7 }} />
         <span style={{ font: '700 11px/1 Inter,sans-serif', color: '#3d434b', whiteSpace: 'nowrap' as const }}>{al.mpCountry}{showAccount ? ` · ${al.account}` : ''}</span>
       </span>
+      {/* On the detail card (showAccount), the time joins this same line right after the account instead of being pushed to the row's far edge. */}
+      {showTime && showAccount && (
+        <>
+          <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
+          <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const, flex: 'none' }}>{al.time}</span>
+        </>
+      )}
       <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
         {rowSources.length > 0 && (
@@ -46,7 +53,7 @@ export function AlertBadgeRow({ al, size = 20, showTime = true, showAccount = fa
           </span>
         )}
       </div>
-      {showTime && (
+      {showTime && !showAccount && (
         <span style={{ marginLeft: 'auto', font: '400 12px/1 Inter,sans-serif', color: '#9aa0a8', whiteSpace: 'nowrap' as const, flex: 'none' }}>{al.time}</span>
       )}
     </div>

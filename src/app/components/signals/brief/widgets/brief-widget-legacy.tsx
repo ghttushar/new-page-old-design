@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { BRIEF_MESSAGES, JIVA_ACTIVITY, MEETING_LIST, PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
-import { CloseIcon, SparkleIcon } from '../../alerts/icons';
+import { BRIEF_MESSAGES, DASHBOARD_METRICS, JIVA_ACTIVITY, MEETING_LIST, PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
+import { CloseIcon, PlusIcon } from '../../alerts/icons';
 import { SourceIcon } from '../../alerts/source-icon';
 import motion from '../../alerts/motion.module.scss';
 import scrollStyles from '../../alerts/alerts-scroll.module.scss';
@@ -101,198 +101,76 @@ function DonutWithCenter({ items, centerValue, centerLabel, size = 160, activeIn
   );
 }
 
-type StatKey = 'critical' | 'atRisk' | 'opportunity' | 'meetings' | 'messages';
-const STAT_KEYS: StatKey[] = ['critical', 'atRisk', 'opportunity', 'meetings', 'messages'];
+type StatKey = string;
 
 interface StatMeta {
   iconBg: string; iconColor: string; icon: (color: string) => React.ReactNode; label: string; value: string;
   valueColor?: string; trendLabel?: string; trendBg?: string; trendColor?: string;
+  /** Only the five original alert-derived stats have a category breakdown to expand into — the
+   * platform-metric add-ons (below) are a plain value+trend tile, nothing to click into. */
+  expandable?: boolean;
 }
 
-const STAT_META: Record<StatKey, StatMeta> = {
-  critical: { iconBg: '#eef2fb', iconColor: '#4a6cf7', icon: (c) => <BellIcon color={c} />, label: 'Critical alerts', value: String(CRITICAL_TODAY.length) },
-  atRisk: { iconBg: '#fdecec', iconColor: '#e74c3c', icon: (c) => <TrendUpIcon color={c} />, label: 'At risk', value: `$${AT_RISK_TOTAL.toLocaleString()}`, valueColor: '#e74c3c' },
-  opportunity: { iconBg: '#e9f7ef', iconColor: '#27ae60', icon: (c) => <ShieldCheckIcon color={c} />, label: 'Opportunity', value: `$${OPPORTUNITY_TOTAL.toLocaleString()}`, valueColor: '#27ae60', trendLabel: '+8%', trendBg: '#d1f2df', trendColor: '#1e8449' },
-  meetings: { iconBg: '#f1eefc', iconColor: '#7c4dff', icon: (c) => <CalendarIconFilled color={c} />, label: 'Meetings today', value: String(MEETINGS_TODAY.length) },
-  messages: { iconBg: '#eaf2fd', iconColor: '#2f6fed', icon: (c) => <EnvelopeIconFilled color={c} />, label: 'Important messages', value: String(IMPORTANT_MESSAGES) },
+const FIXED_STAT_META: Record<string, StatMeta> = {
+  critical: { iconBg: '#eef2fb', iconColor: '#4a6cf7', icon: (c) => <BellIcon color={c} />, label: 'Critical alerts', value: String(CRITICAL_TODAY.length), expandable: true },
+  atRisk: { iconBg: '#fdecec', iconColor: '#e74c3c', icon: (c) => <TrendUpIcon color={c} />, label: 'At risk', value: `$${AT_RISK_TOTAL.toLocaleString()}`, valueColor: '#e74c3c', expandable: true },
+  opportunity: { iconBg: '#e9f7ef', iconColor: '#27ae60', icon: (c) => <ShieldCheckIcon color={c} />, label: 'Opportunity', value: `$${OPPORTUNITY_TOTAL.toLocaleString()}`, valueColor: '#27ae60', trendLabel: '+8%', trendBg: '#d1f2df', trendColor: '#1e8449', expandable: true },
+  meetings: { iconBg: '#f1eefc', iconColor: '#7c4dff', icon: (c) => <CalendarIconFilled color={c} />, label: 'Meetings today', value: String(MEETINGS_TODAY.length), expandable: true },
+  messages: { iconBg: '#eaf2fd', iconColor: '#2f6fed', icon: (c) => <EnvelopeIconFilled color={c} />, label: 'Important messages', value: String(IMPORTANT_MESSAGES), expandable: true },
 };
 
-const RECOLOR_SWATCHES = ['#4a6cf7', '#e74c3c', '#27ae60', '#7c4dff', '#2f6fed', '#a8763f', '#b3453f'];
-
-interface CardOverride { color?: string; label?: string }
-
-// ---- Drag-to-merge ----------------------------------------------------------------------------
-
-interface DragZone { anchorKey: StatKey; left: number; right: number; width: number }
-interface DragTarget { anchorKey: StatKey; mode: 'merge' | 'before' | 'after' }
-interface DragVisual { key: StatKey; dx: number; target: DragTarget | null }
-
-function applyStatDrop(groups: StatKey[][], draggedKey: StatKey, targetAnchorKey: StatKey, mode: DragTarget['mode']): StatKey[][] {
-  if (targetAnchorKey === draggedKey) return groups;
-  const withoutDragged = groups.map((g) => g.filter((k) => k !== draggedKey)).filter((g) => g.length > 0);
-  const targetIdx = withoutDragged.findIndex((g) => g.includes(targetAnchorKey));
-  if (targetIdx === -1) return groups;
-  if (mode === 'merge') return withoutDragged.map((g, i) => (i === targetIdx ? [...g, draggedKey] : g));
-  const insertAt = mode === 'before' ? targetIdx : targetIdx + 1;
-  const next = [...withoutDragged];
-  next.splice(insertAt, 0, [draggedKey]);
-  return next;
+function MetricGlyphIcon({ color }: { color: string }) {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13V7M8 13V3M13 13V9" stroke={color} strokeWidth="1.6" strokeLinecap="round" /></svg>;
 }
 
-/**
- * Cards drag by their own body (no separate grip) — a mousedown starts "pending," and only becomes
- * a real drag once the pointer moves past a small threshold; released before that, it's treated as
- * a plain click (opens the card) instead. Dropping in the middle ~56% of another card merges onto
- * its shared background; dropping near either edge reorders instead. Dragging a card back out of a
- * group it's already merged into works the same way — it's just another drag, so pulling apart is
- * the natural inverse of pushing together, with no separate "unmerge" affordance needed.
- */
-function useStatDrag(groups: StatKey[][], setGroups: React.Dispatch<React.SetStateAction<StatKey[][]>>, rowRef: React.RefObject<HTMLDivElement>, onClickCard: (key: StatKey, rect: DOMRect) => void) {
-  const [drag, setDrag] = useState<DragVisual | null>(null);
-  const zonesRef = useRef<DragZone[]>([]);
-  const draggedKeyRef = useRef<StatKey | null>(null);
-  const pendingRef = useRef<{ key: StatKey; downX: number; downY: number; rect: DOMRect } | null>(null);
-  const rowStartXRef = useRef(0);
+/** The rest of the predefined stat library — real platform metrics (spend, sales, efficiency,
+ * traffic) a user can add onto the row alongside the original five. Sourced straight from
+ * DASHBOARD_METRICS, the same numbers every other Brief metric widget already shows, so this needed
+ * no bespoke mock data of its own. */
+const METRIC_STAT_META: Record<string, StatMeta> = Object.fromEntries(
+  DASHBOARD_METRICS.map((m) => [
+    `metric:${m.id}`,
+    {
+      iconBg: `${m.color}17`, iconColor: m.color, icon: (c: string) => <MetricGlyphIcon color={c} />,
+      label: m.label, value: m.value, trendLabel: m.trend, trendBg: m.trendUp ? '#d1f2df' : '#fdecec', trendColor: m.trendUp ? '#1e8449' : '#b3453f',
+    } satisfies StatMeta,
+  ]),
+);
 
-  const onMouseMove = useCallback((e: MouseEvent) => {
-    const key = draggedKeyRef.current;
-    if (!key) return;
-    let best: DragTarget | null = null;
-    let bestDist = Infinity;
-    for (const z of zonesRef.current) {
-      const dist = e.clientX < z.left ? z.left - e.clientX : e.clientX > z.right ? e.clientX - z.right : 0;
-      if (dist < bestDist) {
-        bestDist = dist;
-        const rel = Math.min(1, Math.max(0, (e.clientX - z.left) / z.width));
-        best = { anchorKey: z.anchorKey, mode: rel < 0.22 ? 'before' : rel > 0.78 ? 'after' : 'merge' };
-      }
-    }
-    setDrag((d) => (d ? { ...d, dx: e.clientX - rowStartXRef.current, target: best } : d));
-  }, []);
+const STAT_META: Record<string, StatMeta> = { ...FIXED_STAT_META, ...METRIC_STAT_META };
+/** Library order for the "add a stat" picker — the five defaults first, then the metric add-ons. */
+const STAT_LIBRARY_IDS: string[] = [...Object.keys(FIXED_STAT_META), ...Object.keys(METRIC_STAT_META)];
+const DEFAULT_VISIBLE_STAT_IDS: string[] = ['critical', 'atRisk', 'opportunity', 'meetings', 'messages'];
 
-  const stopRealDrag = useCallback(() => {
-    setDrag((d) => {
-      if (d?.target) setGroups((current) => applyStatDrop(current, d.key, d.target!.anchorKey, d.target!.mode));
-      return null;
-    });
-    draggedKeyRef.current = null;
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', stopRealDrag);
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onMouseMove, setGroups]);
-
-  const beginRealDrag = useCallback((key: StatKey, clientX: number) => {
-    const groupEls = Array.from(rowRef.current?.querySelectorAll<HTMLDivElement>('[data-stat-group]') ?? []);
-    const zones: DragZone[] = [];
-    groupEls.forEach((el) => {
-      const idx = Number(el.dataset.statGroup);
-      const memberKeys = groups[idx] ?? [];
-      if (memberKeys.includes(key)) return;
-      const rect = el.getBoundingClientRect();
-      zones.push({ anchorKey: memberKeys[0], left: rect.left, right: rect.right, width: rect.width });
-    });
-    zonesRef.current = zones;
-    rowStartXRef.current = clientX;
-    draggedKeyRef.current = key;
-    setDrag({ key, dx: 0, target: null });
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', stopRealDrag);
-    document.body.style.cursor = 'grabbing';
-    document.body.style.userSelect = 'none';
-  }, [groups, onMouseMove, stopRealDrag, rowRef]);
-
-  const onPendingMove = useCallback((e: MouseEvent) => {
-    const p = pendingRef.current;
-    if (!p) return;
-    if (Math.hypot(e.clientX - p.downX, e.clientY - p.downY) > 5) {
-      document.removeEventListener('mousemove', onPendingMove);
-      document.removeEventListener('mouseup', onPendingUp);
-      pendingRef.current = null;
-      beginRealDrag(p.key, e.clientX);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [beginRealDrag]);
-
-  const onPendingUp = useCallback(() => {
-    const p = pendingRef.current;
-    pendingRef.current = null;
-    document.removeEventListener('mousemove', onPendingMove);
-    document.removeEventListener('mouseup', onPendingUp);
-    if (p) onClickCard(p.key, p.rect);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onPendingMove, onClickCard]);
-
-  const onCardMouseDown = useCallback((key: StatKey, e: React.MouseEvent) => {
-    pendingRef.current = { key, downX: e.clientX, downY: e.clientY, rect: e.currentTarget.getBoundingClientRect() };
-    document.addEventListener('mousemove', onPendingMove);
-    document.addEventListener('mouseup', onPendingUp);
-  }, [onPendingMove, onPendingUp]);
-
-  useEffect(() => () => {
-    document.removeEventListener('mousemove', onPendingMove);
-    document.removeEventListener('mouseup', onPendingUp);
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', stopRealDrag);
-  }, [onPendingMove, onPendingUp, onMouseMove, stopRealDrag]);
-
-  return { drag, onCardMouseDown };
-}
-
-// ---- Per-card "edit with Jiva" popover ---------------------------------------------------------
-
-const EDIT_POPOVER_WIDTH = 230;
-
-/** Portaled to document.body and positioned from the trigger button's real screen rect — the widget
- * grid clips each cell's overflow to its own grid-cell height (so charts etc. don't spill into the
- * widget below), which would otherwise clip this popover whenever the card row is short. */
-function KpiCardEditPopover({ meta, override, anchorRect, onApply, onClose }: { meta: StatMeta; override?: CardOverride; anchorRect: DOMRect; onApply: (next: CardOverride) => void; onClose: () => void }) {
-  const [label, setLabel] = useState(override?.label ?? meta.label);
-  const hasOverride = Boolean(override?.color || override?.label);
+/** Portaled picker for adding a not-yet-visible stat onto the row — same floating-panel-from-
+ * document.body pattern as the expansion popover below, so it never gets clipped by the grid cell. */
+function AddStatPopover({ available, anchorRect, onAdd, onClose }: { available: string[]; anchorRect: DOMRect; onAdd: (id: string) => void; onClose: () => void }) {
+  const width = 230;
   const top = anchorRect.bottom + 6;
-  const left = Math.max(8, Math.min(anchorRect.right - EDIT_POPOVER_WIDTH, window.innerWidth - EDIT_POPOVER_WIDTH - 8));
-
-  return (
+  const left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - width - 8));
+  return createPortal(
     <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onMouseDown={onClose} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onClick={onClose} />
       <div
         className={motion.popInTop}
-        onMouseDown={(e) => e.stopPropagation()}
-        style={{ position: 'fixed', top, left, width: EDIT_POPOVER_WIDTH, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 14px 32px rgba(20,24,33,.2)', padding: 12, zIndex: 240, cursor: 'default' }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ position: 'fixed', top, left, width, maxHeight: 280, overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 14px 32px rgba(20,24,33,.2)', padding: 6, zIndex: 240 }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: '700 11.5px/1 Inter,sans-serif', color: '#5f3880', marginBottom: 10 }}>
-          <SparkleIcon size={11} /> Edit this card
-        </div>
-        <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '.04em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginBottom: 6 }}>Color</div>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const }}>
-          {RECOLOR_SWATCHES.map((c) => (
-            <span
-              key={c}
-              onClick={() => onApply({ ...override, color: c })}
-              className={motion.pressable}
-              style={{ width: 20, height: 20, borderRadius: '50%', background: c, cursor: 'pointer', boxSizing: 'border-box' as const, border: (override?.color ?? meta.iconColor) === c ? '2px solid #23272d' : '2px solid transparent' }}
-            />
-          ))}
-        </div>
-        <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '.04em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginBottom: 6 }}>Label</div>
-        <input
-          value={label}
-          onChange={(e) => { setLabel(e.target.value); onApply({ ...override, label: e.target.value }); }}
-          className={motion.focusRing}
-          style={{ width: '100%', padding: '7px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none', boxSizing: 'border-box' as const }}
-        />
-        {hasOverride && (
-          <span
-            onClick={() => { setLabel(meta.label); onApply({}); }}
-            className={motion.pressable}
-            style={{ display: 'inline-block', marginTop: 10, font: '600 11px/1 Inter,sans-serif', color: '#9aa0a8', cursor: 'pointer' }}
-          >
-            Reset to default
-          </span>
-        )}
+        <div style={{ padding: '6px 8px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Add a stat</div>
+        {available.length === 0 && <div style={{ padding: '10px 8px', font: '400 12px/1.5 Inter,sans-serif', color: '#9aa0a8' }}>All stats are already on the row.</div>}
+        {available.map((id) => {
+          const meta = STAT_META[id];
+          return (
+            <div key={id} onClick={() => { onAdd(id); onClose(); }} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 9px', borderRadius: 7, cursor: 'pointer' }}>
+              <span style={{ width: 22, height: 22, borderRadius: 6, background: meta.iconBg, color: meta.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{meta.icon(meta.iconColor)}</span>
+              <span style={{ font: '500 12px/1.3 Inter,sans-serif', color: '#3d434b' }}>{meta.label}</span>
+              <span style={{ marginLeft: 'auto', font: '600 12px/1 Inter,sans-serif', color: '#464646', flex: 'none' }}>{meta.value}</span>
+            </div>
+          );
+        })}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
 
@@ -335,43 +213,39 @@ function ExpansionHost({ statKey, anchorRect, onClose }: { statKey: StatKey; anc
 
 // ---- Card + row ---------------------------------------------------------------------------------
 
-function StatCardMember({
-  meta, override, expanded, onMouseDown, onEditClick,
-}: {
-  meta: StatMeta; override?: CardOverride; expanded: boolean;
-  onMouseDown: (e: React.MouseEvent) => void; onEditClick: (e: React.MouseEvent) => void;
-}) {
-  const color = override?.color ?? meta.iconColor;
-  const bg = override?.color ? `${override.color}1f` : meta.iconBg;
-  const label = override?.label ?? meta.label;
-
+function StatCardMember({ meta, expanded, onClick, onRemove }: { meta: StatMeta; expanded: boolean; onClick: (e: React.MouseEvent) => void; onRemove: (e: React.MouseEvent) => void }) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <div onMouseDown={onMouseDown} style={{ flex: 1, minWidth: 0, padding: '14px 16px', cursor: 'pointer', position: 'relative' as const }}>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ flex: 1, minWidth: 0, padding: '14px 16px', cursor: meta.expandable ? 'pointer' : 'default', position: 'relative' as const }}
+    >
+      <span
+        onClick={(e) => { e.stopPropagation(); onRemove(e); }}
+        className={motion.pressable}
+        title="Remove from row"
+        style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 5, cursor: 'pointer', opacity: hovered ? 1 : 0, transition: 'opacity 120ms ease-out' }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f2f4')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+      >
+        <CloseIcon size={9} color="#9aa0a8" />
+      </span>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ width: 32, height: 32, borderRadius: 9, background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{meta.icon(color)}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <span
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={onEditClick}
-            className={motion.pressable}
-            title="Edit with Jiva"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 6, cursor: 'pointer', opacity: 0.5 }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = '#f3eefa'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.background = 'transparent'; }}
-          >
-            <SparkleIcon size={12} color="#5f3880" />
+        <span style={{ width: 32, height: 32, borderRadius: 9, background: meta.iconBg, color: meta.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{meta.icon(meta.iconColor)}</span>
+        {meta.expandable && (
+          <span style={{ display: 'flex', color: expanded ? meta.iconColor : '#9aa0a8', transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 160ms ease-out, color 160ms ease-out' }}>
+            <ChevronRightIcon color={expanded ? meta.iconColor : undefined} />
           </span>
-          <span style={{ display: 'flex', color: expanded ? color : '#9aa0a8', transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 160ms ease-out, color 160ms ease-out' }}>
-            <ChevronRightIcon color={expanded ? color : undefined} />
-          </span>
-        </div>
+        )}
       </div>
-      <div style={{ font: '500 12px/1.3 Inter,sans-serif', color: '#4b5563', marginTop: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{label}</div>
+      <div style={{ font: '500 12px/1.3 Inter,sans-serif', color: '#4b5563', marginTop: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{meta.label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' as const }}>
         <span style={{ font: '700 21px/1 Inter,sans-serif', color: meta.valueColor || '#111827' }}>{meta.value}</span>
         {meta.trendLabel && (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 999, background: meta.trendBg, font: '700 10.5px/1.5 Inter,sans-serif', color: meta.trendColor }}>
-            ↑ {meta.trendLabel}
+            {meta.trendLabel}
           </span>
         )}
       </div>
@@ -379,20 +253,27 @@ function StatCardMember({
   );
 }
 
-/** The original Brief page's key-stats row — every card opens its own inline detail below the row, can be dragged into a neighbor to merge onto one shared background, and has its own recolor/rename popover. */
+/** The original Brief page's key-stats row — a fixed, product-defined widget (no Jiva editing): the
+ * only customization is choosing which predefined stats show, via the "+" tile's add picker and each
+ * card's own hover-reveal remove button. The five original alert-derived stats still expand into
+ * their own floating category-breakdown popover; the metric add-ons are plain value+trend tiles. */
 export function LegacyKpiRow({ onExpandedChange }: { onExpandedChange?: (expanded: boolean) => void }) {
   const [expanded, setExpanded] = useState<StatKey | null>(null);
   const [expandRect, setExpandRect] = useState<DOMRect | null>(null);
-  const [overrides, setOverrides] = useState<Partial<Record<StatKey, CardOverride>>>({});
-  const [editAnchor, setEditAnchor] = useState<{ key: StatKey; rect: DOMRect } | null>(null);
-  const [groups, setGroups] = useState<StatKey[][]>(() => STAT_KEYS.map((k) => [k]));
-  const rowRef = useRef<HTMLDivElement>(null);
-  const toggle = useCallback((k: StatKey, rect: DOMRect) => {
-    setExpanded((v) => (v === k ? null : k));
+  const [visibleIds, setVisibleIds] = useState<string[]>(DEFAULT_VISIBLE_STAT_IDS);
+  const [addAnchor, setAddAnchor] = useState<DOMRect | null>(null);
+
+  const toggle = (id: string, rect: DOMRect) => {
+    setExpanded((v) => (v === id ? null : id));
     setExpandRect(rect);
-  }, []);
-  const closeExpanded = useCallback(() => setExpanded(null), []);
-  const { drag, onCardMouseDown } = useStatDrag(groups, setGroups, rowRef, toggle);
+  };
+  const closeExpanded = () => setExpanded(null);
+  const removeStat = (id: string) => {
+    setVisibleIds((v) => v.filter((x) => x !== id));
+    setExpanded((v) => (v === id ? null : v));
+  };
+  const addStat = (id: string) => setVisibleIds((v) => [...v, id]);
+  const availableToAdd = STAT_LIBRARY_IDS.filter((id) => !visibleIds.includes(id));
 
   // `onExpandedChange` is `BriefWidgetGrid`'s `(expanded) => setLegacyKpiExpanded(widget.id, expanded)` —
   // a fresh closure every render (it's inline, capturing `widget.id` from a `.map()`), and
@@ -412,69 +293,47 @@ export function LegacyKpiRow({ onExpandedChange }: { onExpandedChange?: (expande
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div ref={rowRef} style={{ display: 'flex', gap: 12, flex: 'none' }}>
-        {groups.map((members, gi) => {
-          const expandedInGroup = members.includes(expanded as StatKey) ? expanded : null;
-          const isDropTarget = Boolean(drag?.target && members.includes(drag.target.anchorKey));
-          const dropMode = isDropTarget ? drag!.target!.mode : null;
+      <div style={{ display: 'flex', gap: 12, flex: 'none' }}>
+        {visibleIds.map((id) => {
+          const meta = STAT_META[id];
+          if (!meta) return null;
           return (
             <div
-              key={members.join('+')}
-              data-stat-group={gi}
+              key={id}
               style={{
-                flex: members.length, minWidth: 0, display: 'flex', position: 'relative' as const,
+                flex: 1, minWidth: 0, display: 'flex', position: 'relative' as const,
                 background: '#fff', borderRadius: 12,
-                border: `1.5px solid ${expandedInGroup ? STAT_META[expandedInGroup].iconColor : dropMode === 'merge' ? '#77469b' : '#eceef1'}`,
-                boxShadow: expandedInGroup ? '0 10px 22px -8px rgba(20,24,33,.22)' : dropMode === 'merge' ? '0 0 0 3px rgba(119,70,155,.16)' : 'none',
-                transform: expandedInGroup ? 'translateY(-2px)' : 'none',
+                border: `1.5px solid ${expanded === id ? meta.iconColor : '#eceef1'}`,
+                boxShadow: expanded === id ? '0 10px 22px -8px rgba(20,24,33,.22)' : 'none',
+                transform: expanded === id ? 'translateY(-2px)' : 'none',
                 transition: 'border-color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out',
               }}
             >
-              {dropMode === 'before' && <span style={{ position: 'absolute', left: -8, top: 6, bottom: 6, width: 3, borderRadius: 2, background: '#77469b' }} />}
-              {dropMode === 'after' && <span style={{ position: 'absolute', right: -8, top: 6, bottom: 6, width: 3, borderRadius: 2, background: '#77469b' }} />}
-              {members.map((key, i) => {
-                const isDragging = drag?.key === key;
-                return (
-                  <div key={key} style={{ display: 'flex', flex: 1, minWidth: 0 }}>
-                    {i > 0 && <span style={{ width: 1, background: '#eceef1', flex: 'none', margin: '12px 0' }} />}
-                    <div
-                      style={{
-                        flex: 1, minWidth: 0, borderRadius: 10, position: 'relative' as const,
-                        transform: isDragging ? `translate(${drag!.dx}px, -3px) scale(1.03)` : 'none',
-                        boxShadow: isDragging ? '0 18px 32px -10px rgba(20,24,33,.4)' : 'none',
-                        background: isDragging ? '#fff' : 'transparent',
-                        zIndex: isDragging ? 30 : 'auto',
-                        transition: isDragging ? 'none' : 'transform 160ms ease-out, box-shadow 160ms ease-out',
-                      }}
-                    >
-                      <StatCardMember
-                        meta={STAT_META[key]}
-                        override={overrides[key]}
-                        expanded={expanded === key}
-                        onMouseDown={(e) => onCardMouseDown(key, e)}
-                        onEditClick={(e) => { e.stopPropagation(); setEditAnchor({ key, rect: e.currentTarget.getBoundingClientRect() }); }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              <StatCardMember
+                meta={meta}
+                expanded={expanded === id}
+                onClick={(e) => meta.expandable && toggle(id, e.currentTarget.getBoundingClientRect())}
+                onRemove={() => removeStat(id)}
+              />
             </div>
           );
         })}
+        {availableToAdd.length > 0 && (
+          <span
+            onClick={(e) => setAddAnchor(e.currentTarget.getBoundingClientRect())}
+            className={motion.pressable}
+            title="Add a stat"
+            style={{ flex: '0 0 56px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px dashed #dfe3ea', borderRadius: 12, cursor: 'pointer', color: '#9aa0a8' }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#c7cad1'; e.currentTarget.style.color = '#6b7178'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#dfe3ea'; e.currentTarget.style.color = '#9aa0a8'; }}
+          >
+            <PlusIcon size={14} color="currentColor" />
+          </span>
+        )}
       </div>
 
       {expanded && <ExpansionHost statKey={expanded} anchorRect={expandRect} onClose={closeExpanded} />}
-
-      {editAnchor && createPortal(
-        <KpiCardEditPopover
-          meta={STAT_META[editAnchor.key]}
-          override={overrides[editAnchor.key]}
-          anchorRect={editAnchor.rect}
-          onApply={(next) => setOverrides((cur) => ({ ...cur, [editAnchor.key]: next }))}
-          onClose={() => setEditAnchor(null)}
-        />,
-        document.body,
-      )}
+      {addAnchor && <AddStatPopover available={availableToAdd} anchorRect={addAnchor} onAdd={addStat} onClose={() => setAddAnchor(null)} />}
     </div>
   );
 }

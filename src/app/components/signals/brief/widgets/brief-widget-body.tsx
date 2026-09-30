@@ -8,10 +8,13 @@ import {
   JIVA_ACTIVITY,
   PLATFORM_CHANGE_TIMELINE,
   PROTOTYPE_ALERTS,
+  WORKSTATION_TASKS,
   type DashboardMetric,
   type PlatformChangeCategory,
 } from '@/constants/signals/prototype-data';
-import { ChevronDownIcon, CloseIcon, PencilIcon, PlusIcon, TrashIcon } from '../../alerts/icons';
+import { BellIcon, ChevronDownIcon, CloseIcon, PencilIcon, PlusIcon, SparkleIcon, TrashIcon } from '../../alerts/icons';
+import { Avatar } from '../../alerts/assign-menu';
+import { STATUS_COLOR, STATUS_LABEL, StatusCircleIcon } from '../../work-station/work-station-icons';
 import motion from '../../alerts/motion.module.scss';
 import scrollStyles from '../../alerts/alerts-scroll.module.scss';
 import type { WidgetInstance } from './brief-widget-types';
@@ -135,7 +138,7 @@ function KpiWidgetBody({ widget, onConfigChange, onSplitKpiMetric, onEditKpiMemb
             showRemove={metrics.length > 1}
             onChange={(id) => onConfigChange({ ...widget.config, metricIds: metricIds.map((mid, idx) => (idx === i ? id : mid)), metricId: undefined })}
             onRemove={() => onSplitKpiMetric?.(i)}
-            onEditWithJiva={() => onEditKpiMember?.(i)}
+            onEditWithJiva={onEditKpiMember ? () => onEditKpiMember(i) : undefined}
           />
         </div>
       ))}
@@ -176,6 +179,74 @@ function AlertsWidgetBody() {
           <div style={{ font: '600 11.5px/1 Inter,sans-serif', color: a.valueNum < 0 ? '#b3453f' : '#3f7d6a', marginTop: 6 }}>{a.valueLabel}</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** A recency-first feed (newest first, today ahead of yesterday) — deliberately different from
+ * Priority alerts' severity-first sort and card layout, so the two read as genuinely separate
+ * concepts: "what's most urgent" versus "what just happened." */
+function NotificationsWidgetBody() {
+  const items = [...PROTOTYPE_ALERTS.filter((a) => a.day === 'today'), ...PROTOTYPE_ALERTS.filter((a) => a.day === 'yesterday')].slice(0, 8);
+  return (
+    <div className={scrollStyles.sleekScroll} style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingRight: 2 }}>
+      {items.map((a, i) => (
+        <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 2px', borderTop: i === 0 ? 'none' : '1px solid #f1f2f4' }}>
+          <span style={{ width: 26, height: 26, borderRadius: '50%', background: '#f3ecfa', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+            <BellIcon size={12} color="#77469b" />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ font: '600 12px/1.4 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{a.title}</div>
+            <div style={{ font: '400 10.5px/1.4 Inter,sans-serif', color: '#9aa0a8', marginTop: 2 }}>{a.account} · {a.category}</div>
+          </div>
+          <span style={{ font: '500 10px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none', whiteSpace: 'nowrap' as const }}>{a.day === 'today' ? a.time : `Yesterday`}</span>
+        </div>
+      ))}
+      {items.length === 0 && <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>No notifications right now.</div>}
+    </div>
+  );
+}
+
+/** Deterministic stand-in for a real "% complete" field the task model doesn't have — stable per
+ * task id (same hashing approach as the Work-station notification-dot pick) rather than random on
+ * every render, spread across a plausible 20–90% band. */
+function taskProgressPercent(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) % 997;
+  return 20 + (hash % 71);
+}
+
+/** Work-station tasks with status `in_progress` — a live-feeling "what's currently being worked"
+ * roll-up, sourced from real task data (assignee, priority, due). Card layout mirrors the
+ * Work-station list row itself (status pill, avatar, due date pinned right, bold title) plus a
+ * progress bar, so this widget reads as "Work-station, condensed" rather than a new visual language. */
+function ActionsInProgressWidgetBody() {
+  const items = WORKSTATION_TASKS.filter((t) => t.status === 'in_progress');
+  return (
+    <div className={scrollStyles.sleekScroll} style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 2 }}>
+      {items.map((t) => {
+        const pct = taskProgressPercent(t.id);
+        return (
+          <div key={t.id} style={{ padding: '11px 13px', borderRadius: 10, background: '#fff', border: '1px solid #eceef1', boxShadow: '0 1px 2px rgba(20,24,33,.03)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 6px', borderRadius: 999, background: STATUS_COLOR.in_progress + '14', flex: 'none' }}>
+                <StatusCircleIcon status="in_progress" size={11} />
+                <span style={{ font: '600 10.5px/1 Inter,sans-serif', color: STATUS_COLOR.in_progress, whiteSpace: 'nowrap' as const }}>{STATUS_LABEL.in_progress}</span>
+              </span>
+              <Avatar name={t.assignee} size={20} vivid={t.assignee !== 'Unassigned'} />
+              <span style={{ marginLeft: 'auto', font: '600 10.5px/1 Inter,sans-serif', color: t.overdue ? '#b3453f' : (t.dueColor || '#9aa0a8'), flex: 'none', whiteSpace: 'nowrap' as const }}>{t.due}</span>
+            </div>
+            <div style={{ font: '600 12.5px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 9, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{t.text}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 9 }}>
+              <div style={{ flex: 1, height: 5, borderRadius: 3, background: '#eceef1', overflow: 'hidden' }}>
+                <div style={{ width: `${pct}%`, height: '100%', background: STATUS_COLOR.in_progress, borderRadius: 3 }} />
+              </div>
+              <span style={{ font: '700 10.5px/1 Inter,sans-serif', color: '#9aa0a8', flex: 'none' }}>{pct}%</span>
+            </div>
+          </div>
+        );
+      })}
+      {items.length === 0 && <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>Nothing in progress right now.</div>}
     </div>
   );
 }
@@ -366,14 +437,42 @@ function ChecklistWidgetBody({ widget, onConfigChange }: BodyProps) {
   );
 }
 
+/** The Custom widget's whole body: blank until `config.vizKind` is set, which only ever happens
+ * through Jiva (see buildChanges' `custom`-kind branch in brief-widget-ai-sheet.tsx) — never a
+ * predefined chart-type picker. Once set, it delegates to the exact same renderers every other chart
+ * kind uses, just keyed off `config.vizKind` instead of `widget.kind`. */
+function CustomWidgetBody({ widget, onConfigChange, onSplitKpiMetric, onEditKpiMember, onEditSeries, onOpenAiSheet }: BodyProps) {
+  const vizKind = widget.config.vizKind as WidgetInstance['kind'] | undefined;
+  if (!vizKind) {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center' as const, padding: 16 }}>
+        <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8', maxWidth: 240 }}>Blank custom widget — tell Jiva what to show and it picks the data and the visualization.</div>
+        <span onClick={() => onOpenAiSheet?.()} className={motion.pressable} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 7, background: '#77469b', font: '600 12px/1 Inter,sans-serif', color: '#fff', cursor: 'pointer' }}>
+          <SparkleIcon size={12} color="#fff" /> Ask Jiva to build this
+        </span>
+      </div>
+    );
+  }
+  if (vizKind === 'kpi' || vizKind === 'metricRow') {
+    return <KpiWidgetBody widget={widget} onConfigChange={onConfigChange} onSplitKpiMetric={onSplitKpiMetric} onEditKpiMember={onEditKpiMember} />;
+  }
+  if (isChartSeriesKind(vizKind)) {
+    return <ChartSeriesBody kind={vizKind} config={widget.config} onCustomize={() => onOpenAiSheet?.()} onEditSeries={onEditSeries} />;
+  }
+  return null;
+}
+
 export function WidgetBody({ widget, onConfigChange, onLegacyKpiExpand, onSplitKpiMetric, onEditKpiMember, onEditSeries, onOpenAiSheet }: BodyProps) {
+  if (widget.kind === 'custom') {
+    return <CustomWidgetBody widget={widget} onConfigChange={onConfigChange} onSplitKpiMetric={onSplitKpiMetric} onEditKpiMember={onEditKpiMember} onEditSeries={onEditSeries} onOpenAiSheet={onOpenAiSheet} />;
+  }
   if (isChartSeriesKind(widget.kind)) {
     return (
       <ChartSeriesBody
         kind={widget.kind}
         config={widget.config}
         onCustomize={() => onOpenAiSheet?.()}
-        onEditSeries={(seriesId) => onEditSeries?.(seriesId)}
+        onEditSeries={onEditSeries}
       />
     );
   }
@@ -405,6 +504,8 @@ export function WidgetBody({ widget, onConfigChange, onLegacyKpiExpand, onSplitK
     case 'keywordFunnel': return <KeywordFunnelChart />;
     case 'activity': return <ActivityWidgetBody />;
     case 'alerts': return <AlertsWidgetBody />;
+    case 'notifications': return <NotificationsWidgetBody />;
+    case 'actionsInProgress': return <ActionsInProgressWidgetBody />;
     case 'channels': return <ChannelsWidgetBody />;
     case 'recommendations': return <RecommendationsWidgetBody />;
     case 'summaryCard': return <SummaryCardBody />;

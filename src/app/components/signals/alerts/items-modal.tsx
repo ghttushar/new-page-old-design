@@ -3,6 +3,7 @@ import type { ColumnDef, PaginationState } from '@tanstack/react-table';
 import type { AlertItem } from '@/constants/signals/prototype-data';
 import { CustomTableWrapper } from '@/app/components/shared/custom-table-wrapper/custom-table-wrapper';
 import ImgComponent from '@/app/components/common/img-component/img-component';
+import { deriveSku } from './items-util';
 import { CloseIcon, DownloadIcon } from './icons';
 import motion from './motion.module.scss';
 import tableCompact from './items-table-compact.module.scss';
@@ -15,8 +16,8 @@ interface Props {
 }
 
 function downloadItemsCsv(items: AlertItem[]) {
-  const header = ['Product Name', 'ASIN Number', 'Impact'];
-  const rows = items.map((it) => [it.name, it.sku, it.impact]);
+  const header = ['Product Name', 'SKU', 'ASIN Number', 'Impact'];
+  const rows = items.map((it) => [it.name, deriveSku(it.name, it.sku), it.sku, it.impact]);
   const csv = [header, ...rows]
     .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
     .join('\r\n');
@@ -49,13 +50,19 @@ const COLUMNS: ColumnDef<AlertItem>[] = [
     accessorKey: 'name',
     id: 'productName',
     header: 'PRODUCT NAME',
-    size: 420,
+    size: 340,
+  },
+  {
+    id: 'sku',
+    header: 'SKU',
+    size: 130,
+    cell: (props) => deriveSku(props.row.original.name, props.row.original.sku),
   },
   {
     accessorKey: 'sku',
     id: 'asin',
     header: 'ASIN NUMBER',
-    size: 160,
+    size: 140,
   },
   {
     accessorKey: 'impact',

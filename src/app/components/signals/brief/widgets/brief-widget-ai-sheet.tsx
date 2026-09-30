@@ -28,25 +28,58 @@ const SUGGESTIONS_MEMBER_FOCUS = ['Change to ROAS', 'Change to ad spend', 'Chang
 const SUGGESTIONS_CHART_WHOLE = ['Add ROAS', 'Add spend and sales', 'Add top metrics', 'Remove the last bar'];
 const SUGGESTIONS_SERIES_FOCUS = ['Make this blue', 'Make this green', 'Change to ROAS', 'Remove this'];
 
-function isMetricFamily(widget: WidgetInstance): boolean {
-  return widget.kind === 'kpi' || widget.kind === 'metricRow';
+function isMetricFamily(kind: WidgetInstance['kind']): boolean {
+  return kind === 'kpi' || kind === 'metricRow';
+}
+
+/** The Custom widget has no kind of its own to render by — once Jiva has picked a visualization for
+ * it, `config.vizKind` stands in for `widget.kind` everywhere below. Null while still blank. */
+function effectiveKindFor(widget: WidgetInstance): WidgetInstance['kind'] | null {
+  if (widget.kind !== 'custom') return widget.kind;
+  return (widget.config.vizKind as WidgetInstance['kind'] | undefined) ?? null;
+}
+
+const VIZ_KEYWORDS: { re: RegExp; kind: WidgetInstance['kind'] }[] = [
+  { re: /comparison table/, kind: 'comparisonTable' },
+  { re: /\btable\b/, kind: 'dataTable' },
+  { re: /comparison chart|versus.*previous|vs\.? previous/, kind: 'comparisonChart' },
+  { re: /horizontal bar/, kind: 'barChartHorizontal' },
+  { re: /vertical bar|column chart/, kind: 'barChartVertical' },
+  { re: /\bbar (chart|graph)\b/, kind: 'barChartVertical' },
+  { re: /pie chart|donut/, kind: 'pieChart' },
+  { re: /hourly|by hour|intraday/, kind: 'hourlyChart' },
+  { re: /line (chart|graph)|trend/, kind: 'lineChart' },
+  { re: /metric card|number card|single metric/, kind: 'kpi' },
+  { re: /\b(metrics?|kpis?|numbers?|cards?)\b/, kind: 'metricRow' },
+];
+
+/** Purely local keyword matching, same as the rest of this file — no real model call. Looks for an
+ * explicit chart-type phrase first; "show me X and Y" with no viz language at all defaults to a
+ * metric row, since a couple of plain numbers is the safest generic answer to "just show me this." */
+function detectVizKind(lower: string): WidgetInstance['kind'] | null {
+  for (const { re, kind } of VIZ_KEYWORDS) if (re.test(lower)) return kind;
+  return null;
 }
 
 function suggestionsFor(widget: WidgetInstance, focusKey: string | null): string[] {
-  if (isChartSeriesKind(widget.kind)) return focusKey !== null ? SUGGESTIONS_SERIES_FOCUS : [...SUGGESTIONS_CHART_WHOLE, ...SUGGESTIONS_BASE];
-  if (isMetricFamily(widget)) return focusKey !== null ? SUGGESTIONS_MEMBER_FOCUS : [...SUGGESTIONS_KPI_WHOLE, ...SUGGESTIONS_BASE];
+  const kind = effectiveKindFor(widget);
+  if (widget.kind === 'custom' && kind === null) return ['Show me spend, sales and ROAS', 'Bar chart of ACOS by campaign', 'Line chart of revenue over time', 'A table comparing my top metrics'];
+  if (kind && isChartSeriesKind(kind)) return focusKey !== null ? SUGGESTIONS_SERIES_FOCUS : [...SUGGESTIONS_CHART_WHOLE, ...SUGGESTIONS_BASE];
+  if (kind && isMetricFamily(kind)) return focusKey !== null ? SUGGESTIONS_MEMBER_FOCUS : [...SUGGESTIONS_KPI_WHOLE, ...SUGGESTIONS_BASE];
   return SUGGESTIONS_BASE;
 }
 
 /** What the sheet is actually scoped to right now — null when it's the whole widget. */
 function focusLabelFor(widget: WidgetInstance, focusKey: string | null): string | null {
   if (focusKey === null) return null;
-  if (isChartSeriesKind(widget.kind)) {
+  const kind = effectiveKindFor(widget);
+  if (!kind) return null;
+  if (isChartSeriesKind(kind)) {
     const item = chartSeries(widget.config).find((s) => s.id === focusKey);
     if (!item) return null;
-    return seriesCatalogFor(widget.kind).find((f) => f.id === item.metricId)?.label ?? item.metricId;
+    return seriesCatalogFor(kind).find((f) => f.id === item.metricId)?.label ?? item.metricId;
   }
-  if (isMetricFamily(widget)) {
+  if (isMetricFamily(kind)) {
     const id = kpiMetricIds(widget.config)[Number(focusKey)];
     return DASHBOARD_METRICS.find((m) => m.id === id)?.label ?? null;
   }
@@ -70,9 +103,36 @@ function buildChanges(widget: WidgetInstance, prompt: string, focusKey: string |
     changes.title = name.charAt(0).toUpperCase() + name.slice(1);
   }
 
-  if (isChartSeriesKind(widget.kind)) {
+  const kind = effectiveKindFor(widget);
+
+  // The Custom widget's first real prompt: nothing to reconfigure yet, so this is the one place a
+  // chart *kind* itself gets decided — from what the user describes, never a predefined picker. Once
+  // `vizKind` is set here, every later prompt for this widget falls through to the same
+  // isChartSeriesKind/isMetricFamily branches every other chart kind already uses below.
+  if (widget.kind === 'custom' && kind === null) {
+    const detected = detectVizKind(lower);
+    const metricPool = detected ? seriesCatalogFor(detected) : DASHBOARD_METRICS.map((m) => ({ id: m.id, label: m.label }));
+    const matched = metricPool.filter((f) => lower.includes(f.label.toLowerCase()));
+    // "Show me spend, sales and ROAS" names metrics but never says a chart word — defaulting that
+    // case to a metric row is the same "just show me the numbers" fallback a plain-language request
+    // like that implies, rather than leaving the widget blank until the user names a chart type.
+    const vizKind = detected ?? (matched.length ? 'metricRow' : null);
+    if (vizKind) {
+      const config: Record<string, unknown> = { ...widget.config, vizKind };
+      if (vizKind === 'kpi' || vizKind === 'metricRow') {
+        config.metricIds = matched.length ? matched.slice(0, SERIES_MAX).map((f) => f.id) : [DASHBOARD_METRICS[0].id, DASHBOARD_METRICS[1].id];
+      } else if (isChartSeriesKind(vizKind)) {
+        const seed = matched.length ? matched.slice(0, SERIES_MAX) : seriesCatalogFor(vizKind).slice(0, 2);
+        config.series = seed.map((f, i) => ({ id: `s-${Date.now()}-${i}`, metricId: f.id, color: SERIES_COLORS[i % SERIES_COLORS.length] }));
+      }
+      changes.config = config;
+    }
+    return Object.keys(changes).length > 0 ? changes : null;
+  }
+
+  if (kind && isChartSeriesKind(kind)) {
     const series = chartSeries(widget.config);
-    const catalog = seriesCatalogFor(widget.kind);
+    const catalog = seriesCatalogFor(kind);
     const matchedFields = catalog.filter((f) => lower.includes(f.label.toLowerCase()));
 
     if (focusKey !== null) {
@@ -120,7 +180,7 @@ function buildChanges(widget: WidgetInstance, prompt: string, focusKey: string |
         };
       }
     }
-  } else if (isMetricFamily(widget)) {
+  } else if (kind && isMetricFamily(kind)) {
     const ids = kpiMetricIds(widget.config);
     const found = DASHBOARD_METRICS.find((m) => lower.includes(m.label.toLowerCase()));
 
@@ -144,7 +204,10 @@ function buildChanges(widget: WidgetInstance, prompt: string, focusKey: string |
   return Object.keys(changes).length > 0 ? changes : null;
 }
 
-function describeChanges(changes: Partial<WidgetInstance>): string {
+function describeChanges(widget: WidgetInstance, changes: Partial<WidgetInstance>): string {
+  if (widget.kind === 'custom' && !widget.config.vizKind && changes.config) {
+    return "Done — built it. You can keep refining it the same way, like changing what's plotted or how it's grouped.";
+  }
   const parts: string[] = [];
   if (changes.title) parts.push(`renamed it to "${changes.title}"`);
   if (changes.tone) parts.push('recolored it');
@@ -155,11 +218,14 @@ function describeChanges(changes: Partial<WidgetInstance>): string {
 /** Same Ask Jiva chat panel used in Alerts/Meetings/Work-station, scoped to editing one Brief widget (or one item inside it) instead of chatting about an alert/meeting. */
 export function WidgetAiSheet({ widget, focusKey, onClose, onApply }: Props) {
   const focusLabel = focusLabelFor(widget, focusKey);
+  const isBlankCustom = widget.kind === 'custom' && !widget.config.vizKind;
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'm0',
       from: 'jiva',
-      text: focusLabel
+      text: isBlankCustom
+        ? "Hi, I'm Jiva. Tell me what you want to see — for example \"spend vs sales by campaign intent for the last 30 days\" or \"which ASINs are losing Buy Box.\" I'll pick the data and the visualization."
+        : focusLabel
         ? `Hi, I'm Jiva. Tell me how to change the "${focusLabel}" item in "${widget.title}" — recolor it, swap what it shows, or remove it.`
         : `Hi, I'm Jiva. Tell me how to change "${widget.title}" — add or remove items, recolor it, rename it, or reassign what it shows.`,
     },
@@ -184,7 +250,7 @@ export function WidgetAiSheet({ widget, focusKey, onClose, onApply }: Props) {
       setTyping(false);
       if (changes) {
         onApply(changes);
-        setMessages((prev) => [...prev, { id: `j${Date.now()}`, from: 'jiva', text: describeChanges(changes) }]);
+        setMessages((prev) => [...prev, { id: `j${Date.now()}`, from: 'jiva', text: describeChanges(widget, changes) }]);
       } else {
         setMessages((prev) => [...prev, { id: `j${Date.now()}`, from: 'jiva', text: 'That edit is outside this local demo — try changing the color, the title, or which metric shows.' }]);
       }

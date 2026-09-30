@@ -22,11 +22,14 @@ export type WidgetKind =
   | 'keywordFunnel'
   | 'activity'
   | 'alerts'
+  | 'notifications'
+  | 'actionsInProgress'
   | 'channels'
   | 'recommendations'
   | 'topMovers'
   | 'note'
-  | 'checklist';
+  | 'checklist'
+  | 'custom';
 
 export type WidgetTone = 'default' | 'positive' | 'warning' | 'focus';
 
@@ -57,7 +60,7 @@ export interface WidgetCatalogEntry {
 
 /** Every widget shape available from "Add widget" — grouped so the picker can show one section per category. Covers the whole platform, not just Signals: rules, agents, people, keyword discovery and dayparting all have a home here. */
 export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
-  { kind: 'legacyKpiRow', title: 'Key stats', category: 'Overview', summary: 'Critical alerts, at risk, opportunity, meetings and messages — click any card for its category breakdown.' },
+  { kind: 'legacyKpiRow', title: 'Key stats', category: 'Overview', summary: 'A row of predefined stats — add or remove any from the library, click one for its category breakdown.' },
   { kind: 'legacyActivity', title: 'While you were away', category: 'Overview', summary: "Jiva's autonomous activity feed, original Brief style." },
   { kind: 'kpi', title: 'Metric card', category: 'Metrics', summary: 'A single reassignable number with trend — spend, sales, ROAS, CVR and more.' },
   { kind: 'metricRow', title: 'Metric row', category: 'Metrics', summary: 'Two or more metric cards sharing one background — drag KPI cards together to build this too.' },
@@ -77,6 +80,8 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
   { kind: 'keywordFunnel', title: 'Keyword funnel', category: 'Charts', summary: 'Search-term discovery through promotion.' },
   { kind: 'activity', title: 'Platform activity', category: 'Operations', summary: 'Rules, MCP Agents, users, keyword harvesting and dayparting changes.' },
   { kind: 'alerts', title: 'Priority alerts', category: 'Operations', summary: 'Issues that need attention this morning.' },
+  { kind: 'notifications', title: 'Notifications', category: 'Operations', summary: 'The most recent alerts across every account, newest first.' },
+  { kind: 'actionsInProgress', title: 'Actions in progress', category: 'Operations', summary: 'Work-station tasks currently being worked, with who owns each one.' },
   { kind: 'channels', title: 'Marketplace health', category: 'Commerce', summary: 'Channel revenue, efficiency and budget.' },
   { kind: 'topMovers', title: 'Top movers', category: 'Commerce', summary: 'Campaigns and SKUs moving the morning number.' },
   { kind: 'recommendations', title: 'Recommended actions', category: 'Written insight', summary: 'A prioritized operator action plan.' },
@@ -84,10 +89,26 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
   { kind: 'dailyRecap', title: 'Daily recap', category: 'Written insight', summary: "What happened today, told as a few plain sentences instead of a chip-heavy feed." },
   { kind: 'watchlist', title: 'Watchlist', category: 'Written insight', summary: 'A short list of things to keep an eye on, each with a one-line reason why.' },
   { kind: 'note', title: 'Note', category: 'Personal', summary: 'A sticky note for your own thinking.' },
-  { kind: 'checklist', title: 'Checklist', category: 'Personal', summary: 'A short to-do list for today.' },
+  { kind: 'checklist', title: 'Checklist', category: 'Personal', summary: 'Starts empty — add, complete, or delete your own to-dos.' },
 ];
 
 export const WIDGET_CATEGORY_ORDER = ['Overview', 'Metrics', 'Build your own', 'Charts', 'Operations', 'Commerce', 'Written insight', 'Personal'];
+
+/** The product-defined widgets available from "Add item" — nothing here is Jiva-editable, and the
+ * only per-widget customization is Key stats' own add/remove-a-stat controls. */
+const FIXED_WIDGET_KINDS: WidgetKind[] = ['legacyKpiRow', 'legacyActivity', 'notifications', 'actionsInProgress', 'checklist'];
+export const FIXED_WIDGET_CATALOG: WidgetCatalogEntry[] = WIDGET_CATALOG.filter((w) => FIXED_WIDGET_KINDS.includes(w.kind));
+
+/** The one and only user-defined widget kind — starts blank, and is entirely configured by telling
+ * Jiva what to show; see brief-widget-ai-sheet.tsx's handling of `config.vizKind`. */
+export const CUSTOM_WIDGET_CATALOG: WidgetCatalogEntry[] = [
+  { kind: 'custom', title: 'Custom widget', category: 'Custom', summary: 'Starts blank — tell Jiva what you want to see and it picks the data points and the visualization. No preset chart types or metrics.' },
+];
+
+/** Every other kind this system has ever supported — every chart family, KPI card and written-insight
+ * card — no longer individually addable from "Add item"; it lives pre-populated with mock data on the
+ * Component Library tab instead, as a visual reference, not a live editable widget. */
+export const COMPONENT_LIBRARY_CATALOG: WidgetCatalogEntry[] = WIDGET_CATALOG.filter((w) => !FIXED_WIDGET_KINDS.includes(w.kind));
 
 export const TONE_TINT: Record<WidgetTone, { border: string; bg: string }> = {
   default: { border: '#e6e8ec', bg: '#fff' },

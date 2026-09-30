@@ -25,35 +25,35 @@ export default function CombinedPreviewPage() {
 
       <Frame label="List + Detail — nothing selected" note="empty state shows a 5-tile 'Alerts by category' breakdown (top 5 categories by count)">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={null} alertStatusMap={{}} readAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
 
       <Frame label="Filter panel open">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel initialFilterOpen selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel initialFilterOpen selectedAlertId={null} alertStatusMap={{}} readAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
 
       <Frame label="Yesterday section collapsed" note="day-group headers (Yesterday here, Tomorrow/Earlier in Meetings) collapse via the chevron — Today always stays expanded">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel initialYesterdayCollapsed selectedAlertId={null} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel initialYesterdayCollapsed selectedAlertId={null} alertStatusMap={{}} readAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={null} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
 
       <Frame label="List + Detail — alert selected" note="the Ask Jiva entry point, brand name in the header, source-badge cluster">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={firstAlert.id} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={firstAlert.id} alertStatusMap={{}} readAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={firstAlert} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} onOpenAskJiva={noop} />
         </div>
       </Frame>
 
       <Frame label="List + Detail — no-value alert selected" note="informational alert with hideValue set — no $ figure in either the card or the detail header">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={noValueAlert.id} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={noValueAlert.id} alertStatusMap={{}} readAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={noValueAlert} phase="view" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
@@ -67,28 +67,28 @@ export default function CombinedPreviewPage() {
 
       <Frame label="Detail — executing (in progress)">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={normalAlert.id} resolvedAlertIds={new Set([normalAlert.id])} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={normalAlert.id} alertStatusMap={{ [normalAlert.id]: 'resolved' }} readAlertIds={new Set([normalAlert.id])} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={normalAlert} phase="executing" execProgress={40} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} onUndoExecute={noop} />
         </div>
       </Frame>
 
       <Frame label="Detail — executing (completed, 100%)">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={normalAlert.id} resolvedAlertIds={new Set([normalAlert.id])} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={normalAlert.id} alertStatusMap={{ [normalAlert.id]: 'resolved' }} readAlertIds={new Set([normalAlert.id])} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={normalAlert} phase="executing" execProgress={100} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} onUndoExecute={noop} />
         </div>
       </Frame>
 
       <Frame label="Detail — impact report">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={normalAlert.id} resolvedAlertIds={new Set([normalAlert.id])} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={normalAlert.id} alertStatusMap={{ [normalAlert.id]: 'resolved' }} readAlertIds={new Set([normalAlert.id])} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={normalAlert} phase="report" execProgress={100} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>
 
       <Frame label="Detail — generative review (text)">
         <div style={{ height: 760, display: 'flex', gap: 16 }}>
-          <AlertListPanel selectedAlertId={normalAlert.id} resolvedAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
+          <AlertListPanel selectedAlertId={normalAlert.id} alertStatusMap={{}} readAlertIds={new Set()} onSelectAlert={noopId} onOpenItemsForAlert={noopId} onFilteredChange={noop} />
           <AlertDetailPanel alert={normalAlert} phase="genReview" execProgress={0} onExecute={noop} onViewReport={noop} onBackToAlerts={noop} onGenReview={noop} onApproveGenReview={noop} onOpenItems={noop} itemsModalOpen={false} onCloseItems={noop} onLogAction={noop} onDismiss={noop} />
         </div>
       </Frame>

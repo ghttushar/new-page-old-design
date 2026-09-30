@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MOM_RECORDS, type MomTaskItem } from '@/constants/signals/prototype-data';
 import { AssignDropdownList, DEFAULT_ASSIGNEES } from '../alerts/assign-menu';
-import { AssignIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, ChevronDownIcon, CheckIcon, BackArrowIcon, ThumbUpIcon, ThumbDownIcon } from '../alerts/icons';
+import { AssignIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, ChevronDownIcon, CheckIcon, CloseIcon, ThumbUpIcon, ThumbDownIcon } from '../alerts/icons';
 import { STATUS_COLOR, STATUS_LABEL, StatusCircleIcon } from '../work-station/work-station-icons';
 import { EmptyAlertGraphic } from '../alerts/empty-alert-graphic';
 import { DetailFooterBar } from '../alerts/detail-footer-bar';
@@ -82,9 +82,6 @@ export function MeetingMOM({ meetingId, onGoWorkstation, onBack, initialShareOpe
     <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
     <div key={meetingId} className={`${scrollStyles.sleekScroll} ${motion.contentFadeIn}`} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f2f4' }}>
-        <span onClick={onBack} className={motion.pressable} style={{ display: 'inline-flex', marginBottom: 12, cursor: 'pointer' }}>
-          <BackArrowIcon size={18} color="#3d434b" />
-        </span>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -93,10 +90,18 @@ export function MeetingMOM({ meetingId, onGoWorkstation, onBack, initialShareOpe
             <div style={{ font: '600 18px/1.4 Inter,sans-serif', color: '#23272d', marginTop: 11 }}>{record.title}</div>
             <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#6b7178', marginTop: 5 }}>{record.dateLabel}</div>
           </div>
-          <div style={{ flex: 'none', textAlign: 'right' as const }}>
-            <div style={{ font: '600 13px/1 Inter,sans-serif', color: tasks.length > 0 && doneCount === tasks.length ? '#3f7d6a' : '#a8763f' }}>
-              {doneCount}/{tasks.length} task{tasks.length === 1 ? '' : 's'} completed
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flex: 'none' }}>
+            <div style={{ textAlign: 'right' as const }}>
+              <div style={{ font: '600 13px/1 Inter,sans-serif', color: tasks.length > 0 && doneCount === tasks.length ? '#3f7d6a' : '#a8763f' }}>
+                {doneCount}/{tasks.length} task{tasks.length === 1 ? '' : 's'} completed
+              </div>
             </div>
+            <span onClick={onBack} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: 3, borderRadius: 6 }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <CloseIcon size={15} color="#6b7178" />
+            </span>
           </div>
         </div>
       </div>

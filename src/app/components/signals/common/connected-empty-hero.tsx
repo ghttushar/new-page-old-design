@@ -107,10 +107,8 @@ function ConnectedHero() {
       <svg width="460" height="300" viewBox="0 0 460 300" style={{ position: 'absolute', inset: 0 }}>
         <ellipse className="weh-orbit-outer" cx={CENTER.x} cy={CENTER.y} rx={182} ry={108} fill="none" stroke="rgba(119,70,155,.14)" strokeWidth="1.2" strokeDasharray="1 7" />
         <ellipse className="weh-orbit-inner" cx={CENTER.x} cy={CENTER.y} rx={124} ry={70} fill="none" stroke="rgba(119,70,155,.2)" strokeWidth="1" strokeDasharray="2 5" />
-        <path d={`M72,62 C136,32 168,100 ${CENTER.x - 46},${CENTER.y - 10}`} fill="none" stroke="rgba(119,70,155,.26)" strokeWidth="1.2" />
-        <path d={`M392,54 C312,22 280,108 ${CENTER.x + 46},${CENTER.y - 8}`} fill="none" stroke="rgba(119,70,155,.26)" strokeWidth="1.2" />
-        <path d={`M56,232 C128,268 172,192 ${CENTER.x - 44},${CENTER.y + 16}`} fill="none" stroke="rgba(119,70,155,.26)" strokeWidth="1.2" />
-        <path d={`M404,224 C322,264 282,182 ${CENTER.x + 44},${CENTER.y + 14}`} fill="none" stroke="rgba(119,70,155,.26)" strokeWidth="1.2" />
+        {/* One shared ring linking all four tiles around Jiva, instead of four separate spokes converging on the center. */}
+        <ellipse cx={CENTER.x} cy={CENTER.y} rx={182} ry={108} fill="none" stroke="rgba(119,70,155,.26)" strokeWidth="1.2" />
       </svg>
 
       {/* Thin glass shard accents */}

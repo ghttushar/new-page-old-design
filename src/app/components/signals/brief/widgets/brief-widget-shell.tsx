@@ -11,10 +11,14 @@ interface Props {
   onRemove: () => void;
   /** True while another KPI widget is being dragged directly over this one — highlights it as a merge target. */
   dropTarget?: boolean;
+  /** Only the Custom widget kind gets the Jiva sparkle — every fixed widget (Key stats, While you
+   * were away, Notifications, Actions in progress, Checklist) and every Component Library reference
+   * widget is product-defined and has nothing for Jiva to edit. */
+  aiEditable?: boolean;
 }
 
-/** Chrome around every grid cell — drag handle, editable title, "Edit with AI" sparkle, and a remove menu. Only the grip icon is the drag handle, so title editing and the buttons don't fight the grid's own drag-start. */
-export function WidgetShell({ widget, children, onTitleChange, onEditWithAi, onRemove, dropTarget }: Props) {
+/** Chrome around every grid cell — drag handle, editable title, an optional "Edit with AI" sparkle, and a remove menu. Only the grip icon is the drag handle, so title editing and the buttons don't fight the grid's own drag-start. */
+export function WidgetShell({ widget, children, onTitleChange, onEditWithAi, onRemove, dropTarget, aiEditable = false }: Props) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const tint = TONE_TINT[widget.tone ?? 'default'];
@@ -49,16 +53,18 @@ export function WidgetShell({ widget, children, onTitleChange, onEditWithAi, onR
             {widget.title}
           </span>
         )}
-        <span
-          onClick={onEditWithAi}
-          className={motion.pressable}
-          title="Edit with AI"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 23, height: 23, borderRadius: 6, cursor: 'pointer', flex: 'none' }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#f3eefa')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-        >
-          <SparkleIcon size={13} color="#5f3880" />
-        </span>
+        {aiEditable && (
+          <span
+            onClick={onEditWithAi}
+            className={motion.pressable}
+            title="Edit with AI"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 23, height: 23, borderRadius: 6, cursor: 'pointer', flex: 'none' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#f3eefa')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <SparkleIcon size={13} color="#5f3880" />
+          </span>
+        )}
         <span style={{ position: 'relative', flex: 'none' }}>
           <span
             onClick={() => setMenuOpen((v) => !v)}

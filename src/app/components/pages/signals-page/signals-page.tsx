@@ -18,7 +18,7 @@ import { AccountFilterDropdown } from '../../signals/common/account-filter-dropd
 import { AlertsCollapsedSliver } from '../../signals/alerts/alerts-collapsed-rail';
 import { MeetingsCollapsedRail } from '../../signals/meetings/meetings-collapsed-rail';
 import { ResizeHandle, useResizableColumn } from '../../signals/common/resizable-column';
-import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, MEETING_LIST, type LoggedActionItem, type MpBrand } from '@/constants/signals/prototype-data';
+import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, MEETING_LIST, type LoggedActionItem, type MpBrand, type AlertStatus } from '@/constants/signals/prototype-data';
 import DiamondMascot from '../../common/diamond-mascot/diamond-mascot';
 import motion from '../../signals/alerts/motion.module.scss';
 
@@ -38,7 +38,11 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
   const [execProgress, setExecProgress] = useState(0);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
   const [loggedActions, setLoggedActions] = useState<LoggedActionItem[]>([]);
-  const [resolvedAlertIds, setResolvedAlertIds] = useState<Set<string>>(new Set());
+  // Today's list opens with a representative mix of states instead of every card looking identical —
+  // 2nd card (a2) already read, 3rd (a3) in progress, 4th (a5) resolved, 5th (a6) explicitly needs
+  // attention (the plain/default badge, not in progress).
+  const [alertStatusMap, setAlertStatusMap] = useState<Record<string, AlertStatus>>({ a3: 'in_progress', a5: 'resolved', a6: 'needs_attention' });
+  const [readAlertIds, setReadAlertIds] = useState<Set<string>>(new Set(['a2']));
   const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
   const [askJivaOpen, setAskJivaOpen] = useState(false);
   const [globalJivaOpen, setGlobalJivaOpen] = useState(false);
@@ -77,7 +81,17 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
 
   const markResolved = useCallback((id: string | null) => {
     if (!id) return;
-    setResolvedAlertIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+    setAlertStatusMap((prev) => (prev[id] === 'resolved' ? prev : { ...prev, [id]: 'resolved' }));
+  }, []);
+
+  const markInProgress = useCallback((id: string | null) => {
+    if (!id) return;
+    setAlertStatusMap((prev) => (prev[id] === 'in_progress' ? prev : { ...prev, [id]: 'in_progress' }));
+  }, []);
+
+  const markAlertRead = useCallback((id: string | null) => {
+    if (!id) return;
+    setReadAlertIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }, []);
 
   const toggleFilterMarketplace = useCallback((m: MpBrand) => {
@@ -113,7 +127,8 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     setSelectedAlertId(id);
     setAlertPhase('view');
     setAskJivaOpen(false);
-  }, []);
+    markAlertRead(id);
+  }, [markAlertRead]);
 
   const openMeeting = useCallback((id: string) => {
     setSelectedMeetingId(id);
@@ -123,21 +138,23 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
   const executeTimerRef = useRef<number | null>(null);
 
   const handleExecute = useCallback(() => {
-    markResolved(selectedAlertId);
+    markInProgress(selectedAlertId);
     setAlertPhase('executing');
     setExecProgress(0);
+    const id = selectedAlertId;
     const timer = window.setInterval(() => {
       setExecProgress((prev) => {
         const next = Math.min(100, prev + 20);
         if (next >= 100) {
           window.clearInterval(timer);
           executeTimerRef.current = null;
+          markResolved(id);
         }
         return next;
       });
     }, 650);
     executeTimerRef.current = timer;
-  }, [selectedAlertId, markResolved]);
+  }, [selectedAlertId, markInProgress, markResolved]);
 
   const handleUndoExecute = useCallback(() => {
     if (executeTimerRef.current !== null) {
@@ -146,10 +163,10 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
     }
     setAlertPhase('view');
     setExecProgress(0);
-    setResolvedAlertIds((prev) => {
-      if (!selectedAlertId || !prev.has(selectedAlertId)) return prev;
-      const next = new Set(prev);
-      next.delete(selectedAlertId);
+    setAlertStatusMap((prev) => {
+      if (!selectedAlertId || !(selectedAlertId in prev)) return prev;
+      const next = { ...prev };
+      delete next[selectedAlertId];
       return next;
     });
   }, [selectedAlertId]);
@@ -240,9 +257,10 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
                       {alertsHovering ? (
                         <AlertListPanel
                           selectedAlertId={selectedAlertId}
-                          resolvedAlertIds={resolvedAlertIds}
-                          onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
-                          onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
+                          alertStatusMap={alertStatusMap}
+                          readAlertIds={readAlertIds}
+                          onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); markAlertRead(id); }}
+                          onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); markAlertRead(id); }}
                           onFilteredChange={setFilteredAlertIds}
                           applyCategoryFilter={applyCategoryFilter}
                           width={alertsListCol.width}
@@ -260,9 +278,10 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
               ) : (
                 <AlertListPanel
                   selectedAlertId={selectedAlertId}
-                  resolvedAlertIds={resolvedAlertIds}
-                  onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); }}
-                  onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); }}
+                  alertStatusMap={alertStatusMap}
+                  readAlertIds={readAlertIds}
+                  onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); markAlertRead(id); }}
+                  onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); markAlertRead(id); }}
                   onFilteredChange={setFilteredAlertIds}
                   applyCategoryFilter={applyCategoryFilter}
                   width={alertsListCol.width}

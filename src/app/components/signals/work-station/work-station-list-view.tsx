@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import type { WorkstationTask } from '@/constants/signals/prototype-data';
+import { PROTOTYPE_ALERTS, type WorkstationTask } from '@/constants/signals/prototype-data';
 import { Avatar } from '../alerts/assign-menu';
-import { ChevronDownIcon, BellIcon, CheckIcon } from '../alerts/icons';
+import { ChevronDownIcon, BellIcon, MoreVertIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from '../alerts/icons';
+import { formatAlertValue } from '../alerts/format-money';
 import { HoverTip } from '../alerts/hover-tip';
 import { StatusCircleIcon, OriginGlyph, ContextSourceStack, STATUS_COLOR, STATUS_LABEL } from './work-station-icons';
 import motion from '../alerts/motion.module.scss';
@@ -11,9 +12,28 @@ export function isDelegated(task: WorkstationTask): boolean {
   return task.createdBy === 'You' && task.assignee !== 'You' && task.assignee !== 'Unassigned';
 }
 
-function TaskRow({ task, selected, onSelect, onCycleStatus, onRemind }: { task: WorkstationTask; selected: boolean; onSelect: () => void; onCycleStatus: () => void; onRemind: () => void }) {
+/** The corner dot is a "there's a new notification on this" badge, not a read/unread marker (the
+ * title's bold/light weight already covers that) — so it's a stable-but-scattered pick across
+ * cards, roughly a third of them, rather than tied to any real per-task state. */
+function hasNotificationBadge(id: string): boolean {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) % 997;
+  return hash % 3 === 0;
+}
+
+function MenuItem({ icon, label, onClick }: { icon?: React.ReactNode; label: string; onClick: () => void }) {
+  return (
+    <div onClick={onClick} className={motion.rowHover} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 6, cursor: 'pointer', font: '500 12px/1 Inter,sans-serif', color: '#3d434b' }}>
+      {icon}{label}
+    </div>
+  );
+}
+
+function TaskRow({ task, selected, unread, onSelect, onCycleStatus, onRemind }: { task: WorkstationTask; selected: boolean; unread: boolean; onSelect: () => void; onCycleStatus: () => void; onRemind: () => void }) {
   const done = task.status === 'done';
-  const [justReminded, setJustReminded] = useState(false);
+  const linkedAlert = task.origin === 'alert' && task.alertId ? PROTOTYPE_ALERTS.find((a) => a.id === task.alertId) : undefined;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuMode, setMenuMode] = useState<'main' | 'share'>('main');
   return (
     <div
       onClick={onSelect}
@@ -26,6 +46,7 @@ function TaskRow({ task, selected, onSelect, onCycleStatus, onRemind }: { task: 
         opacity: done ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out',
       }}
     >
+      {hasNotificationBadge(task.id) && <span title="New notification" style={{ position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#77469b', boxShadow: '0 0 0 2px #fff' }} />}
       <div>
         {/* Top line — status, assignee, context inline on the left (dividers matching the Alerts badge row), due date pinned right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -42,27 +63,44 @@ function TaskRow({ task, selected, onSelect, onCycleStatus, onRemind }: { task: 
             {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={17} /> : <OriginGlyph origin={task.origin} size={14} />}
           </span>
           <span style={{ marginLeft: 'auto', font: '600 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#9aa0a8'), flex: 'none' }}>{task.due}</span>
-          {isDelegated(task) && !done && (
-            <HoverTip label={justReminded ? 'Reminder sent' : `Remind ${task.assignee}`}>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (justReminded) return;
-                  onRemind();
-                  setJustReminded(true);
-                  setTimeout(() => setJustReminded(false), 2200);
-                }}
-                className={motion.pressable}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 6, marginLeft: 8, cursor: justReminded ? 'default' : 'pointer', flex: 'none', background: justReminded ? '#eef6f3' : 'transparent', transition: 'background 140ms ease-out' }}
-              >
-                {justReminded ? <CheckIcon size={11} color="#3f7d6a" /> : <BellIcon size={13} color="#9aa0a8" />}
-              </span>
-            </HoverTip>
-          )}
+          <span style={{ position: 'relative', flex: 'none' }}>
+            <span
+              onClick={(e) => { e.stopPropagation(); setMenuMode('main'); setMenuOpen((v) => !v); }}
+              className={motion.pressable}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 6, marginLeft: 8, cursor: 'pointer' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <MoreVertIcon size={13} />
+            </span>
+            {menuOpen && (
+              <div className={motion.popIn} style={{ position: 'absolute', right: 0, top: 26, width: 190, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
+                {menuMode === 'main' && (
+                  <>
+                    {isDelegated(task) && !done && (
+                      <MenuItem icon={<BellIcon size={13} />} label={`Remind ${task.assignee}`} onClick={() => { onRemind(); setMenuOpen(false); }} />
+                    )}
+                    <MenuItem icon={<ShareIcon size={13} />} label="Share" onClick={() => setMenuMode('share')} />
+                  </>
+                )}
+                {menuMode === 'share' && (
+                  <>
+                    <div style={{ padding: '6px 10px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Share via</div>
+                    <MenuItem icon={<EnvelopeSmallIcon size={12} />} label="Email" onClick={() => setMenuOpen(false)} />
+                    <MenuItem icon={<WorkspaceSmallIcon size={12} />} label="Workspace" onClick={() => setMenuOpen(false)} />
+                    <div onClick={() => setMenuMode('main')} style={{ padding: '8px 10px 4px', font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>← Back</div>
+                  </>
+                )}
+              </div>
+            )}
+          </span>
         </div>
 
-        {/* Full title, own line — never truncated */}
-        <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 9 }}>
+        {/* Full title, own line — never truncated. Alert-origin tasks lead with the alert's $ value, folded into the title itself rather than a separate badge. */}
+        <div style={{ font: `${unread ? 700 : 500} 14px/1.35 Inter,sans-serif`, color: unread ? '#23272d' : '#6b7178', marginTop: 9 }}>
+          {linkedAlert && !linkedAlert.hideValue && (
+            <span style={{ color: linkedAlert.valueNum < 0 ? '#b3453f' : '#1e8449' }}>{formatAlertValue(linkedAlert.valueNum)}{' '}</span>
+          )}
           {task.text}
         </div>
       </div>
@@ -89,11 +127,13 @@ function GroupHeader({ label, count, active, onClick }: { label: string; count: 
   );
 }
 
-export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, selectedId, onSelect, onCycleStatus, onRemind, initialActiveGroup = 'to-me' }: {
+export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, selectedId, readTaskIds, onSelect, onCycleStatus, onRemind, initialActiveGroup = 'to-me' }: {
   assignedToMe: WorkstationTask[];
   unassigned: WorkstationTask[];
   assignedByMe: WorkstationTask[];
   selectedId: string | null;
+  /** Tasks the user has opened at least once — undots the row. */
+  readTaskIds: Set<string>;
   onSelect: (id: string) => void;
   onCycleStatus: (id: string) => void;
   onRemind: (id: string) => void;
@@ -125,7 +165,7 @@ export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, se
               <div style={{ margin: '10px 14px 4px', padding: '10px 14px', border: '1px dashed #e6e8ec', borderRadius: 9, font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>{g.emptyText}</div>
             )}
             {g.tasks.map((t) => (
-              <TaskRow key={t.id} task={t} selected={selectedId === t.id} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} onRemind={() => onRemind(t.id)} />
+              <TaskRow key={t.id} task={t} selected={selectedId === t.id} unread={!readTaskIds.has(t.id)} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} onRemind={() => onRemind(t.id)} />
             ))}
           </div>
         </div>

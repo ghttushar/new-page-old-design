@@ -405,7 +405,10 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               </div>
               {getDisplayItems(sel).slice(0, 4).map((it, i) => (
                 <div key={i} style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 11, borderBottom: '1px solid #f1f2f4' }}>
-                  <span style={{ flex: 1, minWidth: 0, font: '400 12px/1.4 Inter,sans-serif', color: '#464646', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{it.name}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{it.name}</div>
+                    <div style={{ font: '400 10.5px/1.4 Inter,sans-serif', color: '#9aa0a8', marginTop: 1 }}>ASIN {it.sku}</div>
+                  </div>
                   <span style={{ font: '600 12px/1 Inter,sans-serif', color: it.color, flex: 'none' }}>{it.impact}</span>
                 </div>
               ))}

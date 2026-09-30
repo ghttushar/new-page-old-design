@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption } from '@/constants/signals/prototype-data';
+import { createPortal } from 'react-dom';
+import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption, type AlertStatus } from '@/constants/signals/prototype-data';
 import { formatAlertValue } from './format-money';
 import { AlertBadgeRow } from './alert-badge-row';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD, Avatar } from './assign-menu';
@@ -10,7 +11,9 @@ import rowStyles from './alert-row.module.scss';
 
 interface Props {
   selectedAlertId: string | null;
-  resolvedAlertIds: Set<string>;
+  alertStatusMap: Record<string, AlertStatus>;
+  /** Alerts the user has opened at least once — undots the row. */
+  readAlertIds: Set<string>;
   onSelectAlert: (id: string) => void;
   onOpenItemsForAlert: (id: string) => void;
   /** Called whenever the active search/filter changes, so a consumer (e.g. Speed Mode) can cycle only through what's currently shown here. */
@@ -26,7 +29,7 @@ interface Props {
   applyCategoryFilter?: { category: string; nonce: number } | null;
 }
 
-export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, width, applyCategoryFilter = null }: Props) {
+export function AlertListPanel({ selectedAlertId, alertStatusMap, readAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, width, applyCategoryFilter = null }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -168,7 +171,8 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
               <span style={{ font: '400 10px/1 Inter,sans-serif', color: '#6b7178' }}>{todayAlerts.length} alert{todayAlerts.length === 1 ? '' : 's'}</span>
             </div>
             {todayAlerts.map((al) => (
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
+              // a7 (today's 6th card) is pinned to always look selected, independent of which alert is actually open — a deliberate always-highlighted default, not a real selection.
+              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id || al.id === 'a7'} status={alertStatusMap[al.id] ?? 'needs_attention'} unread={!readAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
             ))}
           </>
         )}
@@ -190,7 +194,7 @@ export function AlertListPanel({ selectedAlertId, resolvedAlertIds, onSelectAler
             <div className={`${motion.accordionRow} ${!yesterdayCollapsed ? motion.accordionRowOpen : ''}`}>
               <div>
                 {yesterdayAlerts.map((al) => (
-                  <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id} resolved={resolvedAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
+                  <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id || al.id === 'a7'} status={alertStatusMap[al.id] ?? 'needs_attention'} unread={!readAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
                 ))}
               </div>
             </div>
@@ -226,8 +230,8 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
 }
 
 
-function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign, assignedTo, onAssign }: {
-  al: PrototypeAlert; selected: boolean; resolved: boolean; onSelect: () => void; onOpenItems: () => void;
+function AlertRow({ al, selected, status, unread, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign, assignedTo, onAssign }: {
+  al: PrototypeAlert; selected: boolean; status: AlertStatus; unread: boolean; onSelect: () => void; onOpenItems: () => void;
   menuFor: string | null; setMenuFor: (id: string | null) => void;
   menuMode: 'main' | 'share' | 'assign'; setMenuMode: (m: 'main' | 'share' | 'assign') => void;
   requestAssign: (al: PrototypeAlert) => void;
@@ -236,17 +240,41 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
 }) {
   const isOpen = menuFor === al.id;
   const assignOpen = isOpen && menuMode === 'assign';
+  const resolved = status === 'resolved';
+  // "Assign to" can run to 4-15 names (search + list), tall enough to spill past a short card's own
+  // height — anchored purely via `position:absolute` inside the card that opened it, it would render
+  // on top of whatever card happens to sit below instead of floating cleanly above everything, and
+  // clicking outside it did nothing (no backdrop) so it could get stuck open. Portaling it to
+  // document.body — same fix already used for the Brief key-stat card's edit popover — solves both.
+  const [assignAnchor, setAssignAnchor] = useState<DOMRect | null>(null);
+  const openAssign = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (assignOpen) { setMenuFor(null); return; }
+    setAssignAnchor(e.currentTarget.getBoundingClientRect());
+    requestAssign(al);
+  };
   return (
     <div className={`${rowStyles.alertCard} ${motion.cardHover}`} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
-      {resolved && (
+      {status === 'resolved' && (
         <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#eef6f3', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#3f7d6a' }}>
           <CheckIcon size={8} color="#3f7d6a" /> Resolved
+        </span>
+      )}
+      {status === 'in_progress' && (
+        <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#f3ecfa', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#77469b' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#77469b' }} /> In progress
+        </span>
+      )}
+      {/* Only a6 (today's 5th card) shows the "Needs attention" badge — every other default-state card stays badge-less, same as before. */}
+      {status === 'needs_attention' && al.id === 'a6' && (
+        <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#fdf3e0', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#a8763f' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a8763f' }} /> Needs attention
         </span>
       )}
       <div style={{ position: 'absolute', right: 12, top: 12, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         {assignedTo ? (
           <span
-            onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
+            onClick={openAssign}
             className={motion.pressable}
             style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer' }}
           >
@@ -254,7 +282,7 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           </span>
         ) : (
           <span
-            onClick={(e) => { e.stopPropagation(); if (assignOpen) setMenuFor(null); else requestAssign(al); }}
+            onClick={openAssign}
             className={motion.pressable}
             style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6b7178', cursor: 'pointer' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f4fa')}
@@ -273,10 +301,12 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
           <MoreVertIcon size={13} />
         </span>
       </div>
-      <div onClick={onSelect} style={{ marginTop: resolved ? 20 : 0 }}>
-        {!al.hideValue && (
-          <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>
-        )}
+      <div onClick={onSelect} style={{ marginTop: status !== 'needs_attention' || al.id === 'a6' ? 20 : 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {!al.hideValue && (
+            <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>
+          )}
+        </div>
         <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#8a919b', marginTop: al.hideValue ? 0 : 4 }}>
           {al.impactStr}
           {al.itemsCount > 1 && (
@@ -292,12 +322,12 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
             </>
           )}
         </div>
-        <div style={{ font: '600 14px/1.35 Inter,sans-serif', color: '#23272d', marginTop: 6, paddingRight: 56, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
+        <div style={{ font: `${unread ? 700 : 500} 14px/1.35 Inter,sans-serif`, color: unread ? '#23272d' : '#6b7178', marginTop: 6, paddingRight: 56, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{al.title}</div>
       </div>
       <div style={{ marginTop: 11 }}>
         <AlertBadgeRow al={al} size={20} />
       </div>
-      {isOpen && (
+      {isOpen && menuMode !== 'assign' && (
         <div className={motion.popIn} style={{ position: 'absolute', right: 10, top: 40, width: 200, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 40 }} onClick={(e) => e.stopPropagation()}>
           {menuMode === 'main' && (
             <>
@@ -314,13 +344,27 @@ function AlertRow({ al, selected, resolved, onSelect, onOpenItems, menuFor, setM
               <div onClick={() => setMenuMode('main')} style={{ padding: '8px 10px 4px', font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>← Back</div>
             </>
           )}
-          {menuMode === 'assign' && (
-            <>
-              <div style={{ padding: '6px 10px 2px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Assign to</div>
-              <AssignDropdownList assignees={al.assignees ?? DEFAULT_ASSIGNEES} onSelect={(a) => { onAssign(al.id, a); setMenuFor(null); }} />
-            </>
-          )}
         </div>
+      )}
+      {assignOpen && assignAnchor && createPortal(
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onClick={() => setMenuFor(null)} />
+          <div
+            className={motion.popIn}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              top: Math.min(assignAnchor.bottom + 6, window.innerHeight - 280),
+              left: Math.max(8, Math.min(assignAnchor.right - 220, window.innerWidth - 220 - 8)),
+              width: 220, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9,
+              boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 240,
+            }}
+          >
+            <div style={{ padding: '6px 10px 2px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Assign to</div>
+            <AssignDropdownList assignees={al.assignees ?? DEFAULT_ASSIGNEES} onSelect={(a) => { onAssign(al.id, a); setMenuFor(null); }} />
+          </div>
+        </>,
+        document.body,
       )}
     </div>
   );

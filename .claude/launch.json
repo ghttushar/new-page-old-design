@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "anarix-ui",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "anarix-ui"],
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["node_modules/nx/bin/nx.js", "serve", "anarix-ui"],
       "port": 4200,
       "autoPort": true
     }

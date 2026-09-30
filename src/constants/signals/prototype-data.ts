@@ -1,4 +1,9 @@
+import { EXTRA_ALERTS_A } from './prototype-data-extra-alerts-a';
+import { EXTRA_ALERTS_B } from './prototype-data-extra-alerts-b';
+
 export type AlertPriority = 'High' | 'Medium' | 'Low';
+/** Where an alert sits in its lifecycle — kept externally (not a field on `PrototypeAlert`) since it's user/session state, not source data. Absent = 'needs_attention'. */
+export type AlertStatus = 'needs_attention' | 'in_progress' | 'resolved';
 export type AlertDay = 'today' | 'yesterday';
 export type MpBrand = 'amazon' | 'walmart';
 export type AlertSource = 'anarix' | 'jiva' | 'meeting' | 'email' | 'slack' | 'workspace';
@@ -1639,6 +1644,9 @@ export const PROTOTYPE_ALERTS: PrototypeAlert[] = [
       { id: 'other', kind: 'OTHER', label: 'Do something else', desc: 'Write your own action.', isOther: true },
     ],
   },
+  // --- Extracted verbatim from the Inventory + Listings alert-reasoning PDFs ---
+  ...EXTRA_ALERTS_A,
+  ...EXTRA_ALERTS_B,
 ];
 
 export interface BriefingAlert {
@@ -1713,6 +1721,8 @@ export interface WorkstationTask {
   priority: TaskPriority;
   /** Channels that raised/discussed this task — rendered as the same overlapping badge stack as the Alerts row. Falls back to a single origin badge when omitted. */
   contextSources?: ('email' | 'slack' | 'meeting')[];
+  /** Free-text notes the creator typed in manually — shown in the Context section as plain notes when there's no linked channel/alert/meeting to synthesize a card from instead. */
+  contextNotes?: string[];
   /** Display name of who the task is for. 'You' is the current user, 'Unassigned' if nobody yet. */
   assignee: string;
   /** id into DEFAULT_ASSIGNEES, for avatar lookup — omitted for external/unassigned people. */
@@ -1788,6 +1798,34 @@ export const WORKSTATION_TASKS: WorkstationTask[] = [
     priority: 'Low',
     assignee: 'Unassigned', createdBy: 'You', due: '8 Nov', overdue: false, status: 'open', origin: 'meeting', meetingId: 'm2', meetingLabel: 'QBR preparation call',
     logs: [{ time: '2 days ago', text: 'Created from QBR preparation call', by: 'Jiva' }],
+  },
+  {
+    id: 't9', text: 'Revert bullet points on the 14 flagged Nutrabay ASINs and confirm re-index',
+    description: "A 28 Oct catalogue push replaced bullet copy on 14 ASINs and cut conversion from 9.1% to 6.4%, costing about $7,940 so far and repeating for a 3rd day running. Assigned to Mike to revert to the 27 Oct version and request a re-index.",
+    priority: 'High',
+    assignee: 'Mike Torres', assigneeId: 'mike', createdBy: 'You', due: 'Today', dueColor: '#b3453f', overdue: false, status: 'in_progress', origin: 'alert', alertId: 'a1',
+    logs: [
+      { time: '3 hours ago', text: 'Created from alert: Net profit down 12% across 14 ASINs', by: 'Jiva' },
+      { time: '3 hours ago', text: 'You assigned this alert to Mike Torres', by: 'You' },
+      { time: '40 minutes ago', text: 'Started reverting bullet copy on the first 6 ASINs', by: 'Mike Torres' },
+    ],
+  },
+  {
+    id: 't10', text: 'Draft new bullet copy for the 6 under-performing hero ASINs',
+    description: 'These 6 Nutrabay listings draw strong traffic but convert well below category median because the copy has never been revised against search data. Assigned to Sarah to draft new bullets from the winning keyword set — worth about $5,300/month.',
+    priority: 'Medium',
+    assignee: 'Sarah Kim', assigneeId: 'sarah', createdBy: 'You', due: '2 Nov', overdue: false, status: 'open', origin: 'alert', alertId: 'a2',
+    logs: [
+      { time: 'Yesterday', text: 'Created from alert: Bullet copy is under-performing on 6 hero ASINs', by: 'Jiva' },
+      { time: 'Yesterday', text: 'You assigned this alert to Sarah Kim', by: 'You' },
+    ],
+  },
+  {
+    id: 't11', text: 'Pause the 24 spend-spike campaigns and restore the Nutrabay budget cap',
+    description: 'An automation rule dropped its own daily budget cap overnight, tripling ad spend across 24 Walmart campaigns with no matching sales lift — about $128.4K at risk. Pausing the affected campaigns now stops further loss.',
+    priority: 'High',
+    assignee: 'You', assigneeId: 'self', createdBy: 'You', due: 'Today', dueColor: '#b3453f', overdue: false, status: 'open', origin: 'alert', alertId: 'a8',
+    logs: [{ time: '2 hours ago', text: 'Created from alert: Ad spend spike', by: 'Jiva' }],
   },
 ];
 
