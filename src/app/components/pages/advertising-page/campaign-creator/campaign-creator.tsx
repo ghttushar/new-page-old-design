@@ -1,169 +1,177 @@
-import { useState } from 'react';
-import PrimaryButton from '@/app/components/common/primary-button/primary-button';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import useSubHeader from '@/hooks/use-sub-header.hook';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
-import useSubHeader from '@/hooks/use-sub-header.hook';
-import { CampaignCreatorStepper } from './campaign-creator-stepper';
-import { ArrowRightIcon } from './campaign-creator-icons';
-import { StepCreation } from './steps/step-creation';
-import { StepObjectives } from './steps/step-objectives';
-import { StepPreview } from './steps/step-preview';
-import { StepProducts } from './steps/step-products';
-import { StepRules } from './steps/step-rules';
-import { StepSetup } from './steps/step-setup';
-import { StepStructure } from './steps/step-structure';
-import { StepTargeting } from './steps/step-targeting';
-import { CcDraft, CcMarketplace, CcStepId, EMPTY_DRAFT, isStructureAvailable, selectedProducts, structureCounts } from './campaign-creator.types';
-import styles from './campaign-creator.module.scss';
+import {
+  EMPTY_DRAFT, MARKETPLACE_CAPABILITY, flattenProducts, productsFor, structureCounts, validateCampaignLimit,
+  type CcDraft, type CcStepId,
+} from './campaign-creator.types';
+import { WizardStepper } from './campaign-creator-ui';
+import CampaignSummaryBar from './campaign-summary-bar';
+import StepEntry from './steps/step-entry';
+import StepProducts from './steps/step-products';
+import StepObjectives from './steps/step-objectives';
+import StepTargeting from './steps/step-targeting';
+import StepStructure from './steps/step-structure';
+import JivaStructurePanel from './steps/jiva-structure-panel';
+import StepPreview from './steps/step-preview';
+import StepCreating from './steps/step-creating';
+import StepResult from './steps/step-result';
 
-const ALL_STEPS: { id: CcStepId; label: string }[] = [
-  { id: 'setup', label: 'Setup' },
+const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
   { id: 'products', label: 'Products' },
   { id: 'objectives', label: 'Objectives' },
   { id: 'targeting', label: 'Targeting' },
   { id: 'structure', label: 'Structure' },
-  { id: 'rules', label: 'Rules' },
   { id: 'preview', label: 'Preview' },
-  { id: 'result', label: 'Create & Result' },
 ];
-
-function validateStep(draft: CcDraft, stepId: CcStepId): string[] {
-  const products = selectedProducts(draft);
-  switch (stepId) {
-    case 'setup':
-      return draft.marketplace ? [] : ['Choose a marketplace to continue.'];
-    case 'products':
-      return draft.selectedProductIds.length === 0 ? [`Select at least one ${draft.marketplace === 'walmart' ? 'item' : 'product'}.`] : [];
-    case 'objectives': {
-      const errs: string[] = [];
-      if (!draft.targetAcos.trim()) errs.push('Target ACOS is required.');
-      if (!draft.dailyBudget.trim()) errs.push('Daily budget is required.');
-      return errs;
-    }
-    case 'targeting':
-      return draft.targetingStrategies.length === 0 ? ['Select at least one targeting strategy.'] : [];
-    case 'structure': {
-      if (!draft.structure) return ['Select a campaign structure to continue.'];
-      if (!isStructureAvailable(draft.structure, draft, products)) return ['The selected structure exceeds the account campaign limit — choose another structure.'];
-      return [];
-    }
-    default:
-      return [];
-  }
-}
-
-const PRE_PREVIEW_STEPS: CcStepId[] = ['setup', 'products', 'objectives', 'targeting', 'structure'];
 
 export default function CampaignCreator() {
   useSubHeader(PageTitleEnum.CAMPAIGN_CREATOR, PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR);
-  const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
-  const [activeStepId, setActiveStepId] = useState<CcStepId>('setup');
+
+  const [step, setStep] = useState<CcStepId>('entry');
   const [furthestIndex, setFurthestIndex] = useState(0);
-  const [showErrors, setShowErrors] = useState(false);
+  const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
+  const [jivaOpen, setJivaOpen] = useState(false);
 
-  const activeIndex = ALL_STEPS.findIndex((s) => s.id === activeStepId);
-  const errors = validateStep(draft, activeStepId);
-  const products = selectedProducts(draft);
+  // Pin the wizard to the viewport so the footer always sits at the bottom, whatever the step's content height.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [rootHeight, setRootHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (rootRef.current) setRootHeight(Math.max(420, window.innerHeight - rootRef.current.getBoundingClientRect().top));
+    };
+    measure();
+    // The page chrome (sub-header) mounts after this component, shifting our top edge — re-measure once it settles.
+    const timers = [60, 250, 800].map((ms) => window.setTimeout(measure, ms));
+    window.addEventListener('resize', measure);
+    return () => { timers.forEach(window.clearTimeout); window.removeEventListener('resize', measure); };
+  }, []);
 
-  function update(patch: Partial<CcDraft>) {
-    setDraft((d) => ({ ...d, ...patch }));
+  const update = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...patch }));
+
+  const products = useMemo(() => (draft.marketplace ? productsFor(draft.marketplace) : []), [draft.marketplace]);
+  const selectedProducts = useMemo(() => flattenProducts(products).filter((p) => draft.productIds.includes(p.id)), [products, draft.productIds]);
+
+  const manualTypesCount = draft.targetingStrategies.filter((s) => s !== 'auto').length;
+  const hasAuto = draft.targetingStrategies.includes('auto');
+  const campaignLimit = draft.marketplace ? MARKETPLACE_CAPABILITY[draft.marketplace].campaignLimit : 1000;
+  const counts = draft.structureId && draft.structureId !== 'custom'
+    ? structureCounts(draft.structureId, selectedProducts.length, hasAuto, manualTypesCount)
+    : null;
+  const limitCheck = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
+
+  function goTo(id: CcStepId) {
+    setJivaOpen(false);
+    setStep(id);
+  }
+  function advance(id: CcStepId) {
+    const idx = NUMBERED_STEPS.findIndex((s) => s.id === id);
+    if (idx >= 0) setFurthestIndex((prev) => Math.max(prev, idx));
+    setJivaOpen(false);
+    setStep(id);
   }
 
-  function goToStep(id: CcStepId) {
-    setActiveStepId(id);
-    setShowErrors(false);
-  }
-
-  function handleNext() {
-    if (errors.length > 0) { setShowErrors(true); return; }
-    setShowErrors(false);
-    const nextIndex = activeIndex + 1;
-    setFurthestIndex((f) => Math.max(f, nextIndex));
-    setActiveStepId(ALL_STEPS[nextIndex].id);
-  }
-
-  function handleBack() {
-    setShowErrors(false);
-    setActiveStepId(ALL_STEPS[Math.max(0, activeIndex - 1)].id);
-  }
-
-  function handleCreate() {
-    const allErrors = PRE_PREVIEW_STEPS.flatMap((id) => validateStep(draft, id));
-    if (allErrors.length > 0) { setShowErrors(true); return; }
-    setFurthestIndex((f) => Math.max(f, ALL_STEPS.length - 1));
-    setActiveStepId('result');
-  }
-
-  function restart() {
-    setDraft(EMPTY_DRAFT);
-    setActiveStepId('setup');
-    setFurthestIndex(0);
-    setShowErrors(false);
-  }
-
-  const previewErrors = activeStepId === 'preview' ? PRE_PREVIEW_STEPS.flatMap((id) => validateStep(draft, id)) : [];
+  const numberedIndex = NUMBERED_STEPS.findIndex((s) => s.id === step);
 
   return (
-    <div className={styles.page}>
-      <div className={styles.body}>
-        <CampaignCreatorStepper steps={ALL_STEPS} activeStepId={activeStepId} furthestIndex={furthestIndex} onSelect={(id) => goToStep(id as CcStepId)} />
+    <div ref={rootRef} style={{ height: rootHeight ?? '100%', display: 'flex', flexDirection: 'column', background: '#fafbfd' }}>
+      {numberedIndex >= 0 && (
+        <WizardStepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} />
+      )}
 
-        <div className={styles.content}>
-          <div className={styles.contentScroll}>
-            {activeStepId === 'setup' && (
-              <StepSetup
-                marketplace={draft.marketplace}
-                onSelectMarketplace={(marketplace: CcMarketplace) => update({ marketplace, selectedProductIds: [], grouping: null, structure: null, jivaTree: null })}
-                onStart={handleNext}
-              />
-            )}
-            {activeStepId === 'products' && <StepProducts draft={draft} update={update} showErrors={showErrors} />}
-            {activeStepId === 'objectives' && <StepObjectives draft={draft} update={update} showErrors={showErrors} />}
-            {activeStepId === 'targeting' && <StepTargeting draft={draft} update={update} showErrors={showErrors} />}
-            {activeStepId === 'structure' && <StepStructure draft={draft} update={update} showErrors={showErrors} />}
-            {activeStepId === 'rules' && <StepRules draft={draft} update={update} />}
-            {activeStepId === 'preview' && <StepPreview draft={draft} update={update} onEdit={goToStep} errors={previewErrors} />}
-            {activeStepId === 'result' && <StepCreation draft={draft} onRestart={restart} />}
+      {numberedIndex >= 0 && (
+        <CampaignSummaryBar draft={draft} selectedProducts={selectedProducts} stepIndex={numberedIndex} totalCampaigns={draft.structureId === 'custom' ? (draft.customCampaigns?.length ?? null) : (counts?.totalCampaigns ?? null)} />
+      )}
 
-            {showErrors && errors.length > 0 && activeStepId !== 'preview' && activeStepId !== 'setup' && (
-              <div className={styles.errorBanner}><ul>{errors.map((e) => <li key={e}>{e}</li>)}</ul></div>
-            )}
-          </div>
-
-          {activeStepId !== 'setup' && activeStepId !== 'result' && (
-            <div className={styles.footer}>
-              <button type="button" className={styles.backButton} disabled={activeIndex === 0} onClick={handleBack}>Back</button>
-              {activeStepId === 'preview' ? (
-                <div className={styles.footerRightGroup}>
-                  <PrimaryButton buttonText="Save as draft" buttonFunction={() => undefined} disabled={false} bgColor="#fff" textColor="#23272d" width="14rem" height="4rem" />
-                  <PrimaryButton
-                    buttonText={`Create ${draft.structure ? structureCounts(draft.structure, draft, products).campaigns : 0} Campaign${draft.structure && structureCounts(draft.structure, draft, products).campaigns === 1 ? '' : 's'}`}
-                    buttonFunction={handleCreate}
-                    disabled={false}
-                    bgColor="#77469b"
-                    width="18rem"
-                    height="4rem"
-                    isButtonIconRequired
-                    isEndIcon
-                    buttonIcon={<ArrowRightIcon size={14} color="#fff" />}
-                  />
-                </div>
-              ) : (
-                <PrimaryButton
-                  buttonText="Continue"
-                  buttonFunction={handleNext}
-                  disabled={false}
-                  bgColor="#77469b"
-                  width="12rem"
-                  height="4rem"
-                  isButtonIconRequired
-                  isEndIcon
-                  buttonIcon={<ArrowRightIcon size={14} color="#fff" />}
-                />
-              )}
-            </div>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
+        <div style={{ maxWidth: 980, margin: '0 auto', padding: '28px 28px 40px' }}>
+          {step === 'entry' && (
+            <StepEntry draft={draft} onChange={update} />
+          )}
+          {step === 'products' && (
+            <StepProducts
+              draft={draft} products={products} selectedProducts={selectedProducts}
+              onChange={update}
+            />
+          )}
+          {step === 'objectives' && (
+            <StepObjectives draft={draft} selectedProducts={selectedProducts} onChange={update} />
+          )}
+          {step === 'targeting' && (
+            <StepTargeting draft={draft} selectedProducts={selectedProducts} onChange={update} />
+          )}
+          {step === 'structure' && (
+            <StepStructure
+              draft={draft} selectedProducts={selectedProducts} campaignLimit={campaignLimit} onChange={update}
+              onJivaChange={setJivaOpen}
+            />
+          )}
+          {step === 'preview' && (
+            <StepPreview draft={draft} selectedProducts={selectedProducts} onChange={update} />
+          )}
+          {step === 'creating' && (
+            <StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => setStep('result')} />
+          )}
+          {step === 'result' && (
+            <StepResult draft={draft} selectedProducts={selectedProducts} />
           )}
         </div>
+      </div>
+      {step === 'structure' && jivaOpen && (
+        <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />
+      )}
+      </div>
+
+      {step === 'entry' && (
+        <FooterBar onNext={() => advance('products')} nextLabel="Create" nextDisabled={!draft.adType} />
+      )}
+      {step === 'result' && (
+        <FooterBar
+          onBack={() => { setDraft(EMPTY_DRAFT); setFurthestIndex(0); setStep('entry'); }}
+          backLabel="Create another"
+          onNext={() => {}}
+          nextLabel="Go to Campaign Manager"
+        />
+      )}
+      {step === 'products' && (
+        <FooterBar onBack={() => goTo('entry')} onNext={() => advance('objectives')} nextDisabled={draft.productIds.length === 0} />
+      )}
+      {step === 'objectives' && (
+        <FooterBar onBack={() => goTo('products')} onNext={() => advance('targeting')} nextDisabled={draft.dailyBudget <= 0} />
+      )}
+      {step === 'targeting' && (
+        <FooterBar onBack={() => goTo('objectives')} onNext={() => advance('structure')} nextDisabled={draft.targetingStrategies.length === 0} />
+      )}
+      {step === 'structure' && (
+        <FooterBar
+          onBack={() => goTo('targeting')}
+          onNext={() => advance('preview')}
+          nextDisabled={!draft.structureId || (draft.structureId !== 'custom' && !limitCheck.ok) || (draft.structureId === 'custom' && !draft.customCampaigns)}
+        />
+      )}
+      {step === 'preview' && (
+        <FooterBar onBack={() => goTo('structure')} onNext={() => setStep('creating')} nextLabel="Create Campaigns" />
+      )}
+    </div>
+  );
+}
+
+function FooterBar({ onBack, backLabel, onNext, nextDisabled, nextLabel }: { onBack?: () => void; backLabel?: string; onNext: () => void; nextDisabled?: boolean; nextLabel?: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 28px', borderTop: '1px solid #e6e8ec', background: '#fff', flex: 'none' }}>
+      {onBack ? (
+        <button onClick={onBack} style={{ padding: '10px 18px', borderRadius: 8, border: '1px solid #e6e8ec', background: '#fff', color: '#3d434b', font: '600 13px/1 Inter,sans-serif', cursor: 'pointer' }}>{backLabel ?? 'Back'}</button>
+      ) : <span />}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <button
+          onClick={onNext}
+          disabled={nextDisabled}
+          style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: nextDisabled ? '#eee7f5' : '#77469b', color: nextDisabled ? '#c3b3d6' : '#fff', font: '600 13px/1 Inter,sans-serif', cursor: nextDisabled ? 'default' : 'pointer' }}
+        >
+          {nextLabel ?? 'Continue'}
+        </button>
       </div>
     </div>
   );

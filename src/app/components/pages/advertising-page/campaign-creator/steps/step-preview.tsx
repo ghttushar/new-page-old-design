@@ -1,202 +1,137 @@
-import { useMemo, useState } from 'react';
-import MarketplaceLogo from '../../marketplace-logo';
-import { CcCheckboxRow, CcPill, CcSection, CcTextInput } from '../campaign-creator-shared-ui';
-import { ArrowRightIcon, MegaphoneIcon } from '../campaign-creator-icons';
-import {
-  CcDraft, CcGeneratedCampaign, CcStepId, CcTargetSource, MOCK_RULES_LIST, STRUCTURE_CATALOG, generateCampaigns, selectedProducts, structureCounts, targetTotal, totalAllocatedBudget,
-} from '../campaign-creator.types';
-import styles from '../campaign-creator.module.scss';
+import { Fragment, useEffect, useState } from 'react';
+import { generateCampaigns, totalAdGroups, totalTargets, formatCurrency, type CcDraft, type CcProduct } from '../campaign-creator.types';
+import { BORDER, ChevronRightIcon, Pill, StepHeading, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
 
-const OBJECTIVE_LABEL: Record<string, string> = { 'grow-sales': 'Grow Sales', 'improve-efficiency': 'Improve Efficiency', 'launch-discover': 'Launch & Discover' };
+const TH: React.CSSProperties = {
+  textAlign: 'left', padding: '11px 14px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase',
+  color: TEXT_FAINT, background: '#fafbfd', borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap',
+};
+const TD: React.CSSProperties = { padding: '10px 14px', borderBottom: '1px solid #f1f2f4', verticalAlign: 'middle' };
 
-function sourceTone(source: CcTargetSource): 'purple' | 'default' | 'green' {
-  if (source === 'anarix') return 'purple';
-  if (source === 'platform') return 'default';
-  return 'green';
-}
-function sourceLabel(source: CcTargetSource): string {
-  if (source === 'anarix') return 'Anarix';
-  if (source === 'platform') return 'Platform';
-  return 'Custom';
-}
-function biddingLabel(kind: 'auto' | 'manual'): string {
-  return kind === 'auto' ? 'Dynamic — down only' : 'Dynamic — up & down';
-}
+export default function StepPreview({ draft, selectedProducts, onChange }: {
+  draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+}) {
+  const [open, setOpen] = useState<Set<string>>(new Set());
 
-function CampaignRow({ campaign, onBudgetChange, onOpenTargeting }: { campaign: CcGeneratedCampaign; onBudgetChange: (v: string) => void; onOpenTargeting: () => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={styles.previewCampaignBlock}>
-      <div className={styles.previewCampaignRow}>
-        <button type="button" className={styles.treeToggle} onClick={() => setOpen((v) => !v)}>{open ? '▾' : '▸'}</button>
-        <span className={styles.previewCampaignName}>{campaign.name}</span>
-        <CcPill tone={campaign.kind === 'auto' ? 'purple' : 'default'}>{campaign.kind}</CcPill>
-        <span className={styles.previewCampaignTargets}>{campaign.adGroups.reduce((s, ag) => s + ag.targets.length, 0)} targets</span>
-        <CcTextInput value={String(campaign.dailyBudget)} onChange={onBudgetChange} type="number" prefix="$" />
-        <button type="button" className={styles.toolbarLink} onClick={onOpenTargeting}>Edit targeting</button>
-      </div>
-      {open && (
-        <div className={styles.previewAdGroupList}>
-          {campaign.adGroups.map((ag) => (
-            <div key={ag.id} className={styles.previewAdGroup}>
-              <div className={styles.previewAdGroupName}>└── {ag.name}</div>
-              {ag.targets.slice(0, 4).map((t) => (
-                <div key={t.id} className={styles.previewTargetRow}>
-                  <span>{t.label}</span>
-                  <span className={styles.previewTargetMeta}>{t.matchType}</span>
-                  <span className={styles.previewTargetMeta}>${t.bid.toFixed(2)}</span>
-                  <CcPill tone={sourceTone(t.source)}>{sourceLabel(t.source)}</CcPill>
-                </div>
-              ))}
-              {ag.targets.length > 4 && <div className={styles.previewTargetMore}>+ {ag.targets.length - 4} more</div>}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+  useEffect(() => {
+    if (!draft.structureId) return;
+    const campaigns = draft.structureId === 'custom'
+      ? (draft.customCampaigns ?? [])
+      : generateCampaigns(draft.structureId, selectedProducts, draft.targetingStrategies, draft.dailyBudget);
+    onChange({ generatedCampaigns: campaigns });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.structureId, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.customCampaigns]);
 
-export function StepPreview({
-  draft, update, onEdit, errors,
-}: { draft: CcDraft; update: (patch: Partial<CcDraft>) => void; onEdit: (step: CcStepId) => void; errors: string[] }) {
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const products = selectedProducts(draft);
-  const campaigns = useMemo(() => generateCampaigns(draft, products), [draft, products]);
-  const counts = draft.structure ? structureCounts(draft.structure, draft, products) : { campaigns: 0, adGroups: 0, targets: 0 };
-  const allocated = totalAllocatedBudget(campaigns);
-  const totalBudget = Number(draft.dailyBudget) || 0;
-  const balanced = Math.abs(allocated - totalBudget) < 1;
-  const structureTitle = STRUCTURE_CATALOG.find((s) => s.id === draft.structure)?.title ?? '—';
-  const hasAuto = draft.targetingStrategies.includes('automatic');
-  const hasManual = draft.targetingStrategies.some((s) => s !== 'automatic');
-  const campaignGroupName = `${OBJECTIVE_LABEL[draft.objective ?? 'grow-sales']} — ${[hasAuto && 'Auto', hasManual && 'Manual'].filter(Boolean).join(' + ') || 'Campaign'}`;
-  const startDate = useMemo(() => new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), []);
+  const campaigns = draft.generatedCampaigns ?? [];
 
-  function setBudget(campaignId: string, value: string) {
-    const n = Number(value) || 0;
-    update({ campaignBudgetOverrides: { ...draft.campaignBudgetOverrides, [campaignId]: n } });
+  function updateBudget(campaignId: string, value: number) {
+    const next = campaigns.map((c) => (c.id === campaignId ? { ...c, dailyBudget: value } : c));
+    const total = next.reduce((s, c) => s + c.dailyBudget, 0);
+    onChange({ generatedCampaigns: next.map((c) => ({ ...c, budgetAllocationPct: total > 0 ? Math.round((c.dailyBudget / total) * 1000) / 10 : 0 })) });
   }
 
-  const validations = [
-    { label: 'Products eligible', ok: products.length > 0 },
-    { label: 'Budget valid', ok: totalBudget > 0 },
-    { label: 'Targeting valid', ok: draft.targetingStrategies.length > 0 },
-    { label: 'Campaign limits valid', ok: !draft.structure || counts.campaigns <= 40 },
-    { label: 'Budget allocation balanced', ok: balanced },
-    { label: 'Rules compatible', ok: draft.selectedRuleIds.every((id) => MOCK_RULES_LIST.find((r) => r.id === id)?.compatible) },
-  ];
+  function toggle(id: string) {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  const allocatedTotal = campaigns.reduce((s, c) => s + c.dailyBudget, 0);
+  const allocationMismatch = Math.abs(allocatedTotal - draft.dailyBudget) > 0.5;
+  const strong: React.CSSProperties = { ...TD, borderBottom: 'none', font: '700 12px/1 Inter,sans-serif', color: TEXT_PRIMARY };
 
   return (
-    <>
-      {errors.length > 0 && (
-        <div className={styles.errorBanner}>
-          <strong>Fix the following before creating these campaigns:</strong>
-          <ul>{errors.map((e) => <li key={e}>{e}</li>)}</ul>
-        </div>
-      )}
+    <div>
+      <StepHeading title="Preview & confirm" subtitle="Review exactly what will be created. Expand a campaign to see its ad groups and targets, and edit budgets inline." />
 
-      <div className={styles.overviewCard}>
-        <div className={styles.overviewHeader}>
-          <span className={styles.overviewIcon}><MegaphoneIcon size={20} /></span>
-          <div className={styles.overviewTitleBlock}>
-            <div className={styles.overviewTitleRow}>
-              <span className={styles.overviewTitle}>{campaignGroupName}</span>
-              <CcPill>Draft</CcPill>
-            </div>
-            <div className={styles.overviewDescription}>{OBJECTIVE_LABEL[draft.objective ?? 'grow-sales']} campaigns for your selected products, generated with a {structureTitle.toLowerCase()} structure.</div>
-          </div>
-          <button type="button" className={styles.editLink} onClick={() => onEdit('structure')}>Edit</button>
-        </div>
-        <div className={styles.overviewMetaGrid}>
-          <div><div className={styles.overviewMetaLabel}>Marketplace</div><div className={styles.overviewMetaValue}><MarketplaceLogo marketplace={draft.marketplace ?? undefined} /> {draft.marketplace === 'walmart' ? 'Walmart' : 'Amazon US'}</div></div>
-          <div><div className={styles.overviewMetaLabel}>Products</div><div className={styles.overviewMetaValue}>{products.length} selected</div></div>
-          <div><div className={styles.overviewMetaLabel}>Campaigns</div><div className={styles.overviewMetaValue}>{counts.campaigns}</div></div>
-          <div><div className={styles.overviewMetaLabel}>Ad groups</div><div className={styles.overviewMetaValue}>{counts.adGroups}</div></div>
-          <div><div className={styles.overviewMetaLabel}>Targeting type</div><div className={styles.overviewMetaValue}>{structureTitle}</div></div>
-          <div><div className={styles.overviewMetaLabel}>Start date</div><div className={styles.overviewMetaValue}>{startDate}</div></div>
-          <div><div className={styles.overviewMetaLabel}>End date</div><div className={styles.overviewMetaValue}>No end date</div></div>
-        </div>
-      </div>
-
-      <CcSection title={`Products (${products.length})`} trailing={<button type="button" className={styles.editLink} onClick={() => onEdit('products')}>Edit</button>}>
-        <div className={styles.previewTable}>
-          <div className={styles.previewProductsTableHeader}><span>#</span><span>Product name</span><span>Campaigns</span><span>Ad groups</span><span>Targeting</span></div>
-          {products.map((p, i) => {
-            const productCampaigns = campaigns.filter((c) => c.productIds.includes(p.id));
-            return (
-              <div key={p.id} className={styles.previewProductsTableRow}>
-                <span>{i + 1}</span>
-                <span>{p.name}</span>
-                <span>{productCampaigns.length || counts.campaigns}</span>
-                <span>{productCampaigns.reduce((s, c) => s + c.adGroups.length, 0) || counts.adGroups}</span>
-                <span>{[hasAuto && 'Auto', hasManual && 'Manual'].filter(Boolean).join(' + ')}</span>
-              </div>
-            );
-          })}
-        </div>
-      </CcSection>
-
-      <CcSection title={`Campaign structure (${campaigns.length})`} trailing={<button type="button" className={styles.editLink} onClick={() => onEdit('structure')}>Edit</button>}>
-        <div className={styles.previewTable}>
-          <div className={styles.previewStructureTableHeader}><span>#</span><span>Campaign name</span><span>Type</span><span>Products</span><span>Ad groups</span><span>Bidding</span><span>Budget (daily)</span></div>
-          {campaigns.map((c, i) => (
-            <div key={c.id} className={styles.previewStructureTableRow}>
-              <span>{i + 1}</span>
-              <span>{c.name}</span>
-              <span><CcPill tone={c.kind === 'auto' ? 'purple' : 'default'}>{c.kind === 'auto' ? 'Auto' : 'Manual'}</CcPill></span>
-              <span>All ({c.productIds.length})</span>
-              <span>{c.adGroups.length}</span>
-              <span>{biddingLabel(c.kind)}</span>
-              <span>${c.dailyBudget.toFixed(2)}</span>
-            </div>
-          ))}
-          {campaigns.length === 0 && <div className={styles.productEmpty}>No campaigns generated yet — choose a structure to see the preview.</div>}
-        </div>
-
-        <button type="button" className={styles.toolbarLink} onClick={() => setAdvancedOpen((v) => !v)}>{advancedOpen ? 'Hide advanced editing' : 'Show advanced editing (budgets, targeting, rules, validation)'}</button>
-
-        {advancedOpen && (
-          <>
-            <div className={styles.previewCampaignList}>
-              {campaigns.map((c) => <CampaignRow key={c.id} campaign={c} onBudgetChange={(v) => setBudget(c.id, v)} onOpenTargeting={() => onEdit('targeting')} />)}
-            </div>
-            <div className={styles.budgetAllocationFooter}>
-              <span>Allocated: ${allocated.toFixed(2)}</span>
-              <span>Total: ${totalBudget.toFixed(2)}</span>
-              {balanced ? <CcPill tone="green">Balanced</CcPill> : <CcPill tone="red">Not balanced</CcPill>}
-            </div>
-
-            {draft.selectedRuleIds.length > 0 && (
-              <div className={styles.ruleSummaryList}>
-                <div className={styles.ruleSummaryHeading}>Rules</div>
-                {draft.selectedRuleIds.map((id) => {
-                  const r = MOCK_RULES_LIST.find((x) => x.id === id);
-                  if (!r) return null;
-                  const count = draft.rulesApplyTo === 'all' ? campaigns.length : draft.selectedCampaignIdsForRules.length;
-                  return <div key={id} className={styles.ruleSummaryRow}><span>{r.name}</span><span>Applied to {count} campaigns</span></div>;
-                })}
-              </div>
+      <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', font: '400 12px/1.4 Inter,sans-serif' }}>
+          <thead>
+            <tr>
+              <th style={{ ...TH, width: 34 }} />
+              <th style={TH}>Campaign</th>
+              <th style={TH}>Type</th>
+              <th style={TH}>Targeting</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Ad groups</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Targets</th>
+              <th style={TH}>Daily budget</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map((c) => {
+              const isOpen = open.has(c.id);
+              const isAuto = c.kind === 'auto';
+              return (
+                <Fragment key={c.id}>
+                  <tr onClick={() => toggle(c.id)} style={{ cursor: 'pointer', background: isOpen ? '#fafbfd' : '#fff' }}>
+                    <td style={{ ...TD, paddingRight: 0 }}>
+                      <span style={{ display: 'flex', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 140ms ease-out' }}><ChevronRightIcon size={12} color={TEXT_MUTED} /></span>
+                    </td>
+                    <td style={{ ...TD, font: '600 12px/1.4 Inter,sans-serif', color: TEXT_PRIMARY, minWidth: 240 }}>{c.name}</td>
+                    <td style={TD}><Pill label={isAuto ? 'Auto' : 'Manual'} color={isAuto ? '#2f6fed' : '#77469b'} bg={isAuto ? '#eaf2fd' : '#f6f2fb'} /></td>
+                    <td style={{ ...TD, color: TEXT_MUTED }}>{isAuto ? 'Automatic' : c.targetingLabel}</td>
+                    <td style={{ ...TD, textAlign: 'right', color: TEXT_MUTED }}>{c.adGroups.length}</td>
+                    <td style={{ ...TD, textAlign: 'right', color: TEXT_MUTED }}>{c.adGroups.reduce((n, ag) => n + ag.targets.length, 0)}</td>
+                    <td style={TD} onClick={(e) => e.stopPropagation()}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: TEXT_MUTED }}>
+                        $<input type="number" value={c.dailyBudget} onChange={(e) => updateBudget(c.id, Math.max(0, Number(e.target.value) || 0))} style={{ width: 72, padding: '5px 7px', border: `1px solid ${BORDER}`, borderRadius: 6, font: '500 12px/1 Inter,sans-serif', outline: 'none' }} />
+                      </span>
+                    </td>
+                    <td style={{ ...TD, textAlign: 'right', color: TEXT_MUTED }}>{c.budgetAllocationPct}%</td>
+                  </tr>
+                  {isOpen && (
+                    <tr>
+                      <td colSpan={8} style={{ padding: '4px 14px 14px 48px', borderBottom: '1px solid #f1f2f4', background: '#fafbfd' }}>
+                        {c.adGroups.map((ag) => (
+                          <div key={ag.id} style={{ marginTop: 8, paddingLeft: 14, borderLeft: `2px solid ${BORDER}` }}>
+                            <div style={{ font: '600 11.5px/1.4 Inter,sans-serif', color: TEXT_MUTED, marginBottom: 4 }}>{ag.name}</div>
+                            {ag.targets.length === 0 && <div style={{ font: '400 11.5px/1.5 Inter,sans-serif', color: TEXT_FAINT }}>Automatic targeting — no individual targets to configure.</div>}
+                            {ag.targets.map((t) => (
+                              <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', font: '400 12px/1.5 Inter,sans-serif' }}>
+                                <span style={{ color: TEXT_PRIMARY }}>{t.label}</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                  <span style={{ font: '400 10.5px/1 Inter,sans-serif', color: TEXT_FAINT }}>{t.source}</span>
+                                  <span style={{ font: '600 12px/1 Inter,sans-serif', color: TEXT_MUTED, minWidth: 44, textAlign: 'right' }}>${t.bid.toFixed(2)}</span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+            {campaigns.length === 0 && (
+              <tr><td colSpan={8} style={{ padding: '34px 14px', textAlign: 'center', color: TEXT_FAINT }}>No campaigns to show yet — go back and complete the Structure step.</td></tr>
             )}
-
-            <CcCheckboxRow
-              checked={draft.aiManagementEnabled}
-              onChange={(aiManagementEnabled) => update({ aiManagementEnabled })}
-              label="Enable AI Management"
-              description="Anarix will manage these campaigns using the selected AI management configuration once they're live."
-            />
-
-            <div className={styles.validationList}>
-              {validations.map((v) => (
-                <div key={v.label} className={styles.validationRow}>
-                  <span className={v.ok ? styles.validationOk : styles.validationFail}>{v.ok ? '✓' : '✕'}</span>
-                  <span>{v.label}</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </CcSection>
-    </>
+          </tbody>
+          {campaigns.length > 0 && (
+            <tfoot>
+              <tr style={{ background: '#fafbfd' }}>
+                <td style={{ ...TD, borderBottom: 'none' }} />
+                <td style={strong}>Total</td>
+                <td style={{ ...TD, borderBottom: 'none', color: TEXT_MUTED }} colSpan={2}>{campaigns.length} campaigns · {selectedProducts.length} product{selectedProducts.length === 1 ? '' : 's'}</td>
+                <td style={{ ...strong, textAlign: 'right' }}>{totalAdGroups(campaigns)}</td>
+                <td style={{ ...strong, textAlign: 'right' }}>{totalTargets(campaigns)}</td>
+                <td style={{ ...strong, color: allocationMismatch ? '#a8763f' : TEXT_PRIMARY }}>{formatCurrency(allocatedTotal)}</td>
+                <td style={{ ...strong, textAlign: 'right' }}>100%</td>
+              </tr>
+              {allocationMismatch && (
+                <tr>
+                  <td colSpan={8} style={{ padding: '9px 14px', background: '#fdf8f1', font: '500 11.5px/1.5 Inter,sans-serif', color: '#a8763f', borderTop: `1px solid ${BORDER}` }}>
+                    Allocated total ({formatCurrency(allocatedTotal)}) doesn't match your daily budget ({formatCurrency(draft.dailyBudget)}).
+                  </td>
+                </tr>
+              )}
+            </tfoot>
+          )}
+        </table>
+      </div>
+    </div>
   );
 }

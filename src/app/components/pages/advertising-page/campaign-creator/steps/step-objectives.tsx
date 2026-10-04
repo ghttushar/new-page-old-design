@@ -1,62 +1,59 @@
-import { CcChoiceCards, CcField, CcFieldRow, CcRecommendationCard, CcSection, CcTextInput, CcWarningBanner } from '../campaign-creator-shared-ui';
-import { ChartUpIcon, RocketIcon, TargetGoalIcon } from '../campaign-creator-icons';
-import { CcDraft, CcObjective, isBudgetSufficient, recommendedDailyBudget, selectedProducts, typicalAcosRange } from '../campaign-creator.types';
+import { useState } from 'react';
+import { MARKETPLACE_CAPABILITY, recommendedBudget, formatCurrency, type CcDraft, type CcProduct } from '../campaign-creator.types';
+import { BORDER, SectionCard, StepHeading, TEXT_FAINT, TEXT_MUTED, WhyRecommended } from '../campaign-creator-ui';
 
-export function StepObjectives({ draft, update, showErrors }: { draft: CcDraft; update: (patch: Partial<CcDraft>) => void; showErrors: boolean }) {
-  const products = selectedProducts(draft);
-  const acosRange = typicalAcosRange(products);
-  const budgetRec = recommendedDailyBudget(draft, products);
-  const budgetEntered = draft.dailyBudget.trim() !== '';
-  const budgetOk = !budgetEntered || isBudgetSufficient(draft, products);
+export default function StepObjectives({ draft, selectedProducts, onChange }: {
+  draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+}) {
+  const cap = draft.marketplace ? MARKETPLACE_CAPABILITY[draft.marketplace] : null;
+  const suggestedBudget = recommendedBudget(selectedProducts);
+  const [acosError, setAcosError] = useState<string | null>(null);
+
+  function setAcos(raw: string) {
+    if (raw.trim() === '') { onChange({ targetAcos: null }); setAcosError(null); return; }
+    const n = Number(raw);
+    if (Number.isNaN(n)) { setAcosError('Enter a number.'); return; }
+    if (n < 1 || n > (cap?.maxTargetAcos ?? 90)) { setAcosError(`Enter a value between 1 and ${cap?.maxTargetAcos ?? 90}.`); onChange({ targetAcos: n }); return; }
+    setAcosError(null);
+    onChange({ targetAcos: n });
+  }
+
+  const budgetTooLow = cap ? draft.dailyBudget < cap.minDailyBudget : false;
 
   return (
-    <>
-      <CcSection title="Primary objective" description="Choose the main goal for this campaign.">
-        <CcChoiceCards<CcObjective>
-          value={draft.objective}
-          onChange={(objective) => update({ objective })}
-          columns={3}
-          options={[
-            { value: 'grow-sales', title: 'Grow sales', description: 'Maximize product visibility and drive more sales.', icon: <ChartUpIcon size={20} /> },
-            { value: 'improve-efficiency', title: 'Improve efficiency', description: 'Drive profitable growth with better ACOS.', icon: <TargetGoalIcon size={20} /> },
-            { value: 'launch-discover', title: 'Launch / discover', description: 'Gain visibility and discover new opportunities.', icon: <RocketIcon size={20} /> },
-          ]}
-        />
-      </CcSection>
+    <div>
+      <StepHeading title="Set objectives" subtitle="These inputs drive the targeting, structure, bid and budget recommendations in the next steps." />
 
-      <CcSection title="Target ACOS" description="Set your target ACOS for these campaigns.">
-        <CcFieldRow>
-          <CcField label="Target ACOS" required hint={`Typical ACOS for selected products: ${acosRange.low}%–${acosRange.high}%`}>
-            <CcTextInput value={draft.targetAcos} onChange={(targetAcos) => update({ targetAcos })} placeholder="25" type="number" suffix="%" error={showErrors && draft.targetAcos.trim() === ''} />
-          </CcField>
-          <CcRecommendationCard
-            title="Anarix recommendation"
-            value={`${Math.round((acosRange.low + acosRange.high) / 2)}%`}
-            description="This target balances visibility and profitability for your selected products."
-            onUse={() => update({ targetAcos: String(Math.round((acosRange.low + acosRange.high) / 2)) })}
-          />
-        </CcFieldRow>
-      </CcSection>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <SectionCard title="Target ACOS">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="number" value={draft.targetAcos ?? ''} onChange={(e) => setAcos(e.target.value)} placeholder="e.g. 25"
+              style={{ width: 110, padding: '9px 11px', border: `1px solid ${acosError ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: '500 13px/1 Inter,sans-serif', outline: 'none' }}
+            />
+            <span style={{ font: '600 13px/1 Inter,sans-serif', color: TEXT_MUTED }}>%</span>
+          </div>
+          {acosError && <div style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#b3453f', marginTop: 7 }}>{acosError}</div>}
+          <div style={{ font: '400 11.5px/1.5 Inter,sans-serif', color: TEXT_FAINT, marginTop: 8 }}>Optional — leave blank if you don't need a strict target.</div>
+        </SectionCard>
 
-      <CcSection title="Daily budget" description="Set the total daily budget for these campaigns.">
-        <CcFieldRow>
-          <CcField label="Daily budget" required hint={`Recommended: $${budgetRec.low}–$${budgetRec.high}/day`}>
-            <CcTextInput value={draft.dailyBudget} onChange={(dailyBudget) => update({ dailyBudget })} placeholder={String(budgetRec.mid)} type="number" prefix="$" error={showErrors && draft.dailyBudget.trim() === ''} />
-          </CcField>
-          <CcRecommendationCard
-            title="Anarix recommendation"
-            value={`$${budgetRec.mid}/day`}
-            description={`This budget gives your recommended targeting strategy room to collect data across your ${products.length || 0} selected product${products.length === 1 ? '' : 's'}.`}
-            onUse={() => update({ dailyBudget: String(budgetRec.mid) })}
-          />
-        </CcFieldRow>
-
-        {!budgetOk && (
-          <CcWarningBanner title="Budget may limit delivery">
-            Your current budget may limit delivery for the selected targeting strategies. Recommended daily budget: ${budgetRec.low}–${budgetRec.high}.
-          </CcWarningBanner>
-        )}
-      </CcSection>
-    </>
+        <SectionCard title="Daily Budget">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ font: '600 13px/1 Inter,sans-serif', color: TEXT_MUTED }}>$</span>
+            <input
+              type="number" value={draft.dailyBudget} onChange={(e) => onChange({ dailyBudget: Math.max(0, Number(e.target.value) || 0) })}
+              style={{ width: 110, padding: '9px 11px', border: `1px solid ${budgetTooLow ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: '500 13px/1 Inter,sans-serif', outline: 'none' }}
+            />
+          </div>
+          {budgetTooLow && <div style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#b3453f', marginTop: 7 }}>Below the {formatCurrency(cap?.minDailyBudget ?? 0)} marketplace minimum.</div>}
+          {!budgetTooLow && draft.dailyBudget < suggestedBudget && (
+            <div style={{ marginTop: 10 }}>
+              <WhyRecommended reason={`Recommended daily budget: ${formatCurrency(suggestedBudget)}. Your current budget may limit delivery for the selected products' targeting strategies.`} />
+              <span onClick={() => onChange({ dailyBudget: suggestedBudget })} style={{ display: 'inline-block', marginTop: 8, font: '600 12px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Use recommended budget →</span>
+            </div>
+          )}
+        </SectionCard>
+      </div>
+    </div>
   );
 }

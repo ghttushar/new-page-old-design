@@ -1,160 +1,202 @@
-import { useMemo, useState } from 'react';
-import Dropdown from '@/app/components/common/dropdown/dropdown';
-import { MOCK_BRAND_OPTIONS, MOCK_CATEGORY_OPTIONS } from '@/constants/advertising/mock-campaign-creator-data';
-import { CcChoiceCards, CcPill, CcSection, CcTextInput } from '../campaign-creator-shared-ui';
-import { HierarchyIcon, LayersIcon } from '../campaign-creator-icons';
-import { CcDraft, CcGrouping, productsFor, structureCounts } from '../campaign-creator.types';
-import styles from '../campaign-creator.module.scss';
+import { Fragment, useMemo, useState } from 'react';
+import { recommendGroupingMode, formatCurrency, type CcDraft, type CcProduct, type GroupingMode } from '../campaign-creator.types';
+import {
+  BAD, BORDER, CheckIcon, ChevronRightIcon, ChoiceCard, GOOD, Pill, RecommendedBadge, SectionCard, StepHeading,
+  TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, WARN,
+} from '../campaign-creator-ui';
 
-const PAGE_SIZE = 8;
+const TH: React.CSSProperties = {
+  textAlign: 'left', padding: '10px 12px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.05em',
+  textTransform: 'uppercase', color: TEXT_FAINT, borderBottom: `1px solid ${BORDER}`, background: '#fafbfd', whiteSpace: 'nowrap',
+};
+const TD: React.CSSProperties = { padding: '10px 12px', borderBottom: '1px solid #f1f2f4' };
 
-export function StepProducts({ draft, update, showErrors }: { draft: CcDraft; update: (patch: Partial<CcDraft>) => void; showErrors: boolean }) {
+function CardTitle({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
+      <div style={{ font: '700 13px/1 Inter,sans-serif', color: TEXT_PRIMARY }}>{children}</div>
+      {action}
+    </div>
+  );
+}
+
+function ProductCell({ p }: { p: CcProduct }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+      <span style={{ width: 28, height: 28, borderRadius: 6, background: p.thumbnailColor, flex: 'none' }} />
+      <div style={{ minWidth: 0 }}>
+        <div style={{ font: '600 12px/1.4 Inter,sans-serif', color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 210 }}>{p.title}</div>
+        <div style={{ font: '400 10.5px/1.4 Inter,sans-serif', color: TEXT_FAINT }}>{p.parentTitle ? `Child of ${p.parentTitle}` : `${p.brand} · ${p.category}`}{p.children?.length ? ` · Parent of ${p.children.length} child products` : ''}</div>
+      </div>
+    </div>
+  );
+}
+
+export default function StepProducts({ draft, products, selectedProducts, onChange }: {
+  draft: CcDraft; products: CcProduct[]; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+}) {
   const [search, setSearch] = useState('');
-  const [brand, setBrand] = useState(MOCK_BRAND_OPTIONS[0]);
-  const [category, setCategory] = useState(MOCK_CATEGORY_OPTIONS[0]);
-  const [page, setPage] = useState(0);
-
-  const catalog = productsFor(draft.marketplace);
-  const noun = draft.marketplace === 'walmart' ? 'items' : 'products';
+  // Parents with child products start expanded.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(products.filter((p) => p.children?.length).map((p) => p.id)));
+  function toggleExpanded(id: string) {
+    setExpanded((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return catalog.filter((p) => {
-      if (q && !(p.name.toLowerCase().includes(q) || p.asin.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q))) return false;
-      if (brand.value !== 'all' && p.brand !== brand.value) return false;
-      if (category.value !== 'all' && p.category !== category.value) return false;
-      return true;
-    });
-  }, [catalog, search, brand, category]);
+    return q ? products.filter((p) => `${p.title} ${p.asin} ${p.sku}`.toLowerCase().includes(q)) : products;
+  }, [products, search]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-  const eligibleFilteredIds = filtered.filter((p) => p.eligible).map((p) => p.id);
-  const allFilteredSelected = eligibleFilteredIds.length > 0 && eligibleFilteredIds.every((id) => draft.selectedProductIds.includes(id));
-  const visibleEligibleIds = pageRows.filter((p) => p.eligible).map((p) => p.id);
-
-  function toggle(id: string) {
-    const has = draft.selectedProductIds.includes(id);
-    update({ selectedProductIds: has ? draft.selectedProductIds.filter((x) => x !== id) : [...draft.selectedProductIds, id] });
+  function toggle(id: string, eligible: boolean) {
+    if (!eligible) return;
+    const set = new Set(draft.productIds);
+    if (set.has(id)) set.delete(id); else set.add(id);
+    onChange({ productIds: Array.from(set) });
   }
 
-  function selectAll() {
-    update({ selectedProductIds: Array.from(new Set([...draft.selectedProductIds, ...eligibleFilteredIds])) });
-  }
-
-  function selectVisible() {
-    update({ selectedProductIds: Array.from(new Set([...draft.selectedProductIds, ...visibleEligibleIds])) });
-  }
-
-  function clearSelection() {
-    update({ selectedProductIds: [] });
-  }
-
-  const products = catalog.filter((p) => draft.selectedProductIds.includes(p.id));
-  const recommendedGrouping: CcGrouping = products.length > 6 ? 'group' : 'separate';
+  const recommendedGrouping = recommendGroupingMode(selectedProducts, draft.dailyBudget);
 
   return (
-    <>
-      <CcSection
-        title={`Select ${noun} to promote`}
-        description={`Only in-stock, ad-eligible ${noun} can be added to this campaign. We'll use product performance, availability and advertising data to build recommendations.`}
-        trailing={<CcPill tone="purple">{draft.selectedProductIds.length} selected</CcPill>}
-      >
-        <div className={styles.productFilterRow}>
-          <CcTextInput value={search} onChange={setSearch} placeholder={`Search ${noun} by name, ASIN or SKU...`} />
-          <Dropdown options={MOCK_BRAND_OPTIONS} selected={brand} onSelect={setBrand} width="16rem" height="3.6rem" label="" />
-          <Dropdown options={MOCK_CATEGORY_OPTIONS} selected={category} onSelect={setCategory} width="18rem" height="3.6rem" label="" />
+    <div>
+      <StepHeading title="Select promoted products" subtitle="Only products eligible for advertising can be selected. Search the catalog, then review your picks below." />
+
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by name, ASIN or SKU…"
+        style={{ width: '100%', maxWidth: 360, padding: '9px 12px', border: `1px solid ${BORDER}`, borderRadius: 8, font: '400 12.5px/1 Inter,sans-serif', outline: 'none', marginBottom: 14, boxSizing: 'border-box' }}
+      />
+
+      <SectionCard style={{ padding: 0, overflow: 'hidden' }}>
+        <CardTitle>All products ({filtered.length})</CardTitle>
+        <div style={{ maxHeight: 340, overflowY: 'auto', overflowX: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', font: '400 12px/1.4 Inter,sans-serif' }}>
+            <thead>
+              <tr style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                {['', 'Product', 'ASIN', 'Status', 'Inventory', 'Ad Spend', 'Ad Sales', 'ACOS'].map((h, i) => <th key={i} style={TH}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((p) => {
+                const checked = draft.productIds.includes(p.id);
+                const kids = p.children ?? [];
+                const isOpen = kids.length > 0 && expanded.has(p.id);
+                return (
+                  <Fragment key={p.id}>
+                  <tr onClick={() => toggle(p.id, p.eligible)} style={{ cursor: p.eligible ? 'pointer' : 'not-allowed', background: checked ? '#f6f2fb' : '#fff', opacity: p.eligible ? 1 : 0.55 }}>
+                    <td style={TD}>
+                      <span style={{ width: 17, height: 17, borderRadius: 5, border: `1.5px solid ${checked ? '#77469b' : '#cfd4dc'}`, background: checked ? '#77469b' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {checked && <CheckIcon size={10} />}
+                      </span>
+                    </td>
+                    <td style={{ ...TD, minWidth: 220 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {kids.length > 0 ? (
+                          <span onClick={(e) => { e.stopPropagation(); toggleExpanded(p.id); }} title={isOpen ? 'Hide child products' : 'Show child products'} style={{ width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flex: 'none', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 140ms ease-out' }}><ChevronRightIcon size={12} color={TEXT_MUTED} /></span>
+                        ) : <span style={{ width: 20, flex: 'none' }} />}
+                        <ProductCell p={p} />
+                      </div>
+                    </td>
+                    <td style={{ ...TD, color: TEXT_MUTED, whiteSpace: 'nowrap' }}>{p.asin}</td>
+                    <td style={TD}>
+                      {p.eligible ? <Pill label="Eligible" color={GOOD} bg="#e9f7ef" /> : <Pill label="Ineligible" color={BAD} bg="#fdecec" />}
+                      {!p.eligible && <div style={{ font: '400 10.5px/1.4 Inter,sans-serif', color: TEXT_FAINT, marginTop: 3 }}>{p.ineligibleReason}</div>}
+                    </td>
+                    <td style={{ ...TD, color: TEXT_MUTED }}>{p.inventory.toLocaleString()}</td>
+                    <td style={{ ...TD, color: TEXT_MUTED }}>{formatCurrency(p.adSpend)}</td>
+                    <td style={{ ...TD, color: TEXT_MUTED }}>{formatCurrency(p.adSales)}</td>
+                    <td style={{ ...TD, color: p.acos > 28 ? WARN : TEXT_MUTED }}>{p.acos > 0 ? `${p.acos.toFixed(1)}%` : '—'}</td>
+                  </tr>
+                  {isOpen && kids.map((k, i) => {
+                    const kChecked = draft.productIds.includes(k.id);
+                    return (
+                    <tr key={k.id} onClick={() => toggle(k.id, p.eligible)} style={{ background: kChecked ? '#f6f2fb' : '#fcfcfe', cursor: 'pointer' }}>
+                      <td style={TD}>
+                        <span style={{ width: 17, height: 17, borderRadius: 5, border: `1.5px solid ${kChecked ? '#77469b' : '#cfd4dc'}`, background: kChecked ? '#77469b' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {kChecked && <CheckIcon size={10} />}
+                        </span>
+                      </td>
+                      <td style={{ ...TD, paddingLeft: 30 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                          <span style={{ width: 14, height: 14, borderLeft: `1.5px solid ${BORDER}`, borderBottom: `1.5px solid ${BORDER}`, borderBottomLeftRadius: 5, marginTop: -8, flex: 'none', opacity: i === kids.length - 1 ? 1 : 0.7 }} />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                              <span style={{ font: '500 12px/1.4 Inter,sans-serif', color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190 }}>{k.title}</span>
+                              <Pill label="Child" />
+                            </div>
+                            <div style={{ font: '400 10.5px/1.4 Inter,sans-serif', color: TEXT_FAINT }}>{k.sku}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ ...TD, color: TEXT_MUTED, whiteSpace: 'nowrap' }}>{k.asin}</td>
+                      <td style={TD}><Pill label="Eligible" color={GOOD} bg="#e9f7ef" /></td>
+                      <td style={{ ...TD, color: TEXT_MUTED }}>{k.inventory.toLocaleString()}</td>
+                      <td style={{ ...TD, color: TEXT_MUTED }}>{formatCurrency(k.adSpend)}</td>
+                      <td style={{ ...TD, color: TEXT_MUTED }}>{formatCurrency(k.adSales)}</td>
+                      <td style={{ ...TD, color: k.acos > 28 ? WARN : TEXT_MUTED }}>{k.acos.toFixed(1)}%</td>
+                    </tr>
+                    );
+                  })}
+                  </Fragment>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr><td colSpan={8} style={{ padding: '30px 12px', textAlign: 'center', color: TEXT_FAINT }}>No products match your search.</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
+      </SectionCard>
 
-        <div className={styles.selectionToolbar}>
-          <button type="button" className={styles.toolbarLink} onClick={selectAll}>Select all</button>
-          <button type="button" className={styles.toolbarLink} onClick={selectVisible}>Select visible</button>
-          <button type="button" className={styles.toolbarLink} onClick={clearSelection}>Clear selection</button>
-          <span className={styles.toolbarSpacer} />
-          <span className={styles.toolbarResultCount}>Showing {page * PAGE_SIZE + 1}–{Math.min(filtered.length, page * PAGE_SIZE + PAGE_SIZE)} of {filtered.length} {noun}</span>
+      <SectionCard style={{ padding: 0, overflow: 'hidden', marginTop: 18 }}>
+        <CardTitle action={selectedProducts.length > 0 ? <span onClick={() => onChange({ productIds: [] })} style={{ font: '600 11.5px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer' }}>Clear all</span> : undefined}>
+          Selected products ({selectedProducts.length})
+        </CardTitle>
+        <div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', font: '400 12px/1.4 Inter,sans-serif' }}>
+            <thead>
+              <tr>{['Product', 'ASIN', 'Inventory', 'Ad Spend', 'ACOS', ''].map((h, i) => <th key={i} style={TH}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {selectedProducts.map((p) => (
+                <tr key={p.id}>
+                  <td style={{ ...TD, minWidth: 220 }}><ProductCell p={p} /></td>
+                  <td style={{ ...TD, color: TEXT_MUTED, whiteSpace: 'nowrap' }}>{p.asin}</td>
+                  <td style={{ ...TD, color: TEXT_MUTED }}>{p.inventory.toLocaleString()}</td>
+                  <td style={{ ...TD, color: TEXT_MUTED }}>{formatCurrency(p.adSpend)}</td>
+                  <td style={{ ...TD, color: p.acos > 28 ? WARN : TEXT_MUTED }}>{p.acos > 0 ? `${p.acos.toFixed(1)}%` : '—'}</td>
+                  <td style={{ ...TD, textAlign: 'right' }}>
+                    <span onClick={() => toggle(p.id, true)} style={{ font: '600 11.5px/1 Inter,sans-serif', color: BAD, cursor: 'pointer' }}>Remove</span>
+                  </td>
+                </tr>
+              ))}
+              {selectedProducts.length === 0 && (
+                <tr><td colSpan={6} style={{ padding: '26px 12px', textAlign: 'center', color: TEXT_FAINT }}>No products selected yet — tick products in the table above.</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
+      </SectionCard>
 
-        <div className={styles.productTableHeader}>
-          <label className={styles.productCheckboxCell}>
-            <input type="checkbox" checked={allFilteredSelected} onChange={() => (allFilteredSelected ? clearSelection() : selectAll())} />
-          </label>
-          <span>{noun === 'items' ? 'Item' : 'Product'}</span>
-          <span>ASIN / Item ID</span>
-          <span>SKU</span>
-          <span>Status</span>
-          <span>Inventory</span>
-          <span>Sales</span>
-          <span>Ad Spend</span>
-          <span>Ad Sales</span>
-          <span>ACOS</span>
-        </div>
-
-        <div className={styles.productTableBody}>
-          {pageRows.map((p) => (
-            <label key={p.id} className={`${styles.productRow} ${!p.eligible ? styles.productRowDisabled : ''}`}>
-              <span className={styles.productCheckboxCell}>
-                <input type="checkbox" disabled={!p.eligible} checked={draft.selectedProductIds.includes(p.id)} onChange={() => toggle(p.id)} />
-              </span>
-              <span className={styles.productNameCell}>
-                <span className={styles.productThumb} style={{ background: p.thumbnailColor }} />
-                <span>
-                  <div className={styles.productName}>{p.name}</div>
-                  <div className={styles.productSku}>{p.brand}</div>
-                </span>
-              </span>
-              <span className={styles.productSkuCell}>{p.asin}</span>
-              <span className={styles.productSkuCell}>{p.sku}</span>
-              <span>{p.eligible ? <CcPill tone="green">Eligible</CcPill> : <CcPill tone="red">{p.ineligibleReason ?? 'Ineligible'}</CcPill>}</span>
-              <span>{p.inventory.toLocaleString()}</span>
-              <span>${p.sales.toLocaleString()}</span>
-              <span>${p.adSpend.toLocaleString()}</span>
-              <span>${p.adSales.toLocaleString()}</span>
-              <span>{p.eligible ? `${p.acos.toFixed(1)}%` : '—'}</span>
-            </label>
-          ))}
-          {pageRows.length === 0 && <div className={styles.productEmpty}>No {noun} match your search.</div>}
-        </div>
-
-        <div className={styles.tablePagination}>
-          <button type="button" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>‹</button>
-          <span>{page + 1} / {totalPages}</span>
-          <button type="button" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>›</button>
-        </div>
-
-        {showErrors && draft.selectedProductIds.length === 0 && (
-          <div className={styles.inlineError}>Select at least one {noun.slice(0, -1)} to continue.</div>
-        )}
-      </CcSection>
-
-      {draft.selectedProductIds.length > 1 && (
-        <CcSection title="How should we organize these products?" description="Choose how campaigns will be created for the selected products.">
-          <CcChoiceCards<CcGrouping>
-            value={draft.grouping}
-            onChange={(grouping) => update({ grouping })}
-            options={[
-              {
-                value: 'separate',
-                title: 'Separate by campaign',
-                description: 'Each selected product gets its own campaign structure. Best for product-level budget and performance control.',
-                icon: <LayersIcon size={20} />,
-                recommended: recommendedGrouping === 'separate',
-              },
-              {
-                value: 'group',
-                title: 'Group by ad group',
-                description: 'Products share campaigns, separated into ad groups. Best for fewer campaigns and simpler management.',
-                icon: <HierarchyIcon size={20} />,
-                recommended: recommendedGrouping === 'group',
-              },
-            ]}
-          />
-          <div className={styles.groupingImpact}>
-            <span>{products.length} {noun} selected</span>
-            <span>Estimated campaigns: {structureCounts(recommendedGrouping === 'separate' ? 'product-targeting' : 'targeting-type', { ...draft, targetingStrategies: ['automatic', 'exact', 'phrase'] }, products).campaigns}</span>
-            <span>Estimated ad groups: {structureCounts(recommendedGrouping === 'separate' ? 'product-targeting' : 'targeting-type', { ...draft, targetingStrategies: ['automatic', 'exact', 'phrase'] }, products).adGroups}</span>
+      {selectedProducts.length > 1 && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.07em', textTransform: 'uppercase', color: TEXT_FAINT, marginBottom: 10 }}>How should these campaigns be grouped?</div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            {([
+              { id: 'split-by-campaign' as GroupingMode, title: 'Split by Campaign', desc: 'Each selected product gets its own, independent campaign structure.' },
+              { id: 'split-by-ad-group' as GroupingMode, title: 'Split by Ad Group', desc: 'All selected products are grouped under the same campaign, one ad group per product.' },
+            ]).map((opt) => (
+              <ChoiceCard key={opt.id} selected={draft.groupingMode === opt.id} onClick={() => onChange({ groupingMode: opt.id })} minWidth={260}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ font: '700 13px/1.3 Inter,sans-serif', color: TEXT_PRIMARY }}>{opt.title}</div>
+                  {recommendedGrouping === opt.id && <RecommendedBadge />}
+                </div>
+                <div style={{ font: '400 11.5px/1.5 Inter,sans-serif', color: TEXT_MUTED, marginTop: 5 }}>{opt.desc}</div>
+              </ChoiceCard>
+            ))}
           </div>
-        </CcSection>
+        </div>
       )}
-    </>
+    </div>
   );
 }

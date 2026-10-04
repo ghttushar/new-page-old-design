@@ -1,80 +1,338 @@
-import { CcProduct, CcRule, DEFAULT_KEYWORDS, MOCK_AMAZON_PRODUCTS, MOCK_KEYWORD_POOL, MOCK_RULES, MOCK_WALMART_PRODUCTS } from '@/constants/advertising/mock-campaign-creator-data';
+// Smart Campaign Creation — domain types, mock data and pure recommendation/generation logic.
+// Scope: Amazon + Walmart Sponsored Products (V1). Built from the "Smart Campaign Creation —
+// Sponsored Products" requirements doc — see each section's comment for the matching spec section.
 
-export type { CcProduct, CcRule };
+export type Marketplace = 'amazon' | 'walmart';
+export type AdType = 'sponsored-products';
 
-export type CcStepId = 'setup' | 'products' | 'objectives' | 'targeting' | 'structure' | 'rules' | 'preview' | 'result';
+export interface MarketplaceCapability {
+  label: string;
+  adTypes: { id: AdType; label: string; available: boolean }[];
+  targetingStrategies: TargetingStrategyId[];
+  minDailyBudget: number;
+  maxTargetAcos: number;
+  campaignLimit: number;
+}
 
-export type CcMarketplace = 'amazon' | 'walmart';
-export type CcGrouping = 'separate' | 'group';
-export type CcObjective = 'grow-sales' | 'improve-efficiency' | 'launch-discover';
-export type CcStrategyId = 'automatic' | 'exact' | 'phrase' | 'broad' | 'product' | 'competitor' | 'brand' | 'category';
-export type CcStructureId = 'consolidated' | 'targeting-type' | 'product-targeting' | 'product-single-auto' | 'product-multiple-auto' | 'custom';
-export type CcTargetSource = 'platform' | 'anarix' | 'custom';
+export type TargetingStrategyId =
+  | 'auto'
+  | 'exact'
+  | 'phrase'
+  | 'broad'
+  | 'product'
+  | 'competitor'
+  | 'brand'
+  | 'category';
 
-export interface CcStrategyMeta {
-  id: CcStrategyId;
-  title: string;
+export const MANUAL_TARGETING_IDS: TargetingStrategyId[] = [
+  'exact', 'phrase', 'broad', 'product', 'competitor', 'brand', 'category',
+];
+
+export interface TargetingStrategyDef {
+  id: TargetingStrategyId;
+  label: string;
   description: string;
-  amazonOnly?: boolean;
 }
 
-export const STRATEGY_CATALOG: CcStrategyMeta[] = [
-  { id: 'automatic', title: 'Automatic', description: 'Let Amazon discover relevant search terms and products.' },
-  { id: 'exact', title: 'Keyword — Exact', description: 'Capture high-intent searches matching your keywords closely.' },
-  { id: 'phrase', title: 'Keyword — Phrase', description: 'Reach searches containing your selected phrases.' },
-  { id: 'broad', title: 'Keyword — Broad', description: 'Expand discovery through broader keyword variations.' },
-  { id: 'product', title: 'Product Targeting', description: 'Target specific products, categories or competitors.', amazonOnly: true },
-  { id: 'competitor', title: 'Competitor Targeting', description: 'Target competitor products/brands.', amazonOnly: true },
-  { id: 'brand', title: 'Brand Targeting', description: 'Target searches associated with a brand.', amazonOnly: true },
-  { id: 'category', title: 'Category Targeting', description: 'Target products within relevant categories.', amazonOnly: true },
-];
+export const TARGETING_STRATEGY_CATALOG: Record<TargetingStrategyId, TargetingStrategyDef> = {
+  auto: { id: 'auto', label: 'Automatic', description: 'The marketplace automatically discovers relevant search terms and products.' },
+  exact: { id: 'exact', label: 'Keyword — Exact', description: 'Targets highly specific search queries.' },
+  phrase: { id: 'phrase', label: 'Keyword — Phrase', description: 'Targets search queries containing the selected phrase.' },
+  broad: { id: 'broad', label: 'Keyword — Broad', description: 'Targets broader variations of the selected keyword.' },
+  product: { id: 'product', label: 'Product Targeting', description: 'Targets specific products or categories.' },
+  competitor: { id: 'competitor', label: 'Competitor Targeting', description: 'Targets competitor products and brands.' },
+  brand: { id: 'brand', label: 'Brand Targeting', description: 'Targets searches associated with your brand.' },
+  category: { id: 'category', label: 'Category Targeting', description: 'Targets products within relevant categories.' },
+};
 
-export function strategiesFor(marketplace: CcMarketplace | null): CcStrategyMeta[] {
-  if (marketplace === 'walmart') return STRATEGY_CATALOG.filter((s) => !s.amazonOnly);
-  return STRATEGY_CATALOG;
-}
+// Section 13 — Amazon vs Walmart share the same UX; capabilities differ per marketplace.
+export const MARKETPLACE_CAPABILITY: Record<Marketplace, MarketplaceCapability> = {
+  amazon: {
+    label: 'Amazon',
+    adTypes: [
+      { id: 'sponsored-products', label: 'Sponsored Products', available: true },
+    ],
+    targetingStrategies: ['auto', 'exact', 'phrase', 'broad', 'product', 'competitor', 'brand', 'category'],
+    minDailyBudget: 10,
+    maxTargetAcos: 90,
+    campaignLimit: 1000,
+  },
+  walmart: {
+    label: 'Walmart',
+    adTypes: [
+      { id: 'sponsored-products', label: 'Sponsored Products', available: true },
+    ],
+    targetingStrategies: ['auto', 'exact', 'phrase', 'broad', 'product'],
+    minDailyBudget: 15,
+    maxTargetAcos: 75,
+    campaignLimit: 500,
+  },
+};
 
-export const RECOMMENDED_STRATEGY_IDS: CcStrategyId[] = ['automatic', 'exact', 'phrase'];
+// ── Products (Section 4) ──────────────────────────────────────────────────────────────────────
 
-export interface CcStructureMeta {
-  id: CcStructureId;
+/** A child ASIN (variation) that rolls up under a parent product. */
+export interface CcChildProduct {
+  id: string;
   title: string;
-  useCase: string;
-  autoLabel: string;
-  manualLabel: string;
-  productSeparation: boolean;
-  granularity: 'Low' | 'Medium' | 'High' | 'Very High';
+  asin: string;
+  sku: string;
+  inventory: number;
+  adSpend: number;
+  adSales: number;
+  acos: number;
 }
 
-export const STRUCTURE_CATALOG: CcStructureMeta[] = [
-  { id: 'consolidated', title: 'Consolidated', useCase: 'Fewer campaigns, simplified management, consolidated budgets.', autoLabel: '1', manualLabel: '1', productSeparation: false, granularity: 'Low' },
-  { id: 'targeting-type', title: 'Targeting-Type', useCase: 'Manage keyword match types and product targeting independently.', autoLabel: '1', manualLabel: 'Multiple by type', productSeparation: false, granularity: 'Medium' },
-  { id: 'product-targeting', title: 'Product + Targeting', useCase: 'Product-level budget, performance and targeting control.', autoLabel: '1 per product', manualLabel: 'Multiple per product', productSeparation: true, granularity: 'High' },
-  { id: 'product-single-auto', title: 'Product + Single Auto', useCase: 'Product-level control, one consolidated Auto campaign per product.', autoLabel: '1 per product', manualLabel: 'Multiple per product', productSeparation: true, granularity: 'High' },
-  { id: 'product-multiple-auto', title: 'Product + Multiple Auto', useCase: 'Maximum granularity — independent management of every match type.', autoLabel: 'Multiple per product', manualLabel: 'Multiple per product', productSeparation: true, granularity: 'Very High' },
-  { id: 'custom', title: 'Custom', useCase: 'Describe how you want your campaigns organized and Jiva builds it.', autoLabel: 'User-defined', manualLabel: 'User-defined', productSeparation: true, granularity: 'Very High' },
+export interface CcProduct {
+  id: string;
+  title: string;
+  asin: string;
+  sku: string;
+  brand: string;
+  category: string;
+  eligible: boolean;
+  ineligibleReason?: string;
+  inventory: number;
+  sales: number;
+  adSpend: number;
+  adSales: number;
+  acos: number;
+  hasExistingCampaign: boolean;
+  thumbnailColor: string;
+  children?: CcChildProduct[];
+  /** Set on a child product that has been flattened into a selectable product. */
+  parentTitle?: string;
+}
+
+const AMAZON_PRODUCTS: CcProduct[] = [
+  { id: 'a-1', title: 'Whey Protein Isolate 1kg — Chocolate', asin: 'B08XK2QW9L', sku: 'NB-WPI-CHOC-1KG', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 842, sales: 128400, adSpend: 8900, adSales: 41200, acos: 21.6, hasExistingCampaign: true, thumbnailColor: '#77469b',
+    children: [
+      { id: 'a-1-1', title: 'Whey Protein Isolate 500g — Chocolate', asin: 'B08XK2QW01', sku: 'NB-WPI-CHOC-500G', inventory: 320, adSpend: 2100, adSales: 8400, acos: 25.0 },
+      { id: 'a-1-2', title: 'Whey Protein Isolate 2kg — Chocolate', asin: 'B08XK2QW02', sku: 'NB-WPI-CHOC-2KG', inventory: 190, adSpend: 3400, adSales: 14900, acos: 22.8 },
+      { id: 'a-1-3', title: 'Whey Protein Isolate 3kg — Chocolate', asin: 'B08XK2QW03', sku: 'NB-WPI-CHOC-3KG', inventory: 130, adSpend: 1900, adSales: 9100, acos: 20.9 },
+      { id: 'a-1-4', title: 'Whey Protein Isolate Sample Pack 6×30g — Chocolate', asin: 'B08XK2QW04', sku: 'NB-WPI-CHOC-SMP6', inventory: 560, adSpend: 1500, adSales: 5200, acos: 28.8 },
+    ],
+  },
+  { id: 'a-2', title: 'Whey Protein Isolate 1kg — Vanilla', asin: 'B07QW9LMN2', sku: 'NB-WPI-VAN-1KG', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 613, sales: 96200, adSpend: 6100, adSales: 29800, acos: 20.5, hasExistingCampaign: true, thumbnailColor: '#2f6fed' },
+  { id: 'a-3', title: 'BCAA 250g — Watermelon', asin: 'B08LMN4RT8', sku: 'NB-BCAA-WM-250', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 1204, sales: 54300, adSpend: 3200, adSales: 11900, acos: 26.9, hasExistingCampaign: false, thumbnailColor: '#3f7d6a' },
+  { id: 'a-4', title: 'Creatine Monohydrate 300g', asin: 'B06TY7HJ3K', sku: 'NB-CRT-300', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 95, sales: 38700, adSpend: 2100, adSales: 9400, acos: 22.3, hasExistingCampaign: false, thumbnailColor: '#a8763f' },
+  { id: 'a-5', title: 'Resistance Bands Set — 5 Levels', asin: 'B09RK3PX77', sku: 'BF-RBS-5LV', brand: 'Boldfit', category: 'Fitness Equipment', eligible: true, inventory: 341, sales: 61800, adSpend: 4300, adSales: 18200, acos: 23.6, hasExistingCampaign: true, thumbnailColor: '#b3453f' },
+  { id: 'a-6', title: 'Adjustable Dumbbell Set 20kg', asin: 'B08WZ2QF41', sku: 'BF-ADJ-20KG', brand: 'Boldfit', category: 'Fitness Equipment', eligible: true, inventory: 58, sales: 142300, adSpend: 11200, adSales: 52100, acos: 21.5, hasExistingCampaign: true, thumbnailColor: '#2f6fed' },
+  { id: 'a-7', title: 'Yoga Mat — Extra Thick 10mm', asin: 'B07PL9QK63', sku: 'BF-YM-10MM', brand: 'Boldfit', category: 'Fitness Equipment', eligible: false, ineligibleReason: 'Out of stock', inventory: 0, sales: 28400, adSpend: 1800, adSales: 6200, acos: 29.0, hasExistingCampaign: false, thumbnailColor: '#77469b' },
+  { id: 'a-8', title: 'Multivitamin Gummies 60ct', asin: 'B09XH4RT22', sku: 'WN-MVG-60', brand: 'Wellbeing Nutrition', category: 'Vitamins & Supplements', eligible: true, inventory: 720, sales: 45900, adSpend: 2700, adSales: 10300, acos: 26.2, hasExistingCampaign: false, thumbnailColor: '#3f7d6a' },
+  { id: 'a-9', title: 'Plant Protein 900g — Chocolate', asin: 'B08QX7RW19', sku: 'WN-PP-CHOC-900', brand: 'Wellbeing Nutrition', category: 'Sports Nutrition', eligible: true, inventory: 410, sales: 71200, adSpend: 5400, adSales: 22600, acos: 23.9, hasExistingCampaign: true, thumbnailColor: '#a8763f' },
+  { id: 'a-10', title: 'Melatonin Gummies — Night Sleep', asin: 'B07RT8QL45', sku: 'WN-MLT-NS', brand: 'Wellbeing Nutrition', category: 'Vitamins & Supplements', eligible: false, ineligibleReason: 'Not advertising eligible', inventory: 230, sales: 19800, adSpend: 0, adSales: 0, acos: 0, hasExistingCampaign: false, thumbnailColor: '#b3453f' },
+  { id: 'a-11', title: 'Omega-3 Fish Oil 90 Softgels', asin: 'B08KX2QN87', sku: 'WN-OM3-90', brand: 'Wellbeing Nutrition', category: 'Vitamins & Supplements', eligible: true, inventory: 980, sales: 33600, adSpend: 1900, adSales: 7800, acos: 24.4, hasExistingCampaign: false, thumbnailColor: '#2f6fed' },
+  { id: 'a-12', title: 'Pre-Workout 300g — Blue Razz', asin: 'B09LMN8QP3', sku: 'NB-PWO-BR-300', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 187, sales: 58900, adSpend: 4800, adSales: 16200, acos: 29.6, hasExistingCampaign: true, thumbnailColor: '#77469b' },
 ];
 
-export const CAMPAIGN_LIMIT = 40;
-
-export const AUTO_SUBGROUPS = [
-  { id: 'closeMatch', label: 'Close Match' },
-  { id: 'looseMatch', label: 'Loose Match' },
-  { id: 'substitutes', label: 'Substitutes' },
-  { id: 'complements', label: 'Complements' },
+const WALMART_PRODUCTS: CcProduct[] = [
+  { id: 'w-1', title: 'Whey Protein Isolate 2lb — Chocolate', asin: '9W2K4QX1', sku: 'NB-WI-WM-CHOC', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 410, sales: 41200, adSpend: 2600, adSales: 10400, acos: 25.0, hasExistingCampaign: true, thumbnailColor: '#77469b' },
+  { id: 'w-2', title: 'BCAA Powder 250g', asin: '8K3LMN77', sku: 'NB-BCAA-WM', brand: 'Nutrabay', category: 'Sports Nutrition', eligible: true, inventory: 290, sales: 22800, adSpend: 1400, adSales: 5200, acos: 26.9, hasExistingCampaign: false, thumbnailColor: '#3f7d6a' },
+  { id: 'w-3', title: 'Resistance Bands Set', asin: '7RT9QP42', sku: 'BF-RBS-WM', brand: 'Boldfit', category: 'Fitness Equipment', eligible: true, inventory: 165, sales: 18600, adSpend: 1100, adSales: 3900, acos: 28.2, hasExistingCampaign: false, thumbnailColor: '#b3453f' },
+  { id: 'w-4', title: 'Adjustable Dumbbell Set', asin: '6QX8RT19', sku: 'BF-ADJ-WM', brand: 'Boldfit', category: 'Fitness Equipment', eligible: false, ineligibleReason: 'Out of stock', inventory: 0, sales: 51200, adSpend: 0, adSales: 0, acos: 0, hasExistingCampaign: false, thumbnailColor: '#2f6fed' },
+  { id: 'w-5', title: 'Multivitamin Gummies 60ct', asin: '5LMN3QK8', sku: 'WN-MVG-WM', brand: 'Wellbeing Nutrition', category: 'Vitamins & Supplements', eligible: true, inventory: 530, sales: 15900, adSpend: 900, adSales: 3100, acos: 29.0, hasExistingCampaign: false, thumbnailColor: '#a8763f' },
+  { id: 'w-6', title: 'Plant Protein 2lb — Chocolate', asin: '4RT7QX56', sku: 'WN-PP-WM-CHOC', brand: 'Wellbeing Nutrition', category: 'Sports Nutrition', eligible: true, inventory: 240, sales: 26400, adSpend: 1800, adSales: 6900, acos: 26.1, hasExistingCampaign: true, thumbnailColor: '#3f7d6a' },
 ];
 
-const KEYWORDS_PER_PRODUCT_PER_TYPE = 3;
-const PRODUCT_TARGETS_PER_PRODUCT = 2;
-const EXTRA_TARGETS_PER_PRODUCT = 2;
+/** Parents followed by their children, each child as a standalone selectable product that inherits the parent's attributes. */
+export function flattenProducts(products: CcProduct[]): CcProduct[] {
+  return products.flatMap((p) => [
+    p,
+    ...(p.children ?? []).map((k): CcProduct => ({
+      id: k.id, title: k.title, asin: k.asin, sku: k.sku, brand: p.brand, category: p.category, eligible: p.eligible,
+      inventory: k.inventory, sales: Math.round(k.adSales * 3.1), adSpend: k.adSpend, adSales: k.adSales, acos: k.acos,
+      hasExistingCampaign: p.hasExistingCampaign, thumbnailColor: p.thumbnailColor, parentTitle: p.title,
+    })),
+  ]);
+}
+
+export function productsFor(marketplace: Marketplace): CcProduct[] {
+  return marketplace === 'amazon' ? AMAZON_PRODUCTS : WALMART_PRODUCTS;
+}
+
+// ── Budget recommendation (Section 5) ────────────────────────────────────────────────────────
+
+/** Scales recent daily ad spend up 15% to leave room for the new campaigns alongside it. */
+export function recommendedBudget(products: CcProduct[]): number {
+  if (products.length === 0) return 50;
+  const recentDailySpend = products.reduce((sum, p) => sum + p.adSpend, 0) / 30;
+  const base = Math.max(10, Math.round(recentDailySpend * 1.15));
+  return Math.min(2000, Math.round(base / 5) * 5);
+}
+
+// ── Grouping (Section 4.4) ────────────────────────────────────────────────────────────────────
+
+export type GroupingMode = 'split-by-campaign' | 'split-by-ad-group';
+
+export function recommendGroupingMode(products: CcProduct[], dailyBudget: number): GroupingMode {
+  if (products.length <= 1) return 'split-by-campaign';
+  const perProductBudget = dailyBudget / products.length;
+  return perProductBudget >= 15 ? 'split-by-campaign' : 'split-by-ad-group';
+}
+
+// ── Targeting strategy recommendation (Section 6) ────────────────────────────────────────────
+
+export function recommendTargetingStrategies(products: CcProduct[], marketplace: Marketplace): TargetingStrategyId[] {
+  const supported = MARKETPLACE_CAPABILITY[marketplace].targetingStrategies;
+  const hasHistory = products.some((p) => p.adSpend > 0);
+  const base: TargetingStrategyId[] = ['auto', 'exact', 'phrase'];
+  const withBroad: TargetingStrategyId[] = hasHistory ? base : [...base, 'broad'];
+  return withBroad.filter((s) => supported.includes(s));
+}
+
+// ── Campaign structures (Section 7) ───────────────────────────────────────────────────────────
+
+export type StructureId =
+  | 'consolidated'
+  | 'targeting-type'
+  | 'product-targeting'
+  | 'product-single-auto'
+  | 'product-multi-auto'
+  | 'custom';
+
+export interface StructureDef {
+  id: StructureId;
+  number: number;
+  name: string;
+  tagline: string;
+  description: string;
+  useCase: string;
+  granularity: 'Low' | 'Medium' | 'High' | 'Very High' | 'Custom';
+  productSeparation: boolean;
+}
+
+export const STRUCTURE_CATALOG: StructureDef[] = [
+  {
+    id: 'consolidated', number: 1, name: 'Consolidated', tagline: 'One Auto + one Manual, total',
+    description: 'All selected targeting lives in one Auto campaign and one Manual campaign, in a single ad group each.',
+    useCase: 'Fewer campaigns, simplified management, consolidated budgets.',
+    granularity: 'Low', productSeparation: false,
+  },
+  {
+    id: 'targeting-type', number: 2, name: 'Targeting-Type', tagline: 'One Auto + Manual campaigns by type',
+    description: 'One Auto campaign, plus a separate Manual campaign for every selected targeting type.',
+    useCase: 'Manage keyword match types and product targeting independently, without splitting by product.',
+    granularity: 'Medium', productSeparation: false,
+  },
+  {
+    id: 'product-targeting', number: 3, name: 'Product + Targeting', tagline: 'Campaigns split by product and type',
+    description: 'Every selected product gets its own Auto campaign and its own set of Manual campaigns, one per targeting type.',
+    useCase: 'Full product-level budget control, performance reporting and bid management.',
+    granularity: 'High', productSeparation: true,
+  },
+  {
+    id: 'product-single-auto', number: 4, name: 'Product + Single Auto', tagline: 'One Auto per product, Manual split by type',
+    description: 'Each product gets exactly one consolidated Auto campaign, while Manual campaigns stay split by targeting type.',
+    useCase: 'Product-level control while keeping each product’s Auto targeting in one place.',
+    granularity: 'High', productSeparation: true,
+  },
+  {
+    id: 'product-multi-auto', number: 5, name: 'Product + Multiple Auto', tagline: 'Maximum predefined separation',
+    description: 'The most granular option — Auto and Manual campaigns are both split per product and per targeting type.',
+    useCase: 'Users who need maximum campaign-level control and granular optimization.',
+    granularity: 'Very High', productSeparation: true,
+  },
+  {
+    id: 'custom', number: 6, name: 'Custom', tagline: 'Describe it, Jiva builds it',
+    description: 'Describe your desired campaign structure in plain language and Jiva generates a proposed structure to review.',
+    useCase: 'Anything the five predefined structures don’t cover.',
+    granularity: 'Custom', productSeparation: false,
+  },
+];
+
+export interface StructureCounts {
+  autoCampaigns: number;
+  manualCampaigns: number;
+  totalCampaigns: number;
+  adGroups: number;
+  targets: number;
+}
+
+/** Section 7.4 — Campaign Count Calculation. `manualTypesCount` excludes 'auto'. */
+export function structureCounts(
+  structureId: StructureId,
+  productCount: number,
+  hasAuto: boolean,
+  manualTypesCount: number,
+): StructureCounts {
+  const p = Math.max(productCount, 0);
+  const m = Math.max(manualTypesCount, 0);
+  const auto = hasAuto ? 1 : 0;
+
+  switch (structureId) {
+    case 'consolidated': {
+      const autoCampaigns = auto;
+      const manualCampaigns = m > 0 ? 1 : 0;
+      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: m + auto };
+    }
+    case 'targeting-type': {
+      const autoCampaigns = auto;
+      const manualCampaigns = m;
+      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: m + auto };
+    }
+    case 'product-targeting': {
+      const autoCampaigns = auto * p;
+      const manualCampaigns = m * p;
+      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
+    }
+    case 'product-single-auto': {
+      const autoCampaigns = auto * p;
+      const manualCampaigns = m * p;
+      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
+    }
+    case 'product-multi-auto': {
+      // V1 only ever has one Auto targeting "type", so this numerically matches Structure 4 —
+      // the distinction exists for when multiple Auto sub-types ship (see spec §7.2, Structure 5).
+      const autoCampaigns = auto * p;
+      const manualCampaigns = m * p;
+      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
+    }
+    case 'custom':
+    default:
+      return { autoCampaigns: 0, manualCampaigns: 0, totalCampaigns: 0, adGroups: 0, targets: 0 };
+  }
+}
+
+export interface StructureRecommendation {
+  structureId: StructureId;
+  reason: string;
+}
+
+/** Section 7.5 — Structure Recommendation. */
+export function recommendStructure(
+  productCount: number,
+  manualTypesCount: number,
+  dailyBudget: number,
+  campaignLimit: number,
+): StructureRecommendation {
+  const perProductBudget = dailyBudget / Math.max(productCount, 1);
+  if (productCount <= 1) {
+    return { structureId: 'targeting-type', reason: 'A single product with multiple targeting types is best served by keeping each type in its own campaign.' };
+  }
+  const productTargetingTotal = structureCounts('product-targeting', productCount, true, manualTypesCount).totalCampaigns;
+  if (productTargetingTotal > campaignLimit * 0.8) {
+    return { structureId: 'targeting-type', reason: `You selected ${manualTypesCount + 1} targeting types across ${productCount} products. This structure keeps targeting types separate while avoiding a large number of product-level campaigns.` };
+  }
+  if (perProductBudget < 15) {
+    return { structureId: 'consolidated', reason: 'Your daily budget is tight relative to the number of selected products — consolidating into fewer campaigns keeps each one adequately funded.' };
+  }
+  return { structureId: 'product-targeting', reason: `Your budget comfortably supports one campaign per product and targeting type (${productTargetingTotal} campaigns), giving you full product-level control.` };
+}
+
+export function validateCampaignLimit(count: number, limit: number): { ok: boolean; message?: string } {
+  if (count <= limit) return { ok: true };
+  return { ok: false, message: `This structure will create ${count.toLocaleString()} campaigns, but only ${limit.toLocaleString()} are available for this account.` };
+}
+
+// ── Campaign generation (feeds the Preview step) ─────────────────────────────────────────────
 
 export interface CcTarget {
   id: string;
   label: string;
-  matchType: string;
+  matchType: TargetingStrategyId;
   bid: number;
-  source: CcTargetSource;
-  negative?: boolean;
+  source: 'Platform recommendation' | 'Anarix recommendation';
 }
 
 export interface CcAdGroup {
@@ -84,308 +342,141 @@ export interface CcAdGroup {
   targets: CcTarget[];
 }
 
-export interface CcGeneratedCampaign {
+export interface CcCampaign {
   id: string;
   name: string;
   kind: 'auto' | 'manual';
+  targetingLabel: string;
   productIds: string[];
   adGroups: CcAdGroup[];
   dailyBudget: number;
-  ruleIds: string[];
+  budgetAllocationPct: number;
 }
 
-export interface CcDraft {
-  marketplace: CcMarketplace | null;
-  advertiserId: string;
-
-  selectedProductIds: string[];
-  grouping: CcGrouping | null;
-
-  objective: CcObjective | null;
-  targetAcos: string;
-  dailyBudget: string;
-
-  targetingStrategies: CcStrategyId[];
-
-  structure: CcStructureId | null;
-  jivaPrompt: string;
-  jivaTree: CcGeneratedCampaign[] | null;
-
-  selectedRuleIds: string[];
-  rulesApplyTo: 'all' | 'selected';
-  selectedCampaignIdsForRules: string[];
-
-  aiManagementEnabled: boolean;
-
-  campaignBudgetOverrides: Record<string, number>;
-}
-
-export const EMPTY_DRAFT: CcDraft = {
-  marketplace: null,
-  advertiserId: '',
-
-  selectedProductIds: [],
-  grouping: null,
-
-  objective: 'grow-sales',
-  targetAcos: '25',
-  dailyBudget: '',
-
-  targetingStrategies: [...RECOMMENDED_STRATEGY_IDS],
-
-  structure: null,
-  jivaPrompt: '',
-  jivaTree: null,
-
-  selectedRuleIds: [],
-  rulesApplyTo: 'all',
-  selectedCampaignIdsForRules: [],
-
-  aiManagementEnabled: true,
-
-  campaignBudgetOverrides: {},
+const KEYWORD_SEEDS: Record<string, string[]> = {
+  'Sports Nutrition': ['whey protein isolate', 'protein powder chocolate', 'bcaa supplement', 'creatine monohydrate', 'pre workout powder'],
+  'Fitness Equipment': ['resistance bands set', 'adjustable dumbbells', 'yoga mat non slip', 'home gym equipment'],
+  'Vitamins & Supplements': ['multivitamin gummies', 'omega 3 fish oil', 'melatonin sleep aid'],
 };
 
-export function productsFor(marketplace: CcMarketplace | null): CcProduct[] {
-  return marketplace === 'walmart' ? MOCK_WALMART_PRODUCTS : MOCK_AMAZON_PRODUCTS;
+function keywordsFor(product: CcProduct, count: number): string[] {
+  const pool = KEYWORD_SEEDS[product.category] ?? ['best seller', 'top rated', 'daily essential'];
+  return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
 }
 
-export function selectedProducts(draft: CcDraft): CcProduct[] {
-  const catalog = productsFor(draft.marketplace);
-  return catalog.filter((p) => draft.selectedProductIds.includes(p.id));
+function bidFor(product: CcProduct): number {
+  const base = product.acos > 0 ? Math.max(0.35, 12 / product.acos) : 0.75;
+  return Math.round(base * 100) / 100;
 }
 
-export function manualStrategies(draft: CcDraft): CcStrategyId[] {
-  return draft.targetingStrategies.filter((s) => s !== 'automatic');
+function manualTarget(product: CcProduct, matchType: TargetingStrategyId, idx: number): CcTarget {
+  const label = matchType === 'product'
+    ? `${product.asin} — competitor ASINs`
+    : matchType === 'competitor' ? `${product.brand} competitors`
+    : matchType === 'brand' ? `${product.brand} branded terms`
+    : matchType === 'category' ? product.category
+    : keywordsFor(product, 3)[idx % 3];
+  return { id: `t-${product.id}-${matchType}-${idx}`, label, matchType, bid: bidFor(product), source: idx % 2 === 0 ? 'Anarix recommendation' : 'Platform recommendation' };
 }
 
-let idSeq = 0;
-export function nextCcId(prefix: string): string {
-  idSeq += 1;
-  return `${prefix}-${idSeq}`;
-}
+/** Builds the real campaign/ad-group/target tree for the chosen structure — this is what the
+ * Preview step and the (simulated) creation step both render and submit. */
+export function generateCampaigns(
+  structureId: StructureId,
+  products: CcProduct[],
+  strategies: TargetingStrategyId[],
+  dailyBudget: number,
+): CcCampaign[] {
+  const hasAuto = strategies.includes('auto');
+  const manualTypes = strategies.filter((s) => s !== 'auto');
+  if (products.length === 0 || (!hasAuto && manualTypes.length === 0)) return [];
 
-function strategyTitle(id: CcStrategyId): string {
-  return STRATEGY_CATALOG.find((s) => s.id === id)?.title.replace('Keyword — ', '') ?? id;
-}
+  const campaigns: CcCampaign[] = [];
+  const push = (c: Omit<CcCampaign, 'budgetAllocationPct'>) => campaigns.push({ ...c, budgetAllocationPct: 0 });
 
-/** Every generated campaign has exactly one ad group in every worked example in the spec — this
- * keeps ad-group count numerically equal to campaign count everywhere except the custom Jiva tree,
- * which defines its own ad groups directly. */
-export function structureCounts(structureId: CcStructureId, draft: CcDraft, products: CcProduct[]): { campaigns: number; adGroups: number; targets: number } {
-  const P = products.length;
-  const hasAuto = draft.targetingStrategies.includes('automatic');
-  const manual = manualStrategies(draft);
-  const M = manual.length;
-  const targets = targetTotal(draft, products);
-
-  if (structureId === 'custom') {
-    const tree = draft.jivaTree ?? [];
-    return { campaigns: tree.length, adGroups: tree.reduce((s, c) => s + c.adGroups.length, 0), targets };
-  }
-
-  let campaigns = 0;
-  switch (structureId) {
-    case 'consolidated':
-      campaigns = (hasAuto ? 1 : 0) + (M > 0 ? 1 : 0);
-      break;
-    case 'targeting-type':
-      campaigns = (hasAuto ? 1 : 0) + M;
-      break;
-    case 'product-targeting':
-    case 'product-single-auto':
-      campaigns = P * ((hasAuto ? 1 : 0) + M);
-      break;
-    case 'product-multiple-auto':
-      campaigns = P * ((hasAuto ? AUTO_SUBGROUPS.length : 0) + M);
-      break;
-  }
-  return { campaigns, adGroups: campaigns, targets };
-}
-
-export function targetTotal(draft: CcDraft, products: CcProduct[]): number {
-  const P = products.length;
-  let total = 0;
-  if (draft.targetingStrategies.includes('automatic')) total += P;
-  (['exact', 'phrase', 'broad'] as CcStrategyId[]).forEach((t) => {
-    if (draft.targetingStrategies.includes(t)) total += P * KEYWORDS_PER_PRODUCT_PER_TYPE;
+  const autoAdGroup = (products: CcProduct[], idPrefix: string): CcAdGroup => ({
+    id: `${idPrefix}-ag`, name: 'Auto Ad Group', productIds: products.map((p) => p.id), targets: [],
   });
-  if (draft.targetingStrategies.includes('product')) total += P * PRODUCT_TARGETS_PER_PRODUCT;
-  (['competitor', 'brand', 'category'] as CcStrategyId[]).forEach((t) => {
-    if (draft.targetingStrategies.includes(t)) total += P * EXTRA_TARGETS_PER_PRODUCT;
+  const manualAdGroup = (products: CcProduct[], types: TargetingStrategyId[], idPrefix: string): CcAdGroup => ({
+    id: `${idPrefix}-ag`, name: 'Manual Ad Group', productIds: products.map((p) => p.id),
+    targets: types.flatMap((t) => products.flatMap((p, i) => [manualTarget(p, t, i)])),
   });
-  return total;
-}
 
-export function isStructureAvailable(structureId: CcStructureId, draft: CcDraft, products: CcProduct[]): boolean {
-  if (structureId === 'custom') return true;
-  return structureCounts(structureId, draft, products).campaigns <= CAMPAIGN_LIMIT;
-}
-
-/** Steered primarily by the product-grouping choice from the Products step: "separate" leans toward
- * product-level structures, "group" leans toward consolidated ones — falling back to a smaller
- * structure whenever the natural pick would exceed the campaign limit. */
-export function recommendStructure(draft: CcDraft, products: CcProduct[]): CcStructureId {
-  const M = manualStrategies(draft).length;
-  const preferProductLevel = draft.grouping === 'separate';
-  const candidates: CcStructureId[] = preferProductLevel
-    ? ['product-targeting', 'targeting-type', 'consolidated']
-    : M >= 2
-      ? ['targeting-type', 'consolidated']
-      : ['consolidated', 'targeting-type'];
-  return candidates.find((id) => isStructureAvailable(id, draft, products)) ?? 'consolidated';
-}
-
-export function structureRecommendationReason(structureId: CcStructureId, draft: CcDraft, products: CcProduct[]): string {
-  const P = products.length;
-  const M = manualStrategies(draft).length + (draft.targetingStrategies.includes('automatic') ? 1 : 0);
-  if (structureId === 'product-targeting') {
-    return `You selected ${products.length} products and chose to keep them separate. This structure gives every product its own campaigns for independent budget and performance control.`;
-  }
-  if (structureId === 'targeting-type') {
-    return `You selected ${M} targeting types across ${P} products. This structure keeps targeting types separate while avoiding a large number of product-level campaigns.`;
-  }
-  return `With ${P} product${P === 1 ? '' : 's'} and ${M} targeting type${M === 1 ? '' : 's'}, a consolidated structure keeps management simple without sacrificing coverage.`;
-}
-
-function keywordsFor(productId: string, count: number): string[] {
-  const pool = MOCK_KEYWORD_POOL[productId] ?? DEFAULT_KEYWORDS;
-  const out: string[] = [];
-  for (let i = 0; i < count; i += 1) out.push(pool[i % pool.length]);
-  return out;
-}
-
-function bidFor(acosTarget: number, index: number): number {
-  const base = 25 / Math.max(acosTarget, 10);
-  return Math.round((base + index * 0.15) * 100) / 100;
-}
-
-function makeAdGroup(name: string, productIds: string[], targets: CcTarget[]): CcAdGroup {
-  return { id: nextCcId('ag'), name, productIds, targets };
-}
-
-function autoTargets(productIds: string[], acos: number): CcTarget[] {
-  return productIds.map((pid, i) => ({ id: nextCcId('t'), label: 'Automatic targeting', matchType: 'Auto', bid: bidFor(acos, i), source: 'platform' as CcTargetSource }));
-}
-
-function keywordTargets(productIds: string[], matchType: string, acos: number): CcTarget[] {
-  const out: CcTarget[] = [];
-  productIds.forEach((pid) => {
-    keywordsFor(pid, KEYWORDS_PER_PRODUCT_PER_TYPE).forEach((kw, i) => {
-      out.push({ id: nextCcId('t'), label: kw, matchType, bid: bidFor(acos, i), source: i === 0 ? 'anarix' : 'platform' });
+  if (structureId === 'consolidated') {
+    if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: products.map((p) => p.id), adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
+    if (manualTypes.length) push({ id: 'c-manual', name: 'Manual Campaign', kind: 'manual', targetingLabel: manualTypes.map((t) => TARGETING_STRATEGY_CATALOG[t].label).join(' + '), productIds: products.map((p) => p.id), adGroups: [manualAdGroup(products, manualTypes, 'c-manual')], dailyBudget: 0 });
+  } else if (structureId === 'targeting-type') {
+    if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: products.map((p) => p.id), adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
+    manualTypes.forEach((t) => {
+      const label = TARGETING_STRATEGY_CATALOG[t].label;
+      push({ id: `c-manual-${t}`, name: `Manual Campaign — ${label}`, kind: 'manual', targetingLabel: label, productIds: products.map((p) => p.id), adGroups: [manualAdGroup(products, [t], `c-manual-${t}`)], dailyBudget: 0 });
     });
-  });
-  return out;
-}
-
-function productTargets(products: CcProduct[], acos: number): CcTarget[] {
-  const out: CcTarget[] = [];
-  products.forEach((p) => {
-    out.push({ id: nextCcId('t'), label: `Category: ${p.category.split(' > ').pop()}`, matchType: 'Category', bid: bidFor(acos, 0), source: 'anarix' });
-    out.push({ id: nextCcId('t'), label: `${p.brand} — related products`, matchType: 'Product', bid: bidFor(acos, 1), source: 'custom' });
-  });
-  return out;
-}
-
-function manualAdGroupsAllTypes(products: CcProduct[], manual: CcStrategyId[], acos: number): CcAdGroup {
-  const targets: CcTarget[] = [];
-  const ids = products.map((p) => p.id);
-  manual.forEach((t) => {
-    if (t === 'product') targets.push(...productTargets(products, acos));
-    else if (t === 'competitor' || t === 'brand' || t === 'category') targets.push(...productTargets(products, acos));
-    else targets.push(...keywordTargets(ids, strategyTitle(t), acos));
-  });
-  return makeAdGroup('Manual Ad Group', ids, targets);
-}
-
-function manualAdGroupOneType(products: CcProduct[], t: CcStrategyId, acos: number): CcAdGroup {
-  const ids = products.map((p) => p.id);
-  const targets = t === 'product' || t === 'competitor' || t === 'brand' || t === 'category' ? productTargets(products, acos) : keywordTargets(ids, strategyTitle(t), acos);
-  return makeAdGroup('Ad Group', ids, targets);
-}
-
-/** The single source of truth for what Structure 4 actually generates in every worked example in
- * the spec — Structures "Product + Targeting" and "Product + Single Auto" produce an identical tree
- * (their prose distinction only shows up if a future version adds more than one Auto configuration
- * per product, which "Product + Multiple Auto" already covers explicitly). */
-export function generateCampaigns(draft: CcDraft, products: CcProduct[]): CcGeneratedCampaign[] {
-  const hasAuto = draft.targetingStrategies.includes('automatic');
-  const manual = manualStrategies(draft);
-  const acos = Number(draft.targetAcos) || 25;
-  const dailyBudget = Number(draft.dailyBudget) || 0;
-  if (products.length === 0 || (!hasAuto && manual.length === 0)) return [];
-
-  if (draft.structure === 'custom') return draft.jivaTree ?? [];
-
-  const campaigns: CcGeneratedCampaign[] = [];
-  const allIds = products.map((p) => p.id);
-
-  function push(name: string, kind: 'auto' | 'manual', productIds: string[], adGroups: CcAdGroup[]) {
-    campaigns.push({ id: nextCcId('camp'), name, kind, productIds, adGroups, dailyBudget: 0, ruleIds: [] });
+  } else if (structureId === 'product-targeting' || structureId === 'product-single-auto' || structureId === 'product-multi-auto') {
+    products.forEach((product) => {
+      if (hasAuto) push({ id: `c-${product.id}-auto`, name: `${product.title} — Auto`, kind: 'auto', targetingLabel: 'Automatic', productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto`)], dailyBudget: 0 });
+      manualTypes.forEach((t) => {
+        const label = TARGETING_STRATEGY_CATALOG[t].label;
+        push({ id: `c-${product.id}-${t}`, name: `${product.title} — ${label}`, kind: 'manual', targetingLabel: label, productIds: [product.id], adGroups: [manualAdGroup([product], [t], `c-${product.id}-${t}`)], dailyBudget: 0 });
+      });
+    });
   }
 
-  switch (draft.structure) {
-    case 'consolidated': {
-      if (hasAuto) push('Auto Campaign', 'auto', allIds, [makeAdGroup('Auto Ad Group', allIds, autoTargets(allIds, acos))]);
-      if (manual.length) push('Manual Campaign', 'manual', allIds, [manualAdGroupsAllTypes(products, manual, acos)]);
-      break;
-    }
-    case 'targeting-type': {
-      if (hasAuto) push('Auto Campaign', 'auto', allIds, [makeAdGroup('Auto Ad Group', allIds, autoTargets(allIds, acos))]);
-      manual.forEach((t) => push(`Manual — ${strategyTitle(t)}`, 'manual', allIds, [manualAdGroupOneType(products, t, acos)]));
-      break;
-    }
-    case 'product-targeting':
-    case 'product-single-auto': {
-      products.forEach((p) => {
-        if (hasAuto) push(`${p.name} — Auto`, 'auto', [p.id], [makeAdGroup('Auto Ad Group', [p.id], autoTargets([p.id], acos))]);
-        manual.forEach((t) => push(`${p.name} — ${strategyTitle(t)}`, 'manual', [p.id], [manualAdGroupOneType([p], t, acos)]));
-      });
-      break;
-    }
-    case 'product-multiple-auto': {
-      products.forEach((p) => {
-        if (hasAuto) {
-          AUTO_SUBGROUPS.forEach((g) => push(`${p.name} — Auto (${g.label})`, 'auto', [p.id], [makeAdGroup(`Auto Ad Group — ${g.label}`, [p.id], autoTargets([p.id], acos))]));
-        }
-        manual.forEach((t) => push(`${p.name} — ${strategyTitle(t)}`, 'manual', [p.id], [manualAdGroupOneType([p], t, acos)]));
-      });
-      break;
-    }
-    default:
-      return [];
-  }
+  // Even budget split across campaigns, rounded to the cent, remainder on the first campaign.
+  const share = campaigns.length ? Math.floor((dailyBudget / campaigns.length) * 100) / 100 : 0;
+  let allocated = 0;
+  campaigns.forEach((c, i) => {
+    c.dailyBudget = i === campaigns.length - 1 ? Math.round((dailyBudget - allocated) * 100) / 100 : share;
+    allocated += c.dailyBudget;
+    c.budgetAllocationPct = dailyBudget > 0 ? Math.round((c.dailyBudget / dailyBudget) * 1000) / 10 : 0;
+  });
 
-  const equalShare = campaigns.length ? Math.round((dailyBudget / campaigns.length) * 100) / 100 : 0;
-  campaigns.forEach((c) => { c.dailyBudget = draft.campaignBudgetOverrides[c.id] ?? equalShare; });
   return campaigns;
 }
 
-export function totalAllocatedBudget(campaigns: CcGeneratedCampaign[]): number {
-  return Math.round(campaigns.reduce((s, c) => s + c.dailyBudget, 0) * 100) / 100;
+export function totalAdGroups(campaigns: CcCampaign[]): number {
+  return campaigns.reduce((sum, c) => sum + c.adGroups.length, 0);
 }
 
-export function recommendedDailyBudget(draft: CcDraft, products: CcProduct[]): { low: number; high: number; mid: number } {
-  const base = 25 + products.length * 20 + manualStrategies(draft).length * 12 + (draft.targetingStrategies.includes('automatic') ? 15 : 0);
-  return { low: Math.round(base * 0.85 / 5) * 5, mid: Math.round(base / 5) * 5, high: Math.round(base * 1.3 / 5) * 5 };
+export function totalTargets(campaigns: CcCampaign[]): number {
+  return campaigns.reduce((sum, c) => sum + c.adGroups.reduce((s, ag) => s + ag.targets.length, 0), 0);
 }
 
-export function typicalAcosRange(products: CcProduct[]): { low: number; high: number } {
-  const eligible = products.filter((p) => p.eligible);
-  if (!eligible.length) return { low: 20, high: 35 };
-  const avg = eligible.reduce((s, p) => s + p.acos, 0) / eligible.length;
-  return { low: Math.round(avg - 4), high: Math.round(avg + 4) };
+// ── Draft state ───────────────────────────────────────────────────────────────────────────────
+
+export type CcStepId = 'entry' | 'products' | 'objectives' | 'targeting' | 'structure' | 'preview' | 'creating' | 'result';
+
+export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'objectives', 'targeting', 'structure', 'preview', 'creating', 'result'];
+
+export interface CcDraft {
+  marketplace: Marketplace | null;
+  adType: AdType | null;
+  productIds: string[];
+  groupingMode: GroupingMode;
+  targetAcos: number | null;
+  dailyBudget: number;
+  targetingStrategies: TargetingStrategyId[];
+  structureId: StructureId | null;
+  customPrompt: string;
+  customCampaigns: CcCampaign[] | null;
+  /** Snapshot taken when the Preview step is reached — lets the user edit per-campaign budget
+   * allocation there without it being recomputed (and the edits lost) on every render. */
+  generatedCampaigns: CcCampaign[] | null;
 }
 
-export function isBudgetSufficient(draft: CcDraft, products: CcProduct[]): boolean {
-  const rec = recommendedDailyBudget(draft, products);
-  const budget = Number(draft.dailyBudget) || 0;
-  return budget >= rec.low;
-}
+export const EMPTY_DRAFT: CcDraft = {
+  marketplace: 'amazon',
+  adType: null,
+  productIds: [],
+  groupingMode: 'split-by-campaign',
+  targetAcos: null,
+  dailyBudget: 50,
+  targetingStrategies: [],
+  structureId: null,
+  customPrompt: '',
+  customCampaigns: null,
+  generatedCampaigns: null,
+};
 
-export const MOCK_RULES_LIST: CcRule[] = MOCK_RULES;
-
-export function recommendedRules(draft: CcDraft, products: CcProduct[]): CcRule[] {
-  const lowInventory = products.some((p) => p.eligible && p.inventory > 0 && p.inventory < 150);
-  return MOCK_RULES.filter((r) => r.recommendedReason && (r.id !== 'rule-3' || lowInventory));
+export function formatCurrency(n: number): string {
+  return `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
