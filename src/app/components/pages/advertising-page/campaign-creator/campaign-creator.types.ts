@@ -249,12 +249,30 @@ export interface StructureCounts {
   targets: number;
 }
 
+// Auto targeting sub-types — Structure 5 creates one Auto campaign per selected type, per product (§7.2).
+export type AutoTypeId = 'close-match' | 'loose-match' | 'substitutes' | 'complements';
+export const AUTO_TYPE_CATALOG: { id: AutoTypeId; label: string; description: string }[] = [
+  { id: 'close-match', label: 'Close match', description: 'Shoppers searching terms closely related to your product.' },
+  { id: 'loose-match', label: 'Loose match', description: 'Shoppers searching terms loosely related to your product.' },
+  { id: 'substitutes', label: 'Substitutes', description: 'Shoppers viewing detail pages of similar products.' },
+  { id: 'complements', label: 'Complements', description: 'Shoppers viewing detail pages of complementary products.' },
+];
+
+// Section 7.6 — account-level campaign limits. `used` is mock data for what the account already has live.
+export const ACCOUNT_CAMPAIGNS_USED: Record<Marketplace, number> = { amazon: 880, walmart: 410 };
+export function accountCampaignLimits(marketplace: Marketplace): { limit: number; used: number; available: number } {
+  const limit = MARKETPLACE_CAPABILITY[marketplace].campaignLimit;
+  const used = ACCOUNT_CAMPAIGNS_USED[marketplace];
+  return { limit, used, available: Math.max(limit - used, 0) };
+}
+
 /** Section 7.4 — Campaign Count Calculation. `manualTypesCount` excludes 'auto'. */
 export function structureCounts(
   structureId: StructureId,
   productCount: number,
   hasAuto: boolean,
   manualTypesCount: number,
+  autoTypesCount = 1,
 ): StructureCounts {
   const p = Math.max(productCount, 0);
   const m = Math.max(manualTypesCount, 0);
@@ -282,11 +300,11 @@ export function structureCounts(
       return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
     }
     case 'product-multi-auto': {
-      // V1 only ever has one Auto targeting "type", so this numerically matches Structure 4 —
-      // the distinction exists for when multiple Auto sub-types ship (see spec §7.2, Structure 5).
-      const autoCampaigns = auto * p;
+      // One Auto campaign per selected Auto type, per product (spec §7.2, Structure 5).
+      const types = Math.max(autoTypesCount, 1);
+      const autoCampaigns = auto * p * types;
       const manualCampaigns = m * p;
-      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
+      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (auto * types + m) * p };
     }
     case 'custom':
     default:
@@ -327,12 +345,23 @@ export function validateCampaignLimit(count: number, limit: number): { ok: boole
 
 // ── Campaign generation (feeds the Preview step) ─────────────────────────────────────────────
 
+// Section 8.6 — where a targeting item came from.
+export type TargetSource = 'Platform recommendation' | 'Anarix recommendation' | 'Custom input' | 'Keyword list' | 'Labels / tags';
+export const TARGET_SOURCES: TargetSource[] = ['Platform recommendation', 'Anarix recommendation', 'Custom input', 'Keyword list', 'Labels / tags'];
+
 export interface CcTarget {
   id: string;
   label: string;
   matchType: TargetingStrategyId;
   bid: number;
-  source: 'Platform recommendation' | 'Anarix recommendation';
+  source: TargetSource;
+}
+
+/** Section 8.5 — negative keyword / negative product target on an ad group. */
+export interface CcNegative {
+  id: string;
+  text: string;
+  kind: 'keyword' | 'product';
 }
 
 export interface CcAdGroup {
@@ -340,6 +369,7 @@ export interface CcAdGroup {
   name: string;
   productIds: string[];
   targets: CcTarget[];
+  negatives: CcNegative[];
 }
 
 export interface CcCampaign {
@@ -351,6 +381,57 @@ export interface CcCampaign {
   adGroups: CcAdGroup[];
   dailyBudget: number;
   budgetAllocationPct: number;
+  /** Section 16 — a product in this campaign already has a live campaign. */
+  possibleDuplicate?: boolean;
+}
+
+// ── Rules (Section 8.7) — existing account Rules that new campaigns can be assigned to ──────────
+
+export type RuleType = 'Budget' | 'Placement' | 'Inventory' | 'Bid' | 'Performance' | 'Pause / Enable';
+export type RuleScope = 'Campaign' | 'Ad group' | 'Account';
+
+export interface CcRule {
+  id: string;
+  name: string;
+  type: RuleType;
+  status: 'Active' | 'Inactive';
+  description: string;
+  conditions: string;
+  actions: string;
+  scope: RuleScope;
+  adType: 'Sponsored Products' | 'Sponsored Brands';
+  marketplaces: Marketplace[];
+  /** Campaigns that already use this Rule. */
+  assignedCampaigns: number;
+}
+
+export const RULE_TYPES: RuleType[] = ['Budget', 'Placement', 'Inventory', 'Bid', 'Performance', 'Pause / Enable'];
+
+export const MOCK_RULES: CcRule[] = [
+  { id: 'r-budget', name: 'Budget Allocation — High Performers', type: 'Budget', status: 'Active', description: 'Automatically reallocates budget toward campaigns meeting the defined performance conditions.', conditions: 'ACOS below target for 7 days and spend above 80% of budget', actions: 'Raise daily budget by 15%, up to 2× the original', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['amazon', 'walmart'], assignedCampaigns: 24 },
+  { id: 'r-placement', name: 'Placement Optimization', type: 'Placement', status: 'Active', description: 'Optimizes placement performance by adjusting top-of-search bid modifiers.', conditions: 'Top-of-search ACOS differs from campaign ACOS by more than 10 points', actions: 'Adjust placement modifier by ±10%', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['amazon'], assignedCampaigns: 31 },
+  { id: 'r-inventory', name: 'Inventory Protection', type: 'Inventory', status: 'Active', description: 'Controls campaigns based on inventory so you stop paying for clicks you cannot fulfil.', conditions: 'Available inventory drops below 14 days of cover', actions: 'Pause the campaign and re-enable once restocked', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['amazon', 'walmart'], assignedCampaigns: 12 },
+  { id: 'r-bid', name: 'Low ACOS Bid Optimization', type: 'Bid', status: 'Active', description: 'Raises bids on targets that convert efficiently and trims bids on the rest.', conditions: 'Target ACOS under 20% with at least 10 clicks', actions: 'Increase bid by 8%, capped at $3.00', scope: 'Ad group', adType: 'Sponsored Products', marketplaces: ['amazon', 'walmart'], assignedCampaigns: 18 },
+  { id: 'r-monitor', name: 'Campaign Performance Monitor', type: 'Performance', status: 'Active', description: 'Monitors campaign performance and notifies you when something drifts.', conditions: 'ACOS above 35% or spend with zero orders for 5 days', actions: 'Send an alert to the campaign owner', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['amazon', 'walmart'], assignedCampaigns: 40 },
+  { id: 'r-pause', name: 'Weekend Pause Schedule', type: 'Pause / Enable', status: 'Inactive', description: 'Pauses campaigns on weekends and re-enables them on Monday morning.', conditions: 'Every Saturday 00:00', actions: 'Pause campaigns, re-enable Monday 06:00', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['amazon'], assignedCampaigns: 0 },
+  { id: 'r-sb-placement', name: 'Brand Placement Boost', type: 'Placement', status: 'Active', description: 'Boosts placement bids on branded campaigns.', conditions: 'Brand share of voice below 60%', actions: 'Raise placement modifier by 20%', scope: 'Campaign', adType: 'Sponsored Brands', marketplaces: ['amazon'], assignedCampaigns: 9 },
+  { id: 'r-wm-budget', name: 'Walmart Daily Budget Pacing', type: 'Budget', status: 'Active', description: 'Paces daily spend across the day for Walmart campaigns.', conditions: 'Budget exhausted before 3 PM', actions: 'Spread the remaining budget evenly', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['walmart'], assignedCampaigns: 6 },
+];
+
+/** Why a Rule can't be assigned to the generated campaigns, or null when it's compatible. */
+export function ruleIncompatibility(rule: CcRule, marketplace: Marketplace): string | null {
+  if (rule.adType !== 'Sponsored Products') return `This Rule is configured for ${rule.adType} and cannot be assigned to Sponsored Products.`;
+  if (!rule.marketplaces.includes(marketplace)) return `This Rule only applies to ${rule.marketplaces.map((m) => MARKETPLACE_CAPABILITY[m].label).join(' and ')} campaigns.`;
+  if (rule.status === 'Inactive') return 'This Rule is inactive. Turn it on from Rules before assigning campaigns to it.';
+  return null;
+}
+
+/** Existing Rules worth highlighting for this set of products — never creates or edits one. */
+export function recommendedRules(products: CcProduct[]): { ruleId: string; reason: string }[] {
+  const out: { ruleId: string; reason: string }[] = [];
+  if (products.some((p) => p.inventory < 200)) out.push({ ruleId: 'r-inventory', reason: 'Some of your selected products have limited inventory, and this Rule is commonly used with them.' });
+  if (products.length > 1) out.push({ ruleId: 'r-budget', reason: 'With several products competing for one budget, this Rule moves spend toward the campaigns that perform.' });
+  return out;
 }
 
 const KEYWORD_SEEDS: Record<string, string[]> = {
@@ -386,6 +467,7 @@ export function generateCampaigns(
   products: CcProduct[],
   strategies: TargetingStrategyId[],
   dailyBudget: number,
+  autoTypes: AutoTypeId[] = ['close-match'],
 ): CcCampaign[] {
   const hasAuto = strategies.includes('auto');
   const manualTypes = strategies.filter((s) => s !== 'auto');
@@ -394,13 +476,16 @@ export function generateCampaigns(
   const campaigns: CcCampaign[] = [];
   const push = (c: Omit<CcCampaign, 'budgetAllocationPct'>) => campaigns.push({ ...c, budgetAllocationPct: 0 });
 
-  const autoAdGroup = (products: CcProduct[], idPrefix: string): CcAdGroup => ({
-    id: `${idPrefix}-ag`, name: 'Auto Ad Group', productIds: products.map((p) => p.id), targets: [],
+  const seedNegatives = (idPrefix: string): CcNegative[] => [{ id: `${idPrefix}-neg-1`, text: 'free sample', kind: 'keyword' }];
+  const autoAdGroup = (products: CcProduct[], idPrefix: string, name = 'Auto Ad Group'): CcAdGroup => ({
+    id: `${idPrefix}-ag`, name, productIds: products.map((p) => p.id), targets: [], negatives: seedNegatives(idPrefix),
   });
   const manualAdGroup = (products: CcProduct[], types: TargetingStrategyId[], idPrefix: string): CcAdGroup => ({
     id: `${idPrefix}-ag`, name: 'Manual Ad Group', productIds: products.map((p) => p.id),
     targets: types.flatMap((t) => products.flatMap((p, i) => [manualTarget(p, t, i)])),
+    negatives: seedNegatives(idPrefix),
   });
+  const autoTypeLabel = (id: AutoTypeId) => AUTO_TYPE_CATALOG.find((a) => a.id === id)?.label ?? id;
 
   if (structureId === 'consolidated') {
     if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: products.map((p) => p.id), adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
@@ -413,13 +498,19 @@ export function generateCampaigns(
     });
   } else if (structureId === 'product-targeting' || structureId === 'product-single-auto' || structureId === 'product-multi-auto') {
     products.forEach((product) => {
-      if (hasAuto) push({ id: `c-${product.id}-auto`, name: `${product.title} — Auto`, kind: 'auto', targetingLabel: 'Automatic', productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto`)], dailyBudget: 0 });
+      if (hasAuto && structureId === 'product-multi-auto') {
+        (autoTypes.length ? autoTypes : ['close-match' as AutoTypeId]).forEach((at) => {
+          push({ id: `c-${product.id}-auto-${at}`, name: `${product.title} — Auto (${autoTypeLabel(at)})`, kind: 'auto', targetingLabel: `Automatic · ${autoTypeLabel(at)}`, productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto-${at}`, `Auto Ad Group — ${autoTypeLabel(at)}`)], dailyBudget: 0 });
+        });
+      } else if (hasAuto) push({ id: `c-${product.id}-auto`, name: `${product.title} — Auto`, kind: 'auto', targetingLabel: 'Automatic', productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto`)], dailyBudget: 0 });
       manualTypes.forEach((t) => {
         const label = TARGETING_STRATEGY_CATALOG[t].label;
         push({ id: `c-${product.id}-${t}`, name: `${product.title} — ${label}`, kind: 'manual', targetingLabel: label, productIds: [product.id], adGroups: [manualAdGroup([product], [t], `c-${product.id}-${t}`)], dailyBudget: 0 });
       });
     });
   }
+
+  campaigns.forEach((c) => { c.possibleDuplicate = c.productIds.some((id) => products.find((p) => p.id === id)?.hasExistingCampaign); });
 
   // Even budget split across campaigns, rounded to the cent, remainder on the first campaign.
   const share = campaigns.length ? Math.floor((dailyBudget / campaigns.length) * 100) / 100 : 0;
@@ -455,12 +546,19 @@ export interface CcDraft {
   targetAcos: number | null;
   dailyBudget: number;
   targetingStrategies: TargetingStrategyId[];
+  /** Auto targeting types — drives how many Auto campaigns Structure 5 creates per product. */
+  autoTypes: AutoTypeId[];
   structureId: StructureId | null;
   customPrompt: string;
   customCampaigns: CcCampaign[] | null;
   /** Snapshot taken when the Preview step is reached — lets the user edit per-campaign budget
    * allocation there without it being recomputed (and the edits lost) on every render. */
   generatedCampaigns: CcCampaign[] | null;
+  /** Existing Rules to assign the new campaigns to (§8.7). Smart Creation never creates or edits a Rule. */
+  ruleIds: string[];
+  ruleScope: 'all' | 'selected';
+  /** Campaigns that get the Rules when `ruleScope` is 'selected'. */
+  ruleCampaignIds: string[];
 }
 
 export const EMPTY_DRAFT: CcDraft = {
@@ -471,10 +569,14 @@ export const EMPTY_DRAFT: CcDraft = {
   targetAcos: null,
   dailyBudget: 50,
   targetingStrategies: [],
+  autoTypes: ['close-match', 'loose-match'],
   structureId: null,
   customPrompt: '',
   customCampaigns: null,
   generatedCampaigns: null,
+  ruleIds: [],
+  ruleScope: 'all',
+  ruleCampaignIds: [],
 };
 
 export function formatCurrency(n: number): string {
