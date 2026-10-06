@@ -97,7 +97,7 @@ function TaskRow({ task, selected, unread, onSelect, onCycleStatus, onRemind, in
         </div>
 
         {/* Full title, own line — never truncated. Alert-origin tasks lead with the alert's $ value, folded into the title itself rather than a separate badge. */}
-        <div style={{ font: `${unread ? 700 : 500} 14px/1.35 Inter,sans-serif`, color: unread ? '#23272d' : '#6b7178', marginTop: 9 }}>
+        <div style={{ font: `${unread ? 700 : 500} 14px/1.35 Inter,sans-serif`, color: '#23272d', marginTop: 9 }}>
           {linkedAlert && !linkedAlert.hideValue && (
             <span style={{ color: linkedAlert.valueNum < 0 ? '#b3453f' : '#1e8449' }}>{formatAlertValue(linkedAlert.valueNum)}{' '}</span>
           )}

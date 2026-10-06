@@ -1,38 +1,22 @@
-import { PROTOTYPE_ALERTS } from '@/constants/signals/prototype-data';
-import { DEFAULT_ASSIGNEES } from '../../signals/alerts/assign-menu';
 import Sidebar from '../../layout/side-bar/side-bar';
 
-export const noop = () => {};
-export const noopId = (_id: string) => {};
-
-export const firstAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a1')!;
-export const normalAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a2')!;
-export const imageAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a15')!;
-export const noValueAlert = PROTOTYPE_ALERTS.find((a) => a.id === 'a6')!;
-
-export const MANY_ASSIGNEES = [
-  ...DEFAULT_ASSIGNEES,
-  { id: 'p5', name: 'Aditi Rao', role: 'Client · Nutrabay' },
-  { id: 'p6', name: 'Karan Mehta', role: 'Ops' },
-  { id: 'p7', name: 'Wellbeing Nutrition pod', role: 'Team' },
-  { id: 'p8', name: 'Rahul Gupta', role: 'Client · Nutrabay' },
-  { id: 'p9', name: 'Sneha Iyer', role: 'Client · Nutrabay' },
-  { id: 'p10', name: 'Priya Nair', role: 'Client · Wellbeing' },
-  { id: 'p11', name: 'Ritvik Sharma', role: 'Ops' },
-  { id: 'p12', name: 'Boldfit pod', role: 'Team' },
-  { id: 'p13', name: 'Growth pod', role: 'Team' },
-  { id: 'p14', name: 'Ananya Das', role: 'Marketing' },
-  { id: 'p15', name: 'Vikram Nair', role: 'Ops' },
-  { id: 'p16', name: 'Leadership', role: 'Team' },
+/** The Work-station design-handoff pages — small topical pages so each one imports quickly and nothing is cut off. */
+export const WORKSTATION_PAGES: { path: string; label: string; note: string }[] = [
+  { path: '/signals-preview/workstation-all', label: 'All screens', note: 'Every Work-station screen on one page — one link to import everything.' },
+  { path: '/signals-preview/workstation', label: 'WS · Layout', note: 'Default screen, Ask Jiva open, collapsed list, Signals header menus.' },
+  { path: '/signals-preview/workstation-list', label: 'WS · List & read state', note: 'The three groups, and unread (bold) vs read (medium) task titles.' },
+  { path: '/signals-preview/workstation-filters', label: 'WS · Search & filters', note: 'Search, the Filter popover, and the category-card filters.' },
+  { path: '/signals-preview/workstation-menus', label: 'WS · Row menus', note: 'The ⋮ row menu, its Share submenu, and the reminder toast.' },
+  { path: '/signals-preview/workstation-detail', label: 'WS · Meeting tasks', note: 'Right column for tasks that came from a meeting — collapsed, Context expanded, Context + Activity expanded.' },
+  { path: '/signals-preview/workstation-alerts', label: 'WS · Alert tasks', note: 'Right column for tasks that came from an alert — suggested actions, affected items, executed / dismissed, collapsed and expanded.' },
+  { path: '/signals-preview/workstation-origins', label: 'WS · Jiva & created tasks', note: 'Right column for Jiva-generated tasks and tasks created directly.' },
+  { path: '/signals-preview/workstation-fields', label: 'WS · Fields & popovers', note: 'Assignee / Status / Priority / Due editors, title and description editing, Share popover.' },
+  { path: '/signals-preview/workstation-activity', label: 'WS · Activity', note: 'Activity expanded, comment composer, comment typed, Context + Activity together.' },
+  { path: '/signals-preview/workstation-new-task', label: 'WS · New task', note: 'The New task screen in the right column — empty, filled, and each field menu.' },
+  { path: '/signals-preview/workstation-jiva', label: 'WS · Ask Jiva', note: 'The Ask Jiva chat column in every state.' },
 ];
 
-export const PREVIEW_PAGES: { path: string; label: string; note: string }[] = [
-  { path: '/signals-preview/signals', label: 'Alerts, Meetings & Work-station', note: 'Every Alerts, Meetings and Work-station screen, panel and menu as static frames — nothing to click through.' },
-  { path: '/signals-preview/updates', label: 'Recent updates', note: 'Everything added or redesigned in the latest pass — Work-station task rows and detail-panel field editors, the Activity comment thread, the due-date calendar, and the Meetings list/upcoming/completed screens.' },
-  { path: '/signals-preview/workstation', label: 'Work-station · list', note: 'Whole Work-station screens as they are today: layout, collapsed list, header menus, groups, search, filters, row menus.' },
-  { path: '/signals-preview/workstation-detail', label: 'Work-station · detail', note: 'The task detail column for every kind of task, every field editor and popover, Activity.' },
-  { path: '/signals-preview/workstation-new-task', label: 'Work-station · new task & Jiva', note: 'The New task screen in every state and the Ask Jiva chat.' },
-];
+export const PREVIEW_PAGES = WORKSTATION_PAGES;
 
 export function PreviewNav({ current }: { current: string }) {
   return (

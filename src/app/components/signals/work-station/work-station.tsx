@@ -38,6 +38,8 @@ export interface WorkStationPreview {
   /** Extra tasks placed ahead of the prototype data (e.g. a directly-created one). */
   extraTasks?: WorkstationTask[];
   listCollapsed?: boolean;
+  /** Tasks already opened (their title drops from bold to medium weight). */
+  readTaskIds?: string[];
   quickFilter?: keyof typeof QUICK_FILTER_LABEL;
   search?: string;
   priorityFilters?: string[];
@@ -92,7 +94,7 @@ export function WorkStation({
   const [tasks, setTasks] = useState<WorkstationTask[]>(() => [...(preview?.extraTasks ?? []), ...WORKSTATION_TASKS]);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [jivaOpen, setJivaOpen] = useState(initialJivaOpen);
-  const [readTaskIds, setReadTaskIds] = useState<Set<string>>(new Set(initialSelectedId ? [initialSelectedId] : []));
+  const [readTaskIds, setReadTaskIds] = useState<Set<string>>(new Set([...(initialSelectedId ? [initialSelectedId] : []), ...(preview?.readTaskIds ?? [])]));
   const markTaskRead = (id: string | null) => {
     if (!id) return;
     setReadTaskIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
