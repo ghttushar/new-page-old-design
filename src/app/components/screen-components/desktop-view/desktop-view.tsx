@@ -34,6 +34,7 @@ import PopupPreviewPage from '../../pages/popup-preview/popup-preview';
 import SignalsPreviewIndex from '../../pages/signals-preview/index';
 import SignalsCombinedPreviewPage from '../../pages/signals-preview/combined-page';
 import SignalsUpdatesPreviewPage from '../../pages/signals-preview/updates-page';
+import { WorkStationListPreviewPage, WorkStationDetailPreviewPage, WorkStationNewTaskPreviewPage } from '../../pages/signals-preview/workstation-pages';
 import SignalsNextPage from '../../pages/signals-next-page/signals-next-page';
 import SignalsPageWrapper from '../../pages/signals-page/signals-page-wrapper';
 import SignalDetailWrapper from '../../pages/signals-page/signal-detail-wrapper';
@@ -245,6 +246,9 @@ export default function DesktopView() {
               <Route path="/signals-preview" element={<SignalsPreviewIndex />} />
               <Route path="/signals-preview/signals" element={<SignalsCombinedPreviewPage />} />
               <Route path="/signals-preview/updates" element={<SignalsUpdatesPreviewPage />} />
+              <Route path="/signals-preview/workstation" element={<WorkStationListPreviewPage />} />
+              <Route path="/signals-preview/workstation-detail" element={<WorkStationDetailPreviewPage />} />
+              <Route path="/signals-preview/workstation-new-task" element={<WorkStationNewTaskPreviewPage />} />
               <Route path="*" element={<PrivateRoute component={<Home />} />} />
             </Routes>
           </div>

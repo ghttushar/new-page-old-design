@@ -17,6 +17,12 @@ interface Props {
   /** Splits this column evenly with its siblings instead of the usual fixed ~35% — used only when list, detail and Ask Jiva are all showing at once. */
   /** Explicit pixel width from the drag-resize handle — supersedes the default fixed ~35%. */
   width?: number;
+  /** Starts with this text typed in the input — for the design-handoff preview, not used by the real app. */
+  initialDraft?: string;
+  /** Starts with one question and Jiva's answer already in the thread — for the design-handoff preview, not used by the real app. */
+  initialConversation?: boolean;
+  /** Starts with Jiva's typing indicator showing — for the design-handoff preview, not used by the real app. */
+  initialTyping?: boolean;
 }
 
 const STATUS_LABEL: Record<TaskStatus, string> = {
@@ -26,23 +32,7 @@ const STATUS_LABEL: Record<TaskStatus, string> = {
 };
 
 /** Same chat-panel treatment as Alerts'/Meetings' Ask Jiva — occupies the list/board column it replaces, detail panel stays put alongside it. */
-export function WorkStationAskJivaPanel({ task, onClose, width }: Props) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'm0',
-      from: 'jiva',
-      text: `Hi, I'm Jiva. I've read "${task.text}" — ask me anything about the context, what's blocking it, or how to move it forward.`,
-    },
-  ]);
-  const [draft, setDraft] = useState('');
-  const [typing, setTyping] = useState(false);
-  const [thinkingStep, setThinkingStep] = useState('Reading the task…');
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, typing]);
-
+export function WorkStationAskJivaPanel({ task, onClose, width, initialDraft = '', initialConversation = false, initialTyping = false }: Props) {
   const reply = (question: string): string => {
     const q = question.toLowerCase();
     if (q.includes('draft')) {
@@ -59,6 +49,26 @@ export function WorkStationAskJivaPanel({ task, onClose, width }: Props) {
     }
     return `Here's the context I have: ${task.description}`;
   };
+
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 'm0',
+      from: 'jiva',
+      text: `Hi, I'm Jiva. I've read "${task.text}" — ask me anything about the context, what's blocking it, or how to move it forward.`,
+    },
+    ...(initialConversation ? [
+      { id: 'u1', from: 'user' as const, text: 'What should I do next?' },
+      { id: 'j1', from: 'jiva' as const, text: reply('What should I do next?') },
+    ] : []),
+  ]);
+  const [draft, setDraft] = useState(initialDraft);
+  const [typing, setTyping] = useState(initialTyping);
+  const [thinkingStep, setThinkingStep] = useState('Reading the task…');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages, typing]);
 
   const send = () => {
     const text = draft.trim();

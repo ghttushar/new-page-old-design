@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AUTO_TYPE_CATALOG, STRUCTURE_CATALOG, accountCampaignLimits, formatCurrency, structureCounts, recommendStructure, validateCampaignLimit,
-  type CcDraft, type CcProduct, type StructureId, type TargetingStrategyId,
+  AUTO_TYPE_CATALOG, STRUCTURE_CATALOG, accountCampaignLimits, formatCurrency, generateCampaigns, structureCounts, recommendStructure, validateCampaignLimit,
+  type CcCampaign, type CcDraft, type CcProduct, type StructureId, type TargetingStrategyId,
 } from '../campaign-creator.types';
+import { StructureMap, groupCampaigns } from './structure-map';
+import { Panel } from '../cc-design';
 import {
-  BAD, BORDER, BRAND, BRAND_TINT, CheckIcon, FONT, HAIR, Note, Radio, RecommendedTag, SparkleGlyph, StepHeading,
+  BAD, BORDER, BRAND, BRAND_TINT, CheckIcon, FONT, HAIR, Radio, SparkleGlyph, StepHeading,
   SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, WARN, WarningIcon,
 } from '../campaign-creator-ui';
 
@@ -28,136 +30,15 @@ function ProductGlyph({ color, size = 20 }: { color: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 14 14"><path d="M7 1.4L12.3 4.2v5.6L7 12.6 1.7 9.8V4.2Z" stroke={color} strokeWidth="1.3" fill="none" strokeLinejoin="round" /><path d="M1.7 4.2L7 7l5.3-2.8M7 7v5.6" stroke={color} strokeWidth="1.3" fill="none" /></svg>;
 }
 
-const TYPE_META: Partial<Record<TargetingStrategyId, { abbr: string; kind: 'keyword' | 'product' }>> = {
-  exact: { abbr: 'Exact', kind: 'keyword' },
-  phrase: { abbr: 'Phrase', kind: 'keyword' },
-  broad: { abbr: 'Broad', kind: 'keyword' },
-  brand: { abbr: 'Brand', kind: 'keyword' },
-  product: { abbr: 'Product', kind: 'product' },
-  competitor: { abbr: 'Competitor', kind: 'product' },
-  category: { abbr: 'Category', kind: 'product' },
-};
-
-function DiagStub({ h = 14 }: { h?: number }) {
-  return <div style={{ width: 1.5, height: h, background: BORDER, flex: 'none' }} />;
-}
-
-function DiagRake({ children, gap = 30 }: { children: React.ReactNode[]; gap?: number }) {
-  if (children.length === 0) return null;
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap, rowGap: 26, paddingTop: 14, borderTop: children.length > 1 ? `1.4px solid ${BORDER}` : 'none', justifyContent: 'center' }}>
-      {children}
-    </div>
-  );
-}
-
-function LeafLabel({ children }: { children: React.ReactNode }) {
-  return <div style={{ font: '600 11px/1.2 Inter,sans-serif', color: TEXT_MUTED, whiteSpace: 'nowrap' as const }}>{children}</div>;
-}
-
-function AutoLeaf({ label = 'Auto' }: { label?: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
-      <DiagStub />
-      <CircleGlyph color={GLYPH.auto} />
-      <SquareGlyph color={GLYPH.auto} />
-      <LeafLabel>{label}</LeafLabel>
-    </div>
-  );
-}
-function ManualConsolidatedLeaf() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
-      <DiagStub />
-      <DiamondGlyph color={GLYPH.manual} />
-      <SquareGlyph color={GLYPH.manual} />
-      <LeafLabel>Manual</LeafLabel>
-    </div>
-  );
-}
-function TypeLeaf({ type }: { type: TargetingStrategyId }) {
-  const meta = TYPE_META[type] ?? { abbr: type, kind: 'keyword' as const };
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
-      <DiagStub />
-      <DiamondGlyph color={GLYPH.manual} />
-      <SquareGlyph color={GLYPH.manual} />
-      {meta.kind === 'keyword' ? <KeywordGlyph color={GLYPH.manual} /> : <ProductGlyph color={GLYPH.manual} />}
-      <LeafLabel>{meta.abbr}</LeafLabel>
-    </div>
-  );
-}
-function MoreLeaf({ n }: { n: number }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
-      <DiagStub />
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: `1.6px dashed ${TEXT_FAINT}` }} />
-      <LeafLabel>+{n}</LeafLabel>
-    </div>
-  );
-}
-
-function ProductBranch({ index, hasAuto, autoLabels, manualTypes }: { index: number; hasAuto: boolean; autoLabels: string[]; manualTypes: TargetingStrategyId[] }) {
-  const leaves: React.ReactNode[] = [];
-  if (hasAuto) {
-    if (autoLabels.length === 0) leaves.push(<AutoLeaf key="auto" />);
-    else autoLabels.forEach((l) => leaves.push(<AutoLeaf key={`auto-${l}`} label={l} />));
-  }
-  manualTypes.forEach((t) => leaves.push(<TypeLeaf key={t} type={t} />));
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <DiagStub />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 14px', borderRadius: 999, background: '#eaf5f1', border: `1px solid ${GLYPH.product}33` }}>
-        <ProductGlyph color={GLYPH.product} size={16} />
-        <span style={{ font: '700 12.5px/1 Inter,sans-serif', color: GLYPH.product }}>P{index + 1}</span>
-      </div>
-      {leaves.length > 0 && <DiagStub h={12} />}
-      <DiagRake gap={12}>{leaves}</DiagRake>
-    </div>
-  );
-}
-
-/** A compact, iconographic diagram of how campaigns/ad groups will be organized for a given structure. */
-function StructureDiagram({ structureId, productCount, hasAuto, manualTypes, autoLabels }: {
-  structureId: StructureId; productCount: number; hasAuto: boolean; manualTypes: TargetingStrategyId[]; autoLabels: string[];
-}) {
-  if (structureId === 'custom') return null;
-
-  if (structureId === 'consolidated') {
-    const leaves: React.ReactNode[] = [];
-    if (hasAuto) leaves.push(<AutoLeaf key="auto" />);
-    if (manualTypes.length) leaves.push(<ManualConsolidatedLeaf key="manual" />);
-    return <DiagRake>{leaves}</DiagRake>;
-  }
-
-  if (structureId === 'targeting-type') {
-    const leaves: React.ReactNode[] = [];
-    if (hasAuto) leaves.push(<AutoLeaf key="auto" />);
-    manualTypes.forEach((t) => leaves.push(<TypeLeaf key={t} type={t} />));
-    return <DiagRake>{leaves}</DiagRake>;
-  }
-
-  // Product-separated structures (3, 4, 5): each product gets its own Auto + Manual-per-type branch.
-  const count = Math.max(productCount, 0);
-  const shown = Math.min(count, 4);
-  const extra = count - shown;
-  const branches: React.ReactNode[] = Array.from({ length: shown }, (_, i) => (
-    <ProductBranch key={i} index={i} hasAuto={hasAuto} autoLabels={structureId === 'product-multi-auto' ? autoLabels : []} manualTypes={manualTypes} />
-  ));
-  if (extra > 0) branches.push(<MoreLeaf key="more" n={extra} />);
-  return <DiagRake gap={16}>{branches}</DiagRake>;
-}
-
 function DiagramLegend() {
   const items: { glyph: React.ReactNode; label: string }[] = [
+    { glyph: <ProductGlyph color={GLYPH.product} size={14} />, label: 'Product' },
     { glyph: <CircleGlyph color={GLYPH.auto} size={14} />, label: 'Auto campaign' },
     { glyph: <DiamondGlyph color={GLYPH.manual} size={14} />, label: 'Manual campaign' },
     { glyph: <SquareGlyph color={TEXT_FAINT} size={11} />, label: 'Ad group' },
-    { glyph: <KeywordGlyph color={TEXT_MUTED} size={13} />, label: 'Keyword target' },
-    { glyph: <ProductGlyph color={TEXT_MUTED} size={13} />, label: 'Product target' },
   ];
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px 18px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap' as const, justifyContent: 'center', gap: '8px 18px' }}>
       {items.map((it) => (
         <div key={it.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {it.glyph}
@@ -168,8 +49,8 @@ function DiagramLegend() {
   );
 }
 
-function StructureOption({ name, meta, committed, viewing, recommended, disabled, onClick }: {
-  name: string; meta: string; committed: boolean; viewing: boolean; recommended: boolean; disabled: boolean; onClick: () => void;
+function StructureOption({ name, meta, committed, viewing, disabled, onClick }: {
+  name: string; meta: string; committed: boolean; viewing: boolean; disabled: boolean; onClick: () => void;
 }) {
   return (
     <div
@@ -185,26 +66,19 @@ function StructureOption({ name, meta, committed, viewing, recommended, disabled
       <div style={{ minWidth: 0 }}>
         <div style={{ font: `600 13.5px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{name}</div>
         <div style={{ font: `400 12.5px/1.4 ${FONT}`, color: disabled ? BAD : TEXT_MUTED, marginTop: 2 }}>{meta}</div>
-        {recommended && !disabled && <div style={{ marginTop: 6 }}><RecommendedTag /></div>}
       </div>
     </div>
   );
 }
 
-/** §7.6 — account campaign usage, with the active structure's estimate shown as a lighter extension of the bar. */
+/** §7.6 — account campaign usage, plus how many campaigns the active structure would add. */
 function LimitMeter({ used, limit, available, estimated }: { used: number; limit: number; available: number; estimated: number }) {
-  const usedPct = Math.min((used / limit) * 100, 100);
   const over = estimated > available;
-  const extPct = Math.min((estimated / limit) * 100, 100 - usedPct);
   return (
-    <div style={{ marginTop: 14, maxWidth: 520 }}>
-      <div className="cc-num" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, font: `400 12px/1.4 ${FONT}`, color: TEXT_MUTED }}>
+    <div style={{ marginTop: 14 }}>
+      <div className="cc-num" style={{ display: 'flex', alignItems: 'baseline', gap: 16, whiteSpace: 'nowrap', font: `400 12px/1.4 ${FONT}`, color: TEXT_MUTED }}>
         <span>Account campaign limit: <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{used.toLocaleString()}</b> of {limit.toLocaleString()} campaigns used · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{available.toLocaleString()}</b> available</span>
-        {estimated > 0 && <span style={{ color: over ? BAD : BRAND, fontWeight: 600, whiteSpace: 'nowrap' as const }}>+{estimated.toLocaleString()} with this structure</span>}
-      </div>
-      <div role="img" aria-label={`${used} of ${limit} campaigns used, ${estimated} more with this structure`} style={{ display: 'flex', height: 6, marginTop: 6, borderRadius: 999, background: HAIR, overflow: 'hidden' }}>
-        <div style={{ width: `${usedPct}%`, background: '#b9bfc8' }} />
-        <div style={{ width: `${extPct}%`, background: over ? '#e8b9b5' : '#c9b0df' }} />
+        {estimated > 0 && <span style={{ color: TEXT_PRIMARY, fontWeight: 600, whiteSpace: 'nowrap' as const }}>+{estimated.toLocaleString()} with this structure</span>}
       </div>
     </div>
   );
@@ -282,13 +156,98 @@ function CompareTable({ activeId, estimateFor, limit }: { activeId: StructureId;
   );
 }
 
-export default function StepStructure({ draft, selectedProducts, campaignLimit, onChange, onJivaChange }: {
+// ── Structure built from a list of campaigns (used for Jiva's custom structure, and for every structure's written view) ──
+
+const campaignLabel = (c: CcCampaign) => (c.kind === 'auto' ? c.targetingLabel.replace('Automatic', 'Auto') : c.targetingLabel);
+
+function WrittenStructure({ campaigns, products }: { campaigns: CcCampaign[]; products: CcProduct[] }) {
+  const groups = groupCampaigns(campaigns, products);
+  return (
+    <div className="cc-scroll" style={{ maxHeight: 400, overflowY: 'auto', background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 10 }}>
+      {groups.map((g, gi) => (
+        <div key={g.key} style={{ borderTop: gi === 0 ? 'none' : `1px solid ${BORDER}` }}>
+          <div style={{ padding: '11px 14px 6px', font: `600 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>{g.title}</div>
+          {g.campaigns.map((c) => (
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '6px 14px 6px 28px' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: `400 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>
+                {c.kind === 'auto' ? <CircleGlyph color={GLYPH.auto} size={12} /> : <DiamondGlyph color={GLYPH.manual} size={12} />}
+                {campaignLabel(c)}
+              </span>
+              <span className="cc-num" style={{ font: `400 12px/1 ${FONT}`, color: TEXT_FAINT, whiteSpace: 'nowrap' }}>{c.adGroups.length} ad group{c.adGroups.length === 1 ? '' : 's'}</span>
+            </div>
+          ))}
+          <div style={{ height: 6 }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type StructureView = 'graphic' | 'written' | 'compare';
+
+const viewStroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+/** A small comparison table. */
+const CompareViewIcon = () => (
+  <svg width={14} height={14} viewBox="0 0 16 16" aria-hidden {...viewStroke}>
+    <rect x="2" y="2.5" width="12" height="11" rx="1.6" /><path d="M2 6.5h12M6.2 6.5v7M10 6.5v7" />
+  </svg>
+);
+/** A small node tree: one parent branching into two children. */
+const MapViewIcon = () => (
+  <svg width={14} height={14} viewBox="0 0 16 16" aria-hidden {...viewStroke}>
+    <circle cx="8" cy="3.2" r="1.7" /><circle cx="3.6" cy="12.6" r="1.7" /><circle cx="12.4" cy="12.6" r="1.7" />
+    <path d="M7.1 4.7L4.5 11M8.9 4.7L11.5 11" />
+  </svg>
+);
+/** An indented outline: parent line with nested lines beneath it. */
+const OutlineViewIcon = () => (
+  <svg width={14} height={14} viewBox="0 0 16 16" aria-hidden {...viewStroke}>
+    <path d="M2.5 3.5h11M5.5 8h8M5.5 12.5h8M3 6v6.5" />
+  </svg>
+);
+
+/** The visualization card: an icon diagram or the written structure, switchable. */
+function StructureCard({ view, onView, title, empty, legend, graphic, written, compare }: {
+  view: StructureView; onView: (v: StructureView) => void; title?: string; empty?: string; legend: boolean; graphic: React.ReactNode; written: React.ReactNode; compare: React.ReactNode;
+}) {
+  const tabs: { id: StructureView; label: string; hint: string; icon: React.ReactNode }[] = [
+    { id: 'graphic', label: 'Map', hint: 'See the structure as a map of icons', icon: <MapViewIcon /> },
+    { id: 'written', label: 'Outline', hint: 'Read the structure as an outline, campaign by campaign', icon: <OutlineViewIcon /> },
+    { id: 'compare', label: 'Compare', hint: 'Compare all six structures side by side', icon: <CompareViewIcon /> },
+  ];
+  return (
+    <div style={{ marginTop: 22, background: SURFACE_MUTED, borderRadius: 12, padding: '16px 20px 26px', minHeight: 300 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+        <span style={{ font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{title}</span>
+        <div role="radiogroup" aria-label="Structure view" style={{ display: 'inline-flex', padding: 2, borderRadius: 8, background: '#eceef2' }}>
+          {tabs.map((t) => (
+            <button
+              key={t.id} type="button" role="radio" aria-checked={view === t.id} aria-label={t.hint} title={t.hint} className="cc-btn" onClick={() => onView(t.id)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', border: 'none', borderRadius: 6, background: view === t.id ? '#fff' : 'transparent', boxShadow: view === t.id ? '0 1px 2px rgba(20,24,33,.12)' : 'none', font: `600 12px/1 ${FONT}`, color: view === t.id ? TEXT_PRIMARY : TEXT_MUTED, cursor: 'pointer' }}
+            >{t.icon}{t.label}</button>
+          ))}
+        </div>
+      </div>
+      {view === 'compare' ? compare : empty ? (
+        <div style={{ padding: '70px 20px', textAlign: 'center', font: `400 13px/1.6 ${FONT}`, color: TEXT_MUTED }}>{empty}</div>
+      ) : view === 'graphic' ? (
+        <>
+          {legend && <div style={{ marginBottom: 26 }}><DiagramLegend /></div>}
+          {graphic}
+        </>
+      ) : written}
+    </div>
+  );
+}
+
+export default function StepStructure({ draft, selectedProducts, campaignLimit, jivaOpen, onChange, onJivaChange }: {
   draft: CcDraft; selectedProducts: CcProduct[]; campaignLimit: number; onChange: (patch: Partial<CcDraft>) => void;
+  jivaOpen: boolean;
   onJivaChange: (open: boolean) => void;
 }) {
   const [viewId, setViewId] = useState<StructureId | null>(null);
   const [whyFor, setWhyFor] = useState<StructureId | null>(null);
-  const [compare, setCompare] = useState(false);
+  const [view, setView] = useState<StructureView>('graphic');
 
   const hasAuto = draft.targetingStrategies.includes('auto');
   const manualTypes = draft.targetingStrategies.filter((s) => s !== 'auto');
@@ -320,12 +279,18 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   const activeDef = STRUCTURE_CATALOG.find((s) => s.id === activeId)!;
   const activeCounts = activeId !== 'custom' ? countsFor(activeId) : null;
   const activeCheck = activeCounts ? validateCampaignLimit(activeCounts.totalCampaigns, campaignLimit) : { ok: true };
-  const isRecommendedActive = recommendation.structureId === activeId && activeCheck.ok;
-  const recommendedDef = STRUCTURE_CATALOG.find((s) => s.id === recommendation.structureId)!;
   const estimatedTotal = activeCounts ? activeCounts.totalCampaigns : (draft.customCampaigns?.length ?? 0);
   const perCampaignBudget = estimatedTotal > 0 ? draft.dailyBudget / estimatedTotal : null;
   const budgetTooLow = perCampaignBudget !== null && perCampaignBudget < 3;
   // §7.6 — only offer more consolidated structures that actually fit within the available limit.
+  // The campaigns the viewed structure would create: what the written view lists and the custom diagram draws.
+  const viewedCampaigns = useMemo(
+    () => (activeId === 'custom'
+      ? draft.customCampaigns
+      : generateCampaigns(activeId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeId, draft.customCampaigns, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.autoTypes.join(',')],
+  );
   const alternatives = STRUCTURE_CATALOG
     .filter((s) => s.id !== 'custom' && s.id !== activeId && activeCounts
       && countsFor(s.id).totalCampaigns < activeCounts.totalCampaigns && validateCampaignLimit(countsFor(s.id).totalCampaigns, campaignLimit).ok)
@@ -334,13 +299,11 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
 
   return (
     <div>
-      <StepHeading
-        eyebrow="Step 4 of 5"
-        title="Choose how campaigns are organised"
-        subtitle="Pick a structure on the left and the diagram shows exactly what we'll create from your products and targeting."
-      />
+      <StepHeading title="Choose how campaigns are organised" />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '236px minmax(0, 1fr)', gap: 36, alignItems: 'start' }}>
+      <Panel pad={0}>
+      <div style={{ display: 'grid', gridTemplateColumns: '256px minmax(0, 1fr)', alignItems: 'stretch' }}>
+        <div style={{ padding: 12, borderRight: `1px solid ${BORDER}`, background: '#fcfcfe' }}>
         <div role="radiogroup" aria-label="Campaign structure" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {STRUCTURE_CATALOG.map((s) => {
             const isCustom = s.id === 'custom';
@@ -359,7 +322,6 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
                 meta={meta}
                 committed={draft.structureId === s.id}
                 viewing={activeId === s.id}
-                recommended={recommendation.structureId === s.id}
                 disabled={disabled}
                 onClick={() => {
                   setViewId(s.id);
@@ -372,20 +334,18 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             );
           })}
         </div>
+        </div>
 
-        <section aria-live="polite" key={activeId} className="cc-enter">
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16 }}>
-            <h2 style={{ margin: 0, font: `600 18px/1.3 ${FONT}`, letterSpacing: '-0.01em', color: TEXT_PRIMARY }}>{activeDef.name}</h2>
-            <TextButton onClick={() => setCompare((v) => !v)}>{compare ? 'Hide comparison' : 'Compare structures'}</TextButton>
-          </div>
-          <p style={{ margin: '4px 0 0', font: `400 13.5px/1.55 ${FONT}`, color: TEXT_MUTED, maxWidth: 520 }}>{activeId === 'custom' ? activeDef.description : activeDef.tagline}</p>
+        <section aria-live="polite" key={activeId} className="cc-enter" style={{ padding: 22, minWidth: 0 }}>
+          <h2 style={{ margin: 0, font: `600 18px/1.3 ${FONT}`, letterSpacing: '-0.01em', color: TEXT_PRIMARY }}>{activeDef.name}</h2>
+          <p style={{ margin: '4px 0 0', font: `400 13.5px/1.55 ${FONT}`, color: TEXT_MUTED, ...(activeId === 'custom' ? { whiteSpace: 'nowrap' as const } : { maxWidth: 520 }) }}>{activeId === 'custom' ? activeDef.description : activeDef.tagline}</p>
           {activeId !== 'custom' && (
-            <p style={{ margin: '2px 0 0', font: `400 12.5px/1.5 ${FONT}`, color: TEXT_FAINT, maxWidth: 520 }}>{activeDef.useCase}</p>
+            <p style={{ margin: '2px 0 0', font: `400 12.5px/1.5 ${FONT}`, color: TEXT_FAINT, whiteSpace: 'nowrap' }}>{activeDef.useCase}</p>
           )}
 
           {activeCounts && (
             <p className="cc-num" style={{ margin: '10px 0 0', font: `400 13px/1.5 ${FONT}`, color: TEXT_MUTED }}>
-              <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.autoCampaigns}</b> auto · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.manualCampaigns}</b> manual · <b style={{ fontWeight: 600, color: activeCheck.ok ? BRAND : BAD }}>{activeCounts.totalCampaigns.toLocaleString()} campaigns</b> · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.adGroups.toLocaleString()}</b> ad groups · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.targets.toLocaleString()}</b> targets
+              <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.autoCampaigns}</b> auto · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.manualCampaigns}</b> manual · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.totalCampaigns.toLocaleString()}</b> campaigns · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.adGroups.toLocaleString()}</b> ad groups · <b style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{activeCounts.targets.toLocaleString()}</b> targets
             </p>
           )}
 
@@ -410,62 +370,36 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
           )}
 
           {activeId === 'custom' ? (
-            <div style={{ marginTop: 22 }}>
-              {draft.customCampaigns ? (
-                <>
-                  <div style={{ font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY, marginBottom: 10 }}>Jiva's proposal · {draft.customCampaigns.length} campaigns</div>
-                  <div className="cc-scroll" style={{ border: `1px solid ${BORDER}`, borderRadius: 10, maxHeight: 280, overflowY: 'auto' }}>
-                    {draft.customCampaigns.map((c, i) => (
-                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', borderTop: i === 0 ? 'none' : `1px solid ${HAIR}` }}>
-                        <span style={{ font: `500 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>{c.name}</span>
-                        <span style={{ font: `400 12px/1 ${FONT}`, color: TEXT_FAINT, whiteSpace: 'nowrap' as const }}>{c.adGroups.length} ad group{c.adGroups.length === 1 ? '' : 's'}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 16 }}>
-                    {draft.structureId === 'custom'
-                      ? <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: `600 13px/1 ${FONT}`, color: '#1e8449' }}><CheckIcon size={13} color="#1e8449" /> Applied</span>
-                      : <span style={{ font: `500 13px/1.4 ${FONT}`, color: WARN }}>Not applied yet. Accept it in the Ask Jiva panel.</span>}
-                    <TextButton onClick={() => onJivaChange(true)}>Reopen Ask Jiva</TextButton>
-                  </div>
-                </>
-              ) : (
-                <button
-                  type="button" className="cc-btn cc-primary" onClick={() => onJivaChange(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 8, border: 'none', background: BRAND, color: '#fff', font: `600 13px/1 ${FONT}`, cursor: 'pointer' }}
-                >
-                  <SparkleGlyph size={12} color="#fff" /> Ask Jiva to build it
-                </button>
-              )}
-            </div>
-          ) : (
             <>
-              <div style={{ marginTop: 22 }}><DiagramLegend /></div>
-              <div style={{ marginTop: 12, background: SURFACE_MUTED, borderRadius: 12, padding: '30px 20px 28px', minHeight: 300 }}>
-                <StructureDiagram structureId={activeId} productCount={productCount} hasAuto={hasAuto} manualTypes={manualTypes} autoLabels={autoLabels} />
+              <StructureCard
+                view={view} onView={setView} legend
+                title={draft.customCampaigns ? `Jiva's proposal · ${draft.customCampaigns.length} campaigns` : undefined}
+                empty={draft.customCampaigns ? undefined : 'Ask Jiva to build a structure and it will appear here.'}
+                graphic={draft.customCampaigns ? <StructureMap structureId="custom" campaigns={draft.customCampaigns} products={selectedProducts} /> : null}
+                written={draft.customCampaigns ? <WrittenStructure campaigns={draft.customCampaigns} products={selectedProducts} /> : null}
+                compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} />}
+              />
+              <div style={{ marginTop: 18 }}>
+                <button
+                  type="button" className="cc-btn cc-primary" onClick={() => onJivaChange(true)} disabled={jivaOpen}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 8, border: 'none', background: jivaOpen ? '#eee7f5' : BRAND, color: jivaOpen ? '#c3b3d6' : '#fff', font: `600 13px/1 ${FONT}`, cursor: jivaOpen ? 'not-allowed' : 'pointer' }}
+                >
+                  <SparkleGlyph size={12} color={jivaOpen ? '#c3b3d6' : '#fff'} /> Ask Jiva
+                </button>
               </div>
-
-              {isRecommendedActive && (
-                <div style={{ marginTop: 14 }}>
-                  <Note>
-                    <b style={{ fontWeight: 600 }}>Recommended: Structure {recommendedDef.number} — {recommendedDef.name}.</b> {recommendation.reason} <b style={{ fontWeight: 600 }}>Estimated campaigns: {activeCounts!.totalCampaigns.toLocaleString()}</b>
-                  </Note>
-                </div>
-              )}
             </>
+          ) : (
+            <StructureCard
+              view={view} onView={setView} legend
+              graphic={viewedCampaigns ? <StructureMap structureId={activeId} campaigns={viewedCampaigns} products={selectedProducts} /> : null}
+              written={viewedCampaigns ? <WrittenStructure campaigns={viewedCampaigns} products={selectedProducts} /> : null}
+              compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} />}
+            />
           )}
 
-          {budgetTooLow && perCampaignBudget !== null && (
-            <div style={{ marginTop: 14 }}>
-              <Note tone="warn">
-                Your budget may not support the selected campaign structure. Try Consolidated or Targeting-Type, or increase your budget. Your {formatCurrency(draft.dailyBudget)} daily budget works out to about {formatCurrency(Math.round(perCampaignBudget * 100) / 100)} per campaign across {estimatedTotal.toLocaleString()} campaigns.
-              </Note>
-            </div>
-          )}
-
-          {compare && <CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} />}
         </section>
       </div>
+      </Panel>
     </div>
   );
 }

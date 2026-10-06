@@ -372,6 +372,12 @@ export interface CcAdGroup {
   negatives: CcNegative[];
 }
 
+export type BiddingStrategy = 'Fixed bids' | 'Dynamic bids - down only' | 'Dynamic bids - up and down';
+export const BIDDING_STRATEGIES: BiddingStrategy[] = ['Fixed bids', 'Dynamic bids - down only', 'Dynamic bids - up and down'];
+
+/** Percent change to the bid per placement; null means no adjustment. */
+export interface PlacementAdjust { top: number | null; product: number | null; rest: number | null }
+
 export interface CcCampaign {
   id: string;
   name: string;
@@ -381,6 +387,8 @@ export interface CcCampaign {
   adGroups: CcAdGroup[];
   dailyBudget: number;
   budgetAllocationPct: number;
+  biddingStrategy?: BiddingStrategy;
+  placement?: PlacementAdjust;
   /** Section 16 — a product in this campaign already has a live campaign. */
   possibleDuplicate?: boolean;
 }
@@ -538,6 +546,11 @@ export type CcStepId = 'entry' | 'products' | 'objectives' | 'targeting' | 'stru
 
 export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'objectives', 'targeting', 'structure', 'preview', 'creating', 'result'];
 
+/** Objectives beyond Target ACOS and Daily budget — all optional. */
+export type ExtraObjectiveId = 'roas' | 'maxCpc' | 'cvr' | 'monthlyCap';
+export type ExtraObjectives = Record<ExtraObjectiveId, number | null>;
+export const NO_EXTRA_OBJECTIVES: ExtraObjectives = { roas: null, maxCpc: null, cvr: null, monthlyCap: null };
+
 export interface CcDraft {
   marketplace: Marketplace | null;
   adType: AdType | null;
@@ -545,6 +558,7 @@ export interface CcDraft {
   groupingMode: GroupingMode;
   targetAcos: number | null;
   dailyBudget: number;
+  extraObjectives: ExtraObjectives;
   targetingStrategies: TargetingStrategyId[];
   /** Auto targeting types — drives how many Auto campaigns Structure 5 creates per product. */
   autoTypes: AutoTypeId[];
@@ -568,6 +582,7 @@ export const EMPTY_DRAFT: CcDraft = {
   groupingMode: 'split-by-campaign',
   targetAcos: null,
   dailyBudget: 50,
+  extraObjectives: NO_EXTRA_OBJECTIVES,
   targetingStrategies: [],
   autoTypes: ['close-match', 'loose-match'],
   structureId: null,

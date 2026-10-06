@@ -1,14 +1,15 @@
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  MARKETPLACE_CAPABILITY, accountCampaignLimits, generateCampaigns, totalAdGroups, totalTargets, formatCurrency,
-  type CcCampaign, type CcDraft, type CcProduct,
+  BIDDING_STRATEGIES, MARKETPLACE_CAPABILITY, generateCampaigns, totalAdGroups, totalTargets, formatCurrency,
+  type BiddingStrategy, type CcCampaign, type PlacementAdjust, type CcDraft, type CcProduct,
 } from '../campaign-creator.types';
 import {
-  BORDER, CheckIcon, ChevronRightIcon, FONT, GOOD, HAIR, Note, SectionTitle, StepHeading, SURFACE_MUTED, TEXT_FAINT,
+  BORDER, FONT, GOOD, HAIR, Note, SectionTitle, StepHeading, SURFACE_MUTED, TEXT_FAINT,
   TEXT_MUTED, TEXT_PRIMARY, TextButton, WARN, WarningIcon,
 } from '../campaign-creator-ui';
-import { CampaignDetails } from './preview-targets';
-import RulesSection, { ruleNamesForCampaign } from './preview-rules';
+import { Panel } from '../cc-design';
+import RulesSection from './preview-rules';
+import { CounterInput, IntentionBadge, PlacementCell, TargetTypeBadges, decorateCampaigns, intentionOf } from './preview-cells';
 
 const TH: React.CSSProperties = {
   textAlign: 'left', padding: '10px 14px', font: `500 12px/1 ${FONT}`, color: TEXT_MUTED,
@@ -17,17 +18,7 @@ const TH: React.CSSProperties = {
 const TD: React.CSSProperties = { padding: '11px 14px', borderBottom: `1px solid ${HAIR}`, verticalAlign: 'middle' };
 
 function KindMark({ auto }: { auto: boolean }) {
-  const color = auto ? '#2f6fed' : '#77469b';
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, font: `500 12.5px/1 ${FONT}`, color: TEXT_MUTED }}>
-      <svg width={14} height={14} viewBox="0 0 16 16" fill="none" aria-hidden>
-        {auto
-          ? <circle cx="8" cy="8" r="6" stroke={color} strokeWidth="1.7" />
-          : <path d="M8 1.6L14.4 8 8 14.4 1.6 8Z" stroke={color} strokeWidth="1.7" strokeLinejoin="round" />}
-      </svg>
-      {auto ? 'Auto' : 'Manual'}
-    </span>
-  );
+  return <span style={{ font: `500 12.5px/1 ${FONT}`, color: TEXT_PRIMARY }}>{auto ? 'Auto' : 'Manual'}</span>;
 }
 
 // ── Budget helpers (§8.4) ─────────────────────────────────────────────────────────────────────
@@ -57,37 +48,17 @@ function performanceWeight(c: CcCampaign, products: CcProduct[]): number {
 
 // ── Small pieces ──────────────────────────────────────────────────────────────────────────────
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <span style={{ whiteSpace: 'nowrap' }}>
-      <span style={{ color: TEXT_FAINT }}>{label}</span>{' '}
-      <span className="cc-num" style={{ fontWeight: 600, color: TEXT_PRIMARY }}>{value}</span>
-    </span>
-  );
-}
-
-function CheckLine({ ok, children }: { ok: boolean; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, font: `400 12.5px/1.6 ${FONT}`, color: ok ? TEXT_MUTED : WARN }}>
-      <span style={{ display: 'inline-flex', width: 14, flex: 'none', justifyContent: 'center' }}>
-        {ok ? <CheckIcon size={13} color={GOOD} /> : <WarningIcon size={12} color={WARN} />}
-      </span>
-      {children}
-    </div>
-  );
-}
-
 export default function StepPreview({ draft, selectedProducts, onChange }: {
   draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
 }) {
-  const [open, setOpen] = useState<Set<string>>(new Set());
+  const [allocMode, setAllocMode] = useState<'even' | 'performance'>('even');
 
   useEffect(() => {
     if (!draft.structureId) return;
     const campaigns = draft.structureId === 'custom'
       ? (draft.customCampaigns ?? [])
       : generateCampaigns(draft.structureId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes);
-    onChange({ generatedCampaigns: campaigns });
+    onChange({ generatedCampaigns: decorateCampaigns(campaigns, selectedProducts) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.structureId, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.autoTypes.join(','), draft.dailyBudget, draft.customCampaigns]);
 
@@ -100,37 +71,34 @@ export default function StepPreview({ draft, selectedProducts, onChange }: {
   function updateBudget(campaignId: string, value: number) {
     commit(withShares(campaigns.map((c) => (c.id === campaignId ? { ...c, dailyBudget: value } : c))));
   }
+  function patchCampaign(id: string, patch: Partial<CcCampaign>) {
+    commit(campaigns.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  }
+  function renameAdGroup(id: string, name: string) {
+    commit(campaigns.map((c) => (c.id === id ? { ...c, adGroups: c.adGroups.map((ag, i) => (i === 0 ? { ...ag, name } : ag)) } : c)));
+  }
   function splitEvenly() {
     commit(allocateByWeights(campaigns, campaigns.map(() => 1), draft.dailyBudget));
   }
   function allocateByPerformance() {
     commit(allocateByWeights(campaigns, campaigns.map((c) => performanceWeight(c, selectedProducts)), draft.dailyBudget));
   }
-  function updateCampaign(next: CcCampaign) {
-    commit(campaigns.map((c) => (c.id === next.id ? next : c)));
-  }
-
-  function toggle(id: string) {
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }
-
   const allocatedTotal = campaigns.reduce((s, c) => s + c.dailyBudget, 0);
   const allocationMismatch = Math.abs(allocatedTotal - draft.dailyBudget) > 0.5;
-  const duplicateCount = campaigns.filter((c) => c.possibleDuplicate).length;
   const total: React.CSSProperties = { ...TD, borderBottom: 'none', background: SURFACE_MUTED, font: `600 13px/1.2 ${FONT}`, color: TEXT_PRIMARY };
 
-  // §14 / §9 — the final validation shown in the confirmation block.
+
+  // Consecutive campaigns with the same promotion intention share one badge cell.
+  const intentions = campaigns.map(intentionOf);
+  const spans = intentions.map((it, i) => {
+    if (i > 0 && intentions[i - 1] === it) return 0;
+    let n = 1;
+    while (i + n < intentions.length && intentions[i + n] === it) n += 1;
+    return n;
+  });
+
   const adGroupCount = totalAdGroups(campaigns);
   const targetCount = totalTargets(campaigns);
-  const ineligible = selectedProducts.filter((p) => !p.eligible).length;
-  const budgetMeetsMin = draft.dailyBudget >= capability.minDailyBudget;
-  const invalidTargets = campaigns.reduce((n, c) => n + c.adGroups.reduce((m, ag) => m + ag.targets.filter((t) => !t.label.trim() || t.bid <= 0).length, 0), 0);
-  const limits = accountCampaignLimits(marketplace);
-  const withinLimit = campaigns.length <= limits.available;
   const ruleCount = draft.ruleIds.length;
 
   const confirmRows: [string, string][] = [
@@ -146,137 +114,10 @@ export default function StepPreview({ draft, selectedProducts, onChange }: {
 
   return (
     <div>
-      <StepHeading
-        eyebrow="Step 5 of 5"
-        title="Review before we create"
-        subtitle={`${campaigns.length} campaigns across ${selectedProducts.length} product${selectedProducts.length === 1 ? '' : 's'}. Open a row to edit its targets and negatives, and set any daily budget right in the table.`}
-      />
-
-      {duplicateCount > 0 && (
-        <div style={{ marginBottom: 14 }}>
-          <Note tone="warn">{duplicateCount} of these campaigns {duplicateCount === 1 ? 'is a possible duplicate' : 'are possible duplicates'}, because at least one of their products already has a live campaign. You can still create them.</Note>
-        </div>
-      )}
-
-      {/* Stats strip + table toolbar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 22px', marginBottom: 10, font: `400 12.5px/1.6 ${FONT}` }}>
-        <Stat label="Products" value={String(selectedProducts.length)} />
-        <Stat label="Campaigns" value={String(campaigns.length)} />
-        <Stat label="Ad groups" value={String(adGroupCount)} />
-        <Stat label="Targets" value={String(targetCount)} />
-        <Stat label="Daily budget" value={formatCurrency(draft.dailyBudget)} />
-        <Stat label="Target ACOS" value={draft.targetAcos != null ? `${draft.targetAcos}%` : 'No target'} />
-      </div>
+      <StepHeading title="Review before we create" />
 
       {campaigns.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '6px 20px', marginBottom: 10 }}>
-          <div style={{ display: 'flex', gap: 16 }}>
-            <TextButton onClick={() => setOpen(new Set(campaigns.map((c) => c.id)))}>Expand all</TextButton>
-            <TextButton onClick={() => setOpen(new Set())}>Collapse all</TextButton>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 16px' }}>
-            <span style={{ font: `400 12.5px/1 ${FONT}`, color: TEXT_FAINT }}>Budget</span>
-            <TextButton onClick={splitEvenly}>Split evenly</TextButton>
-            <TextButton onClick={allocateByPerformance}>Allocate by performance</TextButton>
-            <span className="cc-num" style={{ font: `500 12.5px/1 ${FONT}`, color: allocationMismatch ? WARN : GOOD }}>
-              Allocated {formatCurrency(allocatedTotal)} of {formatCurrency(draft.dailyBudget)}
-            </span>
-          </div>
-        </div>
-      )}
-
-      <div className="cc-scroll" style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
-          <thead>
-            <tr>
-              <th style={{ ...TH, width: 36 }} />
-              <th style={TH}>Campaign</th>
-              <th style={TH}>Type</th>
-              <th style={TH}>Targeting</th>
-              <th style={{ ...TH, textAlign: 'right' }}>Ad groups</th>
-              <th style={{ ...TH, textAlign: 'right' }}>Targets</th>
-              <th style={TH}>Daily budget</th>
-              <th style={{ ...TH, textAlign: 'right' }}>Share</th>
-            </tr>
-          </thead>
-          <tbody>
-            {campaigns.map((c) => {
-              const isOpen = open.has(c.id);
-              const isAuto = c.kind === 'auto';
-              return (
-                <Fragment key={c.id}>
-                  <tr className="cc-row" onClick={() => toggle(c.id)} style={{ cursor: 'pointer' }}>
-                    <td style={{ ...TD, paddingRight: 0 }}>
-                      <button
-                        type="button" aria-expanded={isOpen} aria-label={`${isOpen ? 'Hide' : 'Show'} details for ${c.name}`}
-                        onClick={(e) => { e.stopPropagation(); toggle(c.id); }}
-                        style={{ width: 22, height: 22, padding: 0, border: 'none', background: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 140ms ease-out' }}
-                      ><ChevronRightIcon size={12} color={TEXT_MUTED} /></button>
-                    </td>
-                    <td style={{ ...TD, font: `500 13px/1.4 ${FONT}`, color: TEXT_PRIMARY, minWidth: 240 }}>
-                      {c.name}
-                      {c.possibleDuplicate && (
-                        <div style={{ marginTop: 3, font: `400 12px/1.4 ${FONT}`, color: WARN }}>Possible duplicate — one of these products already has a live campaign</div>
-                      )}
-                    </td>
-                    <td style={TD}><KindMark auto={isAuto} /></td>
-                    <td style={{ ...TD, color: TEXT_MUTED }}>{isAuto ? 'Automatic' : c.targetingLabel}</td>
-                    <td className="cc-num" style={{ ...TD, textAlign: 'right', color: TEXT_MUTED }}>{c.adGroups.length}</td>
-                    <td className="cc-num" style={{ ...TD, textAlign: 'right', color: TEXT_MUTED }}>{c.adGroups.reduce((n, ag) => n + ag.targets.length, 0)}</td>
-                    <td style={TD} onClick={(e) => e.stopPropagation()}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: TEXT_MUTED }}>
-                        $
-                        <input
-                          className="cc-input cc-num" type="number" inputMode="decimal" value={c.dailyBudget} aria-label={`Daily budget for ${c.name}`}
-                          onChange={(e) => updateBudget(c.id, Math.max(0, Number(e.target.value) || 0))}
-                          style={{ width: 78, padding: '6px 8px', border: `1px solid ${BORDER}`, borderRadius: 6, font: `500 13px/1 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' }}
-                        />
-                      </span>
-                    </td>
-                    <td className="cc-num" style={{ ...TD, textAlign: 'right', color: TEXT_MUTED }}>{c.budgetAllocationPct}%</td>
-                  </tr>
-                  {isOpen && (
-                    <tr>
-                      <td colSpan={8} style={{ padding: '10px 14px 18px 50px', borderBottom: `1px solid ${HAIR}`, background: SURFACE_MUTED }}>
-                        <CampaignDetails campaign={c} ruleNames={ruleNamesForCampaign(draft, c.id, campaigns)} onChange={updateCampaign} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-            {campaigns.length === 0 && (
-              <tr><td colSpan={8} style={{ padding: '40px 14px', textAlign: 'center', color: TEXT_MUTED }}>There's nothing to preview yet. Go back and choose a structure.</td></tr>
-            )}
-          </tbody>
-          {campaigns.length > 0 && (
-            <tfoot>
-              <tr>
-                <td style={total} />
-                <td style={total}>Total</td>
-                <td style={{ ...total, color: TEXT_MUTED, fontWeight: 400 }} colSpan={2}>{campaigns.length} campaigns</td>
-                <td className="cc-num" style={{ ...total, textAlign: 'right' }}>{adGroupCount}</td>
-                <td className="cc-num" style={{ ...total, textAlign: 'right' }}>{targetCount}</td>
-                <td className="cc-num" style={{ ...total, color: allocationMismatch ? WARN : TEXT_PRIMARY }}>{formatCurrency(allocatedTotal)}</td>
-                <td className="cc-num" style={{ ...total, textAlign: 'right' }}>100%</td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
-      </div>
-
-      {allocationMismatch && campaigns.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <Note tone="warn">Your campaign budgets add up to {formatCurrency(allocatedTotal)}, but the daily budget you set was {formatCurrency(draft.dailyBudget)}. Adjust a row above, or use Split evenly or Allocate by performance. You can't create the campaigns until they match.</Note>
-        </div>
-      )}
-
-      {campaigns.length > 0 && (
-        <RulesSection draft={draft} campaigns={campaigns} selectedProducts={selectedProducts} onChange={onChange} />
-      )}
-
-      {campaigns.length > 0 && (
-        <section style={{ marginTop: 40, paddingTop: 24, borderTop: `1px solid ${BORDER}` }} aria-label="Ready to create campaigns">
+        <Panel style={{ marginBottom: 20 }}>
           <SectionTitle>Ready to create campaigns</SectionTitle>
           <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '10px 28px' }}>
             {confirmRows.map(([k, v]) => (
@@ -286,15 +127,119 @@ export default function StepPreview({ draft, selectedProducts, onChange }: {
               </div>
             ))}
           </dl>
-          <div style={{ marginTop: 18 }}>
-            <CheckLine ok={ineligible === 0}>{ineligible === 0 ? 'All selected products are eligible for advertising' : `${ineligible} selected product${ineligible === 1 ? ' is' : 's are'} not eligible for advertising`}</CheckLine>
-            <CheckLine ok={budgetMeetsMin}>{budgetMeetsMin ? `Daily budget meets the ${capability.label} minimum of ${formatCurrency(capability.minDailyBudget)}` : `Daily budget is below the ${capability.label} minimum of ${formatCurrency(capability.minDailyBudget)}`}</CheckLine>
-            <CheckLine ok={invalidTargets === 0}>{invalidTargets === 0 ? 'Targeting is valid' : `${invalidTargets} target${invalidTargets === 1 ? ' needs' : 's need'} a keyword and a bid above $0`}</CheckLine>
-            <CheckLine ok={withinLimit}>{withinLimit ? `Within the campaign limit (${limits.available.toLocaleString()} available)` : `Over the campaign limit (${limits.available.toLocaleString()} available)`}</CheckLine>
-            <CheckLine ok={!allocationMismatch}>{!allocationMismatch ? 'Campaign budgets add up to the daily budget' : 'Campaign budgets do not add up to the daily budget'}</CheckLine>
-          </div>
-        </section>
+        </Panel>
       )}
+
+      {campaigns.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '6px 20px', marginBottom: 10 }}>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, font: `500 13px/1 ${FONT}`, color: TEXT_MUTED }}>
+            Budget
+            <select
+              className="cc-input" value={allocMode} aria-label="Budget allocation"
+              onChange={(e) => {
+                const mode = e.target.value as 'even' | 'performance';
+                setAllocMode(mode);
+                if (mode === 'even') splitEvenly(); else allocateByPerformance();
+              }}
+              style={{ padding: '7px 30px 7px 12px', border: `1px solid ${BORDER}`, borderRadius: 8, background: '#fff', font: `500 13px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', cursor: 'pointer' }}
+            >
+              <option value="even">Split evenly</option>
+              <option value="performance">Allocate by performance</option>
+            </select>
+          </label>
+        </div>
+      )}
+
+      <Panel pad={0} style={{ overflow: 'hidden' }}>
+      <div className="cc-scroll" style={{ overflow: 'auto' }}>
+        <table style={{ width: '100%', minWidth: 1304, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
+          <thead>
+            <tr>
+              <th style={{ ...TH, width: 148, whiteSpace: 'normal' }}>Promotion Intention</th>
+              <th style={{ ...TH, width: 244 }}>Campaign</th>
+              <th style={{ ...TH, width: 68 }}>Ad Type</th>
+              <th style={{ ...TH, width: 148 }}>Budget</th>
+              <th style={{ ...TH, width: 176 }}>Bidding Strategy</th>
+              <th style={{ ...TH, width: 218 }} title="Replaces the campaign-level bid settings">Adjust bids by placement</th>
+              <th style={{ ...TH, width: 176 }}>Ad Group Name</th>
+              <th style={{ ...TH, width: 92 }}>Target type</th>
+              <th style={{ ...TH, width: 82 }}>Targets</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map((c, i) => {
+              const isAuto = c.kind === 'auto';
+              const targets = c.adGroups.reduce((n, ag) => n + ag.targets.length, 0);
+              const placement: PlacementAdjust = c.placement ?? { top: null, product: null, rest: null };
+              return (
+                <tr key={c.id} className="cc-row">
+                  {spans[i] > 0 && (
+                    <td rowSpan={spans[i]} style={{ ...TD, verticalAlign: 'top', paddingTop: 16, borderRight: `1px solid ${HAIR}` }}>
+                      <IntentionBadge intention={intentions[i]} />
+                    </td>
+                  )}
+                  <td style={TD}>
+                    <CounterInput value={c.name} max={106} prefix="Anarix_" label={`Campaign name`} onChange={(v) => patchCampaign(c.id, { name: v })} />
+                    {c.possibleDuplicate && (
+                      <div style={{ marginTop: 4, font: `400 11.5px/1.4 ${FONT}`, color: WARN }}>Possible duplicate</div>
+                    )}
+                  </td>
+                  <td style={TD}><KindMark auto={isAuto} /></td>
+                  <td style={TD}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${BORDER}`, borderRadius: 7, background: '#fff', overflow: 'hidden' }}>
+                        <span style={{ padding: '0 9px', alignSelf: 'stretch', display: 'flex', alignItems: 'center', background: SURFACE_MUTED, borderRight: `1px solid ${BORDER}`, color: TEXT_MUTED, font: `500 13px/1 ${FONT}` }}>$</span>
+                        <input
+                          className="cc-num" type="number" inputMode="decimal" value={c.dailyBudget} aria-label={`Daily budget for ${c.name}`}
+                          onChange={(e) => updateBudget(c.id, Math.max(0, Number(e.target.value) || 0))}
+                          style={{ width: 62, padding: '8px 8px', border: 'none', font: `500 13px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: 'transparent' }}
+                        />
+                      </span>
+                      <span className="cc-num" style={{ font: `400 12.5px/1 ${FONT}`, color: TEXT_MUTED }}>{c.budgetAllocationPct.toFixed(2)}%</span>
+                    </span>
+                  </td>
+                  <td style={TD}>
+                    <select
+                      className="cc-input" value={c.biddingStrategy ?? 'Fixed bids'} aria-label={`Bidding strategy for ${c.name}`}
+                      onChange={(e) => patchCampaign(c.id, { biddingStrategy: e.target.value as BiddingStrategy })}
+                      style={{ width: '100%', padding: '8px 26px 8px 10px', border: `1px solid ${BORDER}`, borderRadius: 7, background: '#fff', font: `400 13px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', cursor: 'pointer' }}
+                    >
+                      {BIDDING_STRATEGIES.map((b) => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </td>
+                  <td style={TD}><PlacementCell value={placement} campaignName={c.name} onChange={(v) => patchCampaign(c.id, { placement: v })} /></td>
+                  <td style={TD}>
+                    <CounterInput value={c.adGroups[0]?.name ?? ''} max={235} label={`Ad group name for ${c.name}`} onChange={(v) => renameAdGroup(c.id, v)} />
+                  </td>
+                  <td style={TD}><TargetTypeBadges campaign={c} /></td>
+                  <td className="cc-num" style={{ ...TD, color: TEXT_PRIMARY, whiteSpace: 'nowrap' }}>
+                    {isAuto && targets === 0 ? 'Automatic' : `${targets} Target${targets === 1 ? '' : 's'}`}
+                  </td>
+                </tr>
+              );
+            })}
+            {campaigns.length === 0 && (
+              <tr><td colSpan={9} style={{ padding: '40px 14px', textAlign: 'center', color: TEXT_MUTED }}>There's nothing to preview yet. Go back and choose a structure.</td></tr>
+            )}
+          </tbody>
+          {campaigns.length > 0 && (
+            <tfoot>
+              <tr>
+                <td style={total} colSpan={3}>Total <span style={{ color: TEXT_MUTED, fontWeight: 400 }}>· {campaigns.length} campaigns · {adGroupCount} ad groups</span></td>
+                <td className="cc-num" style={{ ...total, color: allocationMismatch ? WARN : TEXT_PRIMARY }}>{formatCurrency(allocatedTotal)} <span style={{ color: TEXT_MUTED, fontWeight: 400 }}>100%</span></td>
+                <td style={total} colSpan={4} />
+                <td className="cc-num" style={total}>{targetCount}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+      </Panel>
+
+      {campaigns.length > 0 && (
+        <RulesSection draft={draft} campaigns={campaigns} selectedProducts={selectedProducts} onChange={onChange} />
+      )}
+
     </div>
   );
 }

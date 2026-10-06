@@ -5,14 +5,14 @@ import {
 } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES, AssignDropdownList, Avatar } from '../alerts/assign-menu';
 import { CloseIcon, ChevronDownIcon, BellIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, SparkleIcon, AiDraftBadge, PencilIcon } from '../alerts/icons';
-import { SourceIcon, SourceBadge } from '../alerts/source-icon';
+import { SourceBadge } from '../alerts/source-icon';
 import { formatAlertValue, explainAlertValue } from '../alerts/format-money';
 import { getDisplayItems } from '../alerts/items-util';
 import { ValueInfoIcon } from '../alerts/value-info-icon';
 import { ItemsModal } from '../alerts/items-modal';
 import { DueDatePopover } from '../common/due-date-popover';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import { StatusCircleIcon, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
+import { StatusCircleIcon, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR, OriginGlyph } from './work-station-icons';
 import { isDelegated } from './work-station-list-view';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
@@ -73,12 +73,25 @@ interface Props {
   initialDueMenuOpen?: boolean;
   /** Forces the Activity comment composer open on mount — for the design-handoff preview, not used by the real app. */
   initialCommentComposerOpen?: boolean;
+  /** Forces the footer Share popover open on mount — for the design-handoff preview, not used by the real app. */
+  initialShareOpen?: boolean;
+  /** Forces the title or description into its edit field on mount — for the design-handoff preview, not used by the real app. */
+  initialEditing?: 'title' | 'description';
+  /** Starts the alert card already executed or dismissed — for the design-handoff preview, not used by the real app. */
+  initialAlertState?: 'executed' | 'dismissed';
+  /** Shows the alert toast on mount (without the auto-hide timer) — for the design-handoff preview, not used by the real app. */
+  initialAlertToast?: string;
+  /** Opens the "Show all" affected-items modal on mount — for the design-handoff preview, not used by the real app. */
+  initialItemsModalOpen?: boolean;
+  /** Opens the comment composer with this text typed — for the design-handoff preview, not used by the real app. */
+  initialCommentDraft?: string;
 }
 
 export function WorkStationDetailPanel({
   task, onClose, onReassign, onSetStatus, onSetPriority, onSetDue, onSetText, onSetDescription, onOpenAlert, onOpenMeeting, onOpenJiva, jivaOpen, onRemind,
   initialContextOpen = false, initialActivityOpen = false, initialAssignMenuOpen = false, initialStatusMenuOpen = false,
   initialPriorityMenuOpen = false, initialDueMenuOpen = false, initialCommentComposerOpen = false,
+  initialShareOpen = false, initialEditing, initialAlertState, initialAlertToast, initialItemsModalOpen = false, initialCommentDraft,
 }: Props) {
   const [assignMenuOpen, setAssignMenuOpen] = useState(initialAssignMenuOpen);
   const [statusMenuOpen, setStatusMenuOpen] = useState(initialStatusMenuOpen);
@@ -86,9 +99,9 @@ export function WorkStationDetailPanel({
   const [contextOpen, setContextOpen] = useState(initialContextOpen);
   const [activityOpen, setActivityOpen] = useState(initialActivityOpen);
   const [dueMenuOpen, setDueMenuOpen] = useState(initialDueMenuOpen);
-  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(initialEditing === 'title');
   const [titleDraft, setTitleDraft] = useState(task.text);
-  const [editingDescription, setEditingDescription] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(initialEditing === 'description');
   const [descriptionDraft, setDescriptionDraft] = useState(task.description);
 
   function saveTitle() {
@@ -104,17 +117,17 @@ export function WorkStationDetailPanel({
     setEditingDescription(false);
   }
   const [comments, setComments] = useState<WorkstationLogEntry[]>([]);
-  const [commentComposerOpen, setCommentComposerOpen] = useState(initialCommentComposerOpen);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [commentDraft, setCommentDraft] = useState('');
+  const [commentComposerOpen, setCommentComposerOpen] = useState(initialCommentComposerOpen || !!initialCommentDraft);
+  const [shareOpen, setShareOpen] = useState(initialShareOpen);
+  const [commentDraft, setCommentDraft] = useState(initialCommentDraft ?? '');
   const linkedAlert = task.origin === 'alert' && task.alertId ? PROTOTYPE_ALERTS.find((a) => a.id === task.alertId) : undefined;
   const linkedMeeting = task.origin === 'meeting' && task.meetingId ? MEETING_DETAILS[task.meetingId] : undefined;
   const activityEntries = [...task.logs, ...comments];
   const [optId, setOptId] = useState<string | undefined>(() => linkedAlert?.options.find((o) => o.recommended)?.id ?? linkedAlert?.options[0]?.id);
-  const [alertExecuted, setAlertExecuted] = useState(false);
-  const [alertDismissed, setAlertDismissed] = useState(false);
-  const [itemsModalOpen, setItemsModalOpen] = useState(false);
-  const [alertToast, setAlertToast] = useState<string | null>(null);
+  const [alertExecuted, setAlertExecuted] = useState(initialAlertState === 'executed');
+  const [alertDismissed, setAlertDismissed] = useState(initialAlertState === 'dismissed');
+  const [itemsModalOpen, setItemsModalOpen] = useState(initialItemsModalOpen);
+  const [alertToast, setAlertToast] = useState<string | null>(initialAlertToast ?? null);
 
   function postComment() {
     const text = commentDraft.trim();
@@ -425,7 +438,7 @@ export function WorkStationDetailPanel({
                   className={`${motion.pressable} ${motion.cardHover}`}
                   style={{ padding: '10px 12px', border: '1px solid #eceef1', borderRadius: 8, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}
                 >
-                  <SourceIcon origin={linkedAlert?.originType ?? 'anarix'} size={13} />
+                  <OriginGlyph origin="alert" size={18} />
                   <span style={{ flex: 1, minWidth: 0, font: '600 11.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{linkedAlert?.account ?? 'Alert'} · {linkedAlert?.title ?? task.alertId}</span>
                   <span style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b', flex: 'none' }}>Open alert →</span>
                 </div>
@@ -444,8 +457,9 @@ export function WorkStationDetailPanel({
                 </div>
               ) : null}
               {task.origin === 'generative' && (
-                <div style={{ font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
-                  Synthesized from patterns across recent alerts and meetings on this account, rather than tied to any one of them.
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, font: '400 12px/1.6 Inter,sans-serif', color: '#464646' }}>
+                  <span style={{ flex: 'none', marginTop: 1 }}><OriginGlyph origin="generative" size={18} /></span>
+                  <span>Synthesized from patterns across recent alerts and meetings on this account, rather than tied to any one of them.</span>
                 </div>
               )}
               {task.origin === 'direct' && (

@@ -29,6 +29,9 @@ export const MANY_ASSIGNEES = [
 export const PREVIEW_PAGES: { path: string; label: string; note: string }[] = [
   { path: '/signals-preview/signals', label: 'Alerts, Meetings & Work-station', note: 'Every Alerts, Meetings and Work-station screen, panel and menu as static frames — nothing to click through.' },
   { path: '/signals-preview/updates', label: 'Recent updates', note: 'Everything added or redesigned in the latest pass — Work-station task rows and detail-panel field editors, the Activity comment thread, the due-date calendar, and the Meetings list/upcoming/completed screens.' },
+  { path: '/signals-preview/workstation', label: 'Work-station · list', note: 'Whole Work-station screens as they are today: layout, collapsed list, header menus, groups, search, filters, row menus.' },
+  { path: '/signals-preview/workstation-detail', label: 'Work-station · detail', note: 'The task detail column for every kind of task, every field editor and popover, Activity.' },
+  { path: '/signals-preview/workstation-new-task', label: 'Work-station · new task & Jiva', note: 'The New task screen in every state and the Ask Jiva chat.' },
 ];
 
 export function PreviewNav({ current }: { current: string }) {

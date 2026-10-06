@@ -149,7 +149,7 @@ export default function JivaStructurePanel({ draft, selectedProducts, onChange, 
 
         {proposal && (
           <JivaBubble>
-            <div style={{ font: '700 12px/1.4 Inter,sans-serif', color: TEXT_PRIMARY }}>Jiva recommendation</div>
+            <div style={{ font: '700 12px/1.4 Inter,sans-serif', color: TEXT_PRIMARY }}>Jiva's proposal</div>
             <div style={{ font: '500 11.5px/1.4 Inter,sans-serif', color: TEXT_MUTED, marginBottom: 8 }}>
               Product-level campaign separation: <b style={{ fontWeight: 600, color: productScoped ? '#1e8449' : TEXT_PRIMARY }}>{productScoped ? 'Enabled' : 'Disabled'}</b>
             </div>

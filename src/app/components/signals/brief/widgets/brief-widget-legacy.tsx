@@ -140,21 +140,21 @@ const METRIC_STAT_META: Record<string, StatMeta> = Object.fromEntries(
 const STAT_META: Record<string, StatMeta> = { ...FIXED_STAT_META, ...METRIC_STAT_META };
 /** Library order for the "add a stat" picker — the five defaults first, then the metric add-ons. */
 const STAT_LIBRARY_IDS: string[] = [...Object.keys(FIXED_STAT_META), ...Object.keys(METRIC_STAT_META)];
-const DEFAULT_VISIBLE_STAT_IDS: string[] = ['critical', 'atRisk', 'opportunity', 'meetings', 'messages'];
+const DEFAULT_VISIBLE_STAT_IDS: string[] = ['opportunity', 'atRisk', 'critical', 'meetings', 'messages'];
 
 /** Portaled picker for adding a not-yet-visible stat onto the row — same floating-panel-from-
  * document.body pattern as the expansion popover below, so it never gets clipped by the grid cell. */
 function AddStatPopover({ available, anchorRect, onAdd, onClose }: { available: string[]; anchorRect: DOMRect; onAdd: (id: string) => void; onClose: () => void }) {
   const width = 230;
-  const top = anchorRect.bottom + 6;
+  const bottom = window.innerHeight - anchorRect.top + 6;
   const left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - width - 8));
   return createPortal(
     <>
       <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onClick={onClose} />
       <div
-        className={motion.popInTop}
+        className={motion.popInBottomLeft}
         onClick={(e) => e.stopPropagation()}
-        style={{ position: 'fixed', top, left, width, maxHeight: 280, overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 14px 32px rgba(20,24,33,.2)', padding: 6, zIndex: 240 }}
+        style={{ position: 'fixed', bottom, left, width, maxHeight: Math.min(280, anchorRect.top - 16), overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 14px 32px rgba(20,24,33,.2)', padding: 6, zIndex: 240 }}
       >
         <div style={{ padding: '6px 8px 8px', font: '600 10px/1 Inter,sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' as const, color: '#9aa0a8' }}>Add a stat</div>
         {available.length === 0 && <div style={{ padding: '10px 8px', font: '400 12px/1.5 Inter,sans-serif', color: '#9aa0a8' }}>All stats are already on the row.</div>}
@@ -174,179 +174,168 @@ function AddStatPopover({ available, anchorRect, onAdd, onClose }: { available: 
   );
 }
 
-// ---- Expansion mechanism --------------------------------------------------------------------
-// Every key stat expands the same way now: a small floating panel anchored right under the card
-// that was clicked (the mechanism Meetings originally used, now generalized to all five) — never
-// full-screen, never docked to an edge, so opening one never shifts or dims anything else on the
-// page. Portaled to document.body: the widget grid clips each cell to its own grid-row height (so
-// charts etc. don't spill into the widget below), which would otherwise clip a floating panel
-// escaping via CSS position alone (the same class of bug the per-card edit popover hit earlier —
-// see [[project_brief_widget_dashboard]]).
-
-function PopoverReveal({ anchorRect, onClose, children }: { anchorRect: DOMRect | null; onClose: () => void; children: React.ReactNode }) {
-  if (!anchorRect) return null;
-  const width = 380;
-  const top = anchorRect.bottom + 10;
-  const left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - width - 8));
-  return createPortal(
-    <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 259 }} onMouseDown={onClose} />
-      <div
-        className={motion.popInTop}
-        onMouseDown={(e) => e.stopPropagation()}
-        style={{ position: 'fixed', top, left, width, maxHeight: '70vh', overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 12, boxShadow: '0 18px 40px rgba(20,24,33,.22)', zIndex: 260 }}
-      >
-        {children}
-      </div>
-    </>,
-    document.body,
-  );
-}
-
-function ExpansionHost({ statKey, anchorRect, onClose }: { statKey: StatKey; anchorRect: DOMRect | null; onClose: () => void }) {
-  return (
-    <PopoverReveal anchorRect={anchorRect} onClose={onClose}>
-      <StatDetail statKey={statKey} onClose={onClose} />
-    </PopoverReveal>
-  );
-}
-
 // ---- Card + row ---------------------------------------------------------------------------------
 
-function StatCardMember({ meta, expanded, onClick, onRemove }: { meta: StatMeta; expanded: boolean; onClick: (e: React.MouseEvent) => void; onRemove: (e: React.MouseEvent) => void }) {
+/** Shared pieces of the Key stats card. The first two stats are shown large as the "headline" pair; the rest are compact rows. */
+function TrendText({ meta }: { meta: StatMeta }) {
+  if (!meta.trendLabel) return null;
+  return <span style={{ font: '600 12px/1 Inter,sans-serif', color: meta.trendColor }}>{meta.trendLabel}</span>;
+}
+
+function RemoveStat({ label, visible, onRemove, style }: { label: string; visible: boolean; onRemove: (e: React.MouseEvent) => void; style?: React.CSSProperties }) {
+  return (
+    <span
+      role="button"
+      aria-label={`Remove ${label}`}
+      title="Remove stat"
+      onClick={(e) => { e.stopPropagation(); onRemove(e); }}
+      className={motion.pressable}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 5, cursor: 'pointer', opacity: visible ? 1 : 0, transition: 'opacity 120ms ease-out', ...style }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f2f4')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+    >
+      <CloseIcon size={9} color="#9aa0a8" />
+    </span>
+  );
+}
+
+function HeadlineStat({ meta, expanded, onClick, onRemove }: { meta: StatMeta; expanded: boolean; onClick: (e: React.MouseEvent) => void; onRemove: (e: React.MouseEvent) => void }) {
   const [hovered, setHovered] = useState(false);
+  const interactive = Boolean(meta.expandable);
+  const size = 28;
   return (
     <div
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-expanded={interactive ? expanded : undefined}
       onClick={onClick}
+      onKeyDown={(e) => { if (interactive && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.currentTarget.click(); } }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ flex: 1, minWidth: 0, padding: '14px 16px', cursor: meta.expandable ? 'pointer' : 'default', position: 'relative' as const }}
+      className={motion.focusRing}
+      style={{
+        position: 'relative' as const, minWidth: 0, padding: '16px 18px 14px', cursor: interactive ? 'pointer' : 'default',
+        borderBottom: '1px solid #e6e8ec', background: expanded ? `${meta.iconColor}18` : hovered && interactive ? '#eff1f4' : '#f5f6f8',
+        transition: 'background-color 140ms ease-out',
+      }}
     >
-      <span
-        onClick={(e) => { e.stopPropagation(); onRemove(e); }}
-        className={motion.pressable}
-        title="Remove from row"
-        style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 5, cursor: 'pointer', opacity: hovered ? 1 : 0, transition: 'opacity 120ms ease-out' }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f2f4')}
-        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-      >
-        <CloseIcon size={9} color="#9aa0a8" />
-      </span>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ width: 32, height: 32, borderRadius: 9, background: meta.iconBg, color: meta.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{meta.icon(meta.iconColor)}</span>
-        {meta.expandable && (
-          <span style={{ display: 'flex', color: expanded ? meta.iconColor : '#9aa0a8', transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 160ms ease-out, color 160ms ease-out' }}>
-            <ChevronRightIcon color={expanded ? meta.iconColor : undefined} />
-          </span>
-        )}
+      <RemoveStat label={meta.label} visible={hovered} onRemove={onRemove} style={{ position: 'absolute', top: 8, right: 8 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, font: '500 13px/1.3 Inter,sans-serif', color: '#4b5563' }}>
+        <span style={{ display: 'flex', color: meta.iconColor }}>{meta.icon(meta.iconColor)}</span>
+        {meta.label}
       </div>
-      <div style={{ font: '500 12px/1.3 Inter,sans-serif', color: '#4b5563', marginTop: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{meta.label}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' as const }}>
-        <span style={{ font: '700 21px/1 Inter,sans-serif', color: meta.valueColor || '#111827' }}>{meta.value}</span>
-        {meta.trendLabel && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 999, background: meta.trendBg, font: '700 10.5px/1.5 Inter,sans-serif', color: meta.trendColor }}>
-            {meta.trendLabel}
-          </span>
-        )}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 12, flexWrap: 'wrap' as const }}>
+        <span style={{ font: `650 ${size}px/1 Inter,sans-serif`, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums', color: meta.valueColor || '#111827' }}>{meta.value}</span>
+        <TrendText meta={meta} />
       </div>
     </div>
   );
 }
 
-/** The original Brief page's key-stats row — a fixed, product-defined widget (no Jiva editing): the
- * only customization is choosing which predefined stats show, via the "+" tile's add picker and each
- * card's own hover-reveal remove button. The five original alert-derived stats still expand into
- * their own floating category-breakdown popover; the metric add-ons are plain value+trend tiles. */
-export function LegacyKpiRow({ onExpandedChange }: { onExpandedChange?: (expanded: boolean) => void }) {
+function StatRow({ meta, expanded, onClick, onRemove }: { meta: StatMeta; expanded: boolean; onClick: (e: React.MouseEvent) => void; onRemove: (e: React.MouseEvent) => void }) {
+  const [hovered, setHovered] = useState(false);
+  const interactive = Boolean(meta.expandable);
+  return (
+    <div
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-expanded={interactive ? expanded : undefined}
+      onClick={onClick}
+      onKeyDown={(e) => { if (interactive && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.currentTarget.click(); } }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={motion.focusRing}
+      style={{
+        display: 'grid', gridTemplateColumns: '18px minmax(0, 1fr) auto 14px 20px', alignItems: 'center', columnGap: 10, padding: '12px 14px 12px 18px',
+        borderTop: '1px solid #f1f2f4', cursor: interactive ? 'pointer' : 'default',
+        background: expanded ? `${meta.iconColor}12` : hovered && interactive ? '#fafbfd' : '#fff', transition: 'background-color 140ms ease-out',
+      }}
+    >
+      <span style={{ display: 'flex', color: meta.iconColor }}>{meta.icon(meta.iconColor)}</span>
+      <span style={{ font: '500 13.5px/1.3 Inter,sans-serif', color: '#23272d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{meta.label}</span>
+      <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <TrendText meta={meta} />
+        <span style={{ font: '600 15px/1 Inter,sans-serif', fontVariantNumeric: 'tabular-nums', color: meta.valueColor || '#111827' }}>{meta.value}</span>
+      </span>
+      <span style={{ display: 'flex', color: '#c7cad1', opacity: interactive ? 1 : 0, transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 160ms ease-out' }}><ChevronRightIcon /></span>
+      <RemoveStat label={meta.label} visible={hovered} onRemove={onRemove} />
+    </div>
+  );
+}
+
+/** The original Brief page's key-stats card. The first two stats are the large headline pair, the rest compact rows. Opening a stat follows the Work-station list: the stat drops to the bottom of the column, right above its own detail, which opens inline beneath it while everything else stays stacked at the top. */
+export function LegacyKpiRow() {
   const [expanded, setExpanded] = useState<StatKey | null>(null);
-  const [expandRect, setExpandRect] = useState<DOMRect | null>(null);
   const [visibleIds, setVisibleIds] = useState<string[]>(DEFAULT_VISIBLE_STAT_IDS);
   const [addAnchor, setAddAnchor] = useState<DOMRect | null>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
 
-  const toggle = (id: string, rect: DOMRect) => {
-    setExpanded((v) => (v === id ? null : id));
-    setExpandRect(rect);
-  };
-  const closeExpanded = () => setExpanded(null);
+  const toggle = (id: string) => setExpanded((v) => (v === id ? null : id));
   const removeStat = (id: string) => {
     setVisibleIds((v) => v.filter((x) => x !== id));
     setExpanded((v) => (v === id ? null : v));
   };
   const addStat = (id: string) => setVisibleIds((v) => [...v, id]);
   const availableToAdd = STAT_LIBRARY_IDS.filter((id) => !visibleIds.includes(id));
+  const canAdd = availableToAdd.length > 0;
 
-  // `onExpandedChange` is `BriefWidgetGrid`'s `(expanded) => setLegacyKpiExpanded(widget.id, expanded)` —
-  // a fresh closure every render (it's inline, capturing `widget.id` from a `.map()`), and
-  // `setLegacyKpiExpanded` always replaces `layouts` with a new object even when the height it
-  // computes is unchanged. Depending on the callback itself (not just `expanded`) would re-fire this
-  // effect every single render, which replaces `layouts` again, which re-renders the grid, which hands
-  // down yet another new closure — an infinite loop that previously crashed the whole app ("Maximum
-  // update depth exceeded"). Reading the latest callback from a ref instead means this effect only
-  // ever re-runs when `expanded` itself actually changes.
-  const onExpandedChangeRef = useRef(onExpandedChange);
-  useEffect(() => { onExpandedChangeRef.current = onExpandedChange; });
+  const headlineIds = visibleIds.slice(0, 2);
+  const ordered = expanded ? [...visibleIds.filter((id) => id !== expanded), expanded] : visibleIds;
+
+  // Once the detail has opened, bring the docked stat and its detail into view.
   useEffect(() => {
-    // Expansion is always a floating popover now (an overlay, never inline), so this widget's own
-    // grid cell never needs extra height to make room for it.
-    onExpandedChangeRef.current?.(false);
+    if (!expanded) return undefined;
+    const t = window.setTimeout(() => dockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 60);
+    return () => window.clearTimeout(t);
   }, [expanded]);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', gap: 12, flex: 'none' }}>
-        {visibleIds.map((id) => {
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 14, overflow: 'hidden' }}>
+      <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        {ordered.map((id) => {
           const meta = STAT_META[id];
           if (!meta) return null;
+          const isDocked = expanded === id;
+          const onClick = () => { if (meta.expandable) toggle(id); };
+          const row = headlineIds.includes(id)
+            ? <HeadlineStat meta={meta} expanded={isDocked} onClick={onClick} onRemove={() => removeStat(id)} />
+            : <StatRow meta={meta} expanded={isDocked} onClick={onClick} onRemove={() => removeStat(id)} />;
           return (
-            <div
-              key={id}
-              style={{
-                flex: 1, minWidth: 0, display: 'flex', position: 'relative' as const,
-                background: '#fff', borderRadius: 12,
-                border: `1.5px solid ${expanded === id ? meta.iconColor : '#eceef1'}`,
-                boxShadow: expanded === id ? '0 10px 22px -8px rgba(20,24,33,.22)' : 'none',
-                transform: expanded === id ? 'translateY(-2px)' : 'none',
-                transition: 'border-color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out',
-              }}
-            >
-              <StatCardMember
-                meta={meta}
-                expanded={expanded === id}
-                onClick={(e) => meta.expandable && toggle(id, e.currentTarget.getBoundingClientRect())}
-                onRemove={() => removeStat(id)}
-              />
+            <div key={id} ref={isDocked ? dockRef : undefined}>
+              {row}
+              {isDocked && (
+                <div className={`${motion.accordionRow} ${motion.accordionRowOpen}`}>
+                  <div style={{ borderBottom: '1px solid #f1f2f4' }}><StatDetail statKey={id} onClose={() => setExpanded(null)} /></div>
+                </div>
+              )}
             </div>
           );
         })}
-        {availableToAdd.length > 0 && (
-          <span
-            onClick={(e) => setAddAnchor(e.currentTarget.getBoundingClientRect())}
-            className={motion.pressable}
-            title="Add a stat"
-            style={{ flex: '0 0 56px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px dashed #dfe3ea', borderRadius: 12, cursor: 'pointer', color: '#9aa0a8' }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#c7cad1'; e.currentTarget.style.color = '#6b7178'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#dfe3ea'; e.currentTarget.style.color = '#9aa0a8'; }}
-          >
-            <PlusIcon size={14} color="currentColor" />
-          </span>
-        )}
       </div>
+      {canAdd && (
+        <button
+          type="button"
+          onClick={(e) => setAddAnchor(e.currentTarget.getBoundingClientRect())}
+          className={motion.pressable}
+          style={{ flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 18px', border: 'none', borderTop: '1px solid #f1f2f4', background: '#fff', font: '600 12.5px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', transition: 'background-color 140ms ease-out' }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#f6f2fb')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
+        >
+          <PlusIcon size={11} color="currentColor" /> Add stat
+        </button>
+      )}
 
-      {expanded && <ExpansionHost statKey={expanded} anchorRect={expandRect} onClose={closeExpanded} />}
       {addAnchor && <AddStatPopover available={availableToAdd} anchorRect={addAnchor} onAdd={addStat} onClose={() => setAddAnchor(null)} />}
     </div>
   );
 }
 
-function DetailHeader({ iconBg, iconColor, icon, title, subtitle, onClose }: { iconBg: string; iconColor: string; icon: React.ReactNode; title: string; subtitle: string; onClose: () => void }) {
+/** The stat's own row sits directly above its detail, so the header only adds the one-line description and the close control instead of repeating the icon and name. */
+function DetailHeader({ subtitle, onClose }: { iconBg?: string; iconColor?: string; icon?: React.ReactNode; title?: string; subtitle: string; onClose: () => void }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 18px 0' }}>
-      <span style={{ width: 32, height: 32, borderRadius: 9, background: iconBg, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{icon}</span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ font: '700 14px/1.3 Inter,sans-serif', color: '#111827' }}>{title}</div>
-        <div style={{ font: '400 11.5px/1.4 Inter,sans-serif', color: '#6b7178', marginTop: 2 }}>{subtitle}</div>
-      </div>
-      <span onClick={onClose} className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: 4 }}><CloseIcon size={13} /></span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px 0 18px' }}>
+      <div style={{ flex: 1, minWidth: 0, font: '400 12px/1.4 Inter,sans-serif', color: '#6b7178' }}>{subtitle}</div>
+      <span onClick={onClose} role="button" aria-label="Close details" className={motion.pressable} style={{ display: 'flex', cursor: 'pointer', padding: 4 }}><CloseIcon size={13} /></span>
     </div>
   );
 }
@@ -513,33 +502,62 @@ function MessagesDetail({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** The original "While you were away" Jiva activity feed, redesigned as a card list — each row now surfaces whether Jiva finished the work or is waiting on you, which the original bullet list never showed even though the data always had it. */
-export function LegacyActivityBody() {
+type ActivityItem = (typeof JIVA_ACTIVITY)[number];
+
+function TimelineItem({ j, last }: { j: ActivityItem; last: boolean }) {
+  const [hovered, setHovered] = useState(false);
+  const needsReview = j.status === 'needs-review';
+  const loss = Boolean(j.impact && (j.impact.startsWith('-') || j.impact.startsWith('−')));
   return (
-    <div className={scrollStyles.sleekScroll} style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 2 }}>
-      {JIVA_ACTIVITY.map((j) => {
-        const needsReview = j.status === 'needs-review';
-        return (
-          <div key={j.id} className={motion.rowHover} style={{ display: 'flex', gap: 10, padding: '11px 12px', borderRadius: 9, border: `1px solid ${needsReview ? '#f3e6d0' : '#f1f2f4'}`, background: needsReview ? '#fffaf3' : '#fff' }}>
-            <span style={{ width: 24, height: 24, borderRadius: 7, background: needsReview ? '#fdf3e0' : '#e9f7ef', color: needsReview ? '#a8763f' : '#27ae60', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', marginTop: 1 }}>
-              {needsReview ? <ClockGlyph color="#a8763f" /> : <CheckGlyph color="#27ae60" />}
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' as const }}>
-                <span style={{ font: '600 12.5px/1.4 Inter,sans-serif', color: '#23272d' }}>{j.label}</span>
-                {j.impact && <span style={{ font: '700 11.5px/1 Inter,sans-serif', color: j.impactColor || '#464646' }}>{j.impact}</span>}
-              </div>
-              <div style={{ font: '400 11px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 3 }}>{j.detail}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-                <span style={{ font: '500 10px/1 Inter,sans-serif', color: '#9aa0a8' }}>{j.category} · {j.time}</span>
-                {needsReview && (
-                  <span style={{ padding: '1px 6px', borderRadius: 999, background: '#fdf3e0', font: '700 9px/1.5 Inter,sans-serif', color: '#a8763f' }}>NEEDS REVIEW</span>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ display: 'grid', gridTemplateColumns: '66px 22px minmax(0, 1fr) auto', columnGap: 4, alignItems: 'start', padding: '0 12px 0 0', borderRadius: 8, background: hovered ? '#fafbfd' : 'transparent', transition: 'background-color 140ms ease-out' }}
+    >
+      <span style={{ padding: '14px 0 0 4px', font: '500 12px/1.4 Inter,sans-serif', fontVariantNumeric: 'tabular-nums', color: '#9aa0a8', textAlign: 'right' as const, paddingRight: 8 }}>{j.time.replace(' ', ' ')}</span>
+      <span style={{ position: 'relative' as const, alignSelf: 'stretch', display: 'flex', justifyContent: 'center' }}>
+        {!last && <span aria-hidden style={{ position: 'absolute', top: 24, bottom: -2, width: 1.5, background: '#e6e8ec' }} />}
+        <span
+          aria-hidden
+          style={{
+            marginTop: 17, width: 11, height: 11, borderRadius: '50%', zIndex: 1, boxSizing: 'border-box' as const,
+            background: needsReview ? '#fff' : '#27ae60', border: `2px solid ${needsReview ? '#d9a441' : '#27ae60'}`,
+          }}
+        />
+      </span>
+      <div style={{ minWidth: 0, padding: '12px 0 14px 6px' }}>
+        <div style={{ font: '600 13.5px/1.4 Inter,sans-serif', color: '#23272d' }}>{j.label}</div>
+        <div style={{ font: '400 12.5px/1.5 Inter,sans-serif', color: '#6b7178', marginTop: 2 }}>{j.detail}</div>
+        <div style={{ font: '500 11.5px/1 Inter,sans-serif', color: '#9aa0a8', marginTop: 7 }}>{j.category}</div>
+      </div>
+      <div style={{ padding: '14px 0 0 12px', textAlign: 'right' as const, whiteSpace: 'nowrap' as const }}>
+        {j.impact && <span style={{ font: '650 13.5px/1.3 Inter,sans-serif', fontVariantNumeric: 'tabular-nums', color: loss ? '#b3453f' : '#1e8449' }}>{j.impact}</span>}
+      </div>
+    </div>
+  );
+}
+
+function TimelineGroup({ title, hint, dot, items }: { title: string; hint: string; dot: string; items: ActivityItem[] }) {
+  return (
+    <section style={{ padding: '4px 0 6px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '12px 0 4px 74px' }}>
+        <span aria-hidden style={{ alignSelf: 'center', width: 7, height: 7, borderRadius: '50%', background: dot }} />
+        <h3 style={{ margin: 0, font: '600 13px/1.3 Inter,sans-serif', color: '#23272d' }}>{title}</h3>
+        <span style={{ font: '400 12px/1.3 Inter,sans-serif', color: '#9aa0a8' }}>{hint}</span>
+      </div>
+      {items.map((j, i) => <TimelineItem key={j.id} j={j} last={i === items.length - 1} />)}
+    </section>
+  );
+}
+
+/** "While you were away" as a timeline card: when each thing happened is the spine, and what is waiting on you is separated from what Jiva already finished. */
+export function LegacyActivityBody() {
+  const needsReview = JIVA_ACTIVITY.filter((j) => j.status === 'needs-review');
+  const finished = JIVA_ACTIVITY.filter((j) => j.status !== 'needs-review');
+  return (
+    <div className={scrollStyles.sleekScroll} style={{ height: '100%', overflowY: 'auto', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 14, padding: '6px 6px 10px 6px' }}>
+      {needsReview.length > 0 && <TimelineGroup title="Needs your review" hint={`${needsReview.length} waiting on you`} dot="#d9a441" items={needsReview} />}
+      {finished.length > 0 && <TimelineGroup title="Handled by Jiva" hint={`${finished.length} finished`} dot="#27ae60" items={finished} />}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { PlusIcon } from '../alerts/icons';
 import { WorkStationListView, type GroupKey } from './work-station-list-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
+import { WorkStationNewTaskPanel } from './work-station-new-task-panel';
 import { WorkStationCollapsedRail } from './work-station-collapsed-rail';
 import { PRIORITY_COLOR } from './work-station-icons';
 import { ConnectedEmptyHero } from '../common/connected-empty-hero';
@@ -32,6 +33,30 @@ const QUICK_FILTER_LABEL = {
   overdue: 'Overdue', in_progress: 'In progress', done: 'Done',
 } as const;
 
+/** Everything the design-handoff preview can force on mount so each state renders as its own static frame — never set by the real app. */
+export interface WorkStationPreview {
+  /** Extra tasks placed ahead of the prototype data (e.g. a directly-created one). */
+  extraTasks?: WorkstationTask[];
+  listCollapsed?: boolean;
+  quickFilter?: keyof typeof QUICK_FILTER_LABEL;
+  search?: string;
+  priorityFilters?: string[];
+  personFilter?: string;
+  rowMenu?: { id: string; mode: 'main' | 'share' };
+  remindedName?: string;
+  newTask?: { title?: string; description?: string; assigneeId?: string; priority?: 'High' | 'Medium' | 'Low'; due?: string };
+  newTaskMenu?: 'assignee' | 'priority' | 'due';
+  detailShareOpen?: boolean;
+  detailEditing?: 'title' | 'description';
+  alertState?: 'executed' | 'dismissed';
+  alertToast?: string;
+  itemsModalOpen?: boolean;
+  commentDraft?: string;
+  jivaDraft?: string;
+  jivaConversation?: boolean;
+  jivaTyping?: boolean;
+}
+
 interface Props {
   onOpenAlert?: (id: string) => void;
   onOpenMeeting?: (id: string) => void;
@@ -55,14 +80,16 @@ interface Props {
   initialDetailFieldOpen?: 'assignee' | 'status' | 'priority' | 'due';
   /** Which list group tab starts expanded — for the design-handoff preview, not used by the real app. */
   initialActiveGroup?: GroupKey;
+  /** Forces any other state on mount — for the design-handoff preview, not used by the real app. */
+  preview?: WorkStationPreview;
 }
 
 export function WorkStation({
   onOpenAlert, onOpenMeeting, forceJivaOpen = false, initialSelectedId = null, initialJivaOpen = false, initialPriorityFilterOpen = false,
   initialCreateOpen = false, initialDetailContextOpen = false, initialDetailActivityOpen = false,
-  initialDetailCommentComposerOpen = false, initialDetailFieldOpen, initialActiveGroup = 'to-me',
+  initialDetailCommentComposerOpen = false, initialDetailFieldOpen, initialActiveGroup = 'to-me', preview,
 }: Props) {
-  const [tasks, setTasks] = useState<WorkstationTask[]>(WORKSTATION_TASKS);
+  const [tasks, setTasks] = useState<WorkstationTask[]>(() => [...(preview?.extraTasks ?? []), ...WORKSTATION_TASKS]);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [jivaOpen, setJivaOpen] = useState(initialJivaOpen);
   const [readTaskIds, setReadTaskIds] = useState<Set<string>>(new Set(initialSelectedId ? [initialSelectedId] : []));
@@ -74,6 +101,7 @@ export function WorkStation({
   useEffect(() => {
     setJivaOpen(forceJivaOpen);
     if (forceJivaOpen) {
+      setCreateOpen(false);
       setSelectedId((cur) => {
         const next = cur ?? tasks.find((t) => t.assignee === 'You')?.id ?? tasks[0]?.id ?? null;
         markTaskRead(next);
@@ -83,32 +111,20 @@ export function WorkStation({
     // Reacts only to the global button's own toggles, not to every local task/selection change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceJivaOpen]);
-  const listCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160 });
+  const listCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160, initialCollapsed: preview?.listCollapsed });
   const jivaCol = useResizableColumn({ defaultWidth: 340, minWidth: 260, maxWidth: 480, edge: 'left' });
-  const [search, setSearch] = useState('');
-  const [personFilter, setPersonFilter] = useState('');
+  const [search, setSearch] = useState(preview?.search ?? '');
+  const [personFilter, setPersonFilter] = useState(preview?.personFilter ?? '');
   const [priorityFilterOpen, setPriorityFilterOpen] = useState(initialPriorityFilterOpen);
-  const [priorityFilters, setPriorityFilters] = useState<Record<string, boolean>>({});
-  const [categoryQuickFilter, setCategoryQuickFilter] = useState<keyof typeof QUICK_FILTER_LABEL | null>(null);
+  const [priorityFilters, setPriorityFilters] = useState<Record<string, boolean>>(() => Object.fromEntries((preview?.priorityFilters ?? []).map((k) => [k, true])));
+  const [categoryQuickFilter, setCategoryQuickFilter] = useState<keyof typeof QUICK_FILTER_LABEL | null>(preview?.quickFilter ?? null);
   const [createOpen, setCreateOpen] = useState(initialCreateOpen);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newAssigneeId, setNewAssigneeId] = useState('self');
-  const [newPriority, setNewPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
-  const [newDue, setNewDue] = useState('');
-  /** Free-text context notes — starts with one empty field; typing into the last one for the first
-   * time opens up a new empty field below it, so there's always exactly one blank field to fill next. */
-  const [newContextNotes, setNewContextNotes] = useState<string[]>(['']);
-  const updateNewContextNote = (i: number, value: string) => {
-    setNewContextNotes((prev) => {
-      const wasEmpty = !prev[i]?.trim();
-      const next = prev.map((n, idx) => (idx === i ? value : n));
-      if (i === prev.length - 1 && wasEmpty && value.trim()) next.push('');
-      return next;
-    });
-  };
-
-  const selectTask = (id: string) => { setSelectedId(id); setJivaOpen(false); markTaskRead(id); };
+  const [newTitle, setNewTitle] = useState(preview?.newTask?.title ?? '');
+  const [newDescription, setNewDescription] = useState(preview?.newTask?.description ?? '');
+  const [newAssigneeId, setNewAssigneeId] = useState(preview?.newTask?.assigneeId ?? 'self');
+  const [newPriority, setNewPriority] = useState<'High' | 'Medium' | 'Low'>(preview?.newTask?.priority ?? 'Medium');
+  const [newDue, setNewDue] = useState(preview?.newTask?.due ?? '');
+  const selectTask = (id: string) => { setSelectedId(id); setJivaOpen(false); setCreateOpen(false); markTaskRead(id); };
 
   const setStatus = (id: string, status: TaskStatus) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   const cycleStatus = (id: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: NEXT_STATUS[t.status] } : t)));
@@ -118,7 +134,7 @@ export function WorkStation({
   const setDescription = (id: string, description: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, description } : t)));
   const togglePriorityFilter = (k: string) => setPriorityFilters((p) => ({ ...p, [k]: !p[k] }));
 
-  const [remindedName, setRemindedName] = useState<string | null>(null);
+  const [remindedName, setRemindedName] = useState<string | null>(preview?.remindedName ?? null);
   const remindAssignee = (id: string) => {
     const target = tasks.find((t) => t.id === id);
     if (!target) return;
@@ -127,6 +143,15 @@ export function WorkStation({
     setTimeout(() => setRemindedName((cur) => (cur === target.assignee ? null : cur)), 2600);
   };
 
+  const resetNewTask = () => {
+    setNewTitle('');
+    setNewDescription('');
+    setNewAssigneeId('self');
+    setNewPriority('Medium');
+    setNewDue('');
+  };
+  const cancelCreate = () => { setCreateOpen(false); resetNewTask(); };
+
   const createTask = () => {
     const title = newTitle.trim();
     if (!title) return;
@@ -134,7 +159,6 @@ export function WorkStation({
     const task: WorkstationTask = {
       id, text: title, description: newDescription.trim() || title,
       priority: newPriority,
-      contextNotes: newContextNotes.map((n) => n.trim()).filter(Boolean).length ? newContextNotes.map((n) => n.trim()).filter(Boolean) : undefined,
       assignee: newAssigneeId === 'unassigned' ? 'Unassigned' : assigneeNameFor(newAssigneeId),
       assigneeId: newAssigneeId === 'unassigned' ? undefined : newAssigneeId,
       createdBy: 'You', due: newDue.trim() || 'No due date', overdue: false,
@@ -143,13 +167,7 @@ export function WorkStation({
     };
     setTasks((prev) => [task, ...prev]);
     selectTask(id);
-    setCreateOpen(false);
-    setNewTitle('');
-    setNewDescription('');
-    setNewAssigneeId('self');
-    setNewPriority('Medium');
-    setNewDue('');
-    setNewContextNotes(['']);
+    resetNewTask();
   };
 
   const reassign = (id: string, a: AssigneeOption) => {
@@ -269,93 +287,12 @@ export function WorkStation({
 
                 <span style={{ position: 'relative', flex: 'none' }}>
                   <span
-                    onClick={() => { setCreateOpen((v) => !v); setPriorityFilterOpen(false); }}
+                    onClick={() => { setCreateOpen(true); setJivaOpen(false); setPriorityFilterOpen(false); }}
                     className={`${motion.pressable} ${motion.btnPrimary}`}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, height: 34, boxSizing: 'border-box' as const, padding: '0 14px', border: '1px solid transparent', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                   >
                     <PlusIcon size={11} /> New task
                   </span>
-                  {createOpen && (
-                    <div className={motion.popIn} style={{ position: 'absolute', right: 0, top: 40, width: 320, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 14, zIndex: 60 }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ font: '700 12.5px/1 Inter,sans-serif', color: '#23272d', marginBottom: 10 }}>New task</div>
-                      <input
-                        autoFocus
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) createTask(); if (e.key === 'Escape') setCreateOpen(false); }}
-                        placeholder="What needs to get done?"
-                        className={motion.focusRing}
-                        style={{ width: '100%', padding: '9px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12.5px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
-                      />
-                      <textarea
-                        value={newDescription}
-                        onChange={(e) => setNewDescription(e.target.value)}
-                        placeholder="Add more detail (optional)"
-                        rows={2}
-                        className={motion.focusRing}
-                        style={{ width: '100%', marginTop: 8, padding: '8px 11px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.5 Inter,sans-serif', color: '#3d434b', outline: 'none', resize: 'none' as const, fontFamily: 'inherit' }}
-                      />
-
-                      <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginTop: 11 }}>Priority</div>
-                      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                        {(['High', 'Medium', 'Low'] as const).map((p) => (
-                          <span
-                            key={p}
-                            onClick={() => setNewPriority(p)}
-                            className={motion.pressable}
-                            style={{ flex: 1, textAlign: 'center' as const, padding: '6px 0', borderRadius: 6, border: `1px solid ${newPriority === p ? PRIORITY_COLOR[p] : '#dfe3ea'}`, background: newPriority === p ? PRIORITY_COLOR[p] + '14' : '#fff', font: '600 11px/1 Inter,sans-serif', color: newPriority === p ? PRIORITY_COLOR[p] : '#6b7178', cursor: 'pointer' }}
-                          >
-                            {p}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div style={{ font: '600 10px/1 Inter,sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginTop: 11 }}>Add context (optional)</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
-                        {newContextNotes.map((note, i) => (
-                          <input
-                            key={i}
-                            value={note}
-                            onChange={(e) => updateNewContextNote(i, e.target.value)}
-                            placeholder="Add a note…"
-                            className={motion.focusRing}
-                            style={{ width: '100%', padding: '8px 10px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 12px/1.4 Inter,sans-serif', color: '#3d434b', outline: 'none', boxSizing: 'border-box' as const }}
-                          />
-                        ))}
-                      </div>
-
-                      <div style={{ display: 'flex', gap: 8, marginTop: 11 }}>
-                        <select
-                          value={newAssigneeId}
-                          onChange={(e) => setNewAssigneeId(e.target.value)}
-                          className={motion.focusRing}
-                          style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none', background: '#fff' }}
-                        >
-                          {DEFAULT_ASSIGNEES.map((a) => (
-                            <option key={a.id} value={a.id}>{a.id === 'self' ? 'Me' : a.name}</option>
-                          ))}
-                          <option value="unassigned">Unassigned</option>
-                        </select>
-                        <input
-                          value={newDue}
-                          onChange={(e) => setNewDue(e.target.value)}
-                          placeholder="Due (optional)"
-                          className={motion.focusRing}
-                          style={{ flex: 1, minWidth: 0, padding: '8px 9px', border: '1px solid #dfe3ea', borderRadius: 7, font: '400 11.5px/1 Inter,sans-serif', color: '#3d434b', outline: 'none' }}
-                        />
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                        <span onClick={() => setCreateOpen(false)} className={`${motion.pressable} ${motion.btnSecondary}`} style={{ flex: 1, textAlign: 'center' as const, padding: '8px', border: '1px solid #dfe3ea', borderRadius: 7, font: '600 11.5px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
-                        <span
-                          onClick={createTask}
-                          className={newTitle.trim() ? `${motion.pressable} ${motion.btnPrimary}` : motion.pressable}
-                          style={{ flex: 1, textAlign: 'center' as const, padding: '8px', borderRadius: 7, background: newTitle.trim() ? '#77469b' : '#eee7f5', color: newTitle.trim() ? '#fff' : '#c3b3d6', font: '600 11.5px/1 Inter,sans-serif', cursor: newTitle.trim() ? 'pointer' : 'default' }}
-                        >
-                          Create task
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </span>
               </div>
               {categoryQuickFilter && (
@@ -371,13 +308,19 @@ export function WorkStation({
             </div>
 
             <div className={scrollStyles.sleekScroll} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} readTaskIds={readTaskIds} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} />
+              <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} readTaskIds={readTaskIds} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} initialRowMenu={preview?.rowMenu} />
             </div>
           </div>
       )}
 
           <div style={{ position: 'relative' as const, display: 'flex', flex: 1, minWidth: 0, height: '100%' }}>
-          {selectedTask ? (
+          {createOpen ? (
+            <WorkStationNewTaskPanel
+              title={newTitle} description={newDescription} assigneeId={newAssigneeId} priority={newPriority} due={newDue}
+              onTitle={setNewTitle} onDescription={setNewDescription} onAssignee={setNewAssigneeId} onPriority={setNewPriority} onDue={setNewDue}
+              onCancel={cancelCreate} onCreate={createTask} initialMenu={preview?.newTaskMenu}
+            />
+          ) : selectedTask ? (
             <WorkStationDetailPanel
               key={selectedTask.id}
               task={selectedTask}
@@ -400,6 +343,12 @@ export function WorkStation({
               initialStatusMenuOpen={initialDetailFieldOpen === 'status'}
               initialPriorityMenuOpen={initialDetailFieldOpen === 'priority'}
               initialDueMenuOpen={initialDetailFieldOpen === 'due'}
+              initialShareOpen={preview?.detailShareOpen}
+              initialEditing={preview?.detailEditing}
+              initialAlertState={preview?.alertState}
+              initialAlertToast={preview?.alertToast}
+              initialItemsModalOpen={preview?.itemsModalOpen}
+              initialCommentDraft={preview?.commentDraft}
             />
           ) : (
             <div style={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden' }}>
@@ -419,10 +368,10 @@ export function WorkStation({
           <ResizeHandle dragHandleProps={listCol.dragHandleProps} active={listCol.dragging} side="left" />
           </div>
 
-          {jivaOpen && selectedTask && (
+          {jivaOpen && selectedTask && !createOpen && (
             <div style={{ position: 'relative' as const, display: 'flex', flex: `0 0 ${jivaCol.width}px`, height: '100%' }}>
               <ResizeHandle dragHandleProps={jivaCol.dragHandleProps} active={jivaCol.dragging} side="left" />
-              <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} width={jivaCol.width} />
+              <WorkStationAskJivaPanel task={selectedTask} onClose={() => setJivaOpen(false)} width={jivaCol.width} initialDraft={preview?.jivaDraft} initialConversation={preview?.jivaConversation} initialTyping={preview?.jivaTyping} />
             </div>
           )}
 

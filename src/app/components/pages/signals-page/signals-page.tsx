@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
 import { SIGNAL_TABS, type SignalTabKey, type BriefState } from '@/constants/signals/tabs.constants';
+import { SIGNAL_TAB_ICONS } from '../../signals/common/signals-icons';
 import { BriefWidgetGrid } from '../../signals/brief/widgets/brief-widget-grid';
 import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
 import { BriefOnboard } from '../../signals/brief/brief-onboard';
@@ -22,15 +23,23 @@ import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, MEETING_LIST, type LoggedActionIt
 import DiamondMascot from '../../common/diamond-mascot/diamond-mascot';
 import motion from '../../signals/alerts/motion.module.scss';
 
-export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKey } = {}) {
+/** Props the design-handoff preview can force on mount — never set by the real app. */
+export interface SignalsPagePreview {
+  accountFilterOpen?: boolean;
+  calendarOpen?: boolean;
+  globalJivaOpen?: boolean;
+  workStation?: Omit<React.ComponentProps<typeof WorkStation>, 'onOpenAlert' | 'onOpenMeeting' | 'forceJivaOpen'>;
+}
+
+export function SignalsPage({ initialTab = 'brief', preview }: { initialTab?: SignalTabKey; preview?: SignalsPagePreview } = {}) {
   const [activeTab, setActiveTab] = useState<SignalTabKey>(initialTab);
   const [briefState, setBriefState] = useState<BriefState>('full');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
   const [meetingAskJivaOpen, setMeetingAskJivaOpen] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(preview?.calendarOpen ?? false);
   const [rangeLabel, setRangeLabel] = useState('Today · 1 Nov');
-  const [accountFilterOpen, setAccountFilterOpen] = useState(false);
+  const [accountFilterOpen, setAccountFilterOpen] = useState(preview?.accountFilterOpen ?? false);
   const [filterMarketplaces, setFilterMarketplaces] = useState<MpBrand[]>([]);
   const [filterCountries, setFilterCountries] = useState<string[]>([]);
   const [filterBrands, setFilterBrands] = useState<string[]>([]);
@@ -45,7 +54,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
   const [readAlertIds, setReadAlertIds] = useState<Set<string>>(new Set(['a2']));
   const [filteredAlertIds, setFilteredAlertIds] = useState<string[]>(() => PROTOTYPE_ALERTS.map((a) => a.id));
   const [askJivaOpen, setAskJivaOpen] = useState(false);
-  const [globalJivaOpen, setGlobalJivaOpen] = useState(false);
+  const [globalJivaOpen, setGlobalJivaOpen] = useState(preview?.globalJivaOpen ?? false);
   const [applyCategoryFilter, setApplyCategoryFilter] = useState<{ category: string; nonce: number } | null>(null);
   const [applyMeetingFilter, setApplyMeetingFilter] = useState<{ kind: 'day' | 'status' | 'clear'; value?: string; nonce: number } | null>(null);
   // Alerts' collapsed column is a thin sliver behind the detail panel that reveals the real list as
@@ -351,6 +360,7 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
       case 'workstation':
         return (
           <WorkStation
+            {...preview?.workStation}
             onOpenAlert={openAlert}
             onOpenMeeting={(id) => { setActiveTab('meetings'); setSelectedMeetingId(id); setMeetingAskJivaOpen(false); }}
             forceJivaOpen={globalJivaOpen}
@@ -414,8 +424,10 @@ export function SignalsPage({ initialTab = 'brief' }: { initialTab?: SignalTabKe
             <button
               key={t.key}
               className={`${styles.tab} ${activeTab === t.key ? styles.tabActive : ''}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               onClick={() => goTab(t.key)}
             >
+              {(() => { const Icon = SIGNAL_TAB_ICONS[t.key]; return <Icon size={15} />; })()}
               {t.label}
             </button>
           ))}

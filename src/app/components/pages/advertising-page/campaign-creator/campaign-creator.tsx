@@ -1,13 +1,13 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import useSubHeader from '@/hooks/use-sub-header.hook';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import {
-  EMPTY_DRAFT, accountCampaignLimits, flattenProducts, productsFor, structureCounts, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, flattenProducts, productsFor, structureCounts, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
-import StepRail from './step-rail';
+import { PAGE_TINT, Panel, StepSummary, Stepper, summaryFor } from './cc-design';
 import StepEntry from './steps/step-entry';
 import StepProducts from './steps/step-products';
 import StepObjectives from './steps/step-objectives';
@@ -33,6 +33,7 @@ export default function CampaignCreator() {
   const [furthestIndex, setFurthestIndex] = useState(0);
   const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
   const [jivaOpen, setJivaOpen] = useState(false);
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
 
   // Pin the wizard to the viewport so the footer always sits at the bottom, whatever the step's content height.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -48,6 +49,10 @@ export default function CampaignCreator() {
     return () => { timers.forEach(window.clearTimeout); window.removeEventListener('resize', measure); };
   }, []);
 
+  // A new step starts at the top, not wherever the last one was scrolled to.
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => { mainRef.current?.scrollTo({ top: 0 }); }, [step]);
+
   const update = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...patch }));
 
   const products = useMemo(() => (draft.marketplace ? productsFor(draft.marketplace) : []), [draft.marketplace]);
@@ -62,19 +67,21 @@ export default function CampaignCreator() {
     : null;
   const limitCheck = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
 
+  const heading = (id: CcStepId) => setDir(STEP_ORDER.indexOf(id) >= STEP_ORDER.indexOf(step) ? 'fwd' : 'back');
   function goTo(id: CcStepId) {
+    heading(id);
     setJivaOpen(false);
     setStep(id);
   }
   function advance(id: CcStepId) {
     const idx = NUMBERED_STEPS.findIndex((s) => s.id === id);
     if (idx >= 0) setFurthestIndex((prev) => Math.max(prev, idx));
+    heading(id);
     setJivaOpen(false);
     setStep(id);
   }
 
   const numberedIndex = NUMBERED_STEPS.findIndex((s) => s.id === step);
-  const totalCampaigns = draft.structureId === 'custom' ? (draft.customCampaigns?.length ?? null) : (counts?.totalCampaigns ?? null);
 
   const structureBlocked = !draft.structureId
     || (draft.structureId !== 'custom' && !limitCheck.ok)
@@ -92,7 +99,7 @@ export default function CampaignCreator() {
     targeting: { back: () => goTo('objectives'), next: () => advance('structure'), nextLabel: 'Continue', disabled: draft.targetingStrategies.length === 0 },
     structure: { back: () => goTo('targeting'), next: () => advance('preview'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
-      back: () => goTo('structure'), next: () => setStep('creating'),
+      back: () => goTo('structure'), next: () => { setDir('fwd'); setStep('creating'); },
       nextLabel: previewCount > 0 ? `Create ${previewCount} campaign${previewCount === 1 ? '' : 's'}` : 'Create campaigns',
       disabled: previewCount === 0 || !previewBudgetOk,
     },
@@ -103,32 +110,34 @@ export default function CampaignCreator() {
   };
   const footer = footers[step];
   const framed = numberedIndex >= 0;
+  const summary = framed && step !== 'preview' ? summaryFor(step, draft, selectedProducts) : [];
 
   return (
-    <div ref={rootRef} className="cc-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
+    <div ref={rootRef} className="cc-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: PAGE_TINT, fontFamily: 'Inter, sans-serif' }}>
       <CcGlobalStyles />
-      {framed && (
-        <StepRail
-          steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo}
-          draft={draft} selectedProducts={selectedProducts} totalCampaigns={totalCampaigns} compact={jivaOpen}
-        />
-      )}
-
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-          <main className="cc-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-            <div key={step} className="cc-enter" style={{ maxWidth: framed ? 'none' : step === 'result' ? 880 : 640, margin: framed ? 0 : '0 auto', padding: framed ? '40px 48px 56px' : '72px 32px 56px' }}>
-              {step === 'entry' && <StepEntry draft={draft} onChange={update} />}
-              {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
-              {step === 'objectives' && <StepObjectives draft={draft} selectedProducts={selectedProducts} onChange={update} />}
-              {step === 'targeting' && <StepTargeting draft={draft} selectedProducts={selectedProducts} onChange={update} />}
-              {step === 'structure' && (
-                <StepStructure draft={draft} selectedProducts={selectedProducts} campaignLimit={campaignLimit} onChange={update} onJivaChange={setJivaOpen} />
-              )}
-              {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} onChange={update} />}
-              {step === 'creating' && <StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => setStep('result')} />}
-              {step === 'result' && <StepResult draft={draft} selectedProducts={selectedProducts} />}
-            </div>
+          <main ref={mainRef} className="cc-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
+            <>
+              <div key={step} className={`cc-tr-${dir}`} style={{ maxWidth: framed ? 'none' : step === 'result' ? 880 : 640, margin: framed ? 0 : '0 auto', padding: framed ? '32px 48px 56px' : '56px 32px 56px' }}>
+                {framed && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}><Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} /></div>
+                  </div>
+                )}
+                {framed && <StepSummary items={summary} onJump={goTo} />}
+                {step === 'entry' && <Panel pad={32}><StepEntry draft={draft} onChange={update} /></Panel>}
+                {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'objectives' && <StepObjectives draft={draft} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'targeting' && <StepTargeting draft={draft} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'structure' && (
+                  <StepStructure draft={draft} selectedProducts={selectedProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={update} onJivaChange={setJivaOpen} />
+                )}
+                {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'creating' && <Panel pad={32}><StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => { setDir('fwd'); setStep('result'); }} /></Panel>}
+                {step === 'result' && <Panel pad={32}><StepResult draft={draft} selectedProducts={selectedProducts} /></Panel>}
+              </div>
+            </>
           </main>
           {step === 'structure' && jivaOpen && (
             <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />

@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
-  MOCK_RULES, RULE_TYPES, recommendedRules, ruleIncompatibility,
+  MOCK_RULES, RULE_TYPES, ruleIncompatibility,
   type CcCampaign, type CcDraft, type CcProduct, type CcRule, type RuleScope, type RuleType,
 } from '../campaign-creator.types';
 import {
-  BORDER, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, Radio, RecommendedTag, SearchIcon, SectionTitle,
+  BORDER, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, Radio, SearchIcon, SectionTitle,
   TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, TextButton, WARN,
 } from '../campaign-creator-ui';
+import { Panel } from '../cc-design';
 import { FIELD } from './preview-targets';
 
 // §8.7 — assign existing Rules to the generated campaigns. Never creates or edits a Rule.
@@ -86,11 +87,6 @@ export default function RulesSection({ draft, campaigns, selectedProducts, onCha
   const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Inactive'>('all');
   const [scopeFilter, setScopeFilter] = useState<RuleScope | 'all'>('all');
 
-  const recs = useMemo(() => recommendedRules(selectedProducts).filter((r) => {
-    const rule = MOCK_RULES.find((x) => x.id === r.ruleId);
-    return rule && ruleIncompatibility(rule, marketplace) === null;
-  }), [selectedProducts, marketplace]);
-
   const visible = MOCK_RULES.filter((r) => {
     const q = query.trim().toLowerCase();
     if (q && !r.name.toLowerCase().includes(q) && !r.type.toLowerCase().includes(q)) return false;
@@ -109,30 +105,9 @@ export default function RulesSection({ draft, campaigns, selectedProducts, onCha
   const filterCount = (typeFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (scopeFilter !== 'all' ? 1 : 0) + (query.trim() ? 1 : 0);
 
   return (
-    <section style={{ marginTop: 40 }} aria-label="Rules">
+    <Panel style={{ marginTop: 24 }}>
       <SectionTitle aside={<span className="cc-num" style={{ font: `400 12px/1 ${FONT}`, color: TEXT_FAINT }}>Optional</span>}>Rules</SectionTitle>
       <p style={{ margin: '-4px 0 14px', font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>Assign existing Rules to your new campaigns. This doesn't create or change a Rule.</p>
-
-      {recs.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 6 }}><RecommendedTag>Recommended Rules</RecommendedTag></div>
-          {recs.map((rec) => {
-            const rule = MOCK_RULES.find((r) => r.id === rec.ruleId)!;
-            const on = draft.ruleIds.includes(rule.id);
-            return (
-              <div key={rec.ruleId} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, padding: '8px 0', borderBottom: `1px solid ${HAIR}` }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ font: `600 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>{rule.name}</div>
-                  <div style={{ font: `400 12.5px/1.5 ${FONT}`, color: TEXT_MUTED }}>{rec.reason}</div>
-                </div>
-                <span style={{ flex: 'none' }}>
-                  <TextButton onClick={() => toggleRule(rule.id)} tone={on ? GOOD : undefined}>{on ? 'Selected' : 'Select'}</TextButton>
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <span style={{ position: 'relative', flex: '1 1 220px', maxWidth: 320, display: 'flex' }}>
@@ -226,6 +201,6 @@ export default function RulesSection({ draft, campaigns, selectedProducts, onCha
         <span>Want to create or modify a Rule? Rules are created and edited in Rules, not here.</span>
         <TextButton onClick={() => { /* mock: no navigation */ }}>Manage Rules</TextButton>
       </div>
-    </section>
+    </Panel>
   );
 }

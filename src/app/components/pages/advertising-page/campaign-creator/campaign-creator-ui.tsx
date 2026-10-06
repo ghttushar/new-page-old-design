@@ -43,8 +43,13 @@ export function CcGlobalStyles() {
       .cc-scroll::-webkit-scrollbar-thumb { background: #d9dce2; border-radius: 999px; border: 2px solid #fff; }
       @keyframes cc-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
       .cc-enter { animation: cc-enter 220ms ease-out both; }
+      /* Page transition: the new step slides in from the direction you are heading, forward or back. */
+      @keyframes cc-slide-fwd { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: none; } }
+      @keyframes cc-slide-back { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+      .cc-tr-fwd { animation: cc-slide-fwd 380ms cubic-bezier(.22,.8,.3,1) both; }
+      .cc-tr-back { animation: cc-slide-back 380ms cubic-bezier(.22,.8,.3,1) both; }
       @keyframes cc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-      @media (prefers-reduced-motion: reduce) { .cc-enter { animation: none; } .cc-btn, .cc-row, .cc-pick, .cc-input { transition: none; } }
+      @media (prefers-reduced-motion: reduce) { .cc-enter, .cc-tr-fwd, .cc-tr-back { animation: none; } .cc-btn, .cc-row, .cc-pick, .cc-input { transition: none; } }
     `}</style>
   );
 }
@@ -156,15 +161,6 @@ export function SectionTitle({ children, aside }: { children: React.ReactNode; a
       <h2 style={{ margin: 0, font: `600 14px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{children}</h2>
       {aside}
     </div>
-  );
-}
-
-/** "Recommended" shown as quiet brand-coloured text instead of a filled badge. */
-export function RecommendedTag({ children = 'Recommended' }: { children?: React.ReactNode }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, font: `600 11.5px/1 ${FONT}`, color: BRAND }}>
-      <SparkleGlyph size={10} /> {children}
-    </span>
   );
 }
 

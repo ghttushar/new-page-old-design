@@ -1,4 +1,4 @@
-import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
+import { SignalsIcon } from '@/app/components/signals/common/signals-icons';
 import { FeatureRoutes, FeaturesEnum } from '@/enums/auth.enums';
 import { IMenuItem } from '@/interfaces/side-bar/sidebar.interfaces';
 import {
@@ -253,7 +253,7 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
     primaryText: 'Signals',
     icon: (
       <span className={styles.icon}>
-        <DiamondMascot size={20} />
+        <SignalsIcon size={22} />
       </span>
     ),
     feature: FeaturesEnum.SIGNALS,

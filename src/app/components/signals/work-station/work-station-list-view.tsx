@@ -29,11 +29,11 @@ function MenuItem({ icon, label, onClick }: { icon?: React.ReactNode; label: str
   );
 }
 
-function TaskRow({ task, selected, unread, onSelect, onCycleStatus, onRemind }: { task: WorkstationTask; selected: boolean; unread: boolean; onSelect: () => void; onCycleStatus: () => void; onRemind: () => void }) {
+function TaskRow({ task, selected, unread, onSelect, onCycleStatus, onRemind, initialMenu }: { task: WorkstationTask; selected: boolean; unread: boolean; onSelect: () => void; onCycleStatus: () => void; onRemind: () => void; initialMenu?: 'main' | 'share' }) {
   const done = task.status === 'done';
   const linkedAlert = task.origin === 'alert' && task.alertId ? PROTOTYPE_ALERTS.find((a) => a.id === task.alertId) : undefined;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuMode, setMenuMode] = useState<'main' | 'share'>('main');
+  const [menuOpen, setMenuOpen] = useState(!!initialMenu);
+  const [menuMode, setMenuMode] = useState<'main' | 'share'>(initialMenu ?? 'main');
   return (
     <div
       onClick={onSelect}
@@ -60,7 +60,7 @@ function TaskRow({ task, selected, unread, onSelect, onCycleStatus, onRemind }: 
           <span style={{ flex: 'none', display: 'flex' }}><Avatar name={task.assignee} size={20} vivid={task.assignee !== 'Unassigned'} /></span>
           <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />
           <span style={{ display: 'flex', alignItems: 'center', flex: 'none' }}>
-            {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={17} /> : <OriginGlyph origin={task.origin} size={14} />}
+            {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={17} /> : <OriginGlyph origin={task.origin} size={17} />}
           </span>
           <span style={{ marginLeft: 'auto', font: '600 11px/1 Inter,sans-serif', color: task.overdue ? '#b3453f' : (task.dueColor || '#9aa0a8'), flex: 'none' }}>{task.due}</span>
           <span style={{ position: 'relative', flex: 'none' }}>
@@ -127,7 +127,7 @@ function GroupHeader({ label, count, active, onClick }: { label: string; count: 
   );
 }
 
-export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, selectedId, readTaskIds, onSelect, onCycleStatus, onRemind, initialActiveGroup = 'to-me' }: {
+export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, selectedId, readTaskIds, onSelect, onCycleStatus, onRemind, initialActiveGroup = 'to-me', initialRowMenu }: {
   assignedToMe: WorkstationTask[];
   unassigned: WorkstationTask[];
   assignedByMe: WorkstationTask[];
@@ -139,6 +139,8 @@ export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, se
   onRemind: (id: string) => void;
   /** Which group tab starts expanded — for the design-handoff preview, not used by the real app. */
   initialActiveGroup?: GroupKey;
+  /** Forces one row's ⋮ menu open on mount — for the design-handoff preview, not used by the real app. */
+  initialRowMenu?: { id: string; mode: 'main' | 'share' };
 }) {
   const [activeGroup, setActiveGroup] = useState<GroupKey>(initialActiveGroup);
 
@@ -165,7 +167,7 @@ export function WorkStationListView({ assignedToMe, unassigned, assignedByMe, se
               <div style={{ margin: '10px 14px 4px', padding: '10px 14px', border: '1px dashed #e6e8ec', borderRadius: 9, font: '400 12px/1.6 Inter,sans-serif', color: '#9aa0a8' }}>{g.emptyText}</div>
             )}
             {g.tasks.map((t) => (
-              <TaskRow key={t.id} task={t} selected={selectedId === t.id} unread={!readTaskIds.has(t.id)} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} onRemind={() => onRemind(t.id)} />
+              <TaskRow key={t.id} task={t} selected={selectedId === t.id} unread={!readTaskIds.has(t.id)} onSelect={() => onSelect(t.id)} onCycleStatus={() => onCycleStatus(t.id)} onRemind={() => onRemind(t.id)} initialMenu={initialRowMenu?.id === t.id ? initialRowMenu.mode : undefined} />
             ))}
           </div>
         </div>

@@ -35,8 +35,6 @@ const PRIORITY_COLORS: Record<string, string> = { 'Do first': '#b3453f', Optimiz
 interface BodyProps {
   widget: WidgetInstance;
   onConfigChange: (config: Record<string, unknown>) => void;
-  /** Only read by the `legacyKpiRow` kind — lets the grid grow/shrink that one widget's own cell as a card opens/closes, instead of it defaulting to a height tall enough for the worst case. */
-  onLegacyKpiExpand?: (expanded: boolean) => void;
   /** Only read by the `kpi`/`metricRow` kinds — splits one metric (by its index within this widget) back out into its own standalone widget, the reverse of dragging two KPI widgets together. */
   onSplitKpiMetric?: (index: number) => void;
   /** Only read by the `kpi`/`metricRow` kinds — opens the Jiva sheet scoped to one metric slot (by index), for the pencil on each member. */
@@ -462,7 +460,7 @@ function CustomWidgetBody({ widget, onConfigChange, onSplitKpiMetric, onEditKpiM
   return null;
 }
 
-export function WidgetBody({ widget, onConfigChange, onLegacyKpiExpand, onSplitKpiMetric, onEditKpiMember, onEditSeries, onOpenAiSheet }: BodyProps) {
+export function WidgetBody({ widget, onConfigChange, onSplitKpiMetric, onEditKpiMember, onEditSeries, onOpenAiSheet }: BodyProps) {
   if (widget.kind === 'custom') {
     return <CustomWidgetBody widget={widget} onConfigChange={onConfigChange} onSplitKpiMetric={onSplitKpiMetric} onEditKpiMember={onEditKpiMember} onEditSeries={onEditSeries} onOpenAiSheet={onOpenAiSheet} />;
   }
@@ -477,7 +475,7 @@ export function WidgetBody({ widget, onConfigChange, onLegacyKpiExpand, onSplitK
     );
   }
   switch (widget.kind) {
-    case 'legacyKpiRow': return <LegacyKpiRow onExpandedChange={onLegacyKpiExpand} />;
+    case 'legacyKpiRow': return <LegacyKpiRow />;
     case 'legacyActivity': return <LegacyActivityBody />;
     case 'kpi':
     case 'metricRow':

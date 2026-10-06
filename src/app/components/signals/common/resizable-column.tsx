@@ -10,6 +10,8 @@ interface UseResizableColumnOptions {
   collapsedWidth?: number;
   /** Which border of the column the handle sits on. 'right' (default) is for a column on the left side of the row (dragging right grows it, e.g. the List column). 'left' is for a column on the right side (dragging left grows it, e.g. the Jiva column) — same drag-left-to-widen-this-column feel either way, just mirrored. */
   edge?: 'left' | 'right';
+  /** Starts collapsed — for the design-handoff preview, not used by the real app. */
+  initialCollapsed?: boolean;
 }
 
 export interface ResizableColumn {
@@ -29,9 +31,9 @@ export interface ResizableColumn {
 }
 
 /** Pixel-width column state with a mouse-drag handle. Collapse (when `collapseBelow` is set) happens live while dragging, not just on release, so crossing the threshold snaps the rail in immediately — same feel as a VS Code sidebar. */
-export function useResizableColumn({ defaultWidth, minWidth, maxWidth, collapseBelow, collapsedWidth, edge = 'right' }: UseResizableColumnOptions): ResizableColumn {
+export function useResizableColumn({ defaultWidth, minWidth, maxWidth, collapseBelow, collapsedWidth, edge = 'right', initialCollapsed = false }: UseResizableColumnOptions): ResizableColumn {
   const [width, setWidth] = useState(defaultWidth);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef<{ x: number; width: number } | null>(null);
 

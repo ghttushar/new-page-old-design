@@ -1,5 +1,5 @@
+import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import type { TaskStatus, TaskOrigin } from '@/constants/signals/prototype-data';
-import { SparkleIcon } from '../alerts/icons';
 import { GoogleMeetMark, SourceBadge, rowSourceLabel, type RowSource } from '../alerts/source-icon';
 import { HoverTip } from '../alerts/hover-tip';
 
@@ -71,11 +71,13 @@ const ORIGIN_LABEL: Record<TaskOrigin, string> = {
   direct: 'Created directly',
 };
 
-/** Filled warning-triangle mark, white-on-colour — same stroke language as the rest of the Alerts icon set. */
+/** The ripple mark (the Alerts icon), white on the badge colour. */
 function AlertMark({ size, color }: { size: number; color: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <path d="M8 1.8l6.6 11.4H1.4z" fill={color} />
+      <circle cx="8" cy="8" r="2.3" fill={color} />
+      <circle cx="8" cy="8" r="4.8" stroke={color} strokeWidth="1.6" />
+      <circle cx="8" cy="8" r="7.4" stroke={color} strokeWidth="1.4" opacity="0.7" />
     </svg>
   );
 }
@@ -86,22 +88,25 @@ function AlertMark({ size, color }: { size: number; color: string }) {
  * Google Meet's camera) instead of inventing a parallel icon language for Workstation.
  */
 export function OriginGlyph({ origin, size = 17 }: { origin: TaskOrigin; size?: number }) {
-  const bg = origin === 'alert' ? '#b3453f' : origin === 'meeting' ? '#ffffff' : origin === 'generative' ? '#5f3880' : '#eceef1';
+  const bg = origin === 'alert' ? '#ffffff' : origin === 'meeting' ? '#ffffff' : origin === 'generative' ? '#ffffff' : '#eceef1';
   const needsRing = bg === '#ffffff' || bg === '#eceef1';
   // The Meet mark reads small at the same ratio as a single-tone glyph — give it more of the badge to fill.
-  const iconSize = Math.round(size * (origin === 'meeting' ? 0.8 : 0.6));
+  const iconSize = Math.round(size * (origin === 'meeting' ? 0.8 : origin === 'alert' ? 0.8 : origin === 'generative' ? 0.84 : 0.6));
   return (
     <HoverTip label={ORIGIN_LABEL[origin]}>
       <span
         style={{
           width: size, height: size, borderRadius: '50%', background: bg,
           display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
-          boxShadow: needsRing ? '0 0 0 1.5px #fff, 0 0 0 2px #e6e8ec' : '0 0 0 1.5px #fff',
+          boxShadow: origin === 'alert' || origin === 'generative' ? '0 0 0 1.5px #fff, 0 0 0 2.5px #cdb6e3' : needsRing ? '0 0 0 1.5px #fff, 0 0 0 2px #e6e8ec' : '0 0 0 1.5px #fff',
         }}
       >
-        {origin === 'alert' && <AlertMark size={iconSize} color="#fff" />}
+        {origin === 'alert' && <AlertMark size={iconSize} color="#77469b" />}
         {origin === 'meeting' && <GoogleMeetMark size={iconSize} />}
-        {origin === 'generative' && <SparkleIcon size={iconSize} color="#fff" />}
+        {origin === 'generative' && (
+          // The mascot only draws its eyes at 16px and up, so draw it at 16 and scale it down to sit inside the badge.
+          <span style={{ display: 'flex', width: 16, height: 16, flex: 'none', transform: `scale(${(size * 0.9) / 22.6})` }}><DiamondMascot size={16} /></span>
+        )}
         {origin === 'direct' && <span style={{ width: Math.round(iconSize * 0.75), height: 2, borderRadius: 1, background: '#9aa0a8' }} />}
       </span>
     </HoverTip>

@@ -153,7 +153,7 @@ export default function StepResult({ draft, selectedProducts }: { draft: CcDraft
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
               <thead>
                 <tr>
-                  <th style={TH}>Entity</th><th style={TH}>Error</th><th style={TH}>Reason</th><th style={TH}>Recommended action</th><th style={{ ...TH, width: 70 }} />
+                  <th style={TH}>Entity</th><th style={TH}>Error</th><th style={TH}>Reason</th><th style={TH}>Next step</th><th style={{ ...TH, width: 70 }} />
                 </tr>
               </thead>
               <tbody>

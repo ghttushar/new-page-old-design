@@ -1,127 +1,99 @@
-import { useState } from 'react';
-import { MARKETPLACE_CAPABILITY, recommendedBudget, formatCurrency, type CcDraft, type CcProduct } from '../campaign-creator.types';
-import { BAD, BORDER, FONT, GOOD, HAIR, SparkleGlyph, StepHeading, SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, WARN, WarningIcon } from '../campaign-creator-ui';
+import { MARKETPLACE_CAPABILITY, formatCurrency, type CcDraft, type CcProduct, type ExtraObjectiveId } from '../campaign-creator.types';
+import { BAD, BORDER, BRAND, BRAND_TINT, FONT, StepHeading, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
+import { Panel } from '../cc-design';
 
-function Row({ label, hint, children, last }: { label: string; hint: string; children: React.ReactNode; last?: boolean }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.25fr)', gap: 40, padding: '26px 0', borderBottom: last ? 'none' : `1px solid ${HAIR}` }}>
-      <div>
-        <label style={{ display: 'block', font: `600 14px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{label}</label>
-        <p style={{ margin: '5px 0 0', maxWidth: 320, font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>{hint}</p>
-      </div>
-      <div>{children}</div>
-    </div>
-  );
+const glyph = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+const icons: Record<string, React.ReactNode> = {
+  acos: <path d="M2.5 13.5h11M4 11V8M8 11V4.5M12 11V6.5" />,
+  budget: <><rect x="2" y="4" width="12" height="8.5" rx="1.6" /><path d="M2 7h12M10.5 10h1.5" /></>,
+  roas: <><path d="M2.5 11.5l3.4-3.8 2.4 2L13.5 4" /><path d="M10 4h3.5v3.5" /></>,
+  cpc: <><path d="M6 2.5l7.5 6-3.3.7 1.7 3.6-1.6.8-1.7-3.6L6 11.7z" /></>,
+  cvr: <><path d="M2.5 3.5h11L9.6 8.4v4l-3.2-1.6V8.4z" /></>,
+  cap: <><circle cx="8" cy="8" r="5.6" /><path d="M8 4.8V8l2.2 1.4" /></>,
+};
+
+interface Tile {
+  id: 'acos' | 'budget' | ExtraObjectiveId;
+  label: string;
+  hint: string;
+  unit: { prefix?: string; suffix?: string };
+  placeholder: string;
+  range: string;
+  optional?: boolean;
+  step?: number;
 }
 
-export default function StepObjectives({ draft, selectedProducts, onChange }: {
+const TILES: Tile[] = [
+  { id: 'acos', label: 'Target ACOS', hint: 'The advertising cost of sale you are aiming for.', unit: { suffix: '%' }, placeholder: '25', range: 'Allowed range: 1–90%', optional: true },
+  { id: 'budget', label: 'Daily budget', hint: 'How much you are happy to spend across all the new campaigns each day.', unit: { prefix: '$', suffix: 'per day' }, placeholder: '50', range: '' },
+  { id: 'roas', label: 'Target ROAS', hint: 'The return on ad spend you want each campaign to reach.', unit: { suffix: '×' }, placeholder: '4.0', range: 'Allowed range: 0.5–20×', optional: true, step: 0.1 },
+  { id: 'maxCpc', label: 'Max CPC bid', hint: 'The most you will pay for a single click on any target.', unit: { prefix: '$' }, placeholder: '1.50', range: 'Allowed range: $0.02–$50', optional: true, step: 0.01 },
+  { id: 'cvr', label: 'Minimum conversion rate', hint: 'Targets converting below this rate become candidates to pause.', unit: { suffix: '%' }, placeholder: '8', range: 'Allowed range: 0.1–100%', optional: true, step: 0.1 },
+  { id: 'monthlyCap', label: 'Monthly spend cap', hint: 'A hard ceiling on spend across the month, whatever the daily budget.', unit: { prefix: '$', suffix: 'per month' }, placeholder: '1,500', range: 'Must be at least your daily budget', optional: true },
+];
+
+export default function StepObjectives({ draft, onChange }: {
   draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
 }) {
   const cap = draft.marketplace ? MARKETPLACE_CAPABILITY[draft.marketplace] : null;
-  const suggestedBudget = recommendedBudget(selectedProducts);
-  const [acosError, setAcosError] = useState<string | null>(null);
+  const ex = draft.extraObjectives;
 
-  function setAcos(raw: string) {
-    if (raw.trim() === '') { onChange({ targetAcos: null }); setAcosError(null); return; }
-    const n = Number(raw);
-    if (Number.isNaN(n)) { setAcosError('Enter a number.'); return; }
-    if (n < 1 || n > (cap?.maxTargetAcos ?? 90)) { setAcosError(`Enter a value between 1 and ${cap?.maxTargetAcos ?? 90}.`); onChange({ targetAcos: n }); return; }
-    setAcosError(null);
-    onChange({ targetAcos: n });
+  const value = (id: Tile['id']): number | null => (id === 'acos' ? draft.targetAcos : id === 'budget' ? draft.dailyBudget : ex[id]);
+  function setValue(id: Tile['id'], raw: string) {
+    const n = raw.trim() === '' ? null : Number(raw);
+    if (id === 'acos') onChange({ targetAcos: n !== null && Number.isNaN(n) ? draft.targetAcos : n });
+    else if (id === 'budget') onChange({ dailyBudget: Math.max(0, n ?? 0) });
+    else onChange({ extraObjectives: { ...ex, [id]: n !== null && Number.isNaN(n) ? ex[id] : n } });
   }
 
-  const budgetTooLow = cap ? draft.dailyBudget < cap.minDailyBudget : false;
-  const sufficient = !budgetTooLow && draft.dailyBudget >= suggestedBudget;
-  const coverage = suggestedBudget > 0 ? Math.min(draft.dailyBudget / suggestedBudget, 1) : 1;
-  const perProduct = selectedProducts.length > 0 ? draft.dailyBudget / selectedProducts.length : null;
-
-  const field: React.CSSProperties = { width: 140, padding: '10px 12px', border: `1px solid ${BORDER}`, borderRadius: 8, font: `500 14px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' };
+  function errorFor(id: Tile['id']): string | null {
+    const v = value(id);
+    if (id === 'budget') return cap && draft.dailyBudget < cap.minDailyBudget ? `The minimum for this marketplace is ${formatCurrency(cap.minDailyBudget)}.` : null;
+    if (v === null) return null;
+    if (id === 'acos') return v < 1 || v > (cap?.maxTargetAcos ?? 90) ? `Enter a value between 1 and ${cap?.maxTargetAcos ?? 90}.` : null;
+    if (id === 'roas') return v < 0.5 || v > 20 ? 'Enter a value between 0.5 and 20.' : null;
+    if (id === 'maxCpc') return v < 0.02 || v > 50 ? 'Enter a value between $0.02 and $50.' : null;
+    if (id === 'cvr') return v < 0.1 || v > 100 ? 'Enter a value between 0.1 and 100.' : null;
+    if (id === 'monthlyCap') return v < draft.dailyBudget ? 'The monthly cap is below your daily budget.' : null;
+    return null;
+  }
 
   return (
-    <div style={{ maxWidth: 940 }}>
-      <StepHeading
-        eyebrow="Step 2 of 5"
-        title="Set your goals"
-        subtitle="These two numbers steer the targeting, structure and bids we suggest next. You can change them later."
-      />
+    <div>
+      <StepHeading title="Set your goals" />
 
-      <div style={{ borderTop: `1px solid ${HAIR}` }}>
-        <Row label="Target ACOS" hint="The advertising cost of sale you're aiming for. This is optional. Leave it blank if you don't want a strict target.">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              id="cc-acos" className="cc-input" type="number" inputMode="decimal" value={draft.targetAcos ?? ''} onChange={(e) => setAcos(e.target.value)} placeholder="25"
-              aria-invalid={Boolean(acosError)} aria-describedby={acosError ? 'cc-acos-err' : undefined}
-              style={{ ...field, borderColor: acosError ? '#e0a5a0' : BORDER }}
-            />
-            <span style={{ font: `500 14px/1 ${FONT}`, color: TEXT_MUTED }}>%</span>
-          </div>
-          {acosError && <p id="cc-acos-err" role="alert" style={{ margin: '8px 0 0', font: `400 12.5px/1.4 ${FONT}`, color: BAD }}>{acosError}</p>}
-          {!acosError && <p style={{ margin: '8px 0 0', font: `400 12.5px/1.4 ${FONT}`, color: TEXT_FAINT }}>Allowed range: 1–{cap?.maxTargetAcos ?? 90}%</p>}
-        </Row>
-
-        <Row label="Daily budget" hint="How much you're happy to spend across all the new campaigns each day." last>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ font: `500 14px/1 ${FONT}`, color: TEXT_MUTED }}>$</span>
-            <input
-              id="cc-budget" className="cc-input" type="number" inputMode="decimal" value={draft.dailyBudget}
-              onChange={(e) => onChange({ dailyBudget: Math.max(0, Number(e.target.value) || 0) })}
-              aria-invalid={budgetTooLow}
-              style={{ ...field, borderColor: budgetTooLow ? '#e0a5a0' : BORDER }}
-            />
-            <span style={{ font: `400 13px/1 ${FONT}`, color: TEXT_FAINT }}>per day</span>
-          </div>
-          {budgetTooLow && <p role="alert" style={{ margin: '8px 0 0', font: `400 12.5px/1.4 ${FONT}`, color: BAD }}>The minimum for this marketplace is {formatCurrency(cap?.minDailyBudget ?? 0)}.</p>}
-
-          <div style={{ marginTop: 18, padding: '14px 16px', border: `1px solid ${BORDER}`, borderRadius: 10, background: SURFACE_MUTED }}>
-            <div style={{ font: `600 12.5px/1 ${FONT}`, color: TEXT_PRIMARY, marginBottom: 12 }}>Budget check</div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
-              <div>
-                <div style={{ font: `400 12px/1 ${FONT}`, color: TEXT_MUTED }}>Recommended daily budget</div>
-                <div className="cc-num" style={{ marginTop: 6, font: `600 16px/1 ${FONT}`, color: TEXT_PRIMARY }}>{formatCurrency(suggestedBudget)}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
+        {TILES.map((t) => {
+          const err = errorFor(t.id);
+          const v = value(t.id);
+          return (
+            <Panel key={t.id} pad={18} style={err ? { borderColor: '#e0a5a0' } : undefined}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 30, height: 30, borderRadius: 8, background: BRAND_TINT, color: BRAND, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                  <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden {...glyph}>{icons[t.id === 'maxCpc' ? 'cpc' : t.id === 'monthlyCap' ? 'cap' : t.id]}</svg>
+                </span>
+                <label htmlFor={`cc-obj-${t.id}`} style={{ flex: 1, font: `600 14px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{t.label}</label>
+                <span style={{ font: `500 11.5px/1 ${FONT}`, color: t.optional ? TEXT_FAINT : BRAND }}>{t.optional ? 'Optional' : 'Required'}</span>
               </div>
-              <div>
-                <div style={{ font: `400 12px/1 ${FONT}`, color: TEXT_MUTED }}>Your budget</div>
-                <div className="cc-num" style={{ marginTop: 6, font: `600 16px/1 ${FONT}`, color: sufficient ? GOOD : WARN }}>{formatCurrency(draft.dailyBudget)}</div>
+              <p style={{ margin: '10px 0 0', minHeight: 40, font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>{t.hint}</p>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14 }}>
+                {t.unit.prefix && <span style={{ font: `500 14px/1 ${FONT}`, color: TEXT_MUTED }}>{t.unit.prefix}</span>}
+                <input
+                  id={`cc-obj-${t.id}`} className="cc-input" type="number" inputMode="decimal" step={t.step ?? 1} min={0}
+                  value={v ?? ''} placeholder={t.placeholder} onChange={(e) => setValue(t.id, e.target.value)}
+                  aria-invalid={Boolean(err)} aria-describedby={`cc-obj-${t.id}-note`}
+                  style={{ width: 130, padding: '10px 12px', border: `1px solid ${err ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: `500 14px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' }}
+                />
+                {t.unit.suffix && <span style={{ font: `400 13px/1 ${FONT}`, color: TEXT_MUTED }}>{t.unit.suffix}</span>}
               </div>
-            </div>
 
-            <div
-              role="img" aria-label={`Your budget is ${Math.round(coverage * 100)}% of the recommended daily budget`}
-              style={{ position: 'relative', height: 6, borderRadius: 999, background: HAIR, marginTop: 14, overflow: 'hidden' }}
-            >
-              <div style={{ width: `${Math.round(coverage * 100)}%`, height: '100%', borderRadius: 999, background: sufficient ? GOOD : WARN, transition: 'width 200ms ease-out' }} />
-            </div>
-            <div className="cc-num" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, font: `400 11.5px/1 ${FONT}`, color: TEXT_FAINT }}>
-              <span>{formatCurrency(0)}</span>
-              <span>Recommended {formatCurrency(suggestedBudget)}</span>
-            </div>
-
-            <p style={{ display: 'flex', alignItems: 'flex-start', gap: 8, margin: '12px 0 0', font: `400 13px/1.55 ${FONT}`, color: '#3d434b' }}>
-              <span style={{ marginTop: 4, flex: 'none' }}>
-                {sufficient ? <SparkleGlyph size={11} color={GOOD} /> : <WarningIcon size={12} color={WARN} />}
-              </span>
-              <span style={{ color: sufficient ? GOOD : WARN, fontWeight: 500 }}>
-                {sufficient ? 'Sufficient for the selected products' : 'Your current budget may limit delivery for the selected targeting strategies.'}
-                {!sufficient && !budgetTooLow && (
-                  <>{' '}<TextButton onClick={() => onChange({ dailyBudget: suggestedBudget })}>Use {formatCurrency(suggestedBudget)}</TextButton></>
-                )}
-                {!sufficient && budgetTooLow && (
-                  <>{' '}<TextButton onClick={() => onChange({ dailyBudget: Math.max(suggestedBudget, cap?.minDailyBudget ?? 0) })}>Use {formatCurrency(Math.max(suggestedBudget, cap?.minDailyBudget ?? 0))}</TextButton></>
-                )}
-              </span>
-            </p>
-
-            {perProduct !== null && (
-              <p className="cc-num" style={{ margin: '8px 0 0', font: `400 12.5px/1.4 ${FONT}`, color: TEXT_MUTED }}>
-                ≈ {formatCurrency(Math.round(perProduct * 100) / 100)} per product per day across {selectedProducts.length} selected {selectedProducts.length === 1 ? 'product' : 'products'}.
+              <p id={`cc-obj-${t.id}-note`} role={err ? 'alert' : undefined} style={{ margin: '10px 0 0', font: `400 12.5px/1.4 ${FONT}`, color: err ? BAD : TEXT_FAINT, minHeight: 17 }}>
+                {err ?? t.range}
               </p>
-            )}
-            <p style={{ margin: '8px 0 0', font: `400 12px/1.5 ${FONT}`, color: TEXT_FAINT }}>
-              Based on the last 30 days of ad spend for your selected products, plus room for the new campaigns.
-            </p>
-          </div>
-        </Row>
+            </Panel>
+          );
+        })}
       </div>
     </div>
   );

@@ -39,7 +39,7 @@ function BoardCard({ task, selected, onSelect, onCycleStatus }: { task: BoardTas
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-        {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={20} /> : <OriginGlyph origin={task.origin} size={16} />}
+        {task.contextSources?.length ? <ContextSourceStack sources={task.contextSources} size={20} /> : <OriginGlyph origin={task.origin} size={20} />}
         <span style={{ font: '600 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: RELATION_COLOR[task.relation] }}>
           {RELATION_LABEL[task.relation]}
         </span>

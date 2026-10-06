@@ -1,9 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import {
-  AUTO_TYPE_CATALOG, MARKETPLACE_CAPABILITY, TARGETING_STRATEGY_CATALOG, formatCurrency, recommendTargetingStrategies,
+  AUTO_TYPE_CATALOG, MARKETPLACE_CAPABILITY, TARGETING_STRATEGY_CATALOG, recommendTargetingStrategies,
   type AutoTypeId, type CcDraft, type CcProduct, type TargetingStrategyId,
 } from '../campaign-creator.types';
-import { BORDER, BRAND_TINT, Checkbox, FONT, GOOD, HAIR, InfoIcon, Note, RecommendedTag, StepHeading, SURFACE_MUTED, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
+import { Panel } from '../cc-design';
+import { BRAND_TINT, Checkbox, FONT, GOOD, InfoIcon, StepHeading, SURFACE_MUTED, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
+
+// Slightly darker rules than the rest of the creator so the matrix reads as a table.
+const LINE = '#d9dee6';
+const LINE_STRONG = '#c9cfd9';
 
 // ── Intent icons ──────────────────────────────────────────────────────────────────────────────
 
@@ -24,19 +29,12 @@ const INTENT = {
   performance: { color: '#6fa83a', icon: PerformanceIcon },
 };
 
-function TagPill({ label }: { label: string }) {
-  return <span style={{ padding: '2px 6px', borderRadius: 4, background: '#2f6fed', color: '#fff', font: `600 10px/1.3 ${FONT}` }}>{label}</span>;
-}
-function CategoryGlyph() {
-  return <svg width={15} height={15} viewBox="0 0 16 16" fill="none" stroke="#2f6fed" strokeWidth="1.5" strokeLinecap="round" aria-hidden><path d="M2.5 4h2M7 4h6.5M2.5 8h2M7 8h6.5M2.5 12h2M7 12h6.5" /></svg>;
-}
-
 // ── Matrix pieces ─────────────────────────────────────────────────────────────────────────────
 
 const GRID = '188px minmax(0, 1fr) minmax(0, 1fr)';
 
-function Cell({ checked, disabled, recommended, label, onToggle, children }: {
-  checked: boolean; disabled?: boolean; recommended?: boolean; label: string; onToggle: () => void; children: React.ReactNode;
+function Cell({ checked, disabled, label, onToggle, children }: {
+  checked: boolean; disabled?: boolean; label: string; onToggle: () => void; children: React.ReactNode;
 }) {
   return (
     <div
@@ -49,7 +47,6 @@ function Cell({ checked, disabled, recommended, label, onToggle, children }: {
       <span style={{ marginTop: 1 }}><Checkbox checked={checked} disabled={disabled} /></span>
       <div style={{ minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, font: `500 13.5px/1.35 ${FONT}`, color: TEXT_PRIMARY }}>{children}</div>
-        {recommended && <div style={{ marginTop: 4 }}><RecommendedTag /></div>}
       </div>
     </div>
   );
@@ -60,13 +57,13 @@ function Empty() {
 }
 
 function Stack({ children }: { children: React.ReactNode[] }) {
-  return <div>{children.map((c, i) => <div key={i} style={{ borderTop: i === 0 ? 'none' : `1px solid ${HAIR}` }}>{c}</div>)}</div>;
+  return <div>{children.map((c, i) => <div key={i} style={{ borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>{c}</div>)}</div>;
 }
 
 function IntentLabel({ intent, name, info }: { intent: keyof typeof INTENT; name: string; info: string }) {
   const { color, icon: Icon } = INTENT[intent];
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '15px 16px', background: SURFACE_MUTED, borderRight: `1px solid ${HAIR}` }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '15px 16px', background: SURFACE_MUTED, borderRight: `1px solid ${LINE}` }}>
       <span style={{ marginTop: 1 }}><Icon color={color} /></span>
       <span style={{ font: `600 13.5px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{name}</span>
       <span title={info} aria-label={info} style={{ display: 'flex', marginTop: 2, cursor: 'help' }}><InfoIcon size={13} color={TEXT_FAINT} /></span>
@@ -78,9 +75,9 @@ function IntentRow({ intent, name, info, keywordCells, productCells }: {
   intent: keyof typeof INTENT; name: string; info: string; keywordCells: React.ReactNode[]; productCells: React.ReactNode[];
 }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: GRID, borderTop: `1px solid ${HAIR}` }}>
+    <div style={{ display: 'grid', gridTemplateColumns: GRID, borderTop: `1px solid ${LINE}` }}>
       <IntentLabel intent={intent} name={name} info={info} />
-      <div style={{ borderRight: `1px solid ${HAIR}` }}>{keywordCells.length ? <Stack>{keywordCells}</Stack> : <Empty />}</div>
+      <div style={{ borderRight: `1px solid ${LINE}` }}>{keywordCells.length ? <Stack>{keywordCells}</Stack> : <Empty />}</div>
       <div>{productCells.length ? <Stack>{productCells}</Stack> : <Empty />}</div>
     </div>
   );
@@ -109,20 +106,10 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
   }
 
   const cell = (id: TargetingStrategyId, text: string, lead?: React.ReactNode) => (
-    <Cell key={id} label={text} checked={draft.targetingStrategies.includes(id)} disabled={!supported.includes(id)} recommended={recommended.includes(id)} onToggle={() => toggle(id)}>
+    <Cell key={id} label={text} checked={draft.targetingStrategies.includes(id)} disabled={!supported.includes(id)} onToggle={() => toggle(id)}>
       {lead}{text}
     </Cell>
   );
-
-  // Explainable recommendation (section 6.3), built from the selected products' history and the objectives.
-  const totalSpend = selectedProducts.reduce((s, p) => s + p.adSpend, 0);
-  const totalAdSales = selectedProducts.reduce((s, p) => s + p.adSales, 0);
-  const blendedAcos = totalAdSales > 0 ? (totalSpend / totalAdSales) * 100 : 0;
-  const n = selectedProducts.length;
-  const objectives = draft.targetAcos != null ? `${formatCurrency(draft.dailyBudget)} daily budget and ${draft.targetAcos}% target ACOS` : `${formatCurrency(draft.dailyBudget)} daily budget`;
-  const reason = totalSpend > 0
-    ? `Your ${n} selected ${n === 1 ? 'product has' : 'products have'} ${formatCurrency(totalSpend)} of recent ad spend at ${blendedAcos.toFixed(1)}% ACOS, enough search and conversion history for keyword-based targeting. Auto keeps discovering new terms, and the set fits your ${objectives}.`
-    : `Your selected ${n === 1 ? 'product has' : 'products have'} little ad history, so we added Broad match to discover terms. Auto and keyword targeting together fit your ${objectives}.`;
 
   // Combination validation (section 6.4).
   const selected = draft.targetingStrategies;
@@ -141,33 +128,13 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
 
   return (
     <div>
-      <StepHeading
-        eyebrow="Step 3 of 5"
-        title="Pick how shoppers find you"
-        subtitle="Choose as many strategies as you like. Each manual strategy becomes its own targeting group in the structure you pick next."
-      />
+      <StepHeading title="Pick how shoppers find you" />
 
-      {recommended.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <Note>
-            <span style={{ display: 'block', font: `600 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>Why we're recommending this</span>
-            <span style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', margin: '6px 0' }}>
-              {recommended.map((id) => (
-                <span key={id} style={{ font: `500 12.5px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>
-                  <span aria-hidden style={{ color: GOOD, marginRight: 5 }}>✓</span>{TARGETING_STRATEGY_CATALOG[id].label}
-                </span>
-              ))}
-            </span>
-            <span style={{ display: 'block' }}>{reason}</span>
-          </Note>
-        </div>
-      )}
-
-      <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: `1px solid ${BORDER}` }}>
+      <Panel pad={0} style={{ overflow: 'hidden', borderColor: LINE_STRONG }}>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: `1px solid ${LINE_STRONG}` }}>
           <div style={head}>Strategy</div>
-          <div style={{ ...head, borderLeft: `1px solid ${HAIR}` }}>Keyword targets</div>
-          <div style={{ ...head, borderLeft: `1px solid ${HAIR}` }}>Product targets</div>
+          <div style={{ ...head, borderLeft: `1px solid ${LINE}` }}>Keyword targets</div>
+          <div style={{ ...head, borderLeft: `1px solid ${LINE}` }}>Product targets</div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: GRID }}>
@@ -186,18 +153,18 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <IntentRow
           intent="research" name="Research" info="Discover new search terms and products with broader reach."
           keywordCells={[cell('broad', 'Broad match'), cell('phrase', 'Phrase match')]}
-          productCells={[cell('category', 'Product category', <CategoryGlyph />)]}
+          productCells={[cell('category', 'Product category')]}
         />
         <IntentRow
           intent="performance" name="Performance" info="Capture high-intent shoppers with precise, conversion-focused targeting."
           keywordCells={[cell('exact', 'Exact match')]}
-          productCells={[cell('product', 'Single product', <TagPill label="exact" />)]}
+          productCells={[cell('product', 'Single product')]}
         />
 
         {hasAuto && (
-          <div style={{ borderTop: `1px solid ${HAIR}` }}>
+          <div style={{ borderTop: `1px solid ${LINE}` }}>
             <div style={{ display: 'grid', gridTemplateColumns: GRID }}>
-              <div style={{ padding: '15px 16px', background: SURFACE_MUTED, borderRight: `1px solid ${HAIR}` }}>
+              <div style={{ padding: '15px 16px', background: SURFACE_MUTED, borderRight: `1px solid ${LINE}` }}>
                 <div style={{ font: `600 13.5px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>Auto targeting types</div>
                 <div style={{ marginTop: 4, font: `400 12px/1.45 ${FONT}`, color: TEXT_MUTED }}>Keep at least one selected.</div>
               </div>
@@ -213,7 +180,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
                       onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleAutoType(a.id); } }}
                       style={{
                         display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', cursor: last ? 'not-allowed' : 'pointer', background: on ? BRAND_TINT : undefined,
-                        borderTop: i > 1 ? `1px solid ${HAIR}` : 'none', borderLeft: i % 2 === 1 ? `1px solid ${HAIR}` : 'none',
+                        borderTop: i > 1 ? `1px solid ${LINE}` : 'none', borderLeft: i % 2 === 1 ? `1px solid ${LINE}` : 'none',
                       }}
                     >
                       <span style={{ marginTop: 1 }}><Checkbox checked={on} /></span>
@@ -226,21 +193,15 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
                 })}
               </div>
             </div>
-            <div style={{ padding: '10px 16px', borderTop: `1px solid ${HAIR}`, background: SURFACE_MUTED, font: `400 12px/1.5 ${FONT}`, color: TEXT_MUTED }}>
+            <div style={{ padding: '10px 16px', borderTop: `1px solid ${LINE}`, background: SURFACE_MUTED, font: `400 12px/1.5 ${FONT}`, color: TEXT_MUTED }}>
               The Product + Multiple Auto structure (Structure 5) creates one Auto campaign per selected type per product, so {autoTypes.length} {autoTypes.length === 1 ? 'type' : 'types'} means {autoTypes.length} Auto {autoTypes.length === 1 ? 'campaign' : 'campaigns'} for each product.
             </div>
           </div>
         )}
-      </div>
+      </Panel>
 
       <div style={{ marginTop: 14 }}>
-        {selected.length === 0 ? (
-          <Note tone="warn">Select at least one targeting strategy to continue.</Note>
-        ) : unsupported.length > 0 ? (
-          <Note tone="warn">{unsupported.map((s) => TARGETING_STRATEGY_CATALOG[s].label).join(', ')} {unsupported.length === 1 ? 'is' : 'are'} not supported on this marketplace. Remove {unsupported.length === 1 ? 'it' : 'them'} to continue.</Note>
-        ) : productStyleOnly ? (
-          <Note tone="warn">Product targeting works best alongside a keyword or Auto strategy.</Note>
-        ) : (
+        {selected.length > 0 && unsupported.length === 0 && !productStyleOnly && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, font: `500 12.5px/1.5 ${FONT}`, color: GOOD }}>
             <span aria-hidden>✓</span> {selected.length} {selected.length === 1 ? 'strategy' : 'strategies'} selected — supported combination
           </div>
