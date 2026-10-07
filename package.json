@@ -44,6 +44,7 @@
     "marked": "^15.0.12",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
+    "motion": "^14.0.0",
     "papaparse": "^5.4.1",
     "phosphor": "^0.7.1",
     "plotly.js-basic-dist": "^3.0.1",

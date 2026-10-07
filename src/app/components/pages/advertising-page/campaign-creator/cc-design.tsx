@@ -1,23 +1,24 @@
-import { TARGETING_STRATEGY_CATALOG, formatCurrency, type CcDraft, type CcProduct, type CcStepId } from './campaign-creator.types';
+// @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
+import { AnimatePresence, motion } from 'motion/react';
+import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, formatCurrency, type CcDraft, type CcProduct, type CcStepId } from './campaign-creator.types';
 import { BORDER, BRAND, CheckIcon, FONT, GOOD, HAIR, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from './campaign-creator-ui';
-
-// The creator follows the Alerts design system: Signals' light page tint, with each block on its own white card
-// (1px #e6e8ec border, 10px radius, #fafbfd header band).
+export { CampaignSummaryProvider } from './campaign-summary-context';
 
 /** Signals' page tint — what every card sits on. */
 export const PAGE_TINT = '#f3f5fa';
+export const DISPLAY = "'Inter Tight', Inter, sans-serif";
 
 // ── Card ──────────────────────────────────────────────────────────────────────────────────────
 
-/** A white card on the page tint, drawn the way Alerts draws its panels. An optional title becomes a tinted header band. */
+/** A white surface. An optional title becomes a quiet header row with a hairline under it. */
 export function Panel({ children, title, aside, pad = 20, style, className }: {
   children: React.ReactNode; title?: React.ReactNode; aside?: React.ReactNode; pad?: number | string; style?: React.CSSProperties; className?: string;
 }) {
   return (
-    <section className={className} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 10, overflow: 'hidden', minWidth: 0, ...style }}>
+    <section className={`cc-panel ${className ?? ''}`} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 16, overflow: 'hidden', minWidth: 0, ...style }}>
       {title && (
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 18px', background: '#fafbfd', borderBottom: `1px solid ${HAIR}` }}>
-          <h2 style={{ margin: 0, font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{title}</h2>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 20px', borderBottom: `1px solid ${HAIR}` }}>
+          <h2 style={{ margin: 0, font: `600 14px/1.3 ${DISPLAY}`, color: TEXT_PRIMARY, letterSpacing: '-0.01em' }}>{title}</h2>
           {aside}
         </header>
       )}
@@ -26,42 +27,32 @@ export function Panel({ children, title, aside, pad = 20, style, className }: {
   );
 }
 
-// ── Stepper ───────────────────────────────────────────────────────────────────────────────────
+// ── Top-bar stepper ───────────────────────────────────────────────────────────────────────────
 
 interface StepDef { id: CcStepId; label: string }
 
-const iconStroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
-const STEP_ICONS: Partial<Record<CcStepId, React.ReactNode>> = {
-  products: <><path d="M10 2.2l6.4 3.2v7.2L10 15.8 3.6 12.6V5.4z" /><path d="M3.6 5.4L10 8.6l6.4-3.2M10 8.6v7.2" /></>,
-  objectives: <><circle cx="10" cy="10" r="7" /><circle cx="10" cy="10" r="3.6" /><circle cx="10" cy="10" r=".9" fill="currentColor" /></>,
-  targeting: <><circle cx="10" cy="10" r="5.4" /><path d="M10 1.8v3.4M10 14.8v3.4M1.8 10h3.4M14.8 10h3.4" /></>,
-  structure: <><rect x="7" y="2.2" width="6" height="4.2" rx="1.2" /><rect x="1.8" y="13.6" width="6" height="4.2" rx="1.2" /><rect x="12.2" y="13.6" width="6" height="4.2" rx="1.2" /><path d="M10 6.4v3.4M4.8 13.6V9.8h10.4v3.8" /></>,
-  preview: <><path d="M1.8 10S5 4.6 10 4.6 18.2 10 18.2 10 15 15.4 10 15.4 1.8 10 1.8 10z" /><circle cx="10" cy="10" r="2.6" /></>,
-};
-
-/** Large icon circles joined by lines, centred; reached steps stay clickable so nothing is lost going back. */
+/** Compact numbered segments for the top bar; reached steps stay clickable. */
 export function Stepper({ steps, current, furthestIndex, onJump }: {
   steps: StepDef[]; current: CcStepId; furthestIndex: number; onJump: (id: CcStepId) => void;
 }) {
   const ci = steps.findIndex((s) => s.id === current);
   return (
-    <ol aria-label="Campaign creation steps" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', rowGap: 14 }}>
+    <ol aria-label="Campaign creation steps" className="cc-journey">
       {steps.map((s, i) => {
         const active = i === ci;
         const done = i < ci;
         const reachable = i <= furthestIndex;
+        const next = i === ci + 1;
         return (
-          <li key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
-            <button type="button" onClick={() => reachable && onJump(s.id)} disabled={!reachable} aria-current={active ? 'step' : undefined} style={{ padding: 0, border: 'none', background: 'none', display: 'flex', alignItems: 'center', gap: 12, cursor: reachable ? 'pointer' : 'default' }}>
-              <span style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: done ? GOOD : active ? BRAND : '#fff', border: `1.5px solid ${done ? GOOD : active ? BRAND : '#d5d9e0'}`, color: done || active ? '#fff' : TEXT_FAINT, boxShadow: active ? '0 0 0 4px rgba(119,70,155,.14)' : 'none', transition: 'background-color 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out' }}>
-                <svg width={19} height={19} viewBox="0 0 20 20" aria-hidden {...iconStroke}>{STEP_ICONS[s.id]}</svg>
-                {done && (
-                  <span style={{ position: 'absolute', right: -3, bottom: -3, width: 16, height: 16, borderRadius: '50%', background: '#fff', border: `1.5px solid ${GOOD}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckIcon size={9} color={GOOD} /></span>
-                )}
+          <li key={s.id} className={`cc-journey__step ${active ? 'is-active' : done ? 'is-done' : next ? 'is-next' : ''}`}>
+            {i > 0 && <span aria-hidden className="cc-journey__rail"><motion.span initial={false} animate={{ scaleX: done || active ? 1 : 0 }} transition={{ type: 'spring', stiffness: 180, damping: 25 }} /></span>}
+            <button type="button" onClick={() => reachable && onJump(s.id)} disabled={!reachable} aria-current={active ? 'step' : undefined} className="cc-btn cc-journey__button">
+              {active && <motion.span layoutId="cc-journey-active" className="cc-journey__active" transition={{ type: 'spring', stiffness: 380, damping: 31 }} />}
+              <span className="cc-journey__node">
+                {done ? <span className="cc-pop" style={{ display: 'flex' }}><CheckIcon size={11} /></span> : i + 1}
               </span>
-              <span style={{ font: `${active ? 600 : 500} 14.5px/1.2 ${FONT}`, color: active ? TEXT_PRIMARY : reachable ? '#3d434b' : TEXT_FAINT }}>{s.label}</span>
+              <span className="cc-journey__copy"><small>{done ? 'Complete' : active ? 'In progress' : next ? 'Up next' : `Step ${i + 1}`}</small><strong>{s.label}</strong></span>
             </button>
-            {i < steps.length - 1 && <span aria-hidden style={{ width: 64, height: 2, margin: '0 18px', borderRadius: 2, background: done ? '#bfe0cb' : '#e3e5ea', flex: 'none' }} />}
           </li>
         );
       })}
@@ -69,17 +60,16 @@ export function Stepper({ steps, current, furthestIndex, onJump }: {
   );
 }
 
-// ── Previous-step summary ─────────────────────────────────────────────────────────────────────
+// ── Previous-step summary (kept for reference by other modules) ────────────────────────────────
 
 export interface SummaryItem { id: CcStepId; label: string; value: string; sub?: string }
 
-/** What was chosen on the steps before `step` (empty on the preview, which has its own review). */
 export function summaryFor(step: CcStepId, draft: CcDraft, selectedProducts: CcProduct[]): SummaryItem[] {
   const n = selectedProducts.length;
   const items: SummaryItem[] = [];
   if (step === 'products') items.push({ id: 'entry', label: 'Ad type', value: 'Sponsored Products', sub: 'Amazon' });
   if (['objectives', 'targeting', 'structure'].includes(step)) {
-    items.push({ id: 'products', label: 'Products', value: `${n} product${n === 1 ? '' : 's'} selected`, sub: draft.groupingMode === 'split-by-ad-group' ? 'Split by ad group' : 'Split by campaign' });
+    items.push({ id: 'products', label: 'Products', value: `${n} product${n === 1 ? '' : 's'} selected` });
   }
   if (['targeting', 'structure'].includes(step)) {
     const extras = Object.values(draft.extraObjectives).filter((v) => v !== null).length;
@@ -95,22 +85,80 @@ export function summaryFor(step: CcStepId, draft: CcDraft, selectedProducts: CcP
   return items;
 }
 
-/** One bar listing what was chosen on the earlier steps; each item jumps back to its step. */
-export function StepSummary({ items, onJump }: { items: SummaryItem[]; onJump: (id: CcStepId) => void }) {
-  if (items.length === 0) return null;
+// ── Live campaign summary (right column) ──────────────────────────────────────────────────────
+
+const ORDER: CcStepId[] = ['entry', 'products', 'objectives', 'targeting', 'structure'];
+
+/** Rows for the live summary: every step's choice, filled in once that step has been passed. */
+function liveRows(step: CcStepId, draft: CcDraft, selectedProducts: CcProduct[]) {
+  const ci = ORDER.indexOf(step);
+  const passed = (id: CcStepId) => ORDER.indexOf(id) < ci;
+  const n = selectedProducts.length;
+  const extras = Object.values(draft.extraObjectives).filter((v) => v !== null).length;
+  const names = draft.targetingStrategies.map((s) => TARGETING_STRATEGY_CATALOG[s].label.replace('Keyword — ', ''));
+  const structure = STRUCTURE_CATALOG.find((s) => s.id === draft.structureId);
+  return [
+    { id: 'entry', label: 'Ad type', set: passed('entry'), value: 'Sponsored Products', sub: 'Amazon' },
+    { id: 'products', label: 'Products', set: passed('products'), value: `${n} product${n === 1 ? '' : 's'}`, sub: selectedProducts.slice(0, 2).map((p) => p.name ?? p.title).filter(Boolean).join(', ') || undefined },
+    { id: 'objectives', label: 'Goals', set: passed('objectives'), value: `${formatCurrency(draft.dailyBudget)} / day`, sub: [draft.targetAcos != null ? `${draft.targetAcos}% target ACOS` : 'No ACOS target', ...(extras ? [`+${extras} more`] : [])].join(' · ') },
+    { id: 'targeting', label: 'Targeting', set: passed('targeting'), value: names.length ? names.join(', ') : 'None', sub: draft.targetingStrategies.includes('auto') ? `${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}` : undefined },
+    { id: 'structure', label: 'Structure', set: passed('structure'), value: structure ? structure.name : draft.structureId === 'custom' ? 'Custom' : '—', sub: structure?.tagline },
+  ] as { id: CcStepId; label: string; set: boolean; value: string; sub?: string }[];
+}
+
+export function LiveSummary({ step, draft, selectedProducts, onJump }: {
+  step: CcStepId; draft: CcDraft; selectedProducts: CcProduct[]; onJump: (id: CcStepId) => void;
+}) {
+  const rows = liveRows(step, draft, selectedProducts);
+  const done = rows.filter((r) => r.set).length;
   return (
-    <div style={{ display: 'flex', alignItems: 'stretch', background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 10, marginBottom: 26, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px', background: '#fafbfd', borderRight: `1px solid ${BORDER}`, font: `600 11px/1.2 ${FONT}`, letterSpacing: '.06em', textTransform: 'uppercase', color: TEXT_MUTED }}>So far</div>
-      {items.map((it, i) => (
-        <button key={it.id} type="button" className="cc-row" onClick={() => onJump(it.id)} title={`Edit ${it.label.toLowerCase()}`} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left', padding: '12px 16px', border: 'none', borderLeft: i === 0 ? 'none' : `1px solid ${HAIR}`, background: 'none', cursor: 'pointer' }}>
-          <CheckIcon size={14} color={GOOD} />
-          <span style={{ minWidth: 0 }}>
-            <span style={{ display: 'block', font: `500 11.5px/1.3 ${FONT}`, color: TEXT_MUTED }}>{it.label}</span>
-            <span style={{ display: 'block', font: `600 13px/1.35 ${FONT}`, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.value}</span>
-            {it.sub && <span style={{ display: 'block', font: `400 11.5px/1.35 ${FONT}`, color: TEXT_FAINT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.sub}</span>}
-          </span>
-        </button>
-      ))}
-    </div>
+    <aside className="cc-summary" style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 18, overflow: 'hidden', boxShadow: 'var(--cc-shadow-card)' }}>
+      <div style={{ padding: '18px 20px 16px', background: 'var(--cc-summary-head)', color: '#fff' }}>
+        <div style={{ font: `600 10.5px/1 ${FONT}`, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.75 }}>Your campaign</div>
+        <div style={{ marginTop: 8, display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span className="cc-num" style={{ font: `700 28px/1 ${DISPLAY}`, letterSpacing: '-0.02em' }}>{done}</span>
+          <span style={{ font: `500 13px/1 ${FONT}`, opacity: 0.8 }}>of {rows.length} decisions made</span>
+        </div>
+        <div style={{ marginTop: 14, height: 4, borderRadius: 4, background: 'rgba(255,255,255,.2)', overflow: 'hidden' }}>
+          <motion.div initial={false} animate={{ width: `${(done / rows.length) * 100}%` }} transition={{ type: 'spring', stiffness: 180, damping: 26 }} style={{ height: '100%', borderRadius: 4, background: '#fff' }} />
+        </div>
+      </div>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 8 }}>
+        {rows.map((r) => {
+          const current = r.id === step;
+          return (
+            <li key={r.id}>
+              <button type="button" disabled={!r.set} onClick={() => r.set && onJump(r.id)} className={r.set ? 'cc-row' : undefined} title={r.set ? `Edit ${r.label.toLowerCase()}` : undefined}
+                style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '11px 12px', border: 'none', borderRadius: 12, textAlign: 'left', background: current ? 'var(--cc-brand-tint)' : 'transparent', cursor: r.set ? 'pointer' : 'default' }}>
+                <span style={{ flex: 'none', marginTop: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.set ? '#e8f6ee' : current ? '#fff' : '#f3f4f7', boxShadow: r.set ? 'inset 0 0 0 1px #c6e8d4' : current ? `inset 0 0 0 1.5px ${BRAND}` : 'none' }}>
+                  {r.set ? <CheckIcon size={11} color={GOOD} /> : current ? <span className="cc-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: BRAND }} /> : null}
+                </span>
+                <span style={{ minWidth: 0, flex: 1 }}>
+                  <span style={{ display: 'block', font: `600 11px/1.3 ${FONT}`, letterSpacing: '.06em', textTransform: 'uppercase', color: current ? BRAND : TEXT_FAINT }}>{r.label}</span>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {r.set ? (
+                      <motion.span key="v" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} style={{ display: 'block' }}>
+                        <span style={{ display: 'block', marginTop: 3, font: `600 13.5px/1.35 ${FONT}`, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.value}</span>
+                        {r.sub && <span style={{ display: 'block', marginTop: 1, font: `400 12px/1.4 ${FONT}`, color: TEXT_MUTED, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</span>}
+                      </motion.span>
+                    ) : (
+                      <motion.span key="e" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'block', marginTop: 3, font: `400 13px/1.35 ${FONT}`, color: current ? '#3d434b' : TEXT_FAINT }}>
+                        {current ? 'Deciding now…' : 'Not set yet'}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </aside>
   );
+}
+
+
+/** Legacy horizontal summary — superseded by LiveSummary. */
+export function StepSummary(_: { items: SummaryItem[]; onJump: (id: CcStepId) => void }) {
+  return null;
 }

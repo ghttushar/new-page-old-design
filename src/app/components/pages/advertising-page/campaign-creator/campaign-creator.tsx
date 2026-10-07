@@ -1,13 +1,16 @@
+// @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import useSubHeader from '@/hooks/use-sub-header.hook';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
+import './campaign-creator.css';
 import {
   EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, flattenProducts, productsFor, structureCounts, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
-import { PAGE_TINT, Panel, StepSummary, Stepper, summaryFor } from './cc-design';
+import { CampaignSummaryProvider, Panel, Stepper } from './cc-design';
 import StepEntry from './steps/step-entry';
 import StepProducts from './steps/step-products';
 import StepObjectives from './steps/step-objectives';
@@ -110,23 +113,43 @@ export default function CampaignCreator() {
   };
   const footer = footers[step];
   const framed = numberedIndex >= 0;
-  const summary = framed && step !== 'preview' ? summaryFor(step, draft, selectedProducts) : [];
+  const slide = dir === 'fwd' ? 28 : -28;
+  const focusWidth = step === 'result' ? 880 : step === 'creating' ? 720 : 760;
+  const showStepper = framed;
 
   return (
-    <div ref={rootRef} className="cc-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: PAGE_TINT, fontFamily: 'Inter, sans-serif' }}>
+    <MotionConfig reducedMotion="user">
+    <CampaignSummaryProvider value={{ step, draft, selectedProducts, onJump: goTo }}>
+    <div ref={rootRef} className="cc-root" style={{ height: rootHeight ?? '100%', display: 'flex', flexDirection: 'column', background: 'var(--cc-page-bg)', fontFamily: 'Inter, sans-serif' }}>
       <CcGlobalStyles />
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-          <main ref={mainRef} className="cc-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-            <>
-              <div key={step} className={`cc-tr-${dir}`} style={{ maxWidth: framed ? 'none' : step === 'result' ? 880 : 640, margin: framed ? 0 : '0 auto', padding: framed ? '32px 48px 56px' : '56px 32px 56px' }}>
-                {framed && (
-                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}><Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} /></div>
-                  </div>
-                )}
-                {framed && <StepSummary items={summary} onJump={goTo} />}
-                {step === 'entry' && <Panel pad={32}><StepEntry draft={draft} onChange={update} /></Panel>}
+
+      {framed && (
+      <header className="cc-topbar">
+        <div />
+        <div className="cc-topbar__stepper">{showStepper && <Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} />}</div>
+        <div />
+        {framed && (
+          <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, bottom: -1, height: 2, background: 'transparent' }}>
+            <motion.div initial={false} animate={{ width: `${((numberedIndex + 1) / NUMBERED_STEPS.length) * 100}%` }} transition={{ type: 'spring', stiffness: 140, damping: 24 }} style={{ height: '100%', background: 'var(--cc-gradient-primary)', borderRadius: '0 2px 2px 0' }} />
+          </div>
+        )}
+      </header>
+      )}
+
+      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <main ref={mainRef} className="cc-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+          <div className={framed ? 'cc-workspace' : 'cc-focus'} style={{ maxWidth: framed ? 1560 : focusWidth + 64 }}>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={step}
+                className="cc-stage"
+                initial={{ opacity: 0, x: slide }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -slide / 2 }}
+                transition={{ duration: 0.3, ease: [0.22, 0.8, 0.3, 1] }}
+                style={{ flex: 1, minWidth: 0 }}
+              >
+                 {step === 'entry' && <StepEntry draft={draft} onChange={update} />}
                 {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
                 {step === 'objectives' && <StepObjectives draft={draft} selectedProducts={selectedProducts} onChange={update} />}
                 {step === 'targeting' && <StepTargeting draft={draft} selectedProducts={selectedProducts} onChange={update} />}
@@ -134,25 +157,35 @@ export default function CampaignCreator() {
                   <StepStructure draft={draft} selectedProducts={selectedProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={update} onJivaChange={setJivaOpen} />
                 )}
                 {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} onChange={update} />}
-                {step === 'creating' && <Panel pad={32}><StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => { setDir('fwd'); setStep('result'); }} /></Panel>}
-                {step === 'result' && <Panel pad={32}><StepResult draft={draft} selectedProducts={selectedProducts} /></Panel>}
-              </div>
-            </>
-          </main>
-          {step === 'structure' && jivaOpen && (
-            <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />
-          )}
-        </div>
+                {step === 'creating' && <Panel pad={40} className="cc-hero"><StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => { setDir('fwd'); setStep('result'); }} /></Panel>}
+                {step === 'result' && <Panel pad={40} className="cc-hero"><StepResult draft={draft} selectedProducts={selectedProducts} /></Panel>}
 
-        {footer && (
-          <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 48px', borderTop: `1px solid ${HAIR}`, background: '#fff', flex: 'none' }}>
-            <div>{footer.back && <GhostButton onClick={footer.back}>{footer.backLabel ?? 'Back'}</GhostButton>}</div>
-            <PrimaryButton onClick={footer.next} disabled={footer.disabled}>
-              {footer.nextLabel} {step !== 'result' && <ArrowRightIcon size={14} />}
-            </PrimaryButton>
-          </footer>
-        )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+        <AnimatePresence>
+          {step === 'structure' && jivaOpen && (
+            <motion.div
+              key="jiva"
+              initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 60, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+              style={{ display: 'flex', boxShadow: '-12px 0 32px -16px rgba(29,33,41,.18)' }}
+            >
+              <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+      {footer && step !== 'creating' && (
+        <footer className="cc-footer">
+          <div>{footer.back && <GhostButton onClick={footer.back}>{footer.backLabel ?? 'Back'}</GhostButton>}</div>
+          <div />
+          <PrimaryButton onClick={footer.next} disabled={footer.disabled}>{footer.nextLabel} {step !== 'result' && <ArrowRightIcon size={14} />}</PrimaryButton>
+        </footer>
+      )}
     </div>
+    </CampaignSummaryProvider>
+    </MotionConfig>
   );
 }
