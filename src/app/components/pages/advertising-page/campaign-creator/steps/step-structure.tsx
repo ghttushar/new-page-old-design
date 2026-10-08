@@ -63,10 +63,12 @@ function StructureOption({ id, number, name, tagline, meta, recommended, committ
       <div className="cc-so__copy">
         <strong>{name}</strong>
         <span>{tagline}</span>
-        <div className="cc-so__facts">
-          <span>{meta}</span>
-          {disabled && <span className="is-warn">Over account limit</span>}
-        </div>
+        {(meta || disabled) && (
+          <div className="cc-so__facts">
+            {meta && <span>{meta}</span>}
+            {disabled && <span className="is-warn">Over account limit</span>}
+          </div>
+        )}
       </div>
       <span className="cc-so__radio"><Radio checked={committed} disabled={disabled} /></span>
     </div>
@@ -300,11 +302,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             const counts = isCustom ? null : countsFor(s.id);
             const check = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
             const disabled = !isCustom && !check.ok;
-            const meta = isCustom
-              ? 'Built with Jiva'
-              : disabled
-                ? `${counts!.totalCampaigns.toLocaleString()} campaigns — over your limit`
-                : `${counts!.totalCampaigns.toLocaleString()} campaign${counts!.totalCampaigns === 1 ? '' : 's'}`;
+            const meta = isCustom ? 'Built with Jiva' : '';
             return (
               <StructureOption
                 key={s.id}

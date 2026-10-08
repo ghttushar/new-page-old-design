@@ -7,7 +7,7 @@ const glyph = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLi
 const icons: Record<string, React.ReactNode> = {
   acos: <path d="M2.5 13.5h11M4 11V8M8 11V4.5M12 11V6.5" />,
   budget: <><rect x="2" y="4" width="12" height="8.5" rx="1.6" /><path d="M2 7h12M10.5 10h1.5" /></>,
-  roas: <><path d="M2.5 11.5l3.4-3.8 2.4 2L13.5 4" /><path d="M10 4h3.5v3.5" /></>,
+  roas: <><rect x="2" y="4" width="12" height="8.5" rx="1.6" /><path d="M5 8.2h6M5 10.4h3" /></>,
   cpc: <><path d="M6 2.5l7.5 6-3.3.7 1.7 3.6-1.6.8-1.7-3.6L6 11.7z" /></>,
   cvr: <><path d="M2.5 3.5h11L9.6 8.4v4l-3.2-1.6V8.4z" /></>,
   cap: <><circle cx="8" cy="8" r="5.6" /><path d="M8 4.8V8l2.2 1.4" /></>,
@@ -27,11 +27,14 @@ interface Tile {
 const TILES: Tile[] = [
   { id: 'acos', label: 'Target ACOS', hint: 'The advertising cost of sale you are aiming for.', unit: { suffix: '%' }, placeholder: '25', range: 'Allowed range: 1–90%', optional: true },
   { id: 'budget', label: 'Daily budget', hint: 'How much you are happy to spend across all the new campaigns each day.', unit: { prefix: '$', suffix: 'per day' }, placeholder: '50', range: '' },
-  { id: 'roas', label: 'Target ROAS', hint: 'The return on ad spend you want each campaign to reach.', unit: { suffix: '×' }, placeholder: '4.0', range: 'Allowed range: 0.5–20×', optional: true, step: 0.1 },
+  { id: 'roas', label: 'Total budget', hint: 'The most you want to spend across all the new campaigns, in total.', unit: { prefix: '$' }, placeholder: '1,500', range: 'Must be at least your daily budget', optional: true },
   { id: 'maxCpc', label: 'Max CPC bid', hint: 'The most you will pay for a single click on any target.', unit: { prefix: '$' }, placeholder: '1.50', range: 'Allowed range: $0.02–$50', optional: true, step: 0.01 },
   { id: 'cvr', label: 'Minimum conversion rate', hint: 'Targets converting below this rate become candidates to pause.', unit: { suffix: '%' }, placeholder: '8', range: 'Allowed range: 0.1–100%', optional: true, step: 0.1 },
   { id: 'monthlyCap', label: 'Monthly spend cap', hint: 'A hard ceiling on spend across the month, whatever the daily budget.', unit: { prefix: '$', suffix: 'per month' }, placeholder: '1,500', range: 'Must be at least your daily budget', optional: true },
 ];
+
+/** The goals the page offers. The other tiles above stay defined so one can be brought back by adding its id here. */
+const SHOWN: Tile['id'][] = ['acos', 'budget', 'roas'];
 
 export default function StepObjectives({ draft, onChange }: {
   draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
@@ -52,7 +55,7 @@ export default function StepObjectives({ draft, onChange }: {
     if (id === 'budget') return cap && draft.dailyBudget < cap.minDailyBudget ? `The minimum for this marketplace is ${formatCurrency(cap.minDailyBudget)}.` : null;
     if (v === null) return null;
     if (id === 'acos') return v < 1 || v > (cap?.maxTargetAcos ?? 90) ? `Enter a value between 1 and ${cap?.maxTargetAcos ?? 90}.` : null;
-    if (id === 'roas') return v < 0.5 || v > 20 ? 'Enter a value between 0.5 and 20.' : null;
+    if (id === 'roas') return v < draft.dailyBudget ? 'The total budget is below your daily budget.' : null;
     if (id === 'maxCpc') return v < 0.02 || v > 50 ? 'Enter a value between $0.02 and $50.' : null;
     if (id === 'cvr') return v < 0.1 || v > 100 ? 'Enter a value between 0.1 and 100.' : null;
     if (id === 'monthlyCap') return v < draft.dailyBudget ? 'The monthly cap is below your daily budget.' : null;
@@ -64,7 +67,7 @@ export default function StepObjectives({ draft, onChange }: {
       <StepHeading title="Set your goals" />
 
       <div className="cc-goal-grid">
-        {TILES.map((t) => {
+        {TILES.filter((t) => SHOWN.includes(t.id)).map((t) => {
           const err = errorFor(t.id);
           const v = value(t.id);
           return (

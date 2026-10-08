@@ -66,7 +66,8 @@ export function CcGlobalStyles() {
       /* Selectable tiles */
       .cc-pick { transition: border-color 180ms ease-out, background-color 180ms ease-out, box-shadow 220ms ease-out, transform 180ms cubic-bezier(.2,.8,.3,1); }
       .cc-pick:hover:not([aria-disabled="true"]) { border-color: #c9b6e0 !important; transform: translateY(-2px); box-shadow: var(--cc-shadow-pick-hover); }
-      .cc-pick[aria-checked="true"], .cc-pick[aria-pressed="true"], .cc-pick[aria-selected="true"] { box-shadow: var(--cc-shadow-pick-active); }
+      .cc-pick[aria-checked="true"], .cc-pick[aria-pressed="true"], .cc-pick[aria-selected="true"],
+      .cc-pick[aria-checked="true"]:hover:not([aria-disabled="true"]), .cc-pick[aria-pressed="true"]:hover:not([aria-disabled="true"]), .cc-pick[aria-selected="true"]:hover:not([aria-disabled="true"]) { box-shadow: none; }
 
       /* Inputs */
       .cc-input { transition: border-color 140ms ease-out, box-shadow 160ms ease-out, background-color 140ms ease-out; }
@@ -141,7 +142,7 @@ export function Checkbox({ checked, disabled, size = 17 }: { checked: boolean; d
         width: size, height: size, borderRadius: 5, flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         border: `1.5px solid ${checked ? BRAND : '#cfd4dc'}`,
         background: checked ? 'var(--cc-gradient-primary)' : disabled ? '#f1f2f4' : '#fff',
-        boxShadow: checked ? '0 2px 6px -2px rgba(119,70,155,.55)' : 'inset 0 1px 1px rgba(16,24,40,.04)',
+        boxShadow: 'inset 0 1px 1px rgba(16,24,40,.04)',
         transition: 'background-color 140ms ease-out, border-color 140ms ease-out, box-shadow 160ms ease-out',
       }}
     >
@@ -157,7 +158,7 @@ export function Radio({ checked, disabled }: { checked: boolean; disabled?: bool
       style={{
         width: 18, height: 18, borderRadius: '50%', flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         border: `1.5px solid ${checked ? BRAND : '#cfd4dc'}`, background: disabled ? '#f1f2f4' : '#fff',
-        boxShadow: checked ? '0 0 0 4px rgba(119,70,155,.12)' : 'none',
+        boxShadow: 'none',
         transition: 'border-color 140ms ease-out, box-shadow 200ms ease-out',
       }}
     >

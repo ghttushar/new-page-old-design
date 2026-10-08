@@ -117,7 +117,7 @@ export default function JivaStructurePanel({ draft, selectedProducts, onChange, 
   }
 
   return (
-    <aside style={{ width: 380, flex: 'none', display: 'flex', flexDirection: 'column', background: '#fff', borderLeft: `1px solid ${BORDER}`, minHeight: 0 }}>
+    <aside style={{ width: 380, flex: 'none', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'hidden', minHeight: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: `1px solid ${BORDER}` }}>
         <span style={{ width: 28, height: 28, borderRadius: 9, background: BRAND, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><SparkleGlyph size={14} color="#fff" /></span>
         <div style={{ flex: 1 }}>

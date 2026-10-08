@@ -32,12 +32,12 @@ export function Panel({ children, title, aside, pad = 20, style, className }: {
 interface StepDef { id: CcStepId; label: string }
 
 /** Compact numbered segments for the top bar; reached steps stay clickable. */
-export function Stepper({ steps, current, furthestIndex, onJump, showLabels = false }: {
-  steps: StepDef[]; current: CcStepId; furthestIndex: number; onJump: (id: CcStepId) => void; showLabels?: boolean;
+export function Stepper({ steps, current, furthestIndex, onJump }: {
+  steps: StepDef[]; current: CcStepId; furthestIndex: number; onJump: (id: CcStepId) => void;
 }) {
   const ci = steps.findIndex((s) => s.id === current);
   return (
-    <ol aria-label="Campaign creation steps" className={`cc-journey${showLabels ? ' is-labeled' : ''}`}>
+    <ol aria-label="Campaign creation steps" className="cc-journey">
       {steps.map((s, i) => {
         const active = i === ci;
         const done = i < ci;
@@ -51,7 +51,7 @@ export function Stepper({ steps, current, furthestIndex, onJump, showLabels = fa
               <span className="cc-journey__node">
                 {done ? <span className="cc-pop" style={{ display: 'flex' }}><CheckIcon size={11} /></span> : i + 1}
               </span>
-              <span className="cc-journey__copy"><small>{done ? 'Complete' : active ? 'In progress' : next ? 'Up next' : `Step ${i + 1}`}</small><strong>{s.label}</strong></span>
+              <span className="cc-journey__copy"><strong>{s.label}</strong></span>
             </button>
           </li>
         );

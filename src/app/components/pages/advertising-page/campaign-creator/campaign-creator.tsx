@@ -121,13 +121,14 @@ export default function CampaignCreator() {
   return (
     <MotionConfig reducedMotion="user">
     <CampaignSummaryProvider value={{ step, draft, selectedProducts, onJump: goTo }}>
-    <div ref={rootRef} className="cc-root" style={{ height: rootHeight ?? '100%', display: 'flex', flexDirection: 'column', background: 'var(--cc-page-bg)', fontFamily: 'Inter, sans-serif' }}>
+    <div ref={rootRef} className="cc-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: 'var(--cc-page-bg)', fontFamily: 'Inter, sans-serif' }}>
       <CcGlobalStyles />
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
 
       {framed && (
       <header className="cc-topbar">
         <div />
-        <div className="cc-topbar__stepper">{showStepper && <Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} showLabels={step === 'preview'} />}</div>
+        <div className="cc-topbar__stepper">{showStepper && <Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} />}</div>
         <div />
       </header>
       )}
@@ -160,18 +161,6 @@ export default function CampaignCreator() {
             </AnimatePresence>
           </div>
         </main>
-        <AnimatePresence>
-          {step === 'structure' && jivaOpen && (
-            <motion.div
-              key="jiva"
-              initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 60, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-              style={{ display: 'flex', boxShadow: '-12px 0 32px -16px rgba(29,33,41,.18)' }}
-            >
-              <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
       {footer && step !== 'creating' && (
         <footer className="cc-footer">
@@ -180,6 +169,19 @@ export default function CampaignCreator() {
           <PrimaryButton onClick={footer.next} disabled={footer.disabled}>{footer.nextLabel} {step !== 'result' && <ArrowRightIcon size={14} />}</PrimaryButton>
         </footer>
       )}
+      </div>
+        <AnimatePresence>
+          {step === 'structure' && jivaOpen && (
+            <motion.div
+              key="jiva"
+              initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 60, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+              style={{ display: 'flex', flex: 'none', padding: '9px 9px 9px 0' }}
+            >
+              <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
     </div>
     </CampaignSummaryProvider>
     </MotionConfig>

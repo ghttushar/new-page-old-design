@@ -30,17 +30,9 @@ const TARGET_LABEL = { broad: 'Broad', phrase: 'Phrase', exact: 'Exact', brand: 
 
 function describe(campaign: CcCampaign) {
   const kinds = new Set();
-  let total = 0;
-  campaign.adGroups.forEach((group) => group.targets.forEach((target) => { kinds.add(target.matchType); total += 1; }));
+  campaign.adGroups.forEach((group) => group.targets.forEach((target) => kinds.add(target.matchType)));
   const targets = TARGET_ORDER.filter((type) => kinds.has(type)).map((type) => ({ type, keyword: KEYWORD_TYPES.has(type) }));
-  const adGroups = campaign.adGroups.length;
-
-  // Every campaign gets the same two-line caption: what it is, then what sets it apart.
-  const detail = campaign.kind === 'auto'
-    ? (campaign.targetingLabel.split('·')[1]?.trim() ?? 'Automatic')
-    : targets.length === 1 ? TARGET_LABEL[targets[0].type] : 'All target types';
-  const groupLine = `${adGroups > 1 ? `${adGroups} ad groups` : '1 ad group'}${campaign.kind === 'auto' ? ' · auto-matched' : ` · ${total} target${total === 1 ? '' : 's'}`}`;
-  return { targets, detail, groupLine };
+  return { targets };
 }
 
 // ── small marks, all drawn at one size ────────────────────────────────────────────────────────
@@ -100,27 +92,20 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
   // One group stands for the whole structure — a per-product structure repeats this same shape for every product.
   const group = groupCampaigns(campaigns, products)[0];
   const n = group.campaigns.length;
-  const repeats = group.productScoped && products.length > 1;
   return (
     <div className="cc-tree-map" data-structure={structureId} aria-label="Campaign hierarchy">
       <Legend />
       <Fit>
-        <div className="cc-tr" style={{ gridTemplateColumns: `64px repeat(${n}, minmax(112px, auto))` }}>
-          {/* level labels */}
-          <span className="cc-tr-rail" style={{ gridRow: 3 }}>Campaign</span>
-          <span className="cc-tr-rail" style={{ gridRow: 4 }}>Ad group</span>
-          <span className="cc-tr-rail" style={{ gridRow: 5 }}>Targets</span>
-
+        <div className="cc-tr" style={{ gridTemplateColumns: `repeat(${n}, minmax(112px, auto))` }}>
           {/* root */}
-          <div className="cc-tr-root" style={{ gridColumn: `2 / span ${n}`, gridRow: 1 }}>
+          <div className="cc-tr-root" style={{ gridColumn: `1 / span ${n}`, gridRow: 1 }}>
             <span className="cc-tr-root__badge">Campaign</span>
-            <small title={group.title}>{group.title}{repeats ? ` · repeats for ${products.length} products` : ''}</small>
             <i className="cc-tr-link" />
           </div>
 
           {group.campaigns.map((campaign, i) => {
             const info = describe(campaign);
-            const col = i + 2;
+            const col = i + 1;
             const pos = n === 1 ? 'only' : i === 0 ? 'first' : i === n - 1 ? 'last' : 'mid';
             return (
               <Fragment key={campaign.id}>
@@ -130,12 +115,10 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
                     ? <span className="cc-tr-shape cc-tr-shape--auto"><b>A</b></span>
                     : <span className="cc-tr-shape cc-tr-shape--manual"><b>M</b></span>}
                   <strong>{campaign.kind === 'auto' ? 'Auto campaign' : 'Manual campaign'}</strong>
-                  <small>{info.detail}</small>
                 </div>
                 <div className="cc-tr-cell" style={{ gridColumn: col, gridRow: 4 }}>
                   <i className="cc-tr-link" />
                   <span className="cc-tr-ag"><GroupGlyph /></span>
-                  <small>{info.groupLine}</small>
                 </div>
                 <div className="cc-tr-cell cc-tr-cell--targets" style={{ gridColumn: col, gridRow: 5 }}>
                   {info.targets.length > 0 && (

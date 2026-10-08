@@ -94,7 +94,7 @@ export default function StepResult({ draft, selectedProducts }: { draft: CcDraft
             <button
               key={o.id} type="button" role="radio" aria-checked={outcome === o.id} className="cc-btn"
               onClick={() => { setOutcome(o.id); setRetried(new Set()); setRuleRetried(false); }}
-              style={{ padding: '6px 11px', border: 'none', borderRadius: 6, background: outcome === o.id ? '#fff' : 'transparent', boxShadow: outcome === o.id ? '0 1px 2px rgba(20,24,33,.12)' : 'none', font: `600 12px/1 ${FONT}`, color: outcome === o.id ? TEXT_PRIMARY : TEXT_MUTED, cursor: 'pointer' }}
+              style={{ padding: '6px 11px', border: 'none', borderRadius: 6, background: outcome === o.id ? '#fff' : 'transparent', font: `600 12px/1 ${FONT}`, color: outcome === o.id ? TEXT_PRIMARY : TEXT_MUTED, cursor: 'pointer' }}
             >{o.label}</button>
           ))}
         </div>

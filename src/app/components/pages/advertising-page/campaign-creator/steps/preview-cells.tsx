@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { type CcCampaign, type CcProduct, type TargetSource, type TargetingStrategyId, type BiddingStrategy } from '../campaign-creator.types';
+import { createPortal } from 'react-dom';
+import { type CcCampaign, type CcProduct, type PlacementAdjust, type TargetSource, type TargetingStrategyId, type BiddingStrategy } from '../campaign-creator.types';
+import { BORDER, BRAND, FONT, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
 
 // Small pieces shared by the Preview sections: names, labels, the source tag and the number field.
 
@@ -80,5 +82,86 @@ export function NumField({ value, onCommit, label, prefix, suffix, max, width = 
       />
       {suffix && <i>{suffix}</i>}
     </span>
+  );
+}
+
+// ── Editable names and placement bids (restored from the original table) ────────────────────
+
+const ico = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+
+/** A text input with a "typed / allowed" counter inside its right edge. */
+export function CounterInput({ value, max, onChange, label, prefix, width }: {
+  value: string; max: number; onChange: (v: string) => void; label: string; prefix?: string; width?: number | string;
+}) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, width, minWidth: 0 }}>
+      {prefix && <span style={{ font: `400 12.5px/1 ${FONT}`, color: TEXT_FAINT, whiteSpace: 'nowrap' }}>{prefix}</span>}
+      <span style={{ position: 'relative', flex: 1, minWidth: 0, display: 'block' }}>
+        <input
+          className="cc-input" value={value} maxLength={max} onChange={(e) => onChange(e.target.value)} aria-label={label}
+          style={{ width: '100%', padding: '8px 52px 8px 10px', border: `1px solid ${BORDER}`, borderRadius: 7, font: `400 13px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' }}
+        />
+        <span className="cc-num" style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', font: `400 11px/1 ${FONT}`, color: TEXT_FAINT, pointerEvents: 'none' }}>{value.length}/{max}</span>
+      </span>
+    </span>
+  );
+}
+
+/** Shorter names for the table cell; the editor keeps the full wording. */
+const CELL_LABEL: Record<keyof PlacementAdjust, string> = { top: 'Top of search', product: 'Product pages', rest: 'Rest of search' };
+
+const fmtPct = (n: number | null) => (n === null ? '--' : `${n > 0 ? '+' : ''}${n}%`);
+
+/** Shows the three placement adjustments, with a pencil that opens a small editor. */
+export function PlacementCell({ value, onChange, campaignName }: { value: PlacementAdjust; onChange: (v: PlacementAdjust) => void; campaignName: string }) {
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
+  const [draft, setDraft] = useState<PlacementAdjust>(value);
+  const rows: [keyof PlacementAdjust, string][] = [['top', 'Top of search (first page)'], ['product', 'Product pages'], ['rest', 'Rest of search']];
+
+  const close = () => setAnchor(null);
+  const left = anchor ? Math.max(8, Math.min(anchor.left - 280, window.innerWidth - 320)) : 0;
+  const top = anchor ? Math.min(anchor.bottom + 6, window.innerHeight - 260) : 0;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ width: 140, flex: 'none', font: `400 12px/1.65 ${FONT}`, color: TEXT_MUTED, whiteSpace: 'nowrap' }}>
+        {rows.map(([k]) => <div key={k}>{CELL_LABEL[k]}: <span className="cc-num" style={{ color: value[k] === null ? TEXT_FAINT : TEXT_PRIMARY, fontWeight: value[k] === null ? 400 : 600 }}>{fmtPct(value[k])}</span></div>)}
+      </div>
+      <button
+        type="button" aria-label={`Edit placement bids for ${campaignName}`}
+        onClick={(e) => { setDraft(value); setAnchor(e.currentTarget.getBoundingClientRect()); }}
+        style={{ flex: 'none', width: 30, height: 30, padding: 0, border: 'none', background: 'none', color: BRAND, cursor: 'pointer', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <svg width={14} height={14} viewBox="0 0 16 16" aria-hidden {...ico}><path d="M2.5 13.5l.7-3 7.6-7.6a1.4 1.4 0 0 1 2 0l.3.3a1.4 1.4 0 0 1 0 2l-7.6 7.6z" /></svg>
+      </button>
+      {anchor && createPortal(
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onMouseDown={close} />
+          <div role="dialog" aria-label="Adjust bids by placement" className="cc-enter" onMouseDown={(e) => e.stopPropagation()} style={{ position: 'fixed', top, left, width: 300, padding: 16, background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 12, boxShadow: '0 16px 36px rgba(20,24,33,.2)', zIndex: 240, fontFamily: FONT }}>
+            <div style={{ font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>Adjust bids by placement</div>
+            <div style={{ font: `400 12px/1.5 ${FONT}`, color: TEXT_MUTED, margin: '3px 0 12px' }}>Raise or lower the bid for a placement, from -90% to +900%. Leave blank for no change.</div>
+            {rows.map(([k, label]) => (
+              <label key={k} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '6px 0', font: `400 12.5px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>
+                {label}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <input
+                    className="cc-input cc-num" type="number" min={-90} max={900} value={draft[k] ?? ''} placeholder="0"
+                    onChange={(e) => setDraft((d) => ({ ...d, [k]: e.target.value === '' ? null : Math.max(-90, Math.min(900, Number(e.target.value))) }))}
+                    style={{ width: 70, padding: '6px 8px', border: `1px solid ${BORDER}`, borderRadius: 6, font: `500 13px/1 ${FONT}`, outline: 'none', textAlign: 'right' }}
+                  />
+                  <span style={{ color: TEXT_FAINT }}>%</span>
+                </span>
+              </label>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 14, marginTop: 12 }}>
+              <button type="button" onClick={() => { onChange({ top: null, product: null, rest: null }); close(); }} style={{ padding: 0, border: 'none', background: 'none', color: TEXT_MUTED, font: `600 12.5px/1 ${FONT}`, cursor: 'pointer' }}>Clear</button>
+              <button type="button" onClick={close} style={{ padding: 0, border: 'none', background: 'none', color: TEXT_MUTED, font: `600 12.5px/1 ${FONT}`, cursor: 'pointer' }}>Cancel</button>
+              <button type="button" onClick={() => { onChange(draft); close(); }} style={{ padding: '7px 14px', border: 'none', borderRadius: 7, background: BRAND, color: '#fff', font: `600 12.5px/1 ${FONT}`, cursor: 'pointer' }}>Save</button>
+            </div>
+          </div>
+        </>,
+        document.body,
+      )}
+    </div>
   );
 }
