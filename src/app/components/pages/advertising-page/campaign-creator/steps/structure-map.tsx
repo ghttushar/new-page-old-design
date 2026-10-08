@@ -94,7 +94,6 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
   const n = group.campaigns.length;
   return (
     <div className="cc-tree-map" data-structure={structureId} aria-label="Campaign hierarchy">
-      <Legend />
       <Fit>
         <div className="cc-tr" style={{ gridTemplateColumns: `repeat(${n}, minmax(112px, auto))` }}>
           {/* root */}
@@ -114,7 +113,6 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
                   {campaign.kind === 'auto'
                     ? <span className="cc-tr-shape cc-tr-shape--auto"><b>A</b></span>
                     : <span className="cc-tr-shape cc-tr-shape--manual"><b>M</b></span>}
-                  <strong>{campaign.kind === 'auto' ? 'Auto campaign' : 'Manual campaign'}</strong>
                 </div>
                 <div className="cc-tr-cell" style={{ gridColumn: col, gridRow: 4 }}>
                   <i className="cc-tr-link" />
@@ -139,6 +137,7 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
           })}
         </div>
       </Fit>
+      <Legend />
     </div>
   );
 }

@@ -153,9 +153,6 @@ function CompareTable({ activeId, estimateFor, limit }: { activeId: StructureId;
           })}
         </tbody>
       </table>
-      <p style={{ margin: '8px 0 0', font: `400 11.5px/1.5 ${FONT}`, color: TEXT_FAINT }}>
-        "1" in the Auto column means one consolidated Auto campaign when Auto targeting is selected. If Auto targeting is not selected, no Auto campaign is created.
-      </p>
     </div>
   );
 }
@@ -285,7 +282,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
 
       <div className="cc-structure-workspace">
         <aside className="cc-structure-library">
-          <div className="cc-structure-catalog-head"><div><strong>Choose your control model</strong></div></div>
+          <div className="cc-structure-catalog-head"><div><strong>Choose your structure</strong></div></div>
           <button
             type="button"
             className={`cc-btn cc-structure-compare-action${view === 'compare' ? ' is-active' : ''}`}

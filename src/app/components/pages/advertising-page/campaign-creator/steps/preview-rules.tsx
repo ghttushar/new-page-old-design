@@ -159,23 +159,21 @@ function FilterPopover({ anchor, type, status, scope, onType, onStatus, onScope,
 
 // ── One Rule, read only ──────────────────────────────────────────────────────────────────────
 
-function RuleRow({ rule, reason, attached, total, onAttach }: {
-  rule: CcRule; reason: string | null; attached: number; total: number; onAttach: (anchor: DOMRect) => void;
+function RuleRow({ rule, attached, total, onAttach }: {
+  rule: CcRule; attached: number; total: number; onAttach: (anchor: DOMRect) => void;
 }) {
   const [open, setOpen] = useState(false);
   const sched = RULE_SCHEDULE[rule.id];
-  const blocked = reason !== null;
   const active = rule.status === 'Active';
 
   return (
-    <div className={`cc-rl-card${blocked ? ' is-blocked' : ''}`}>
+    <div className="cc-rl-card">
       <div className="cc-rl-row">
         <button type="button" className="cc-rl-chev" aria-expanded={open} aria-label={open ? `Hide details of ${rule.name}` : `Show details of ${rule.name}`} onClick={() => setOpen((v) => !v)}>
           <span style={{ display: 'inline-flex', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 140ms ease-out' }}><ChevronRightIcon size={11} /></span>
         </button>
         <div className="cc-rl-namecell">
           <span className="cc-rl-name">{rule.name}</span>
-          {blocked && <span className="cc-rl-why">Not available for the selected campaigns. {reason}</span>}
         </div>
         <span className="cc-rl-cell">{rule.type}</span>
         <span className="cc-rl-cell cc-rl-status"><i style={{ background: active ? GOOD : '#aab0bb' }} />{rule.status}</span>
@@ -189,7 +187,7 @@ function RuleRow({ rule, reason, attached, total, onAttach }: {
         <span className="cc-rl-cell cc-num">{sched.nextTrigger}</span>
         <span className="cc-rl-cell cc-rl-actioncell">
           <button
-            type="button" disabled={blocked} className={`cc-rl-attach${attached > 0 ? ' is-on' : ''}`}
+            type="button" className={`cc-rl-attach${attached > 0 ? ' is-on' : ''}`}
             aria-label={`Attach campaigns to ${rule.name}`}
             onClick={(e) => onAttach(e.currentTarget.getBoundingClientRect())}
           >
@@ -231,13 +229,14 @@ export default function RulesSection({ draft, campaigns, onChange }: {
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
 
   const visible = useMemo(() => MOCK_RULES.filter((r) => {
+    if (ruleIncompatibility(r, marketplace) !== null) return false;
     const q = query.trim().toLowerCase();
     if (q && !r.name.toLowerCase().includes(q) && !r.type.toLowerCase().includes(q)) return false;
     if (typeFilter !== 'all' && r.type !== typeFilter) return false;
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;
     if (scopeFilter !== 'all' && r.scope !== scopeFilter) return false;
     return true;
-  }), [query, typeFilter, statusFilter, scopeFilter]);
+  }), [marketplace, query, typeFilter, statusFilter, scopeFilter]);
 
   const attachedRules = MOCK_RULES.filter((r) => campaignsForRule(draft, r.id).length > 0);
   const filterCount = (typeFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (scopeFilter !== 'all' ? 1 : 0) + (query.trim() ? 1 : 0);
@@ -247,7 +246,7 @@ export default function RulesSection({ draft, campaigns, onChange }: {
   const open = popover ? MOCK_RULES.find((r) => r.id === popover.ruleId) : undefined;
 
   return (
-    <Panel title="Rules" aside={<TextButton onClick={() => { /* mock: Rules is a separate feature, so nothing to open here */ }}>Manage Rules</TextButton>}>
+    <Panel title="Rules">
       <p style={{ margin: '0 0 16px', font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>
         Attach your new campaigns to the Rules already in your account. Rules can't be created or changed from here.
       </p>
@@ -273,14 +272,14 @@ export default function RulesSection({ draft, campaigns, onChange }: {
           </div>
           {visible.map((r) => (
             <RuleRow
-              key={r.id} rule={r} reason={ruleIncompatibility(r, marketplace)} attached={campaignsForRule(draft, r.id).length} total={campaigns.length}
+              key={r.id} rule={r} attached={campaignsForRule(draft, r.id).length} total={campaigns.length}
               onAttach={(anchor) => setPopover({ ruleId: r.id, anchor })}
             />
           ))}
           {visible.length === 0 && (
             <div className="cc-rl-empty">
               <strong>No Rules match these filters</strong>
-              <span>Try a different name or type, or clear the filters to see every Rule in the account.</span>
+              <span>Try a different name or type, or clear the filters to see every Rule you can use here.</span>
               <TextButton onClick={clearFilters}>Clear filters</TextButton>
             </div>
           )}

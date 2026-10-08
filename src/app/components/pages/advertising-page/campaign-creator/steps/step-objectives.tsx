@@ -77,7 +77,6 @@ export default function StepObjectives({ draft, onChange }: {
                   <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden {...glyph}>{icons[t.id === 'maxCpc' ? 'cpc' : t.id === 'monthlyCap' ? 'cap' : t.id]}</svg>
                 </span>
                 <label htmlFor={`cc-obj-${t.id}`} style={{ flex: 1, font: `600 14px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{t.label}</label>
-                <span style={{ font: `500 11.5px/1 ${FONT}`, color: t.optional ? TEXT_FAINT : BRAND }}>{t.optional ? 'Optional' : 'Required'}</span>
               </div>
               <p style={{ margin: '10px 0 0', minHeight: 40, font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>{t.hint}</p>
 
