@@ -11,7 +11,7 @@ export default function StepCreating({ draft, selectedProducts, onDone }: {
   draft: CcDraft; selectedProducts: CcProduct[]; onDone: () => void;
 }) {
   const campaigns = draft.generatedCampaigns ?? [];
-  const ruleCount = draft.ruleIds.filter((id) => MOCK_RULES.some((r) => r.id === id)).length;
+  const ruleCount = MOCK_RULES.filter((r) => (draft.ruleAssignments[r.id]?.length ?? 0) > 0).length;
   const rows: ProgressRow[] = [
     { label: 'Configuration validated and product eligibility rechecked', total: 1 },
     { label: 'Campaigns created', total: campaigns.length },

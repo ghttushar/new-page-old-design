@@ -32,12 +32,12 @@ export function Panel({ children, title, aside, pad = 20, style, className }: {
 interface StepDef { id: CcStepId; label: string }
 
 /** Compact numbered segments for the top bar; reached steps stay clickable. */
-export function Stepper({ steps, current, furthestIndex, onJump }: {
-  steps: StepDef[]; current: CcStepId; furthestIndex: number; onJump: (id: CcStepId) => void;
+export function Stepper({ steps, current, furthestIndex, onJump, showLabels = false }: {
+  steps: StepDef[]; current: CcStepId; furthestIndex: number; onJump: (id: CcStepId) => void; showLabels?: boolean;
 }) {
   const ci = steps.findIndex((s) => s.id === current);
   return (
-    <ol aria-label="Campaign creation steps" className="cc-journey">
+    <ol aria-label="Campaign creation steps" className={`cc-journey${showLabels ? ' is-labeled' : ''}`}>
       {steps.map((s, i) => {
         const active = i === ci;
         const done = i < ci;

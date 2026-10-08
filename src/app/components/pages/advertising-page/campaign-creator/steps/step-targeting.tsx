@@ -49,10 +49,8 @@ function NotApplicable() {
 }
 
 function IntentLabel({ intent, name, info }: { intent: keyof typeof INTENT; name: string; info: string }) {
-  const { color, icon: Icon } = INTENT[intent];
   return (
     <div className="cc-tg-label">
-      <span className="cc-tg-label__icon" style={{ background: color + '1a', borderColor: color + '33' }}><Icon color={color} /></span>
       <span className="cc-tg-label__copy" title={info}>
         <strong>{name}</strong>
         <small>{info}</small>
@@ -131,6 +129,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
           <span>Product targets</span>
         </div>
 
+        <div className="cc-tg-card">
         <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto', 'Auto campaign')]} productCells={[]} wide />
         <IntentRow
           intent="brand" name="Brand" info="Defend your own brand terms and protect your listings from competitors."
@@ -179,11 +178,9 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
                 );
               })}
             </div>
-            <p className="cc-tg-note">
-              The Product + Multiple Auto structure (Structure 5) creates one Auto campaign per selected type per product, so {autoTypes.length} {autoTypes.length === 1 ? 'type' : 'types'} means {autoTypes.length} Auto {autoTypes.length === 1 ? 'campaign' : 'campaigns'} for each product.
-            </p>
           </div>
         )}
+        </div>
       </div>
 
       <div style={{ marginTop: 14 }}>

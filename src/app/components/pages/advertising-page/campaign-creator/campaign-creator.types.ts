@@ -359,10 +359,14 @@ export interface CcTarget {
 }
 
 /** Section 8.5 — negative keyword / negative product target on an ad group. */
+export type NegativeMatch = 'negative-phrase' | 'negative-exact';
+
 export interface CcNegative {
   id: string;
   text: string;
   kind: 'keyword' | 'product';
+  /** Only negative keywords have a match type; a missing one reads as Negative exact. */
+  matchType?: NegativeMatch;
 }
 
 export interface CcAdGroup {
@@ -427,6 +431,20 @@ export const MOCK_RULES: CcRule[] = [
   { id: 'r-wm-budget', name: 'Walmart Daily Budget Pacing', type: 'Budget', status: 'Active', description: 'Paces daily spend across the day for Walmart campaigns.', conditions: 'Budget exhausted before 3 PM', actions: 'Spread the remaining budget evenly', scope: 'Campaign', adType: 'Sponsored Products', marketplaces: ['walmart'], assignedCampaigns: 6 },
 ];
 
+/** Read-only schedule details shown in the Rules table of the Preview step. */
+export interface RuleSchedule { created: string; runFrom: string; runTo: string; frequency: string; lastRun: string; nextTrigger: string }
+
+export const RULE_SCHEDULE: Record<string, RuleSchedule> = {
+  'r-budget': { created: '14/03/2026', runFrom: '14/03/2026', runTo: '14/03/2027', frequency: 'Daily', lastRun: '07/10/2026', nextTrigger: '08/10/2026 | 06:00' },
+  'r-placement': { created: '02/02/2026', runFrom: '02/02/2026', runTo: '02/02/2027', frequency: 'Weekly', lastRun: '05/10/2026', nextTrigger: '12/10/2026 | 09:30' },
+  'r-inventory': { created: '21/01/2026', runFrom: '21/01/2026', runTo: '21/01/2027', frequency: 'Every 6 hours', lastRun: '08/10/2026', nextTrigger: '08/10/2026 | 18:00' },
+  'r-bid': { created: '09/04/2026', runFrom: '09/04/2026', runTo: '09/10/2026', frequency: 'Daily', lastRun: '07/10/2026', nextTrigger: '08/10/2026 | 07:15' },
+  'r-monitor': { created: '30/05/2026', runFrom: '30/05/2026', runTo: '30/05/2027', frequency: 'Daily', lastRun: '07/10/2026', nextTrigger: '08/10/2026 | 08:00' },
+  'r-pause': { created: '11/06/2026', runFrom: '11/06/2026', runTo: '11/12/2026', frequency: 'Weekly', lastRun: '03/10/2026', nextTrigger: '-' },
+  'r-sb-placement': { created: '18/03/2026', runFrom: '18/03/2026', runTo: '18/03/2027', frequency: 'Weekly', lastRun: '05/10/2026', nextTrigger: '12/10/2026 | 10:00' },
+  'r-wm-budget': { created: '27/07/2026', runFrom: '27/07/2026', runTo: '27/07/2027', frequency: 'Hourly', lastRun: '08/10/2026', nextTrigger: '08/10/2026 | 15:00' },
+};
+
 /** Why a Rule can't be assigned to the generated campaigns, or null when it's compatible. */
 export function ruleIncompatibility(rule: CcRule, marketplace: Marketplace): string | null {
   if (rule.adType !== 'Sponsored Products') return `This Rule is configured for ${rule.adType} and cannot be assigned to Sponsored Products.`;
@@ -485,7 +503,7 @@ export function generateCampaigns(
   const campaigns: CcCampaign[] = [];
   const push = (c: Omit<CcCampaign, 'budgetAllocationPct'>) => campaigns.push({ ...c, budgetAllocationPct: 0 });
 
-  const seedNegatives = (idPrefix: string): CcNegative[] => [{ id: `${idPrefix}-neg-1`, text: 'free sample', kind: 'keyword' }];
+  const seedNegatives = (idPrefix: string): CcNegative[] => [{ id: `${idPrefix}-neg-1`, text: 'free sample', kind: 'keyword', matchType: 'negative-exact' }];
   const autoAdGroup = (products: CcProduct[], idPrefix: string, name = 'Auto Ad Group'): CcAdGroup => ({
     id: `${idPrefix}-ag`, name, productIds: products.map((p) => p.id), targets: [], negatives: seedNegatives(idPrefix),
   });
@@ -569,11 +587,11 @@ export interface CcDraft {
   /** Snapshot taken when the Preview step is reached — lets the user edit per-campaign budget
    * allocation there without it being recomputed (and the edits lost) on every render. */
   generatedCampaigns: CcCampaign[] | null;
+  /** What `generatedCampaigns` was built from. While it still matches, coming back to Preview keeps the user's edits. */
+  generatedKey: string | null;
   /** Existing Rules to assign the new campaigns to (§8.7). Smart Creation never creates or edits a Rule. */
-  ruleIds: string[];
-  ruleScope: 'all' | 'selected';
-  /** Campaigns that get the Rules when `ruleScope` is 'selected'. */
-  ruleCampaignIds: string[];
+  /** Which of the new campaigns are attached to which existing Rule (rule id to campaign ids). */
+  ruleAssignments: Record<string, string[]>;
 }
 
 export const EMPTY_DRAFT: CcDraft = {
@@ -590,9 +608,8 @@ export const EMPTY_DRAFT: CcDraft = {
   customPrompt: '',
   customCampaigns: null,
   generatedCampaigns: null,
-  ruleIds: [],
-  ruleScope: 'all',
-  ruleCampaignIds: [],
+  generatedKey: null,
+  ruleAssignments: {},
 };
 
 export function formatCurrency(n: number): string {

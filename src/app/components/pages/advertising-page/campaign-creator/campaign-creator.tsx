@@ -18,6 +18,7 @@ import StepTargeting from './steps/step-targeting';
 import StepStructure from './steps/step-structure';
 import JivaStructurePanel from './steps/jiva-structure-panel';
 import StepPreview from './steps/step-preview';
+import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
 import StepResult from './steps/step-result';
 
@@ -93,7 +94,7 @@ export default function CampaignCreator() {
   // Preview guards the Create button: nothing to create, or budgets that don't add up to the daily budget (spec §8.4).
   const previewCampaigns = draft.generatedCampaigns ?? [];
   const previewCount = previewCampaigns.length;
-  const previewBudgetOk = Math.abs(previewCampaigns.reduce((n, c) => n + c.dailyBudget, 0) - draft.dailyBudget) <= 0.5;
+  const previewBudgetOk = allocationMatches(previewCampaigns, draft.dailyBudget);
 
   const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next: () => void; nextLabel: string; disabled?: boolean }>> = {
     entry: { next: () => advance('products'), nextLabel: 'Get started', disabled: !draft.adType },
@@ -126,19 +127,14 @@ export default function CampaignCreator() {
       {framed && (
       <header className="cc-topbar">
         <div />
-        <div className="cc-topbar__stepper">{showStepper && <Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} />}</div>
+        <div className="cc-topbar__stepper">{showStepper && <Stepper steps={NUMBERED_STEPS} current={step} furthestIndex={furthestIndex} onJump={goTo} showLabels={step === 'preview'} />}</div>
         <div />
-        {framed && (
-          <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, bottom: -1, height: 2, background: 'transparent' }}>
-            <motion.div initial={false} animate={{ width: `${((numberedIndex + 1) / NUMBERED_STEPS.length) * 100}%` }} transition={{ type: 'spring', stiffness: 140, damping: 24 }} style={{ height: '100%', background: 'var(--cc-gradient-primary)', borderRadius: '0 2px 2px 0' }} />
-          </div>
-        )}
       </header>
       )}
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <main ref={mainRef} className="cc-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-          <div className={framed ? 'cc-workspace' : 'cc-focus'} style={{ maxWidth: framed ? 1560 : focusWidth + 64 }}>
+          <div className={framed || step === 'entry' ? 'cc-workspace' : 'cc-focus'} style={{ maxWidth: framed || step === 'entry' ? 1560 : focusWidth + 64 }}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={step}

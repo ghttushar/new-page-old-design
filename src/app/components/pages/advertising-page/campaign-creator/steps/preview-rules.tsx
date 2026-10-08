@@ -1,206 +1,327 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
-  MOCK_RULES, RULE_TYPES, ruleIncompatibility,
+  MOCK_RULES, RULE_SCHEDULE, RULE_TYPES, ruleIncompatibility,
   type CcCampaign, type CcDraft, type CcProduct, type CcRule, type RuleScope, type RuleType,
 } from '../campaign-creator.types';
 import {
-  BORDER, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, Radio, SearchIcon, SectionTitle,
-  TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, TextButton, WARN,
+  Checkbox, ChevronRightIcon, FONT, GOOD, SearchIcon,
+  TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, TextButton,
 } from '../campaign-creator-ui';
 import { Panel } from '../cc-design';
 import { FIELD } from './preview-targets';
 
-// §8.7 — assign existing Rules to the generated campaigns. Never creates or edits a Rule.
+// Section 8.7: attach the new campaigns to existing Rules. A Rule is only ever read here, never created or changed.
 
-/** Campaign ids a Rule assignment currently covers. */
-export function assignedCampaignIds(draft: CcDraft, campaigns: CcCampaign[]): string[] {
-  if (draft.ruleIds.length === 0) return [];
-  if (draft.ruleScope === 'all') return campaigns.map((c) => c.id);
-  return campaigns.filter((c) => draft.ruleCampaignIds.includes(c.id)).map((c) => c.id);
+/** Campaign ids attached to one Rule. */
+export const campaignsForRule = (draft: CcDraft, ruleId: string): string[] => draft.ruleAssignments[ruleId] ?? [];
+
+/** Names of the Rules a campaign is attached to (section 8.7.7). */
+export function rulesForCampaign(draft: CcDraft, campaignId: string): string[] {
+  return MOCK_RULES.filter((r) => campaignsForRule(draft, r.id).includes(campaignId)).map((r) => r.name);
 }
 
-/** Names of the Rules that will be attached to one campaign (§8.7.7). */
-export function ruleNamesForCampaign(draft: CcDraft, campaignId: string, campaigns: CcCampaign[]): string[] {
-  if (!assignedCampaignIds(draft, campaigns).includes(campaignId)) return [];
-  return draft.ruleIds.map((id) => MOCK_RULES.find((r) => r.id === id)?.name).filter((n): n is string => !!n);
-}
+/** How many Rules have at least one campaign attached. */
+export const attachedRuleCount = (draft: CcDraft): number => MOCK_RULES.filter((r) => campaignsForRule(draft, r.id).length > 0).length;
 
-function StatusDot({ active }: { active: boolean }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: `400 12px/1 ${FONT}`, color: TEXT_MUTED }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: active ? GOOD : TEXT_FAINT }} />
-      {active ? 'Active' : 'Inactive'}
-    </span>
+const COLS = '28px minmax(190px, 1.6fr) 96px 84px 112px 176px 96px 84px 132px 150px';
+
+// ── The checklist that opens from "Attach campaigns" ─────────────────────────────────────────
+
+function AttachPopover({ rule, campaigns, selected, anchor, onChange, onClose }: {
+  rule: CcRule; campaigns: CcCampaign[]; selected: string[]; anchor: DOMRect; onChange: (ids: string[]) => void; onClose: () => void;
+}) {
+  const [query, setQuery] = useState('');
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRef.current(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const shown = campaigns.filter((c) => !q || ('anarix_' + c.name).toLowerCase().includes(q));
+  const toggle = (id: string) => onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  const width = 360;
+  const left = Math.max(8, Math.min(anchor.right - width, window.innerWidth - width - 8));
+  const top = Math.min(anchor.bottom + 8, Math.max(8, window.innerHeight - 440));
+
+  return createPortal(
+    <>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onMouseDown={onClose} />
+      <div role="dialog" aria-label={`Attach campaigns to ${rule.name}`} className="cc-rl-pop" onMouseDown={(e) => e.stopPropagation()} style={{ top, left, width }}>
+        <div className="cc-rl-pop__head">
+          <div style={{ minWidth: 0 }}>
+            <strong>Attach campaigns</strong>
+            <span title={rule.name}>{rule.name}</span>
+          </div>
+          <button type="button" aria-label="Close" onClick={onClose} className="cc-rl-pop__x">
+            <svg width={10} height={10} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          </button>
+        </div>
+
+        <div className="cc-rl-pop__tools">
+          <span style={{ position: 'relative', flex: 1, display: 'flex' }}>
+            <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', display: 'flex' }}><SearchIcon /></span>
+            <input className="cc-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search campaigns" aria-label="Search campaigns" style={{ ...FIELD, width: '100%', padding: '7px 8px 7px 30px' }} />
+          </span>
+        </div>
+        <div className="cc-rl-pop__bar">
+          <span className="cc-num">{selected.length} of {campaigns.length} attached</span>
+          <span style={{ display: 'inline-flex', gap: 14 }}>
+            <TextButton onClick={() => onChange(campaigns.map((c) => c.id))}>Select all</TextButton>
+            <TextButton onClick={() => onChange([])}>Clear</TextButton>
+          </span>
+        </div>
+
+        <div className="cc-scroll cc-rl-pop__list" role="group" aria-label="Campaigns">
+          {shown.map((c) => {
+            const on = selected.includes(c.id);
+            return (
+              <button key={c.id} type="button" role="checkbox" aria-checked={on} onClick={() => toggle(c.id)} className="cc-row cc-rl-pop__item">
+                <Checkbox checked={on} size={16} />
+                <span className="cc-rl-pop__name" title={'Anarix_' + c.name}>{'Anarix_' + c.name}</span>
+                <span className={`cc-rl-kind cc-rl-kind--${c.kind}`}>{c.kind === 'auto' ? 'Auto' : 'Manual'}</span>
+              </button>
+            );
+          })}
+          {shown.length === 0 && <div style={{ padding: '22px 14px', textAlign: 'center', font: `400 13px/1.5 ${FONT}`, color: TEXT_MUTED }}>No campaigns match that search.</div>}
+        </div>
+
+        <div className="cc-rl-pop__foot">
+          <button type="button" onClick={onClose} className="cc-btn cc-primary" style={{ padding: '8px 18px', border: 'none', borderRadius: 8, color: '#fff', font: `600 12.5px/1 ${FONT}`, cursor: 'pointer' }}>Done</button>
+        </div>
+      </div>
+    </>,
+    document.body,
   );
 }
 
-function RuleRow({ rule, selected, reason, onToggle }: { rule: CcRule; selected: boolean; reason: string | null; onToggle: () => void }) {
-  const [open, setOpen] = useState(false);
-  const disabled = reason !== null;
-  return (
-    <div style={{ padding: '12px 14px', borderBottom: `1px solid ${HAIR}`, opacity: disabled ? 0.8 : 1 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <button
-          type="button" role="checkbox" aria-checked={selected} aria-disabled={disabled} aria-label={`Assign ${rule.name}`} disabled={disabled}
-          onClick={onToggle}
-          style={{ marginTop: 1, padding: 0, border: 'none', background: 'none', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex' }}
-        ><Checkbox checked={selected} disabled={disabled} /></button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '2px 14px' }}>
-            <span style={{ font: `600 13px/1.4 ${FONT}`, color: disabled ? TEXT_MUTED : TEXT_PRIMARY }}>{rule.name}</span>
-            <span style={{ font: `400 12px/1.4 ${FONT}`, color: TEXT_MUTED }}>{rule.type}</span>
-            <StatusDot active={rule.status === 'Active'} />
-          </div>
-          <div style={{ marginTop: 3, font: `400 12.5px/1.5 ${FONT}`, color: TEXT_MUTED }}>{rule.description}</div>
-          <div className="cc-num" style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: '2px 16px', font: `400 12px/1.5 ${FONT}`, color: TEXT_FAINT }}>
-            <span>Scope: {rule.scope}</span>
-            <span>Used by {rule.assignedCampaigns} campaign{rule.assignedCampaigns === 1 ? '' : 's'}</span>
-          </div>
-          {disabled && <div style={{ marginTop: 6, font: `400 12.5px/1.5 ${FONT}`, color: WARN }}>Not available for the selected campaigns. {reason}</div>}
-          {!disabled && <div style={{ marginTop: 6, font: `400 12px/1.5 ${FONT}`, color: GOOD }}>Compatible with selected campaigns</div>}
-          <button
-            type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="cc-link"
-            style={{ marginTop: 6, padding: 0, border: 'none', background: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, font: `600 12px/1.4 ${FONT}`, color: TEXT_MUTED }}
-          >
-            <span style={{ display: 'inline-flex', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 140ms ease-out' }}><ChevronRightIcon size={10} /></span>
-            {open ? 'Hide rule' : 'View rule'}
-          </button>
-          {open && (
-            <dl style={{ margin: '8px 0 0', display: 'grid', gridTemplateColumns: '84px 1fr', gap: '4px 12px', font: `400 12.5px/1.5 ${FONT}` }}>
-              <dt style={{ color: TEXT_FAINT }}>Conditions</dt><dd style={{ margin: 0, color: TEXT_PRIMARY }}>{rule.conditions}</dd>
-              <dt style={{ color: TEXT_FAINT }}>Actions</dt><dd style={{ margin: 0, color: TEXT_PRIMARY }}>{rule.actions}</dd>
-              <dt style={{ color: TEXT_FAINT }}>Ad type</dt><dd style={{ margin: 0, color: TEXT_PRIMARY }}>{rule.adType}</dd>
-            </dl>
-          )}
+// ── The one Filters menu: type, status and scope ─────────────────────────────────────────────
+
+const FunnelIcon = () => <svg width={13} height={13} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2.5 3.5h11L9.4 8.4v4l-2.8 1.3V8.4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>;
+
+function FilterPopover({ anchor, type, status, scope, onType, onStatus, onScope, onReset, onClose }: {
+  anchor: DOMRect; type: RuleType | 'all'; status: 'all' | 'Active' | 'Inactive'; scope: RuleScope | 'all';
+  onType: (v: RuleType | 'all') => void; onStatus: (v: 'all' | 'Active' | 'Inactive') => void; onScope: (v: RuleScope | 'all') => void;
+  onReset: () => void; onClose: () => void;
+}) {
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRef.current(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  const width = 280;
+  const left = Math.max(8, Math.min(anchor.left, window.innerWidth - width - 8));
+  const top = Math.min(anchor.bottom + 8, Math.max(8, window.innerHeight - 330));
+  const any = type !== 'all' || status !== 'all' || scope !== 'all';
+
+  return createPortal(
+    <>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 239 }} onMouseDown={onClose} />
+      <div role="dialog" aria-label="Filter Rules" className="cc-rl-pop cc-rl-filters" onMouseDown={(e) => e.stopPropagation()} style={{ top, left, width }}>
+        <label className="cc-rl-filters__field">
+          <span>Rule type</span>
+          <select className="cc-input" value={type} onChange={(e) => onType(e.target.value as RuleType | 'all')} style={{ ...FIELD, width: '100%' }}>
+            <option value="all">All types</option>
+            {RULE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+        <label className="cc-rl-filters__field">
+          <span>Status</span>
+          <select className="cc-input" value={status} onChange={(e) => onStatus(e.target.value as 'all' | 'Active' | 'Inactive')} style={{ ...FIELD, width: '100%' }}>
+            <option value="all">All statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </label>
+        <label className="cc-rl-filters__field">
+          <span>Scope</span>
+          <select className="cc-input" value={scope} onChange={(e) => onScope(e.target.value as RuleScope | 'all')} style={{ ...FIELD, width: '100%' }}>
+            <option value="all">All scopes</option>
+            <option value="Campaign">Campaign</option>
+            <option value="Ad group">Ad group</option>
+            <option value="Account">Account</option>
+          </select>
+        </label>
+        <div className="cc-rl-filters__foot">
+          <button type="button" className="cc-rl-filters__reset" disabled={!any} onClick={onReset}>Reset filters</button>
+          <button type="button" onClick={onClose} className="cc-btn cc-primary" style={{ padding: '8px 18px', border: 'none', borderRadius: 8, color: '#fff', font: `600 12.5px/1 ${FONT}`, cursor: 'pointer' }}>Done</button>
         </div>
       </div>
+    </>,
+    document.body,
+  );
+}
+
+// ── One Rule, read only ──────────────────────────────────────────────────────────────────────
+
+function RuleRow({ rule, reason, attached, total, onAttach }: {
+  rule: CcRule; reason: string | null; attached: number; total: number; onAttach: (anchor: DOMRect) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const sched = RULE_SCHEDULE[rule.id];
+  const blocked = reason !== null;
+  const active = rule.status === 'Active';
+
+  return (
+    <div className={`cc-rl-card${blocked ? ' is-blocked' : ''}`}>
+      <div className="cc-rl-row">
+        <button type="button" className="cc-rl-chev" aria-expanded={open} aria-label={open ? `Hide details of ${rule.name}` : `Show details of ${rule.name}`} onClick={() => setOpen((v) => !v)}>
+          <span style={{ display: 'inline-flex', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 140ms ease-out' }}><ChevronRightIcon size={11} /></span>
+        </button>
+        <div className="cc-rl-namecell">
+          <span className="cc-rl-name">{rule.name}</span>
+          {blocked && <span className="cc-rl-why">Not available for the selected campaigns. {reason}</span>}
+        </div>
+        <span className="cc-rl-cell">{rule.type}</span>
+        <span className="cc-rl-cell cc-rl-status"><i style={{ background: active ? GOOD : '#aab0bb' }} />{rule.status}</span>
+        <span className="cc-rl-cell">
+          <span className="cc-rl-linked">{rule.assignedCampaigns} campaigns</span>
+          {attached > 0 && <span className="cc-rl-new">+{attached} new</span>}
+        </span>
+        <span className="cc-rl-cell cc-num">{sched.runFrom} - {sched.runTo}</span>
+        <span className="cc-rl-cell">{sched.frequency}</span>
+        <span className="cc-rl-cell cc-num">{sched.lastRun}</span>
+        <span className="cc-rl-cell cc-num">{sched.nextTrigger}</span>
+        <span className="cc-rl-cell cc-rl-actioncell">
+          <button
+            type="button" disabled={blocked} className={`cc-rl-attach${attached > 0 ? ' is-on' : ''}`}
+            aria-label={`Attach campaigns to ${rule.name}`}
+            onClick={(e) => onAttach(e.currentTarget.getBoundingClientRect())}
+          >
+            {attached > 0 ? (
+              <>
+                <svg width={12} height={12} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3 8.4l3.2 3.2L13 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                {attached} of {total} attached
+              </>
+            ) : 'Attach campaigns'}
+          </button>
+        </span>
+      </div>
+
+      {open && (
+        <dl className="cc-rl-detail">
+          <div><dt>Description</dt><dd>{rule.description}</dd></div>
+          <div><dt>Conditions</dt><dd>{rule.conditions}</dd></div>
+          <div><dt>Actions</dt><dd>{rule.actions}</dd></div>
+          <div><dt>Scope</dt><dd>{rule.scope}</dd></div>
+          <div><dt>Ad type</dt><dd>{rule.adType}</dd></div>
+          <div><dt>Date created</dt><dd className="cc-num">{sched.created}</dd></div>
+        </dl>
+      )}
     </div>
   );
 }
 
-export default function RulesSection({ draft, campaigns, selectedProducts, onChange }: {
-  draft: CcDraft; campaigns: CcCampaign[]; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+// ── The section ──────────────────────────────────────────────────────────────────────────────
+
+export default function RulesSection({ draft, campaigns, onChange }: {
+  draft: CcDraft; campaigns: CcCampaign[]; selectedProducts?: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
 }) {
   const marketplace = draft.marketplace ?? 'amazon';
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<RuleType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Inactive'>('all');
   const [scopeFilter, setScopeFilter] = useState<RuleScope | 'all'>('all');
+  const [popover, setPopover] = useState<{ ruleId: string; anchor: DOMRect } | null>(null);
+  const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
 
-  const visible = MOCK_RULES.filter((r) => {
+  const visible = useMemo(() => MOCK_RULES.filter((r) => {
     const q = query.trim().toLowerCase();
     if (q && !r.name.toLowerCase().includes(q) && !r.type.toLowerCase().includes(q)) return false;
     if (typeFilter !== 'all' && r.type !== typeFilter) return false;
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;
     if (scopeFilter !== 'all' && r.scope !== scopeFilter) return false;
     return true;
-  });
+  }), [query, typeFilter, statusFilter, scopeFilter]);
 
-  const selectedRules = draft.ruleIds.map((id) => MOCK_RULES.find((r) => r.id === id)).filter((r): r is CcRule => !!r);
-  const appliedCount = assignedCampaignIds(draft, campaigns).length;
-
-  const toggleRule = (id: string) => onChange({ ruleIds: draft.ruleIds.includes(id) ? draft.ruleIds.filter((x) => x !== id) : [...draft.ruleIds, id] });
-  const toggleCampaign = (id: string) => onChange({ ruleCampaignIds: draft.ruleCampaignIds.includes(id) ? draft.ruleCampaignIds.filter((x) => x !== id) : [...draft.ruleCampaignIds, id] });
-
+  const attachedRules = MOCK_RULES.filter((r) => campaignsForRule(draft, r.id).length > 0);
   const filterCount = (typeFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (scopeFilter !== 'all' ? 1 : 0) + (query.trim() ? 1 : 0);
+  const activeFilters = (typeFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (scopeFilter !== 'all' ? 1 : 0);
+  const clearFilters = () => { setQuery(''); setTypeFilter('all'); setStatusFilter('all'); setScopeFilter('all'); };
+  const setAssignment = (ruleId: string, ids: string[]) => onChange({ ruleAssignments: { ...draft.ruleAssignments, [ruleId]: ids } });
+  const open = popover ? MOCK_RULES.find((r) => r.id === popover.ruleId) : undefined;
 
   return (
-    <Panel style={{ marginTop: 24 }}>
-      <SectionTitle aside={<span className="cc-num" style={{ font: `400 12px/1 ${FONT}`, color: TEXT_FAINT }}>Optional</span>}>Rules</SectionTitle>
-      <p style={{ margin: '-4px 0 14px', font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>Assign existing Rules to your new campaigns. This doesn't create or change a Rule.</p>
+    <Panel title="Rules" aside={<TextButton onClick={() => { /* mock: Rules is a separate feature, so nothing to open here */ }}>Manage Rules</TextButton>}>
+      <p style={{ margin: '0 0 16px', font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>
+        Attach your new campaigns to the Rules already in your account. Rules can't be created or changed from here.
+      </p>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      <div className="cc-rl-bar">
         <span style={{ position: 'relative', flex: '1 1 220px', maxWidth: 320, display: 'flex' }}>
           <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', display: 'flex' }}><SearchIcon /></span>
-          <input
-            className="cc-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name or type" aria-label="Search Rules"
-            style={{ ...FIELD, width: '100%', padding: '7px 8px 7px 30px' }}
-          />
+          <input className="cc-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name or type" aria-label="Search Rules" style={{ ...FIELD, width: '100%', padding: '7px 8px 7px 30px' }} />
         </span>
-        <select className="cc-input" aria-label="Rule type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as RuleType | 'all')} style={FIELD}>
-          <option value="all">All types</option>
-          {RULE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select className="cc-input" aria-label="Rule status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'all' | 'Active' | 'Inactive')} style={FIELD}>
-          <option value="all">Status: all</option>
-          <option value="Active">Status: active</option>
-          <option value="Inactive">Status: inactive</option>
-        </select>
-        <select className="cc-input" aria-label="Campaign scope" value={scopeFilter} onChange={(e) => setScopeFilter(e.target.value as RuleScope | 'all')} style={FIELD}>
-          <option value="all">Scope: all</option>
-          <option value="Campaign">Scope: campaign</option>
-          <option value="Ad group">Scope: ad group</option>
-          <option value="Account">Scope: account</option>
-        </select>
-        {filterCount > 0 && <TextButton onClick={() => { setQuery(''); setTypeFilter('all'); setStatusFilter('all'); setScopeFilter('all'); }}>Clear filters</TextButton>}
+        <button
+          type="button" className="cc-rl-filterbtn" aria-haspopup="dialog" aria-expanded={filterAnchor !== null}
+          onClick={(e) => setFilterAnchor(filterAnchor ? null : e.currentTarget.getBoundingClientRect())}
+        >
+          <FunnelIcon />Filters{activeFilters > 0 && <i className="cc-num">{activeFilters}</i>}
+        </button>
       </div>
 
-      <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: 'hidden' }}>
-        {visible.map((r) => (
-          <RuleRow key={r.id} rule={r} selected={draft.ruleIds.includes(r.id)} reason={ruleIncompatibility(r, marketplace)} onToggle={() => toggleRule(r.id)} />
-        ))}
-        {visible.length === 0 && <div style={{ padding: '24px 14px', textAlign: 'center', font: `400 13px/1.5 ${FONT}`, color: TEXT_MUTED }}>No Rules match these filters.</div>}
-      </div>
-
-      {selectedRules.length === 0 ? (
-        <p style={{ margin: '14px 0 0', font: `400 12.5px/1.5 ${FONT}`, color: TEXT_FAINT }}>No Rules selected. Rules are optional, and your campaigns will be created without any automation.</p>
-      ) : (
-        <div style={{ marginTop: 20 }}>
-          <div style={{ font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY, marginBottom: 8 }}>Apply selected Rules to:</div>
-          <div role="radiogroup" aria-label="Apply selected Rules to" style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-            {([['all', 'All campaigns'], ['selected', 'Selected campaigns']] as const).map(([val, label]) => (
-              <button
-                key={val} type="button" role="radio" aria-checked={draft.ruleScope === val} onClick={() => onChange({ ruleScope: val })}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: 0, border: 'none', background: 'none', cursor: 'pointer', font: `500 13px/1.3 ${FONT}`, color: TEXT_PRIMARY }}
-              ><Radio checked={draft.ruleScope === val} /> {label}</button>
-            ))}
+      <div className="cc-scroll cc-rl-scroll">
+        <div className="cc-rl" style={{ ['--cc-rl-cols' as string]: COLS }}>
+          <div className="cc-rl-head" role="row">
+            <span />
+            <span>Rule name</span><span>Rule type</span><span>Status</span><span>Linked campaigns</span><span>Run between</span><span>Frequency</span><span>Last run</span><span>Next trigger</span><span style={{ textAlign: 'right' }}>Attach</span>
           </div>
-
-          {draft.ruleScope === 'selected' && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ display: 'flex', gap: 14, marginBottom: 6, font: `400 12px/1.4 ${FONT}`, color: TEXT_MUTED }}>
-                <span className="cc-num">{appliedCount} of {campaigns.length} selected</span>
-                <TextButton onClick={() => onChange({ ruleCampaignIds: campaigns.map((c) => c.id) })}>Select all</TextButton>
-                <TextButton onClick={() => onChange({ ruleCampaignIds: [] })}>Clear</TextButton>
-              </div>
-              <div className="cc-scroll" style={{ maxHeight: 220, overflow: 'auto', border: `1px solid ${BORDER}`, borderRadius: 8 }}>
-                {campaigns.map((c) => {
-                  const on = draft.ruleCampaignIds.includes(c.id);
-                  return (
-                    <button
-                      key={c.id} type="button" role="checkbox" aria-checked={on} onClick={() => toggleCampaign(c.id)} className="cc-row"
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 12px', border: 'none', borderBottom: `1px solid ${HAIR}`, background: 'transparent', cursor: 'pointer', textAlign: 'left', font: `400 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}
-                    ><Checkbox checked={on} size={16} /> {c.name}</button>
-                  );
-                })}
-              </div>
+          {visible.map((r) => (
+            <RuleRow
+              key={r.id} rule={r} reason={ruleIncompatibility(r, marketplace)} attached={campaignsForRule(draft, r.id).length} total={campaigns.length}
+              onAttach={(anchor) => setPopover({ ruleId: r.id, anchor })}
+            />
+          ))}
+          {visible.length === 0 && (
+            <div className="cc-rl-empty">
+              <strong>No Rules match these filters</strong>
+              <span>Try a different name or type, or clear the filters to see every Rule in the account.</span>
+              <TextButton onClick={clearFilters}>Clear filters</TextButton>
             </div>
           )}
-
-          <div style={{ marginTop: 22 }}>
-            <div style={{ font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY, marginBottom: 6 }}>{selectedRules.length} Rule{selectedRules.length === 1 ? '' : 's'} selected</div>
-            {selectedRules.map((r) => (
-              <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '7px 0', borderBottom: `1px solid ${HAIR}` }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ font: `500 13px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>{r.name}</div>
-                  <div className="cc-num" style={{ font: `400 12px/1.4 ${FONT}`, color: appliedCount === 0 ? WARN : TEXT_MUTED }}>
-                    Applied to: {appliedCount} campaign{appliedCount === 1 ? '' : 's'}{appliedCount === 0 ? '. Choose campaigns above.' : ''}
-                  </div>
-                </div>
-                <button
-                  type="button" aria-label={`Remove ${r.name}`} title={`Remove ${r.name}`} onClick={() => toggleRule(r.id)} className="cc-btn cc-ghost"
-                  style={{ width: 24, height: 24, padding: 0, border: 'none', background: 'transparent', borderRadius: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flex: 'none' }}
-                ><svg width={10} height={10} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke={TEXT_MUTED} strokeWidth="1.8" strokeLinecap="round" /></svg></button>
-              </div>
-            ))}
-          </div>
         </div>
+      </div>
+
+      <div className="cc-rl-summary">
+        {attachedRules.length === 0 ? (
+          <p style={{ margin: 0, font: `400 12.5px/1.5 ${FONT}`, color: TEXT_FAINT }}>No campaigns attached to a Rule yet. Rules are optional, and your campaigns will be created without any automation.</p>
+        ) : (
+          <>
+            <div style={{ font: `600 13px/1.3 ${FONT}`, color: TEXT_PRIMARY, marginBottom: 6 }}>{attachedRules.length} Rule{attachedRules.length === 1 ? '' : 's'} attached</div>
+            {attachedRules.map((r) => {
+              const n = campaignsForRule(draft, r.id).length;
+              return (
+                <div key={r.id} className="cc-rl-summary__row">
+                  <span className="cc-rl-summary__name" title={r.name}>{r.name}</span>
+                  <span className="cc-num" style={{ color: TEXT_MUTED }}>Applied to {n} of {campaigns.length} campaign{campaigns.length === 1 ? '' : 's'}</span>
+                  <TextButton onClick={() => setAssignment(r.id, [])}>Detach all</TextButton>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </div>
+
+      {filterAnchor && (
+        <FilterPopover
+          anchor={filterAnchor} type={typeFilter} status={statusFilter} scope={scopeFilter}
+          onType={setTypeFilter} onStatus={setStatusFilter} onScope={setScopeFilter}
+          onReset={() => { setTypeFilter('all'); setStatusFilter('all'); setScopeFilter('all'); }}
+          onClose={() => setFilterAnchor(null)}
+        />
       )}
 
-      <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 12, font: `400 12.5px/1.5 ${FONT}`, color: TEXT_MUTED }}>
-        <span>Want to create or modify a Rule? Rules are created and edited in Rules, not here.</span>
-        <TextButton onClick={() => { /* mock: no navigation */ }}>Manage Rules</TextButton>
-      </div>
+      {popover && open && (
+        <AttachPopover
+          rule={open} campaigns={campaigns} selected={campaignsForRule(draft, open.id)} anchor={popover.anchor}
+          onChange={(ids) => setAssignment(open.id, ids)} onClose={() => setPopover(null)}
+        />
+      )}
     </Panel>
   );
 }

@@ -1,5 +1,5 @@
 // @ts-nocheck -- presentation-only map for the ported creator
-import { motion } from 'motion/react';
+import { Fragment, useLayoutEffect, useRef, useState } from 'react';
 import { type CcCampaign, type CcProduct, type StructureId } from '../campaign-creator.types';
 
 export function groupCampaigns(campaigns: CcCampaign[], products: CcProduct[]) {
@@ -21,76 +21,141 @@ export function groupCampaigns(campaigns: CcCampaign[], products: CcProduct[]) {
   return Array.from(groups.values());
 }
 
-const shortTarget = (campaign: CcCampaign) => {
-  if (campaign.kind === 'auto') return campaign.targetingLabel.replace('Automatic', 'Auto');
-  const types = Array.from(new Set(campaign.adGroups.flatMap((group) => group.targets.map((target) => target.matchType))));
-  return types.length > 2 ? `${types.slice(0, 2).join(', ')} +${types.length - 2}` : types.join(', ') || 'Manual targets';
-};
+// ── what a campaign holds ─────────────────────────────────────────────────────────────────────
 
-function ProductNode({ title, count }: { title: string; count: number }) {
+const KEYWORD_TYPES = new Set(['brand', 'competitor', 'broad', 'phrase', 'exact']);
+/** Always listed in this order, so the same target kind sits in the same place in every column. */
+const TARGET_ORDER = ['broad', 'phrase', 'exact', 'brand', 'competitor', 'category', 'product'];
+const TARGET_LABEL = { broad: 'Broad', phrase: 'Phrase', exact: 'Exact', brand: 'Brand', competitor: 'Competitor', category: 'Category', product: 'ASIN' };
+
+function describe(campaign: CcCampaign) {
+  const kinds = new Set();
+  let total = 0;
+  campaign.adGroups.forEach((group) => group.targets.forEach((target) => { kinds.add(target.matchType); total += 1; }));
+  const targets = TARGET_ORDER.filter((type) => kinds.has(type)).map((type) => ({ type, keyword: KEYWORD_TYPES.has(type) }));
+  const adGroups = campaign.adGroups.length;
+
+  // Every campaign gets the same two-line caption: what it is, then what sets it apart.
+  const detail = campaign.kind === 'auto'
+    ? (campaign.targetingLabel.split('·')[1]?.trim() ?? 'Automatic')
+    : targets.length === 1 ? TARGET_LABEL[targets[0].type] : 'All target types';
+  const groupLine = `${adGroups > 1 ? `${adGroups} ad groups` : '1 ad group'}${campaign.kind === 'auto' ? ' · auto-matched' : ` · ${total} target${total === 1 ? '' : 's'}`}`;
+  return { targets, detail, groupLine };
+}
+
+// ── small marks, all drawn at one size ────────────────────────────────────────────────────────
+
+const KeywordGlyph = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3 13L7 3h2l4 10M4.6 9.4h6.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+const ProductGlyph = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M8 1.8l5.2 2.7v5.4L8 12.6 2.8 9.9V4.5z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /><path d="M2.8 4.5L8 7.2l5.2-2.7M8 7.2v5.4" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg>
+);
+const GroupGlyph = () => (
+  <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden><rect x="2.4" y="2.4" width="5.6" height="5.6" rx="1.4" stroke="currentColor" strokeWidth="1.6" /><rect x="10" y="2.4" width="5.6" height="5.6" rx="1.4" stroke="currentColor" strokeWidth="1.6" /><rect x="2.4" y="10" width="5.6" height="5.6" rx="1.4" stroke="currentColor" strokeWidth="1.6" /><rect x="10" y="10" width="5.6" height="5.6" rx="1.4" stroke="currentColor" strokeWidth="1.6" /></svg>
+);
+
+function Legend() {
   return (
-    <div className="cc-tree-product">
-      <span className="cc-tree-product__glyph" aria-hidden>
-        <svg viewBox="0 0 18 18"><path d="M9 2.2 15 5.4v7.2L9 15.8 3 12.6V5.4Z"/><path d="m3 5.4 6 3.3 6-3.3M9 8.7v7.1"/></svg>
-      </span>
-      <span><small>Product scope</small><strong title={title}>{title}</strong><em>{count} selected</em></span>
+    <div className="cc-tr-key" aria-hidden>
+      <span><i className="cc-tr-shape cc-tr-shape--auto"><b>A</b></i>Auto campaign</span>
+      <span><i className="cc-tr-shape cc-tr-shape--manual"><b>M</b></i>Manual campaign</span>
+      <span><i className="cc-tr-ag"><GroupGlyph /></i>Ad group</span>
+      <span><i className="cc-tr-pill cc-tr-pill--kw"><KeywordGlyph /></i>Keyword target</span>
+      <span><i className="cc-tr-pill cc-tr-pill--pr"><ProductGlyph /></i>Product target</span>
     </div>
   );
 }
 
-function CampaignBranch({ campaign, index }: { campaign: CcCampaign; index: number }) {
-  const adGroups = campaign.adGroups.length;
-  const targetCount = campaign.adGroups.reduce((total, group) => total + group.targets.length, 0);
+// ── the tree ──────────────────────────────────────────────────────────────────────────────────
+
+/** Shrinks the tree to the panel's width when it is wide; never enlarges it. */
+function Fit({ children }: { children: React.ReactNode }) {
+  const outer = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState({ scale: 1, height: 0 });
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (!outer.current || !inner.current) return;
+      const naturalW = inner.current.offsetWidth || 1;
+      const naturalH = inner.current.offsetHeight;
+      const scale = Math.max(0.55, Math.min(1, outer.current.clientWidth / naturalW));
+      setFit((prev) => (Math.abs(prev.scale - scale) < 0.001 && Math.abs(prev.height - naturalH * scale) < 1 ? prev : { scale, height: naturalH * scale }));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (outer.current) observer.observe(outer.current);
+    if (inner.current) observer.observe(inner.current);
+    return () => observer.disconnect();
+  }, []);
   return (
-    <motion.div className="cc-tree-branch" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * .045 }}>
-      <div className="cc-tree-campaign">
-        <span className={`cc-tree-shape cc-tree-shape--${campaign.kind}`} aria-hidden><b>{campaign.kind === 'auto' ? 'A' : 'M'}</b></span>
-        <span><small>{campaign.kind} campaign</small><strong title={campaign.name}>{campaign.name}</strong></span>
-      </div>
-      <span className="cc-tree-link" aria-hidden />
-      <div className="cc-tree-leaf cc-tree-leaf--group">
-        <span aria-hidden>AG</span><div><strong>{adGroups} ad group{adGroups === 1 ? '' : 's'}</strong><small>{targetCount} targets</small></div>
-      </div>
-      <span className="cc-tree-link" aria-hidden />
-      <div className="cc-tree-leaf cc-tree-leaf--target">
-        <span aria-hidden>T</span><div><strong title={shortTarget(campaign)}>{shortTarget(campaign)}</strong><small>{campaign.kind === 'auto' ? 'Discovery' : 'Controlled'}</small></div>
-      </div>
-    </motion.div>
+    <div ref={outer} className="cc-tr-fit" style={{ height: fit.height || undefined }}>
+      <div ref={inner} className="cc-tr-wrap" style={{ transform: `translateX(-50%) scale(${fit.scale})` }}>{children}</div>
+    </div>
   );
 }
 
 export function StructureMap({ structureId, campaigns, products }: { structureId: StructureId; campaigns: CcCampaign[]; products: CcProduct[] }) {
   if (campaigns.length === 0) return null;
-  const groups = groupCampaigns(campaigns, products);
-  const visibleGroups = groups.slice(0, 3);
-  let shown = 0;
-  const maxBranches = 5;
-
+  // One group stands for the whole structure — a per-product structure repeats this same shape for every product.
+  const group = groupCampaigns(campaigns, products)[0];
+  const n = group.campaigns.length;
+  const repeats = group.productScoped && products.length > 1;
   return (
     <div className="cc-tree-map" data-structure={structureId} aria-label="Campaign hierarchy">
-      <div className="cc-tree-key" aria-hidden>
-        <span><i className="cc-tree-key__auto" />Auto</span><span><i className="cc-tree-key__manual" />Manual</span><span><i className="cc-tree-key__group" />Ad group</span><span><i className="cc-tree-key__target" />Targeting</span>
-      </div>
-      <div className="cc-tree-groups">
-        {visibleGroups.map((group, groupIndex) => {
-          const remaining = Math.max(0, maxBranches - shown);
-          const visible = group.campaigns.slice(0, remaining);
-          shown += visible.length;
-          if (!visible.length) return null;
-          return (
-            <motion.section className="cc-tree-group" key={group.key} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: groupIndex * .06 }}>
-              <ProductNode title={group.title} count={group.productScoped ? 1 : products.length} />
-              <div className="cc-tree-fork" aria-hidden />
-              <div className="cc-tree-branches">
-                {visible.map((campaign, index) => <CampaignBranch key={campaign.id} campaign={campaign} index={shown - visible.length + index} />)}
-              </div>
-            </motion.section>
-          );
-        })}
-        {campaigns.length > shown && (
-          <div className="cc-tree-more"><span>+{campaigns.length - shown}</span><div><strong>more campaign branches</strong><small>Same hierarchy, collapsed for clarity</small></div></div>
-        )}
-      </div>
+      <Legend />
+      <Fit>
+        <div className="cc-tr" style={{ gridTemplateColumns: `64px repeat(${n}, minmax(112px, auto))` }}>
+          {/* level labels */}
+          <span className="cc-tr-rail" style={{ gridRow: 3 }}>Campaign</span>
+          <span className="cc-tr-rail" style={{ gridRow: 4 }}>Ad group</span>
+          <span className="cc-tr-rail" style={{ gridRow: 5 }}>Targets</span>
+
+          {/* root */}
+          <div className="cc-tr-root" style={{ gridColumn: `2 / span ${n}`, gridRow: 1 }}>
+            <span className="cc-tr-root__badge">Campaign</span>
+            <small title={group.title}>{group.title}{repeats ? ` · repeats for ${products.length} products` : ''}</small>
+            <i className="cc-tr-link" />
+          </div>
+
+          {group.campaigns.map((campaign, i) => {
+            const info = describe(campaign);
+            const col = i + 2;
+            const pos = n === 1 ? 'only' : i === 0 ? 'first' : i === n - 1 ? 'last' : 'mid';
+            return (
+              <Fragment key={campaign.id}>
+                <div className={`cc-tr-bus cc-tr-bus--${pos}`} style={{ gridColumn: col, gridRow: 2 }} />
+                <div className="cc-tr-cell" style={{ gridColumn: col, gridRow: 3 }} title={campaign.name}>
+                  {campaign.kind === 'auto'
+                    ? <span className="cc-tr-shape cc-tr-shape--auto"><b>A</b></span>
+                    : <span className="cc-tr-shape cc-tr-shape--manual"><b>M</b></span>}
+                  <strong>{campaign.kind === 'auto' ? 'Auto campaign' : 'Manual campaign'}</strong>
+                  <small>{info.detail}</small>
+                </div>
+                <div className="cc-tr-cell" style={{ gridColumn: col, gridRow: 4 }}>
+                  <i className="cc-tr-link" />
+                  <span className="cc-tr-ag"><GroupGlyph /></span>
+                  <small>{info.groupLine}</small>
+                </div>
+                <div className="cc-tr-cell cc-tr-cell--targets" style={{ gridColumn: col, gridRow: 5 }}>
+                  {info.targets.length > 0 && (
+                    <>
+                      <i className="cc-tr-link" />
+                      <div className="cc-tr-list">
+                        {info.targets.map((target) => (
+                          <span key={target.type} className={`cc-tr-pill cc-tr-pill--${target.keyword ? 'kw' : 'pr'}`}>
+                            {target.keyword ? <KeywordGlyph /> : <ProductGlyph />}{TARGET_LABEL[target.type]}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Fragment>
+            );
+          })}
+        </div>
+      </Fit>
     </div>
   );
 }

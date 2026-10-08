@@ -44,7 +44,7 @@ export default function StepResult({ draft, selectedProducts }: { draft: CcDraft
   const [retried, setRetried] = useState<Set<string>>(new Set());
   const [ruleRetried, setRuleRetried] = useState(false);
 
-  const rules = MOCK_RULES.filter((r) => draft.ruleIds.includes(r.id));
+  const rules = MOCK_RULES.filter((r) => (draft.ruleAssignments[r.id]?.length ?? 0) > 0);
   const last = campaigns[campaigns.length - 1];
 
   const failures = useMemo<FailedEntity[]>(() => {
@@ -127,8 +127,9 @@ export default function StepResult({ draft, selectedProducts }: { draft: CcDraft
           <p style={{ margin: '0 0 4px', font: `400 12.5px/1.5 ${FONT}`, color: TEXT_FAINT }}>Tracked separately from campaign creation.</p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {rules.map((rule, i) => {
-              const target = draft.ruleScope === 'all' ? createdCampaigns.length : createdCampaigns.filter((c) => draft.ruleCampaignIds.includes(c.id)).length;
-              const planned = draft.ruleScope === 'all' ? campaigns.length : draft.ruleCampaignIds.length;
+              const attached = draft.ruleAssignments[rule.id] ?? [];
+              const target = createdCampaigns.filter((c) => attached.includes(c.id)).length;
+              const planned = attached.length;
               const hasGap = target < planned;
               const partialRule = i === 0 && outcome === 'success' && rules.length > 1 && !ruleRetried;
               const done = partialRule ? Math.max(planned - 1, 0) : target;

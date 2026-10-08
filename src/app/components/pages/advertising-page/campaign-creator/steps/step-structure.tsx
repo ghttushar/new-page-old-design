@@ -209,7 +209,7 @@ function StructureCard({ view, onView, title, empty, legend, graphic, written, c
   return (
     <div className="cc-structure-card">
       <div className="cc-structure-card__head">
-        <div><small>{view === 'compare' ? 'STRUCTURE COMPARISON' : 'LIVE BLUEPRINT'}</small><strong>{view === 'compare' ? 'Compare all six structures' : title ?? 'Campaign architecture'}</strong></div>
+        <div><strong>{view === 'compare' ? 'Compare all six structures' : title ?? 'Campaign architecture'}</strong></div>
       </div>
       <div className={`cc-structure-card__body cc-structure-card__body--${view}`}>
         {view === 'compare' ? compare : empty ? (
@@ -283,7 +283,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
 
       <div className="cc-structure-workspace">
         <aside className="cc-structure-library">
-          <div className="cc-structure-catalog-head"><div><small>STRUCTURE LIBRARY</small><strong>Choose your control model</strong></div></div>
+          <div className="cc-structure-catalog-head"><div><strong>Choose your control model</strong></div></div>
           <button
             type="button"
             className={`cc-btn cc-structure-compare-action${view === 'compare' ? ' is-active' : ''}`}
@@ -335,18 +335,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
           <section aria-live="polite" key={activeId} className="cc-enter cc-structure-detail">
           {view !== 'compare' && (
           <>
-          <div className="cc-structure-detail__intro"><div><small>LIVE STRUCTURE · 0{activeDef.number}</small><h2>{activeDef.name}</h2><p>{activeId === 'custom' ? activeDef.description : activeDef.tagline}</p></div></div>
-          {activeId !== 'custom' && (
-            <p className="cc-structure-use-case">{activeDef.useCase}</p>
-          )}
-
-          {activeCounts && (
-            <div className="cc-structure-metrics">
-              <span><small>Auto</small><b>{activeCounts.autoCampaigns}</b></span><span><small>Manual</small><b>{activeCounts.manualCampaigns}</b></span><span><small>Campaigns</small><b>{activeCounts.totalCampaigns.toLocaleString()}</b></span><span><small>Ad groups</small><b>{activeCounts.adGroups.toLocaleString()}</b></span><span><small>Targets</small><b>{activeCounts.targets.toLocaleString()}</b></span>
-            </div>
-          )}
-
-          <LimitMeter used={limits.used} limit={limits.limit} available={limits.available} estimated={estimatedTotal} />
+          <div className="cc-structure-detail__intro"><div><h2>{activeDef.name}</h2></div></div>
 
           {activeCounts && !activeCheck.ok && (
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>

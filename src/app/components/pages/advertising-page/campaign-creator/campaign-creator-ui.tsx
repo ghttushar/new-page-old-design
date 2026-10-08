@@ -202,7 +202,7 @@ export function TextButton({ children, onClick, tone = BRAND }: { children: Reac
 
 // ── Layout pieces ─────────────────────────────────────────────────────────────────────────────
 
-export function StepHeading({ eyebrow, title }: { eyebrow?: string; title: string }) {
+export function StepHeading({ eyebrow, title, summary = true }: { eyebrow?: string; title: string; summary?: boolean }) {
   return (
     <header className="cc-step-heading">
       {eyebrow && (
@@ -211,7 +211,7 @@ export function StepHeading({ eyebrow, title }: { eyebrow?: string; title: strin
         </div>
       )}
       <h1 style={{ margin: 0, font: `700 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}</h1>
-      <InlineSummary />
+      {summary && <InlineSummary />}
     </header>
   );
 }
