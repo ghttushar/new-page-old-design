@@ -1,119 +1,187 @@
-import LogsLevel from '@/app/components/page-components/logs-level/logs-level';
+import LogChangeCell from '@/app/components/page-components/logs-details/logs-change-cell';
 import { ILogsData } from '@/interfaces/logs/logs.interface';
 import { getTitleCaseString } from '@/utils';
-import { getPrefixBasedOnActionType } from '@/utils/advertising.utils';
 import { convertUtcToTimezoneDate } from '@/utils/datetime.utils';
 import { ColumnDef } from '@tanstack/react-table';
-import styles from 'src/app/components/pages/advertising-page/advertising-walmart/sp/account-level/wmt-sp-account-level.module.scss';
 import { DATE_FORMAT_17 } from '../datetime.constants';
-import { ACTION_TYPE_MAPPING, SUB_TYPE_MAPPING } from '../logs.constants';
-const LEVEL: ColumnDef<ILogsData> = {
-  accessorKey: 'editedLevel',
-  id: 'Level',
-  size: 300,
-  enableSorting: false,
-  header: (props) => {
-    return <div className={`commonHeader`}>Level </div>;
-  },
+import { LOG_ENTITY_TYPES, LOG_SOURCE_LABELS } from '../logs.constants';
+import InfoIcon from '@/app/components/common/info-icon/info-icon';
+import styles from './logs-table-columns.module.scss';
 
-  cell: (props) => {
-    const { row } = props;
-    const level = row.original.editedLevel;
-    if (!level) return <div>-</div>;
-    return (
-      <div className={`commonCell ${styles.productNameContainer} `}>
-        <LogsLevel data={row.original} />
-      </div>
-    );
-  },
+// The columns read from the widest scope to the finest detail, in four groups:
+// what was touched (marketplace, service, entity), what changed (action, change),
+// who and how, and the record itself.
+
+const text = (value?: string | null) => (value ? value : '-');
+
+/** What each column means, shown from the (i) next to its name. */
+const TIPS: { [column: string]: string } = {
+  Marketplace: 'The marketplace the change was made in, such as Amazon or Walmart.',
+  Service: 'The part of Anarix that recorded the change, such as advertising, dayparting or rules.',
+  'Entity Type': 'The kind of item that changed: campaign, ad group, keyword, target, rule and so on.',
+  Entity: 'The name of the item that changed, with its ID underneath.',
+  Action: 'What was done to the item: a field updated, the item created or archived, or a rule or job executed.',
+  Change: 'The value before and after an edit. Creations, bulk edits and executions open their details.',
+  Through: 'Where the change was made from: a page in Anarix, Jiva, or a connected tool such as Slack or Claude.',
+  User: 'The person or system that made the change.',
+  'Date & Time': 'When the change was made, in your time zone. Select the header to sort.',
+  'Log ID': 'The unique ID of this log entry.',
 };
 
-const ACTION_TYPE: ColumnDef<ILogsData> = {
-  accessorKey: 'actionType.type',
-  id: 'Action Type',
-  size: 100,
+/** A column name with its (i) tooltip. */
+const heading = (label: string) => (
+  <div className={`commonHeader`}>
+    {label}
+    <InfoIcon
+      title={TIPS[label]}
+      customIconStyles={{ height: 'auto', width: '1.3rem', marginLeft: '0.5rem' }}
+    />
+  </div>
+);
+
+/** A plain column with a header; the cell can be any node. */
+const textColumn = (
+  id: string,
+  size: number,
+  accessorKey: keyof ILogsData,
+  render: (row: ILogsData) => React.ReactNode
+): ColumnDef<ILogsData> => ({
+  accessorKey,
+  id,
+  size,
   enableSorting: false,
-  header: (props) => {
-    return <div className={`commonHeader`}>Action Type </div>;
-  },
+  header: () => heading(id),
+  cell: ({ row }) => <div className={`commonCell`}>{render(row.original)}</div>,
+});
 
-  cell: (props) => {
-    const { row } = props;
-    const type = row.original.actionType.type;
-    const subType = row.original.actionType.subType;
+/** One band of columns, with its title above them. */
+const group = (
+  id: string,
+  title: string,
+  columns: ColumnDef<ILogsData>[]
+): ColumnDef<ILogsData> => ({
+  id,
+  enableSorting: false,
+  header: () => <div className={styles.group}>{title}</div>,
+  columns,
+});
 
-    if (!type) return <div>-</div>;
+// ── What was touched ──────────────────────────────────────────────────────────────────────────
+
+const MARKETPLACE = textColumn('Marketplace', 135, 'marketplace', (r) =>
+  r.marketplace ? getTitleCaseString(r.marketplace) : '-'
+);
+
+const SERVICE = textColumn('Service', 110, 'service', (r) =>
+  r.service ? getTitleCaseString(r.service) : '-'
+);
+
+const ENTITY_TYPE = textColumn('Entity Type', 140, 'entityType', (r) =>
+  r.entityType
+    ? LOG_ENTITY_TYPES[r.entityType] ?? getTitleCaseString(r.entityType)
+    : '-'
+);
+
+const ENTITY: ColumnDef<ILogsData> = {
+  accessorKey: 'entityName',
+  id: 'Entity',
+  size: 220,
+  enableSorting: false,
+  header: () => heading('Entity'),
+  cell: ({ row }) => {
+    const { entityName, entityId } = row.original;
+    const name = entityName || entityId;
     return (
       <div className={`commonCell`}>
-        {ACTION_TYPE_MAPPING[type] ?? getTitleCaseString(type)}{' '}
-        {subType && (
-          <span
-            style={{
-              color: '#999',
-            }}
-          >
-            ( {SUB_TYPE_MAPPING[subType] ?? subType} )
-          </span>
+        <div className={styles.name}>{text(name)}</div>
+        {entityId && entityId !== name && (
+          <div className={styles.sub}>{entityId}</div>
         )}
       </div>
     );
   },
 };
 
-const FROM: ColumnDef<ILogsData> = {
-  accessorKey: 'from',
-  id: 'From',
-  size: 100,
+// ── What changed ──────────────────────────────────────────────────────────────────────────────
+
+/** "bidChange.percentage" reads as "Bid change percentage". */
+const humanize = (name: string) => {
+  const words = name
+    .replace(/[._]/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
+/** What was done, in one phrase: "Bid update", "Anarix_B07XK2 created", "Daily budget archived". */
+const actionLabel = (r: ILogsData) => {
+  const name =
+    r.entityName ||
+    r.entityId ||
+    LOG_ENTITY_TYPES[r.entityType ?? ''] ||
+    'Item';
+  const subject = r.fieldName ? humanize(r.fieldName) : name;
+  switch (r.action) {
+    case 'CREATE':
+      return `${name} created`;
+    case 'UPDATE':
+      return `${subject} update`;
+    case 'DELETE':
+      return `${subject} archived`;
+    case 'EXECUTE':
+      return `${name} executed`;
+    default:
+      return r.action ? getTitleCaseString(r.action.toLowerCase()) : '-';
+  }
+};
+
+const ACTION: ColumnDef<ILogsData> = {
+  accessorKey: 'action',
+  id: 'Action',
+  size: 280,
   enableSorting: false,
-  header: (props) => {
-    return <div className={`commonHeader`}>From </div>;
-  },
-
-  cell: (props) => {
-    const { row } = props;
-    const value = row.original.from;
-    const type = row.original.actionType.type;
-    if (!value) return <div>-</div>;
-
+  header: () => heading('Action'),
+  cell: ({ row }) => {
+    const label = actionLabel(row.original);
     return (
       <div className={`commonCell`}>
-        {getPrefixBasedOnActionType(type, value) ?? value}
+        <span title={label}>{label}</span>
       </div>
     );
   },
 };
 
-const TO: ColumnDef<ILogsData> = {
-  accessorKey: 'to',
-  id: 'To',
-  size: 100,
+const CHANGE: ColumnDef<ILogsData> = {
+  id: 'Change',
+  size: 260,
   enableSorting: false,
-  header: (props) => {
-    return <div className={`commonHeader`}>To </div>;
-  },
-
-  cell: (props) => {
-    const { row } = props;
-    const value = row.original.to;
-    const type = row.original.actionType.type;
-    if (!value) return <div>-</div>;
-
-    return (
-      <div className={`commonCell`}>
-        {getPrefixBasedOnActionType(type, value) ?? value}
-      </div>
-    );
-  },
+  header: () => heading('Change'),
+  cell: ({ row }) => (
+    <div className={`commonCell`}>
+      <LogChangeCell data={row.original} />
+    </div>
+  ),
 };
+
+// ── Who and how ───────────────────────────────────────────────────────────────────────────────
+
+const SOURCE = textColumn('Through', 230, 'editSource', (r) =>
+  r.editSource
+    ? LOG_SOURCE_LABELS[r.editSource] ?? getTitleCaseString(r.editSource)
+    : '-'
+);
+
+const USER = textColumn('User', 160, 'userId', (r) =>
+  text(r.userName || r.userId)
+);
+
+// ── The record ────────────────────────────────────────────────────────────────────────────────
 
 const UPDATED_DATE_TIME: ColumnDef<ILogsData> = {
   accessorKey: 'timestamp',
   id: 'timestamp',
-  size: 110,
-  header: (props) => {
-    return <div className={`commonHeader`}>Date & Time </div>;
-  },
-
+  size: 160,
+  header: () => heading('Date & Time'),
   sortingFn: (rowA, rowB) => {
     const a: number = new Date(rowA.original.timestamp).getTime();
     const b: number = new Date(rowB.original.timestamp).getTime();
@@ -123,43 +191,42 @@ const UPDATED_DATE_TIME: ColumnDef<ILogsData> = {
   },
   sortDescFirst: true,
   enableSorting: true,
-  cell: (props) => {
-    const { row } = props;
-    const time = row.original.timestamp;
-
+  cell: ({ row }) => {
+    const time = row.original.timestamp || row.original.changedAt;
     if (!time) return <div>-</div>;
-
+    const [date, clock] = convertUtcToTimezoneDate(time, DATE_FORMAT_17)
+      .split('|')
+      .map((part: string) => part.trim());
     return (
       <div className={`commonCell`}>
-        {convertUtcToTimezoneDate(time, DATE_FORMAT_17)}
+        <div className={styles.date}>{date}</div>
+        {clock && <div className={styles.time}>{clock}</div>}
       </div>
     );
   },
 };
 
-const USER: ColumnDef<ILogsData> = {
-  accessorKey: 'userId',
-  id: 'User',
-  size: 100,
+const LOG_ID: ColumnDef<ILogsData> = {
+  accessorKey: 'logId',
+  id: 'Log ID',
+  size: 280,
   enableSorting: false,
-  header: (props) => {
-    return <div className={`commonHeader`}>User </div>;
-  },
-
-  cell: (props) => {
-    const { row } = props;
-    const user = row.original.userName;
-    if (!user) return <div>-</div>;
-
-    return <div className={`commonCell`}>{user}</div>;
-  },
+  header: () => heading('Log ID'),
+  cell: ({ row }) => (
+    <div className={`commonCell`}>
+      <span className={styles.idMuted}>{text(row.original.logId)}</span>
+    </div>
+  ),
 };
 
-export const LogsTableColumns = [
-  LEVEL,
-  ACTION_TYPE,
-  FROM,
-  TO,
-  UPDATED_DATE_TIME,
-  USER,
+export const LogsTableColumns: ColumnDef<ILogsData>[] = [
+  group('area', 'What was touched', [
+    MARKETPLACE,
+    SERVICE,
+    ENTITY_TYPE,
+    ENTITY,
+  ]),
+  group('what', 'What changed', [ACTION, CHANGE]),
+  group('who', 'Who and how', [SOURCE, USER]),
+  group('record', 'The record', [UPDATED_DATE_TIME, LOG_ID]),
 ];

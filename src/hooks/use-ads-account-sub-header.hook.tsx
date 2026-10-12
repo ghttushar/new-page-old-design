@@ -7,6 +7,7 @@ import { customRangeFilterOption } from '@/constants';
 import { AdType } from '@/enums/advertising.enums';
 import { DropdownLabelEnum, PageTitleEnum } from '@/enums/index.enums';
 import { MarketplaceEnum } from '@/enums/serp.enums';
+import { IDateRange } from '@/interfaces/serp.interface';
 import { useAuthSelector } from '@/redux/auth-selector/auth-selector';
 import { resetChatbotState } from '@/redux/chatbot/chatbot.slice';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -33,12 +34,20 @@ import { useNavigate } from 'react-router-dom';
 import { IDropdownItem } from 'src/app/components/common/dropdown/dropdown';
 import { checkIsNull } from 'src/utils/advertising.utils';
 
+/** A date range shown in the sub-header, in the same row as the Marketplace dropdown and to its left. */
+export interface IAdsSubHeaderDateRange {
+  item: ISubHeaderDataItem;
+  defaultPreset?: IDropdownItem<string>;
+  selectedCustomDateRange?: IDateRange;
+}
+
 const useAdsAccountSubHeader = (
   title: string,
   titleTooltip: string,
   showAdTypeDropdown: boolean,
   getUrl?: (marketplace: MarketplaceEnum, adType: AdType) => string,
-  onChange?: (marketplace: MarketplaceEnum, adType: AdType) => string
+  onChange?: (marketplace: MarketplaceEnum, adType: AdType) => string,
+  dateRange?: IAdsSubHeaderDateRange
 ) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -164,6 +173,7 @@ const useAdsAccountSubHeader = (
           selectedAdvertisingAccount.marketplace === MarketplaceEnum.AMAZON,
       });
     }
+    if (dateRange) dropdownOptions.unshift(dateRange.item);
     const subHeaderOptions: ISubHeaderProps = {
       title: title,
       titleTooltip: titleTooltip,
@@ -175,6 +185,8 @@ const useAdsAccountSubHeader = (
           checkIsNull(selectedAdTypeFilter.adType))
           ? []
           : dropdownOptions,
+      defaultPreset: dateRange?.defaultPreset,
+      selectedCustomDateRange: dateRange?.selectedCustomDateRange,
     };
     dispatch(setSubheaderOptions(subHeaderOptions));
   }, [
@@ -188,6 +200,7 @@ const useAdsAccountSubHeader = (
     title,
     titleTooltip,
     showAdTypeDropdown,
+    dateRange,
   ]);
 
   return selectedAdvertisingAccount;

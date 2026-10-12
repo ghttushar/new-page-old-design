@@ -1,0 +1,47 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+// Group headers: the story from wide to narrow, read left to right.
+.group {
+  width: 100%;
+  padding: 0.2rem 0 0.6rem;
+  border-bottom: 2px solid #e3d8f0;
+  color: #5f3584;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+// Identifiers: small, steady, quiet.
+.idMuted {
+  color: #9aa0ab;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  margin-top: 0.2rem;
+  color: #9aa0ab;
+  font-size: 1.1rem;
+}
+
+.name {
+  color: #1d2129;
+  font-weight: 600;
+}
+
+// Date on the first line, time under it.
+.date {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: #1d2129;
+}
+
+.time {
+  margin-top: 0.2rem;
+  color: #9aa0ab;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}

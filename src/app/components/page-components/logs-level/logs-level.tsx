@@ -143,14 +143,14 @@ const Placeholder = () => <span className={styles.placeholder}>-</span>;
 
 export default function LogsLevel({ data }: Readonly<ILogsLevelProps>) {
   const { editedLevel, productAds, targeting, actionType, adItems } = data;
-  let campaignName = data.campaignName;
+  let campaignName = data.campaignName ?? '';
   let adGroupName = data.adGroupName;
-  if (actionType.type === ActionTypesEnum.NAME) {
+  if (actionType?.type === ActionTypesEnum.NAME) {
     if (
       editedLevel === AmazonLevelEnum.CAMPAIGN_LEVEL ||
       WalmartLevelEnum.CAMPAIGN
     )
-      campaignName = data.to;
+      campaignName = data.to ?? '';
 
     if (
       editedLevel === AmazonLevelEnum.AD_GROUP_LEVEL ||

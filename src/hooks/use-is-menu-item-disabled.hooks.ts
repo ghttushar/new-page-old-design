@@ -22,7 +22,6 @@ const useIsMenuItemDisabled = (item: IMenuItem) => {
     const disabledFeaturesForNoConnectedAccount = [
       FeaturesEnum.MARKET_INTELLIGENCE_KEYWORD_SOV,
       FeaturesEnum.MARKET_INTELLIGENCE_PRODUCT_SOV,
-      FeaturesEnum.SETTINGS_LOGS,
     ];
     const hasAccounts = !!localStorageUtils.getAvailableAccounts().length;
 

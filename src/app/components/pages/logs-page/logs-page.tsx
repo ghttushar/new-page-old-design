@@ -1,11 +1,16 @@
 import { customRangeFilterOption, UPDATED_PAGINATION_MODEL } from '@/constants';
+import { LOG_ENTITY_TYPES, SHOW_SAMPLE_LOGS } from '@/constants/logs.constants';
+import { LOGS_MOCK_ROWS } from '@/constants/logs-mock';
 import { LogsTableColumns } from '@/constants/table-columns/logs-table-colmns.constant';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { LogsTitlesEnum } from '@/enums/logs.enums';
 import { QueryKeyEnums } from '@/enums/query.enums';
 import { MarketplaceEnum, Range } from '@/enums/serp.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
-import useAdsAccountSubHeader from '@/hooks/use-ads-account-sub-header.hook';
+import useAdsAccountSubHeader, {
+  IAdsSubHeaderDateRange,
+} from '@/hooks/use-ads-account-sub-header.hook';
+import { DropdownLabelEnum } from '@/enums/index.enums';
 import { IDateRange } from '@/interfaces/serp.interface';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useAppQuery } from '@/redux/react-query-hooks';
@@ -29,13 +34,6 @@ import CustomTableWrapper from '../../shared/custom-table-wrapper/custom-table-w
 import styles from './logs-page.module.scss';
 
 export function LogsPage() {
-  const advertisingAccount = useAdsAccountSubHeader(
-    PageTitleEnum.LOGS,
-    PAGE_TITLE_TOOLTIPS.LOGS,
-    false,
-    undefined
-  );
-
   const [pagination, setPagination] = useState(UPDATED_PAGINATION_MODEL);
   const headerFilters = useAppSelector(selectLogsHeaderFilters);
   const headerFilterOptions = useAppSelector(selectLogsHeaderFilterOptions);
@@ -52,25 +50,74 @@ export function LogsPage() {
 
   const dispatch = useAppDispatch();
 
+  const [prevRange, setPrevRange] = useState<IDropdownItem<string> | null>(
+    null
+  );
+  const setFilters = useCallback(
+    (logsFilters: ILogHeaderFilterForm) =>
+      dispatch(setLogsHeaderFilters(logsFilters)),
+    [dispatch]
+  );
+
+  const onRangeSelect = useCallback(
+    (value: IDropdownItem<Range>) => {
+      setPrevRange(headerFilters.range);
+
+      setFilters({
+        ...headerFilters,
+        range: value,
+      });
+    },
+    [headerFilters, setFilters]
+  );
+
+  const handleCustomDateRangeChange = useCallback(
+    (dateRange: IDateRange) => {
+      setFilters({
+        ...headerFilters,
+        customDateRange: dateRange,
+        range: customRangeFilterOption,
+      });
+    },
+    [headerFilters, setFilters]
+  );
+
+  // The date range sits in the sub-header, in the same row as the Marketplace dropdown.
+  const dateRange = useMemo<IAdsSubHeaderDateRange>(
+    () => ({
+      item: {
+        label: DropdownLabelEnum.DATE_RANGE,
+        selectedItem: headerFilters.range,
+        setSelectedItem: onRangeSelect as (value: IDropdownItem<string>) => void,
+        options: headerFilterOptions.range,
+        customDateRange: headerFilters.customDateRange,
+        handleSetCustomDateRangeForModal: handleCustomDateRangeChange,
+      },
+      defaultPreset: headerFilters.range,
+      selectedCustomDateRange: headerFilters.customDateRange,
+    }),
+    [
+      headerFilters.range,
+      headerFilters.customDateRange,
+      headerFilterOptions.range,
+      onRangeSelect,
+      handleCustomDateRangeChange,
+    ]
+  );
+
+  const advertisingAccount = useAdsAccountSubHeader(
+    PageTitleEnum.LOGS,
+    PAGE_TITLE_TOOLTIPS.LOGS,
+    false,
+    undefined,
+    undefined,
+    dateRange
+  );
+
   const marketplace = useMemo(
     () => advertisingAccount.marketplace ?? MarketplaceEnum.AMAZON,
     [advertisingAccount]
   );
-
-  const [prevRange, setPrevRange] = useState<IDropdownItem<string> | null>(
-    null
-  );
-  const setFilters = (logsFilters: ILogHeaderFilterForm) =>
-    dispatch(setLogsHeaderFilters(logsFilters));
-
-  const onRangeSelect = (value: IDropdownItem<Range>) => {
-    setPrevRange(headerFilters.range);
-
-    setFilters({
-      ...headerFilters,
-      range: value,
-    });
-  };
 
   const setCustomDateRange = (value: IDateRange) => {
     setFilters({
@@ -98,13 +145,6 @@ export function LogsPage() {
     },
     [appliedFilters, dispatch, headerFilters, marketplace]
   );
-  const handleCustomDateRangeChange = (dateRange: IDateRange) => {
-    setFilters({
-      ...headerFilters,
-      customDateRange: dateRange,
-      range: customRangeFilterOption,
-    });
-  };
   const fetchLogs = useAppQuery({
     queryKey: [QueryKeyEnums.LOGS_FETCH, { headerFilters, appliedFilters }],
     queryFn: () =>
@@ -116,14 +156,17 @@ export function LogsPage() {
     [fetchLogs.isFetching, fetchLogs.isLoading]
   );
 
-  const formattedData = useMemo(
-    () => fetchLogs.data?.data?.data ?? [],
-    [fetchLogs.data?.data?.data]
-  );
-  const formattedRowCount = useMemo(
-    () => fetchLogs.data?.data?.data?.length ?? 0,
-    [fetchLogs.data?.data?.data]
-  );
+  const [searchText, setSearchText] = useState('');
+  const formattedData = useMemo(() => {
+    const loaded = fetchLogs.data?.data?.data ?? [];
+    const rows = (
+      loaded.length === 0 && SHOW_SAMPLE_LOGS ? LOGS_MOCK_ROWS : loaded
+    ).filter((row) => !!row.entityType && row.entityType in LOG_ENTITY_TYPES);
+    const term = searchText.trim().toLowerCase();
+    if (!term) return rows;
+    return rows.filter((row) => JSON.stringify(row).toLowerCase().includes(term));
+  }, [fetchLogs.data?.data?.data, searchText]);
+  const formattedRowCount = formattedData.length;
 
   return (
     <div className={styles.container}>
@@ -135,9 +178,8 @@ export function LogsPage() {
         )}
         handleDownload={handleDownload}
         isDataLoaded={isLoading}
-        onRangeSelect={onRangeSelect}
-        handleCustomDateRangeChange={handleCustomDateRangeChange}
-        rangeOptions={headerFilterOptions.range}
+        searchText={searchText}
+        setSearchText={setSearchText}
       />
       <AddedFiltersTab
         appliedFilters={storedFilters}

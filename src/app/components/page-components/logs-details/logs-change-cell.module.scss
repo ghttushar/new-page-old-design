@@ -1,0 +1,45 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #77469b;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.3rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #77469b;
+    outline-offset: 2px;
+    border-radius: 0.2rem;
+  }
+}
+
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.arrow {
+  color: #9aa0ab;
+}
+
+.none {
+  color: #9aa0ab;
+}
+
+.clip {
+  max-width: 26rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
