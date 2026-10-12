@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { BIDDING_STRATEGIES, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type PlacementAdjust } from '../campaign-creator.types';
+import { BIDDING_STRATEGIES, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
+import { DEFAULT_NAMING } from '../campaign-creator.types';
 import { Panel } from '../cc-design';
 import { TextButton } from '../campaign-creator-ui';
 import { CounterInput, MATCH_LABEL, NumField, PlacementCell, campaignLabel, typesOf } from './preview-cells';
 import { rulesForCampaign } from './preview-rules';
 import { TargetingPopup } from './preview-targets';
+import NamingPopup from './preview-naming';
+import { applyNaming } from './naming';
 import { allocateByWeights, allocationGap, allocationMatches, performanceWeight, round2, withShares } from './budget-math';
 
 // Sections 8.3 to 8.6 as one flat table: a row per campaign with its budget, bidding and targeting.
@@ -13,16 +16,19 @@ import { allocateByWeights, allocationGap, allocationMatches, performanceWeight,
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const sum = (list: number[]) => list.reduce((s, n) => s + n, 0);
 const PencilIcon = () => <svg width={14} height={14} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2.5 13.5l.7-3 7.6-7.6a1.4 1.4 0 0 1 2 0l.3.3a1.4 1.4 0 0 1 0 2l-7.6 7.6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+const SettingsIcon = () => <svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2 4.5h6.2M11.6 4.5H14M2 11.5h2.4M7.8 11.5H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="9.9" cy="4.5" r="1.7" stroke="currentColor" strokeWidth="1.5" /><circle cx="6.1" cy="11.5" r="1.7" stroke="currentColor" strokeWidth="1.5" /></svg>;
 const NO_PLACEMENT: PlacementAdjust = { top: null, product: null, rest: null };
 
 type Mode = 'even' | 'performance' | 'custom';
 
-export default function CampaignsTable({ draft, campaigns, selectedProducts, onCommit }: {
+export default function CampaignsTable({ draft, campaigns, selectedProducts, onCommit, onApplyNaming }: {
   draft: CcDraft; campaigns: CcCampaign[]; selectedProducts: CcProduct[]; onCommit: (next: CcCampaign[]) => void;
+  onApplyNaming: (naming: NamingSettings, next: CcCampaign[]) => void;
 }) {
   const overall = draft.dailyBudget;
   const [mode, setMode] = useState<Mode>('even');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [namingOpen, setNamingOpen] = useState(false);
 
   const patchCampaign = (id: string, patch: Partial<CcCampaign>) => onCommit(campaigns.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const renameAdGroup = (id: string, name: string) => onCommit(campaigns.map((c) => (c.id === id ? { ...c, adGroups: c.adGroups.map((ag, i) => (i === 0 ? { ...ag, name } : ag)) } : c)));
@@ -53,14 +59,17 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
     <Panel
       title="Campaigns" pad="4px 20px 18px"
       aside={
-        <label className="cc-pb-mode">
-          <span>Split budget</span>
-          <select className="cc-input" value={mode} aria-label="How the budget is split" onChange={(e) => pickMode(e.target.value as Mode)}>
-            <option value="even">Evenly</option>
-            <option value="performance">By performance</option>
-            {mode === 'custom' && <option value="custom" disabled>Custom</option>}
-          </select>
-        </label>
+        <span className="cc-ctab-tools">
+          <label className="cc-pb-mode">
+            <span>Split budget</span>
+            <select className="cc-input" value={mode} aria-label="How the budget is split" onChange={(e) => pickMode(e.target.value as Mode)}>
+              <option value="even">Evenly</option>
+              <option value="performance">By performance</option>
+              {mode === 'custom' && <option value="custom" disabled>Custom</option>}
+            </select>
+          </label>
+          <button type="button" className="cc-ctab-gear" aria-label="Naming settings" aria-haspopup="dialog" onClick={() => setNamingOpen(true)}><SettingsIcon /></button>
+        </span>
       }
     >
       <div className="cc-scroll cc-ctab-scroll">
@@ -82,7 +91,7 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
                 <tr key={c.id}>
                   <td>
                     <span className="cc-ctab-two">
-                      <CounterInput value={c.name} max={106} prefix="Anarix_" label="Campaign name" onChange={(v) => patchCampaign(c.id, { name: v })} />
+                      <CounterInput value={c.name} max={106} label="Campaign name" onChange={(v) => patchCampaign(c.id, { name: v })} />
                       {rules.length > 0 && <span className="cc-ctab-ruleline">{plural(rules.length, 'rule')}: {rules.join(', ')}</span>}
                     </span>
                   </td>
@@ -139,6 +148,13 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
           </>
         )}
       </div>
+
+      {namingOpen && (
+        <NamingPopup
+          settings={draft.naming ?? DEFAULT_NAMING} campaigns={campaigns} products={selectedProducts} onClose={() => setNamingOpen(false)}
+          onApply={(next) => { onApplyNaming(next, applyNaming(campaigns, selectedProducts, next)); setNamingOpen(false); }}
+        />
+      )}
 
       {editing && (
         <TargetingPopup

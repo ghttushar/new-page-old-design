@@ -1,35 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { type CcCampaign, type CcProduct, type PlacementAdjust, type TargetSource, type TargetingStrategyId, type BiddingStrategy } from '../campaign-creator.types';
+import { DEFAULT_NAMING, type CcCampaign, type CcProduct, type NamingSettings, type PlacementAdjust, type TargetSource, type TargetingStrategyId, type BiddingStrategy } from '../campaign-creator.types';
+import { adGroupNameFor, campaignNameFor } from './naming';
 import { BORDER, BRAND, FONT, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
 
 // Small pieces shared by the Preview sections: names, labels, the source tag and the number field.
 
 export const typesOf = (c: CcCampaign): TargetingStrategyId[] => Array.from(new Set(c.adGroups.flatMap((ag) => ag.targets.map((t) => t.matchType))));
 
-const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
-
-/** Gives freshly generated campaigns their names, ad group names and default bidding strategy. */
-export function decorateCampaigns(campaigns: CcCampaign[], products: CcProduct[]): CcCampaign[] {
+/** Gives freshly generated campaigns their names (from the naming settings), ad group names and default bidding strategy. */
+export function decorateCampaigns(campaigns: CcCampaign[], products: CcProduct[], naming: NamingSettings = DEFAULT_NAMING, defaults?: { biddingStrategy?: BiddingStrategy; placement?: PlacementAdjust }): CcCampaign[] {
   return campaigns.map((c) => {
     const types = typesOf(c);
-    const asin = c.productIds.length === 1 ? (products.find((p) => p.id === c.productIds[0])?.asin ?? 'ASIN') : 'ALL';
-    const autoSub = c.targetingLabel.split(' · ')[1]?.replace(' match', '');
-    const suffix = c.kind === 'auto' ? `Auto${autoSub ? `_${autoSub}` : ''}` : types.length === 1 ? cap(types[0]) : 'Manual';
-    const agLabel = c.kind === 'auto' ? `${autoSub ?? 'Auto'} match` : types.length === 1 ? cap(types[0]) : 'Mixed';
     const strategy: BiddingStrategy = c.kind === 'auto' || types[0] === 'exact' || types[0] === 'phrase' ? 'Fixed bids' : 'Dynamic bids - down only';
     return {
       ...c,
-      name: `${asin}_SP_${suffix}`,
-      biddingStrategy: strategy,
-      placement: { top: null, product: null, rest: null },
-      adGroups: c.adGroups.map((ag, i) => (i === 0 ? { ...ag, name: `ad group_${agLabel}` } : ag)),
+      name: campaignNameFor(c, products, naming),
+      biddingStrategy: defaults?.biddingStrategy ?? strategy,
+      placement: defaults?.placement ?? { top: null, product: null, rest: null },
+      adGroups: c.adGroups.map((ag, i) => (i === 0 ? { ...ag, name: adGroupNameFor(c, products, naming) } : ag)),
     };
   });
 }
 
 /** The name a campaign is created under. */
-export const campaignLabel = (c: CcCampaign): string => `Anarix_${c.name}`;
+export const campaignLabel = (c: CcCampaign): string => c.name;
 
 /** Match types, written the way a person reads them. */
 export const MATCH_LABEL: Record<string, string> = {

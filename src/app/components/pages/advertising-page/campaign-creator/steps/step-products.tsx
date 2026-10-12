@@ -6,6 +6,7 @@ import {
   StepHeading, SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY,
 } from '../campaign-creator-ui';
 import { Panel } from '../cc-design';
+import DateRangeSelect, { DEFAULT_RANGE, daysIn, type DateRange } from './date-range';
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 type InventoryFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
@@ -209,8 +210,38 @@ function ProductCell({ title, color, sku, asin, reason, eligible = true, indent,
   );
 }
 
-const NUM: React.CSSProperties = { ...TD, textAlign: 'right', color: TEXT_MUTED, whiteSpace: 'nowrap', paddingLeft: 4, paddingRight: 6 };
-const NUM_TH: React.CSSProperties = { ...TH, width: 62, textAlign: 'right', paddingLeft: 4, paddingRight: 6, fontWeight: 500, color: TEXT_MUTED };
+const NUM: React.CSSProperties = { ...TD, textAlign: 'right', color: TEXT_MUTED, whiteSpace: 'nowrap', paddingLeft: 4, paddingRight: 14 };
+const NUM_TH: React.CSSProperties = { ...TH, textAlign: 'right', paddingLeft: 4, paddingRight: 14, fontWeight: 500, color: TEXT_MUTED };
+
+/** Ten columns: the two on the left stay in view while the rest scroll sideways. */
+const COLUMNS = [46, 300, 96, 96, 96, 96, 84, 104, 84, 76, 84];
+const TABLE_MIN = COLUMNS.reduce((a, b) => a + b, 0);
+const STICKY_CHECK: React.CSSProperties = { position: 'sticky', left: 0, zIndex: 2 };
+const STICKY_PRODUCT: React.CSSProperties = { position: 'sticky', left: COLUMNS[0], zIndex: 2, borderRight: `1px solid ${HAIR}` };
+const STICKY_HEAD_CHECK: React.CSSProperties = { position: 'sticky', left: 0, zIndex: 3 };
+const STICKY_HEAD_PRODUCT: React.CSSProperties = { position: 'sticky', left: COLUMNS[0], zIndex: 3, borderRight: `1px solid ${HAIR}` };
+
+function seedOf(text: string): number {
+  let h = 0;
+  for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) % 9973;
+  return h;
+}
+
+/** Impressions, clicks, CTR and orders for a product, from its spend and sales over the chosen range (sample figures, not real data). */
+function derive(seed: string, adSpend: number, adSales: number, factor: number) {
+  const h = seedOf(seed);
+  const cpc = 0.55 + (h % 9) * 0.07;
+  const ctr = 0.28 + (h % 11) * 0.045;
+  const aov = 26 + (h % 7) * 5;
+  const clicks = Math.round((adSpend * factor) / cpc);
+  return { clicks, ctr, impressions: Math.round(clicks / (ctr / 100)), orders: Math.round((adSales * factor) / aov) };
+}
+
+function compactCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 100_000 ? 0 : 1).replace(/\.0$/, '')}K`;
+  return String(n);
+}
 
 /** $128.4K style, so five metric columns still leave room for the product name. */
 function compactMoney(n: number): string {
@@ -219,15 +250,20 @@ function compactMoney(n: number): string {
   return `$${Math.round(n)}`;
 }
 
-function Metrics({ inventory, sales, adSpend, adSales, acos, all = true }: { inventory: number; sales: number; adSpend: number; adSales: number; acos: number; all?: boolean }) {
+function Metrics({ inventory, sales, adSpend, adSales, acos, seed, all = true, factor = 1 }: { inventory: number; sales: number; adSpend: number; adSales: number; acos: number; seed: string; all?: boolean; factor?: number }) {
   const acosColor = acos > 28 ? '#a8763f' : TEXT_MUTED;
+  const d = derive(seed, adSpend, adSales, factor);
   return (
     <>
       <td className="cc-num" style={{ ...NUM, color: inventory === 0 ? BAD : inventory < LOW_STOCK_BELOW ? '#a8763f' : TEXT_MUTED }}>{inventory.toLocaleString()}</td>
-      {all && <td className="cc-num" style={NUM}>{compactMoney(sales)}</td>}
-      {all && <td className="cc-num" style={NUM}>{compactMoney(adSpend)}</td>}
-      {all && <td className="cc-num" style={NUM}>{compactMoney(adSales)}</td>}
+      {all && <td className="cc-num" style={NUM}>{compactMoney(sales * factor)}</td>}
+      {all && <td className="cc-num" style={NUM}>{compactMoney(adSpend * factor)}</td>}
+      {all && <td className="cc-num" style={NUM}>{compactMoney(adSales * factor)}</td>}
       <td className="cc-num" style={{ ...NUM, color: acosColor }}>{acos > 0 ? `${acos.toFixed(1)}%` : '—'}</td>
+      <td className="cc-num" style={NUM}>{compactCount(d.impressions)}</td>
+      <td className="cc-num" style={NUM}>{compactCount(d.clicks)}</td>
+      <td className="cc-num" style={NUM}>{d.ctr.toFixed(2)}%</td>
+      <td className="cc-num" style={NUM}>{compactCount(d.orders)}</td>
     </>
   );
 }
@@ -243,6 +279,9 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [addedSearch, setAddedSearch] = useState('');
   const [addedFilters, setAddedFilters] = useState<Filters>(NO_FILTERS);
+  // One range for both tables. The sample figures are per 30 days, so other ranges scale from that.
+  const [range, setRange] = useState<DateRange>(DEFAULT_RANGE);
+  const factor = daysIn(range) / 30;
   // Ticked in the left table, waiting for "Add Selections".
   const [staged, setStaged] = useState<Set<string>>(new Set());
   // Ticked in the right table, waiting for "Clear".
@@ -303,6 +342,8 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
     <div>
       <StepHeading title="Choose products to promote" />
 
+      <div className="cc-prod-range"><span>Metrics for</span><DateRangeSelect value={range} onChange={setRange} /></div>
+
       <div className="cc-product-stage">
       <div className="cc-product-grid">
         {/* All products */}
@@ -317,21 +358,26 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
           <FilterStrip filters={filters} onChange={setFilters} />
 
           <div className="cc-scroll" style={{ ...PANEL_TABLE, height: 460 }}>
-            <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
+            <table style={{ width: '100%', minWidth: TABLE_MIN, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
+              <colgroup>{COLUMNS.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
               <thead>
                 <tr style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-                  <th style={{ ...TH, ...CHECK_COL }}>
+                  <th style={{ ...TH, ...CHECK_COL, ...STICKY_HEAD_CHECK }}>
                     <RowCheck
                       checked={allStaged} disabled={addableIds.length === 0} label="Select all products on this list"
                       onToggle={() => setStaged(allStaged ? new Set() : new Set(addableIds))}
                     />
                   </th>
-                  <th style={TH}>Product</th>
+                  <th style={{ ...TH, ...STICKY_HEAD_PRODUCT }}>Product</th>
                   <th style={NUM_TH}>Inventory</th>
                   <th style={NUM_TH}>Sales</th>
                   <th style={NUM_TH}>Ad spend</th>
                   <th style={NUM_TH}>Ad sales</th>
                   <th style={NUM_TH}>ACOS</th>
+                  <th style={NUM_TH}>Impressions</th>
+                  <th style={NUM_TH}>Clicks</th>
+                  <th style={NUM_TH}>CTR</th>
+                  <th style={NUM_TH}>Orders</th>
                 </tr>
               </thead>
               <tbody>
@@ -343,10 +389,10 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                   return (
                     <Fragment key={p.id}>
                       <tr className="cc-row" onClick={() => canAdd && toggleSet(setStaged, p.id)} style={{ cursor: canAdd ? 'pointer' : 'default', background: isAdded ? BRAND_TINT : undefined, opacity: p.eligible ? 1 : 0.6 }}>
-                        <td style={{ ...TD, ...CHECK_COL }}>
+                        <td className="cc-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: isAdded ? BRAND_TINT : '#fff' }}>
                           <RowCheck checked={staged.has(p.id) || isAdded} disabled={!canAdd} label={`Select ${p.title}`} onToggle={() => toggleSet(setStaged, p.id)} />
                         </td>
-                        <td style={{ ...TD, overflow: 'hidden' }}>
+                        <td className="cc-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: isAdded ? BRAND_TINT : '#fff' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
                             {kids.length > 0 ? (
                               <button
@@ -358,21 +404,21 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                             <ProductCell title={p.title} color={p.thumbnailColor} sku={p.sku} asin={p.asin} eligible={p.eligible} reason={p.ineligibleReason} />
                           </div>
                         </td>
-                        <Metrics inventory={p.inventory} sales={p.sales} adSpend={p.adSpend} adSales={p.adSales} acos={p.acos} />
+                        <Metrics inventory={p.inventory} sales={p.sales} adSpend={p.adSpend} adSales={p.adSales} acos={p.acos} seed={p.asin} factor={factor} />
                       </tr>
                       {isOpen && kids.map((k) => {
                         const kAdded = added.has(k.id);
                         const kCanAdd = p.eligible && !kAdded;
                         return (
                           <tr key={k.id} className="cc-row" onClick={() => kCanAdd && toggleSet(setStaged, k.id)} style={{ cursor: kCanAdd ? 'pointer' : 'default', background: kAdded ? BRAND_TINT : SURFACE_MUTED }}>
-                            <td style={{ ...TD, ...CHECK_COL }}>
+                            <td className="cc-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: kAdded ? BRAND_TINT : SURFACE_MUTED }}>
                               <RowCheck checked={staged.has(k.id) || kAdded} disabled={!kCanAdd} label={`Select ${k.title}`} onToggle={() => toggleSet(setStaged, k.id)} />
                             </td>
-                            <td style={{ ...TD, paddingLeft: 40, position: 'relative', overflow: 'hidden' }}>
+                            <td className="cc-sticky" style={{ ...TD, ...STICKY_PRODUCT, paddingLeft: 40, overflow: 'hidden', background: kAdded ? BRAND_TINT : SURFACE_MUTED }}>
                               <span aria-hidden style={{ position: 'absolute', left: 24, top: 0, bottom: '50%', width: 12, borderLeft: `1.5px solid ${BORDER}`, borderBottom: `1.5px solid ${BORDER}`, borderBottomLeftRadius: 6 }} />
                               <ProductCell title={k.title} color={p.thumbnailColor} sku={k.sku} asin={k.asin} indent />
                             </td>
-                            <Metrics inventory={k.inventory} sales={Math.round(k.adSales * 3.1)} adSpend={k.adSpend} adSales={k.adSales} acos={k.acos} />
+                            <Metrics inventory={k.inventory} sales={Math.round(k.adSales * 3.1)} adSpend={k.adSpend} adSales={k.adSales} acos={k.acos} seed={k.asin} factor={factor} />
                           </tr>
                         );
                       })}
@@ -381,7 +427,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                 })}
                 {noEligibleAtAll && (
                   <tr>
-                    <td colSpan={7} style={{ padding: '44px 14px', textAlign: 'center' }}>
+                    <td colSpan={11} style={{ padding: '44px 14px', textAlign: 'center' }}>
                       <div style={{ font: `600 14px/1.4 ${FONT}`, color: TEXT_PRIMARY }}>No eligible products found</div>
                       <div style={{ margin: '4px auto 0', maxWidth: 340, font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>There are currently no products available for Sponsored Products campaign creation.</div>
                     </td>
@@ -389,7 +435,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                 )}
                 {!noEligibleAtAll && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ padding: '40px 14px', textAlign: 'center' }}>
+                    <td colSpan={11} style={{ padding: '40px 14px', textAlign: 'center' }}>
                       <div style={{ font: `400 13px/1.5 ${FONT}`, color: TEXT_MUTED }}>
                         {search.trim() ? `No products match “${search.trim()}” with these filters.` : 'No products match these filters.'}
                       </div>
@@ -414,38 +460,43 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
           <FilterStrip filters={addedFilters} onChange={setAddedFilters} />
 
           <div className="cc-scroll" style={{ ...PANEL_TABLE, height: 460 }}>
-            <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
+            <table style={{ width: '100%', minWidth: TABLE_MIN, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
+              <colgroup>{COLUMNS.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
               <thead>
                 <tr style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-                  <th style={{ ...TH, ...CHECK_COL }}>
+                  <th style={{ ...TH, ...CHECK_COL, ...STICKY_HEAD_CHECK }}>
                     <RowCheck
                       checked={allAddedStaged} disabled={shownAdded.length === 0} label="Select all added products"
                       onToggle={() => setStagedRemove(allAddedStaged ? new Set() : new Set(shownAdded.map((p) => p.id)))}
                     />
                   </th>
-                  <th style={TH}>Product</th>
+                  <th style={{ ...TH, ...STICKY_HEAD_PRODUCT }}>Product</th>
                   <th style={NUM_TH}>Inventory</th>
                   <th style={NUM_TH}>Sales</th>
                   <th style={NUM_TH}>Ad spend</th>
                   <th style={NUM_TH}>Ad sales</th>
                   <th style={NUM_TH}>ACOS</th>
+                  <th style={NUM_TH}>Impressions</th>
+                  <th style={NUM_TH}>Clicks</th>
+                  <th style={NUM_TH}>CTR</th>
+                  <th style={NUM_TH}>Orders</th>
                 </tr>
               </thead>
               <tbody>
                 {shownAdded.map((p) => (
                   <tr key={p.id} className="cc-row">
-                    <td style={{ ...TD, ...CHECK_COL }}>
+                    <td className="cc-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: '#fff' }}>
                       <RowCheck checked={stagedRemove.has(p.id)} label={`Select ${p.title}`} onToggle={() => toggleSet(setStagedRemove, p.id)} />
                     </td>
-                    <td style={{ ...TD, overflow: 'hidden' }}>
+                    <td className="cc-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: '#fff' }}>
                       <ProductCell title={p.title} color={p.thumbnailColor} sku={p.sku} asin={p.asin} eligible={p.eligible} reason={p.ineligibleReason} indent={Boolean(p.parentTitle)} />
                     </td>
-                    <Metrics inventory={p.inventory} sales={p.sales} adSpend={p.adSpend} adSales={p.adSales} acos={p.acos} />
+                    <Metrics inventory={p.inventory} sales={p.sales} adSpend={p.adSpend} adSales={p.adSales} acos={p.acos} seed={p.asin} factor={factor} />
                   </tr>
                 ))}
                 {shownAdded.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ height: 380, textAlign: 'center', color: TEXT_MUTED }}>
+                    <td colSpan={11} style={{ height: 380, textAlign: 'center', color: TEXT_MUTED }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, font: `400 13px/1.4 ${FONT}` }}>
                         <span style={{ color: TEXT_FAINT, display: 'flex' }}><BoxIcon /></span>
                         {selectedProducts.length === 0 ? "There isn't any product added in the list." : 'No added products match these filters.'}

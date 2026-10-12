@@ -188,11 +188,6 @@ type StructureView = 'graphic' | 'written' | 'compare';
 
 const viewStroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 /** A small comparison table. */
-const CompareViewIcon = () => (
-  <svg width={14} height={14} viewBox="0 0 16 16" aria-hidden {...viewStroke}>
-    <rect x="2" y="2.5" width="12" height="11" rx="1.6" /><path d="M2 6.5h12M6.2 6.5v7M10 6.5v7" />
-  </svg>
-);
 /** A small node tree: one parent branching into two children. */
 const MapViewIcon = () => (
   <svg width={14} height={14} viewBox="0 0 16 16" aria-hidden {...viewStroke}>
@@ -282,17 +277,9 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
 
       <div className="cc-structure-workspace">
         <aside className="cc-structure-library">
-          <div className="cc-structure-catalog-head"><div><strong>Choose your structure</strong></div></div>
-          <button
-            type="button"
-            className={`cc-btn cc-structure-compare-action${view === 'compare' ? ' is-active' : ''}`}
-            aria-pressed={view === 'compare'}
-            onClick={() => { setView('compare'); onJivaChange(false); }}
-          >
-            <span><CompareViewIcon /></span>
-            <span><strong>Compare structures</strong><small>Review all six patterns side by side</small></span>
-            <span aria-hidden>→</span>
-          </button>
+          <div className="cc-structure-catalog-head">
+            <div><strong>Choose your structure</strong></div>
+          </div>
           <div role="radiogroup" aria-label="Campaign structure" className="cc-structure-options">
           {STRUCTURE_CATALOG.map((s) => {
             const isCustom = s.id === 'custom';
@@ -323,6 +310,12 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
               />
             );
           })}
+          </div>
+          <div className="cc-structure-compare-row">
+            <button
+              type="button" className={`cc-structure-compare-link${view === 'compare' ? ' is-active' : ''}`} aria-pressed={view === 'compare'}
+              onClick={() => { setView('compare'); onJivaChange(false); }}
+            >Compare structures</button>
           </div>
         </aside>
 

@@ -81,7 +81,7 @@ function AttachPopover({ rule, campaigns, selected, anchor, onChange, onClose }:
             return (
               <button key={c.id} type="button" role="checkbox" aria-checked={on} onClick={() => toggle(c.id)} className="cc-row cc-rl-pop__item">
                 <Checkbox checked={on} size={16} />
-                <span className="cc-rl-pop__name" title={'Anarix_' + c.name}>{'Anarix_' + c.name}</span>
+                <span className="cc-rl-pop__name" title={c.name}>{c.name}</span>
                 <span className={`cc-rl-kind cc-rl-kind--${c.kind}`}>{c.kind === 'auto' ? 'Auto' : 'Manual'}</span>
               </button>
             );

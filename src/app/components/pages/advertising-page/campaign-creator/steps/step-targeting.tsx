@@ -123,33 +123,15 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
       <StepHeading title="Pick how shoppers find you" />
 
       <div className="cc-tg">
+        <div className="cc-tg-group">
+        <div className="cc-tg-title">Auto</div>
+        <div className="cc-tg-card">
         <div className="cc-tg-head" aria-hidden>
           <span>Strategy</span>
           <span>Keyword targets</span>
           <span>Product targets</span>
         </div>
-
-        <div className="cc-tg-card">
-        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto', 'Auto campaign')]} productCells={[]} wide />
-        <IntentRow
-          intent="brand" name="Brand" info="Defend your own brand terms and protect your listings from competitors."
-          keywordCells={[cell('brand', 'Brand keywords')]} productCells={[]}
-        />
-        <IntentRow
-          intent="competitor" name="Competitor" info="Reach shoppers who are considering competing products and brands."
-          keywordCells={[cell('competitor', 'Core competitor keywords')]} productCells={[]}
-        />
-        <IntentRow
-          intent="research" name="Research" info="Discover new search terms and products with broader reach."
-          keywordCells={[cell('broad', 'Broad match'), cell('phrase', 'Phrase match')]}
-          productCells={[cell('category', 'Product category')]}
-        />
-        <IntentRow
-          intent="performance" name="Performance" info="Capture high-intent shoppers with precise, conversion-focused targeting."
-          keywordCells={[cell('exact', 'Exact match')]}
-          productCells={[cell('product', 'Single product')]}
-        />
-
+        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto', 'Auto campaign')]} productCells={[]} />
         {hasAuto && (
           <div className="cc-tg-row cc-tg-row--auto" style={{ ['--tg-accent' as string]: INTENT.auto.color }}>
             <div className="cc-tg-label">
@@ -180,6 +162,37 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
             </div>
           </div>
         )}
+        </div>
+        </div>
+
+        <div className="cc-tg-group">
+        <div className="cc-tg-title">Manual</div>
+        <div className="cc-tg-card">
+        <div className="cc-tg-head" aria-hidden>
+          <span>Strategy</span>
+          <span>Keyword targets</span>
+          <span>Product targets</span>
+        </div>
+        <IntentRow
+          intent="brand" name="Brand" info="Defend your own brand terms and protect your listings from competitors."
+          keywordCells={[cell('brand', 'Brand keywords')]} productCells={[]}
+        />
+        <IntentRow
+          intent="competitor" name="Competitor" info="Reach shoppers who are considering competing products and brands."
+          keywordCells={[cell('competitor', 'Core competitor keywords')]} productCells={[]}
+        />
+        <IntentRow
+          intent="research" name="Research" info="Discover new search terms and products with broader reach."
+          keywordCells={[cell('broad', 'Broad match'), cell('phrase', 'Phrase match')]}
+          productCells={[cell('category', 'Product category')]}
+        />
+        <IntentRow
+          intent="performance" name="Performance" info="Capture high-intent shoppers with precise, conversion-focused targeting."
+          keywordCells={[cell('exact', 'Exact match')]}
+          productCells={[cell('product', 'Single product')]}
+        />
+
+        </div>
         </div>
       </div>
 

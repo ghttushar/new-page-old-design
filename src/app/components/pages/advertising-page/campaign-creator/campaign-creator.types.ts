@@ -561,14 +561,49 @@ export function totalTargets(campaigns: CcCampaign[]): number {
 
 // ── Draft state ───────────────────────────────────────────────────────────────────────────────
 
-export type CcStepId = 'entry' | 'products' | 'objectives' | 'targeting' | 'structure' | 'preview' | 'creating' | 'result';
+export type CcStepId = 'entry' | 'products' | 'keywords' | 'objectives' | 'targeting' | 'structure' | 'preview' | 'creating' | 'result';
 
-export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'objectives', 'targeting', 'structure', 'preview', 'creating', 'result'];
+export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'keywords', 'objectives', 'targeting', 'structure', 'preview', 'creating', 'result'];
+
+/** A keyword the person adds on the Keywords step. It is applied to every manual campaign. */
+export type KeywordMatch = 'broad' | 'phrase' | 'exact';
+export interface KeywordEntry { id: string; text: string; match: KeywordMatch; bid: number; enabled: boolean }
+
+/** A negative keyword added on the Keywords step. It is applied to every campaign. */
+export interface NegativeKeywordEntry { id: string; text: string; match: NegativeMatch; enabled: boolean }
+
+export const KEYWORD_LIMIT = 1000;
+export const NEGATIVE_KEYWORD_LIMIT = 10000;
+export const MIN_KEYWORD_BID = 0.02;
 
 /** Objectives beyond Target ACOS and Daily budget — all optional. */
 export type ExtraObjectiveId = 'roas' | 'maxCpc' | 'cvr' | 'monthlyCap';
 export type ExtraObjectives = Record<ExtraObjectiveId, number | null>;
 export const NO_EXTRA_OBJECTIVES: ExtraObjectives = { roas: null, maxCpc: null, cvr: null, monthlyCap: null };
+
+/** How campaign and ad group names are built (edited in the Naming settings popup on Preview). */
+export interface NamingSettings {
+  /** Adds the Anarix prefix and AI identifier to campaign names. */
+  tagStatus: boolean;
+  campaignTokens: ('parentAsin' | 'campaignType' | 'adType' | 'biddingStrategy' | 'targetType')[];
+  adGroupTokens: ('adGroupText' | 'targetType')[];
+}
+
+export const DEFAULT_NAMING: NamingSettings = {
+  tagStatus: true,
+  campaignTokens: ['parentAsin', 'campaignType', 'targetType'],
+  adGroupTokens: ['adGroupText', 'targetType'],
+};
+
+/** Where the ads may show. Search in-grid is always on. */
+export interface PlacementInclusion { searchInGrid: boolean; buyBox: boolean; searchCarousel: boolean; itemCarousel: boolean }
+export const ALL_PLACEMENTS: PlacementInclusion = { searchInGrid: true, buyBox: true, searchCarousel: true, itemCarousel: true };
+
+/** Today as yyyy-mm-dd in the viewer's own calendar. */
+export function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export interface CcDraft {
   marketplace: Marketplace | null;
@@ -592,6 +627,19 @@ export interface CcDraft {
   /** Existing Rules to assign the new campaigns to (§8.7). Smart Creation never creates or edits a Rule. */
   /** Which of the new campaigns are attached to which existing Rule (rule id to campaign ids). */
   ruleAssignments: Record<string, string[]>;
+  naming: NamingSettings;
+  /** Campaign dates, yyyy-mm-dd. An empty end date means the campaigns run until they are stopped. */
+  startDate: string;
+  endDate: string;
+  /** Applied to every new campaign; each can still be changed in the Preview table. */
+  biddingStrategy: BiddingStrategy;
+  placementAdjust: PlacementAdjust;
+  placementInclusion: PlacementInclusion;
+  /** Whether the total budget is one figure for the campaigns together, or divided across them. */
+  totalBudgetMode: 'total' | 'division';
+  /** Added on the Keywords step; optional. */
+  keywordTargets: KeywordEntry[];
+  negativeKeywords: NegativeKeywordEntry[];
 }
 
 export const EMPTY_DRAFT: CcDraft = {
@@ -610,6 +658,15 @@ export const EMPTY_DRAFT: CcDraft = {
   generatedCampaigns: null,
   generatedKey: null,
   ruleAssignments: {},
+  naming: DEFAULT_NAMING,
+  startDate: todayIso(),
+  endDate: '',
+  biddingStrategy: 'Fixed bids',
+  placementAdjust: { top: null, product: null, rest: null },
+  placementInclusion: ALL_PLACEMENTS,
+  totalBudgetMode: 'total',
+  keywordTargets: [],
+  negativeKeywords: [],
 };
 
 export function formatCurrency(n: number): string {

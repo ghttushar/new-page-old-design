@@ -13,6 +13,7 @@ import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from
 import { CampaignSummaryProvider, Panel, Stepper } from './cc-design';
 import StepEntry from './steps/step-entry';
 import StepProducts from './steps/step-products';
+import StepKeywords from './steps/step-keywords';
 import StepObjectives from './steps/step-objectives';
 import StepTargeting from './steps/step-targeting';
 import StepStructure from './steps/step-structure';
@@ -24,6 +25,7 @@ import StepResult from './steps/step-result';
 
 const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
   { id: 'products', label: 'Products' },
+  { id: 'keywords', label: 'Keywords' },
   { id: 'objectives', label: 'Objectives' },
   { id: 'targeting', label: 'Targeting' },
   { id: 'structure', label: 'Structure' },
@@ -98,8 +100,9 @@ export default function CampaignCreator() {
 
   const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next: () => void; nextLabel: string; disabled?: boolean }>> = {
     entry: { next: () => advance('products'), nextLabel: 'Get started', disabled: !draft.adType },
-    products: { back: () => goTo('entry'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
-    objectives: { back: () => goTo('products'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.dailyBudget <= 0 },
+    products: { back: () => goTo('entry'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
+    keywords: { back: () => goTo('products'), next: () => advance('objectives'), nextLabel: 'Continue' },
+    objectives: { back: () => goTo('keywords'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.dailyBudget <= 0 || Boolean(draft.endDate && draft.endDate < draft.startDate) },
     targeting: { back: () => goTo('objectives'), next: () => advance('structure'), nextLabel: 'Continue', disabled: draft.targetingStrategies.length === 0 },
     structure: { back: () => goTo('targeting'), next: () => advance('preview'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
@@ -148,6 +151,7 @@ export default function CampaignCreator() {
               >
                  {step === 'entry' && <StepEntry draft={draft} onChange={update} />}
                 {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'keywords' && <StepKeywords draft={draft} onChange={update} />}
                 {step === 'objectives' && <StepObjectives draft={draft} selectedProducts={selectedProducts} onChange={update} />}
                 {step === 'targeting' && <StepTargeting draft={draft} selectedProducts={selectedProducts} onChange={update} />}
                 {step === 'structure' && (
