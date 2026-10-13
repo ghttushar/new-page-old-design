@@ -396,6 +396,8 @@ export interface CcCampaign {
   placement?: PlacementAdjust;
   /** Section 16 — a product in this campaign already has a live campaign. */
   possibleDuplicate?: boolean;
+  /** The product group this campaign was built for, when the plan has groups. */
+  groupName?: string;
 }
 
 // ── Rules (Section 8.7) — existing account Rules that new campaigns can be assigned to ──────────
@@ -640,6 +642,24 @@ export interface CcDraft {
   /** Added on the Keywords step; optional. */
   keywordTargets: KeywordEntry[];
   negativeKeywords: NegativeKeywordEntry[];
+  /** Groups made on the Products step. Each keeps its own keywords, objectives, targeting and structure. */
+  productGroups: ProductGroup[];
+}
+
+/** The settings a product group keeps for itself; products outside every group use the draft's own. */
+export const GROUP_FIELDS = [
+  'keywordTargets', 'negativeKeywords', 'targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate',
+  'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode',
+  'targetingStrategies', 'autoTypes', 'structureId', 'customPrompt', 'customCampaigns',
+] as const;
+export type GroupField = (typeof GROUP_FIELDS)[number];
+export type GroupSettings = Pick<CcDraft, GroupField>;
+
+export interface ProductGroup {
+  id: string;
+  name: string;
+  productIds: string[];
+  settings: GroupSettings;
 }
 
 export const EMPTY_DRAFT: CcDraft = {
@@ -667,6 +687,7 @@ export const EMPTY_DRAFT: CcDraft = {
   totalBudgetMode: 'total',
   keywordTargets: [],
   negativeKeywords: [],
+  productGroups: [],
 };
 
 export function formatCurrency(n: number): string {

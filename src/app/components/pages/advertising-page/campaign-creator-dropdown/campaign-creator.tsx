@@ -6,7 +6,7 @@ import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, flattenProducts, productsFor, structureCounts, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, flattenProducts, productsFor, recommendTargetingStrategies, structureCounts, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -19,6 +19,8 @@ import StepTargeting from './steps/step-targeting';
 import StepStructure from './steps/step-structure';
 import JivaStructurePanel from './steps/jiva-structure-panel';
 import StepPreview from './steps/step-preview';
+import ScopeBar from './scope-bar';
+import { DEFAULT_SCOPE_ID, applyScopedPatch, buildScopes, pruneGroups, totalCampaignsFor } from './product-groups';
 import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
 import StepResult from './steps/step-result';
@@ -40,6 +42,8 @@ export default function CampaignCreator() {
   const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
   const [jivaOpen, setJivaOpen] = useState(false);
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
+  // Which group the later steps are being set up for, once the products have been grouped.
+  const [scopeId, setScopeId] = useState(DEFAULT_SCOPE_ID);
 
   // Pin the wizard to the viewport so the footer always sits at the bottom, whatever the step's content height.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -64,14 +68,61 @@ export default function CampaignCreator() {
   const products = useMemo(() => (draft.marketplace ? productsFor(draft.marketplace) : []), [draft.marketplace]);
   const selectedProducts = useMemo(() => flattenProducts(products).filter((p) => draft.productIds.includes(p.id)), [products, draft.productIds]);
 
-  const manualTypesCount = draft.targetingStrategies.filter((s) => s !== 'auto').length;
-  const hasAuto = draft.targetingStrategies.includes('auto');
   // Campaigns the account can still add — what a structure is validated against (spec §7.6).
   const campaignLimit = draft.marketplace ? accountCampaignLimits(draft.marketplace).available : 1000;
-  const counts = draft.structureId && draft.structureId !== 'custom'
-    ? structureCounts(draft.structureId, selectedProducts.length, hasAuto, manualTypesCount, draft.autoTypes.length)
-    : null;
-  const limitCheck = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
+
+  // Product groups: each group (and the products in no group) is set up on its own, picked from a dropdown on each step.
+  const scopes = useMemo(() => buildScopes(draft, selectedProducts), [draft, selectedProducts]);
+  const activeScope = scopes.find((s) => s.id === scopeId) ?? scopes[0] ?? null;
+  const viewDraft = activeScope ? activeScope.draft : draft;
+  const viewProducts = activeScope ? activeScope.products : selectedProducts;
+  const activeScopeId = activeScope?.id ?? null;
+  const viewUpdate = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...(activeScopeId ? applyScopedPatch(prev, activeScopeId, patch) : patch) }));
+  const gateScopes = scopes.length ? scopes : [{ id: 'all', name: '', products: selectedProducts, draft }];
+
+  // A product that is no longer selected leaves its group, and an empty group goes away.
+  useEffect(() => {
+    if (pruneGroups(draft.productGroups, draft.productIds) !== draft.productGroups) {
+      setDraft((prev) => ({ ...prev, productGroups: pruneGroups(prev.productGroups, prev.productIds) }));
+    }
+  }, [draft.productIds, draft.productGroups]);
+
+  // Every group starts Targeting with the recommended routes, so none is left empty just because it was never opened.
+  useEffect(() => {
+    if (step !== 'targeting' || !draft.marketplace) return;
+    setDraft((prev) => {
+      const marketplace = prev.marketplace;
+      if (!marketplace) return prev;
+      const grouped = new Set(prev.productGroups.flatMap((g) => g.productIds));
+      const all = flattenProducts(productsFor(marketplace)).filter((p) => prev.productIds.includes(p.id));
+      let changed = false;
+      const groups = prev.productGroups.map((g) => {
+        if (g.settings.targetingStrategies.length > 0) return g;
+        const recommended = recommendTargetingStrategies(all.filter((p) => g.productIds.includes(p.id)), marketplace);
+        if (recommended.length === 0) return g;
+        changed = true;
+        return { ...g, settings: { ...g.settings, targetingStrategies: recommended } };
+      });
+      let base = prev.targetingStrategies;
+      if (prev.productGroups.length > 0 && base.length === 0) {
+        const recommended = recommendTargetingStrategies(all.filter((p) => !grouped.has(p.id)), marketplace);
+        if (recommended.length > 0) { base = recommended; changed = true; }
+      }
+      return changed ? { ...prev, productGroups: groups, targetingStrategies: base } : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, draft.productGroups.length]);
+
+  // Groups that still need a choice on the page being shown, marked in the dropdown.
+  const pendingScopes = new Set(scopes.filter((g) => {
+    if (step === 'objectives') return g.draft.dailyBudget <= 0 || Boolean(g.draft.endDate && g.draft.endDate < g.draft.startDate);
+    if (step === 'targeting') return g.draft.targetingStrategies.length === 0;
+    if (step === 'structure') return !g.draft.structureId || (g.draft.structureId === 'custom' && !g.draft.customCampaigns);
+    return false;
+  }).map((g) => g.id));
+
+  const totalCampaigns = totalCampaignsFor(gateScopes);
+  const limitCheck = totalCampaigns !== null ? validateCampaignLimit(totalCampaigns, campaignLimit) : { ok: true };
 
   const heading = (id: CcStepId) => setDir(STEP_ORDER.indexOf(id) >= STEP_ORDER.indexOf(step) ? 'fwd' : 'back');
   function goTo(id: CcStepId) {
@@ -89,21 +140,20 @@ export default function CampaignCreator() {
 
   const numberedIndex = NUMBERED_STEPS.findIndex((s) => s.id === step);
 
-  const structureBlocked = !draft.structureId
-    || (draft.structureId !== 'custom' && !limitCheck.ok)
-    || (draft.structureId === 'custom' && !draft.customCampaigns);
+  const structureBlocked = gateScopes.some((g) => !g.draft.structureId || (g.draft.structureId === 'custom' && !g.draft.customCampaigns)) || !limitCheck.ok;
 
   // Preview guards the Create button: nothing to create, or budgets that don't add up to the daily budget (spec §8.4).
   const previewCampaigns = draft.generatedCampaigns ?? [];
   const previewCount = previewCampaigns.length;
-  const previewBudgetOk = allocationMatches(previewCampaigns, draft.dailyBudget);
+  const planBudget = gateScopes.reduce((sum, g) => sum + g.draft.dailyBudget, 0);
+  const previewBudgetOk = allocationMatches(previewCampaigns, planBudget);
 
   const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next: () => void; nextLabel: string; disabled?: boolean }>> = {
     entry: { next: () => advance('products'), nextLabel: 'Get started', disabled: !draft.adType },
     products: { back: () => goTo('entry'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
     keywords: { back: () => goTo('products'), next: () => advance('objectives'), nextLabel: 'Continue' },
-    objectives: { back: () => goTo('keywords'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.dailyBudget <= 0 || Boolean(draft.endDate && draft.endDate < draft.startDate) },
-    targeting: { back: () => goTo('objectives'), next: () => advance('structure'), nextLabel: 'Continue', disabled: draft.targetingStrategies.length === 0 },
+    objectives: { back: () => goTo('keywords'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.draft.dailyBudget <= 0 || Boolean(g.draft.endDate && g.draft.endDate < g.draft.startDate)) },
+    targeting: { back: () => goTo('objectives'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.draft.targetingStrategies.length === 0) },
     structure: { back: () => goTo('targeting'), next: () => advance('preview'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
       back: () => goTo('structure'), next: () => { setDir('fwd'); setStep('creating'); },
@@ -123,7 +173,7 @@ export default function CampaignCreator() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <CampaignSummaryProvider value={{ step, draft, selectedProducts, onJump: goTo }}>
+    <CampaignSummaryProvider value={{ step, draft: viewDraft, selectedProducts: viewProducts, onJump: goTo }}>
     <div ref={rootRef} className="ccd-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: 'var(--ccd-page-bg)', fontFamily: 'Inter, sans-serif' }}>
       <CcGlobalStyles />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
@@ -149,15 +199,16 @@ export default function CampaignCreator() {
                 transition={{ duration: 0.3, ease: [0.22, 0.8, 0.3, 1] }}
                 style={{ flex: 1, minWidth: 0 }}
               >
-                 {step === 'entry' && <StepEntry draft={draft} onChange={update} />}
+                {scopes.length > 0 && ['keywords', 'objectives', 'targeting', 'structure'].includes(step) && <ScopeBar scopes={scopes} activeId={activeScope.id} pending={pendingScopes} onChange={setScopeId} />}
+                {step === 'entry' && <StepEntry draft={draft} onChange={update} />}
                 {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
-                {step === 'keywords' && <StepKeywords draft={draft} onChange={update} />}
-                {step === 'objectives' && <StepObjectives draft={draft} selectedProducts={selectedProducts} onChange={update} />}
-                {step === 'targeting' && <StepTargeting draft={draft} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'keywords' && <StepKeywords key={activeScopeId} draft={viewDraft} onChange={viewUpdate} />}
+                {step === 'objectives' && <StepObjectives key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
+                {step === 'targeting' && <StepTargeting key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
                 {step === 'structure' && (
-                  <StepStructure draft={draft} selectedProducts={selectedProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={update} onJivaChange={setJivaOpen} />
+                  <StepStructure key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={viewUpdate} onJivaChange={setJivaOpen} />
                 )}
-                {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} scopes={scopes} onChange={update} />}
                 {step === 'creating' && <Panel pad={40} className="ccd-hero"><StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => { setDir('fwd'); setStep('result'); }} /></Panel>}
                 {step === 'result' && <Panel pad={40} className="ccd-hero"><StepResult draft={draft} selectedProducts={selectedProducts} /></Panel>}
 
@@ -182,7 +233,7 @@ export default function CampaignCreator() {
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
               style={{ display: 'flex', flex: 'none', padding: '9px 9px 9px 0' }}
             >
-              <JivaStructurePanel draft={draft} selectedProducts={selectedProducts} onChange={update} onClose={() => setJivaOpen(false)} />
+              <JivaStructurePanel draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} onClose={() => setJivaOpen(false)} />
             </motion.div>
           )}
         </AnimatePresence>

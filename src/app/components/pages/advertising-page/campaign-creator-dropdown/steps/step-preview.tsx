@@ -5,6 +5,8 @@ import { Panel } from '../ccd-design';
 import RulesSection from './preview-rules';
 import CampaignsTable from './preview-campaigns';
 import { decorateCampaigns } from './preview-cells';
+import { withShares } from './budget-math';
+import type { Scope } from '../product-groups';
 
 /** Puts the keywords from the Keywords step into the generated campaigns: targets on manual ones, negatives on all of them. */
 function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
@@ -27,24 +29,42 @@ function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
 
 // Section 8: Preview and confirm. Three parts: the summary, one table for the structure, budget and targeting, then the Rules.
 
-export default function StepPreview({ draft, selectedProducts, onChange }: {
-  draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+export default function StepPreview({ draft: sharedDraft, selectedProducts, scopes: groupScopes, onChange }: {
+  draft: CcDraft; selectedProducts: CcProduct[]; scopes: Scope[]; onChange: (patch: Partial<CcDraft>) => void;
 }) {
+  // Without groups the plan is one scope, exactly as before. With groups, each group builds its own campaigns from its own settings.
+  const scopes: Scope[] = groupScopes.length > 0 ? groupScopes : [{ id: 'all', name: '', products: selectedProducts, draft: sharedDraft }];
+  const grouped = groupScopes.length > 0;
+  const planBudget = scopes.reduce((sum, sc) => sum + sc.draft.dailyBudget, 0);
+  const draft: CcDraft = { ...sharedDraft, dailyBudget: planBudget };
+  const acosValues = Array.from(new Set(scopes.map((sc) => sc.draft.targetAcos)));
+
   // Everything the campaigns are built from. If it hasn't changed since last time, the user's edits stay.
-  const sourceKey = [
-    draft.structureId, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.autoTypes.join(','), draft.dailyBudget,
-    draft.structureId === 'custom' ? JSON.stringify(draft.customCampaigns ?? null) : '',
-    draft.biddingStrategy, JSON.stringify(draft.placementAdjust),
-    JSON.stringify([draft.keywordTargets.filter((k) => k.enabled), draft.negativeKeywords.filter((k) => k.enabled)]),
-  ].join('|');
+  const sourceKey = JSON.stringify(scopes.map((sc) => [
+    sc.id, sc.draft.structureId, sc.products.map((p) => p.id), sc.draft.targetingStrategies, sc.draft.autoTypes, sc.draft.dailyBudget,
+    sc.draft.structureId === 'custom' ? sc.draft.customCampaigns ?? null : '',
+    sc.draft.biddingStrategy, sc.draft.placementAdjust,
+    sc.draft.keywordTargets.filter((k) => k.enabled), sc.draft.negativeKeywords.filter((n) => n.enabled),
+  ]));
 
   useEffect(() => {
-    if (!draft.structureId) return;
+    if (scopes.every((sc) => !sc.draft.structureId)) return;
     if (draft.generatedCampaigns && draft.generatedKey === sourceKey) return;
-    const campaigns = draft.structureId === 'custom'
-      ? (draft.customCampaigns ?? [])
-      : generateCampaigns(draft.structureId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes);
-    onChange({ generatedCampaigns: decorateCampaigns(withKeywords(campaigns, draft), selectedProducts, draft.naming, { biddingStrategy: draft.biddingStrategy, placement: draft.placementAdjust }), generatedKey: sourceKey });
+    const built = scopes.flatMap((sc) => {
+      const id = sc.draft.structureId;
+      if (!id) return [];
+      const made = id === 'custom'
+        ? (sc.draft.customCampaigns ?? [])
+        : generateCampaigns(id, sc.products, sc.draft.targetingStrategies, sc.draft.dailyBudget, sc.draft.autoTypes);
+      const decorated = decorateCampaigns(withKeywords(made, sc.draft), sc.products, draft.naming, { biddingStrategy: sc.draft.biddingStrategy, placement: sc.draft.placementAdjust });
+      if (!grouped) return decorated;
+      // Ids repeat from one group to the next, so each carries its group's id.
+      return decorated.map((camp) => ({
+        ...camp, id: `${sc.id}:${camp.id}`, groupName: sc.name,
+        adGroups: camp.adGroups.map((ag) => ({ ...ag, id: `${sc.id}:${ag.id}` })),
+      }));
+    });
+    onChange({ generatedCampaigns: grouped ? withShares(built, planBudget) : built, generatedKey: sourceKey });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceKey]);
 
@@ -66,7 +86,7 @@ export default function StepPreview({ draft, selectedProducts, onChange }: {
     ['Ad groups', String(totalAdGroups(campaigns))],
     ['Targeting', String(totalTargets(campaigns))],
     ['Daily budget', formatCurrency(draft.dailyBudget)],
-    ['Target ACOS', draft.targetAcos != null ? `${draft.targetAcos}%` : 'Not set'],
+    ['Target ACOS', acosValues.length > 1 ? 'Varies by group' : acosValues[0] != null ? `${acosValues[0]}%` : 'Not set'],
   ];
 
   return (

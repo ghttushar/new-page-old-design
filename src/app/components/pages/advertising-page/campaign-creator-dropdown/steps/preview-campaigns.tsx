@@ -92,6 +92,7 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
                   <td>
                     <span className="ccd-ctab-two">
                       <CounterInput value={c.name} max={106} label="Campaign name" onChange={(v) => patchCampaign(c.id, { name: v })} />
+                      {c.groupName && <span className="ccd-ctab-group">Group: {c.groupName}</span>}
                       {rules.length > 0 && <span className="ccd-ctab-ruleline">{plural(rules.length, 'rule')}: {rules.join(', ')}</span>}
                     </span>
                   </td>

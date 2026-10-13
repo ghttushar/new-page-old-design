@@ -1,5 +1,6 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { Fragment, useMemo, useState } from 'react';
+import ProductGroupsPanel from './step-product-groups';
 import { type CcDraft, type CcProduct } from '../campaign-creator.types';
 import {
   BAD, BORDER, BRAND, BRAND_LINE, BRAND_TINT, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, SearchIcon,
@@ -510,6 +511,8 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
         </Panel>
       </div>
       </div>
+
+      <ProductGroupsPanel draft={draft} selectedProducts={selectedProducts} onChange={onChange} />
     </div>
   );
 }
