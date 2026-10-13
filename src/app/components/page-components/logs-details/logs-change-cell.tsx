@@ -13,6 +13,9 @@ const EXECUTE_ROUTE = {
   DAYPARTING_JOB: '/day-parting/amazon',
 };
 
+/** Lets a long name such as Anarix_B07XK2_SP_Auto wrap after its underscores, not in the middle of a word. */
+export const breakable = (value: string) => value.replace(/_/g, '_​');
+
 const popupSubtitle = (data: ILogsData) =>
   [
     data.userName || data.userId,
@@ -24,11 +27,10 @@ const popupSubtitle = (data: ILogsData) =>
     .join(' · ');
 
 /**
- * One cell for what changed:
- * a single edit shows its from and to, a create opens the item it made,
- * a bulk edit opens a popup with every row, and an execute goes to its rule or dayparting job.
+ * The "View ..." link of a log that has more to show, or nothing when it has none:
+ * a bulk edit opens every row, a create opens the item it made, an execute goes to its rule or dayparting job.
  */
-export default function LogChangeCell({ data }: { data: ILogsData }) {
+export default function LogViewLink({ data }: { data: ILogsData }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -61,11 +63,10 @@ export default function LogChangeCell({ data }: { data: ILogsData }) {
     );
   }
 
-  if (data.logType === 'CREATE') {
+  if (data.logType === 'CREATE' && data.createdTable) {
     const entity = (
       LOG_ENTITY_TYPES[data.entityType ?? ''] ?? 'item'
     ).toLowerCase();
-    if (!data.createdTable) return <span>Created new {entity}</span>;
     return (
       <>
         <button
@@ -87,27 +88,5 @@ export default function LogChangeCell({ data }: { data: ILogsData }) {
     );
   }
 
-  if (data.action === 'DELETE') return <span>Archived</span>;
-
-  const from = data.previousValue || data.from;
-  const to = data.value || data.to;
-  if (!from && !to) return <span className={styles.none}>-</span>;
-
-  if (!from) {
-    return (
-      <span className={styles.change} title={`set to ${to}`}>
-        <span className={styles.clip}>set to {to}</span>
-      </span>
-    );
-  }
-
-  return (
-    <span className={styles.change} title={`from ${from} → to ${to || '-'}`}>
-      <span className={styles.clip}>from {from}</span>
-      <span className={styles.arrow} aria-hidden>
-        →
-      </span>
-      <span className={styles.clip}>to {to || '-'}</span>
-    </span>
-  );
+  return null;
 }

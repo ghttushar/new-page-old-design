@@ -21,25 +21,3 @@
     border-radius: 0.2rem;
   }
 }
-
-.change {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.arrow {
-  color: #9aa0ab;
-}
-
-.none {
-  color: #9aa0ab;
-}
-
-.clip {
-  max-width: 26rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}

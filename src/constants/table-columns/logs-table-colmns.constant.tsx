@@ -1,4 +1,6 @@
-import LogChangeCell from '@/app/components/page-components/logs-details/logs-change-cell';
+import LogViewLink, {
+  breakable,
+} from '@/app/components/page-components/logs-details/logs-change-cell';
 import { ILogsData } from '@/interfaces/logs/logs.interface';
 import { getTitleCaseString } from '@/utils';
 import { convertUtcToTimezoneDate } from '@/utils/datetime.utils';
@@ -8,29 +10,26 @@ import { LOG_ENTITY_TYPES, LOG_SOURCE_LABELS } from '../logs.constants';
 import InfoIcon from '@/app/components/common/info-icon/info-icon';
 import styles from './logs-table-columns.module.scss';
 
-// The columns read from the widest scope to the finest detail, in four groups:
-// what was touched (marketplace, service, entity), what changed (action, change),
-// who and how, and the record itself.
+// The columns read from the item that changed, to what was done to it, to who did it and when.
 
 const text = (value?: string | null) => (value ? value : '-');
 
 /** What each column means, shown from the (i) next to its name. */
 const TIPS: { [column: string]: string } = {
-  Marketplace: 'The marketplace the change was made in, such as Amazon or Walmart.',
   Service: 'The part of Anarix that recorded the change, such as advertising, dayparting or rules.',
   'Entity Type': 'The kind of item that changed: campaign, ad group, keyword, target, rule and so on.',
   Entity: 'The name of the item that changed, with its ID underneath.',
-  Action: 'What was done to the item: a field updated, the item created or archived, or a rule or job executed.',
-  Change: 'The value before and after an edit. Creations, bulk edits and executions open their details.',
+  Changes: 'What was done to the item: a field updated, the item created or archived, or a rule or job executed. Where there is more to see, a View link opens it.',
+  From: 'The value before the change.',
+  To: 'The value after the change.',
   Through: 'Where the change was made from: a page in Anarix, Jiva, or a connected tool such as Slack or Claude.',
   User: 'The person or system that made the change.',
   'Date & Time': 'When the change was made, in your time zone. Select the header to sort.',
-  'Log ID': 'The unique ID of this log entry.',
 };
 
 /** A column name with its (i) tooltip. */
 const heading = (label: string) => (
-  <div className={`commonHeader`}>
+  <div className={`commonHeader`} style={{ whiteSpace: 'nowrap' }}>
     {label}
     <InfoIcon
       title={TIPS[label]}
@@ -54,23 +53,7 @@ const textColumn = (
   cell: ({ row }) => <div className={`commonCell`}>{render(row.original)}</div>,
 });
 
-/** One band of columns, with its title above them. */
-const group = (
-  id: string,
-  title: string,
-  columns: ColumnDef<ILogsData>[]
-): ColumnDef<ILogsData> => ({
-  id,
-  enableSorting: false,
-  header: () => <div className={styles.group}>{title}</div>,
-  columns,
-});
-
 // ── What was touched ──────────────────────────────────────────────────────────────────────────
-
-const MARKETPLACE = textColumn('Marketplace', 135, 'marketplace', (r) =>
-  r.marketplace ? getTitleCaseString(r.marketplace) : '-'
-);
 
 const SERVICE = textColumn('Service', 110, 'service', (r) =>
   r.service ? getTitleCaseString(r.service) : '-'
@@ -135,33 +118,52 @@ const actionLabel = (r: ILogsData) => {
   }
 };
 
-const ACTION: ColumnDef<ILogsData> = {
+const CHANGES: ColumnDef<ILogsData> = {
   accessorKey: 'action',
-  id: 'Action',
-  size: 280,
+  id: 'Changes',
+  size: 300,
   enableSorting: false,
-  header: () => heading('Action'),
+  header: () => heading('Changes'),
   cell: ({ row }) => {
     const label = actionLabel(row.original);
     return (
       <div className={`commonCell`}>
-        <span title={label}>{label}</span>
+        <div title={label}>{label}</div>
+        <div className={styles.view}>
+          <LogViewLink data={row.original} />
+        </div>
       </div>
     );
   },
 };
 
-const CHANGE: ColumnDef<ILogsData> = {
-  id: 'Change',
-  size: 260,
+/** A value column: the value before or after an edit, or a dash when there is none. */
+const valueColumn = (
+  id: 'From' | 'To',
+  accessorKey: 'previousValue' | 'value',
+  fallback: 'from' | 'to'
+): ColumnDef<ILogsData> => ({
+  accessorKey,
+  id,
+  size: 210,
   enableSorting: false,
-  header: () => heading('Change'),
-  cell: ({ row }) => (
-    <div className={`commonCell`}>
-      <LogChangeCell data={row.original} />
-    </div>
-  ),
-};
+  header: () => heading(id),
+  cell: ({ row }) => {
+    const value = row.original[accessorKey] || row.original[fallback];
+    return (
+      <div className={`commonCell`}>
+        {value && row.original.action !== 'DELETE' ? (
+          <span className={styles.value}>{breakable(value)}</span>
+        ) : (
+          '-'
+        )}
+      </div>
+    );
+  },
+});
+
+const FROM = valueColumn('From', 'previousValue', 'from');
+const TO = valueColumn('To', 'value', 'to');
 
 // ── Who and how ───────────────────────────────────────────────────────────────────────────────
 
@@ -180,7 +182,7 @@ const USER = textColumn('User', 160, 'userId', (r) =>
 const UPDATED_DATE_TIME: ColumnDef<ILogsData> = {
   accessorKey: 'timestamp',
   id: 'timestamp',
-  size: 160,
+  size: 190,
   header: () => heading('Date & Time'),
   sortingFn: (rowA, rowB) => {
     const a: number = new Date(rowA.original.timestamp).getTime();
@@ -206,27 +208,14 @@ const UPDATED_DATE_TIME: ColumnDef<ILogsData> = {
   },
 };
 
-const LOG_ID: ColumnDef<ILogsData> = {
-  accessorKey: 'logId',
-  id: 'Log ID',
-  size: 280,
-  enableSorting: false,
-  header: () => heading('Log ID'),
-  cell: ({ row }) => (
-    <div className={`commonCell`}>
-      <span className={styles.idMuted}>{text(row.original.logId)}</span>
-    </div>
-  ),
-};
-
 export const LogsTableColumns: ColumnDef<ILogsData>[] = [
-  group('area', 'What was touched', [
-    MARKETPLACE,
-    SERVICE,
-    ENTITY_TYPE,
-    ENTITY,
-  ]),
-  group('what', 'What changed', [ACTION, CHANGE]),
-  group('who', 'Who and how', [SOURCE, USER]),
-  group('record', 'The record', [UPDATED_DATE_TIME, LOG_ID]),
+  ENTITY,
+  ENTITY_TYPE,
+  SERVICE,
+  CHANGES,
+  FROM,
+  TO,
+  SOURCE,
+  USER,
+  UPDATED_DATE_TIME,
 ];
