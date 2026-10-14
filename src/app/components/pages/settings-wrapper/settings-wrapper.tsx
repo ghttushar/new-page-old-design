@@ -17,6 +17,7 @@ import settingsWrapperStyles from './settings-wrapper.module.scss';
 import UsersPage from './users-page/users-page';
 import IntegrationsPage from './integrations-page/integrations-page';
 import BillingPage from './billing-page/billing-page';
+import NotificationsPage from './notifications-page/notifications-page';
 
 export default function SettingsWrapper() {
   const selectedUserAccountMapping =
@@ -55,6 +56,10 @@ export default function SettingsWrapper() {
               feature={FeaturesEnum.SETTINGS_LOGS}
             />
           }
+        />
+        <Route
+          path="/notifications"
+          element={<PrivateRoute component={<NotificationsPage />} />}
         />
         <Route
           path="/users"

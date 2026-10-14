@@ -127,6 +127,7 @@ export enum FeatureRoutes {
   CATALOG = `catalog`,
   CATALOG_PAGE = `catalog-page`,
   LOGS = 'logs',
+  NOTIFICATIONS = 'notifications',
   NOT_DEFINED = '',
   RULES = 'rules',
   RULES_AGENTS = 'agents',

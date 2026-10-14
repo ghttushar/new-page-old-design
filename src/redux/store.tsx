@@ -33,6 +33,7 @@ import marketIntelligenceReducer from './slices/market-intelligence/market-intel
 import productSovFilterReducer from './slices/market-intelligence/product-sov-filter.slice';
 import sovFilterReducer from './slices/market-intelligence/sov-filter.slice';
 import monitoringReducer from './slices/monitoring/monitoring.slice';
+import notificationCenterReducer from './slices/notifications/notification-center.slice';
 import toastMessageReducer from './slices/notifications/toast-message.slice';
 import {
   default as onboardingReducer,
@@ -47,6 +48,7 @@ export interface IRootState {
   sovFilter: ReturnType<typeof sovFilterReducer>;
   auth: ReturnType<typeof authSliceReducer>;
   toastMessage: ReturnType<typeof toastMessageReducer>;
+  notificationCenter: ReturnType<typeof notificationCenterReducer>;
   marketIntelligence: ReturnType<typeof marketIntelligenceReducer>;
   advertisingOverallFilter: ReturnType<typeof advertisingOverallFilterReducer>;
   advertisingFilter: ReturnType<typeof advertisingFilterReducer>;
@@ -99,6 +101,7 @@ const store: Store<IRootState> = configureStore({
     sovFilter: sovFilterReducer,
     auth: authSliceReducer,
     toastMessage: toastMessageReducer,
+    notificationCenter: notificationCenterReducer,
     marketIntelligence: marketIntelligenceReducer,
     advertisingOverallFilter: advertisingOverallFilterReducer,
     advertisingFilter: advertisingFilterReducer,

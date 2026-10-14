@@ -29,6 +29,7 @@ import HoverInfoTooltip from '../hover-info-tooltip/hover-info-tooltip';
 import InfoIcon from '../info-icon/info-icon';
 import SecondaryButton from '../secondary-button/secondary-button';
 import Header from './../../layout/header/header';
+import NotificationBell from '../../notifications/notification-bell';
 import styles from './sub-header.module.scss';
 
 export interface ISubHeaderDataItem {
@@ -227,6 +228,8 @@ export default function SubHeader(props: ISubHeaderProps) {
                 />
               </div>
             </HoverInfoTooltip>
+
+            <NotificationBell />
 
             <Header />
           </div>

@@ -21,6 +21,7 @@ export enum PageTitleEnum {
   SCHEDULED_JOBS = 'Scheduled Jobs',
   ACCOUNTS = 'Accounts',
   LOGS = 'Logs',
+  NOTIFICATIONS = 'Notifications',
   INVITES = 'Invites',
   USERS = 'Users',
   REPORTS = 'Reports',

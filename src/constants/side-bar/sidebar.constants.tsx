@@ -210,6 +210,11 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
           feature: FeaturesEnum.SETTINGS_LOGS,
         },
         {
+          key: FeatureRoutes.NOTIFICATIONS,
+          primaryText: 'Notifications',
+          feature: FeaturesEnum.SETTINGS_INVITES,
+        },
+        {
           key: FeatureRoutes.SETTINGS_INVITES,
           primaryText: 'Invites',
           feature: FeaturesEnum.SETTINGS_INVITES,

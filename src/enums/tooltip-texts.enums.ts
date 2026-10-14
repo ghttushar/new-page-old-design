@@ -251,6 +251,7 @@ export enum PAGE_TITLE_TOOLTIPS {
   SCHEDULED_JOBS = 'Track all upcoming jobs scheduled to run automatically.',
   ACCOUNTS = 'Manage advertiser accounts connected to Anarix.',
   LOGS = 'Track all changes and activity made within the account.',
+  NOTIFICATIONS = 'See what happened in your account and jump straight to what needs attention.',
   INVITES = 'Send or manage invites for team members and collaborators.',
   USERS = 'Manage access, permissions, and roles for users in your Anarix account.',
   MONITORING = 'Create alerts to monitor sudden shifts in ad or catalog performance.',
