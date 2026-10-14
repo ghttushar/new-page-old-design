@@ -413,9 +413,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
 
   return (
     <div>
-      <StepHeading title="Choose products to promote" />
-
-      <div className="ccd-prod-range"><span>Metrics for</span><DateRangeSelect value={range} onChange={setRange} /></div>
+      <StepHeading title="Choose products to promote" aside={<DateRangeSelect value={range} onChange={setRange} />} />
 
       <div className="ccd-product-stage">
       <div className="ccd-product-grid">

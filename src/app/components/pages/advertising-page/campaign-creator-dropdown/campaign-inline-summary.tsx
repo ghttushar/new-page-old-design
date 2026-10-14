@@ -1,4 +1,5 @@
 // @ts-nocheck -- presentation-only campaign brief for the ported creator
+import { Fragment } from 'react';
 import { motion } from 'motion/react';
 import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, formatCurrency, type CcStepId } from './campaign-creator.types';
 import { useCampaignSummary } from './campaign-summary-context';
@@ -159,20 +160,17 @@ function StructureNodes({ structureId }: { structureId?: string }) {
   );
 }
 
-/** The campaigns waiting to be created: a small table with a tick, the same footprint as the other tiles' graphics. */
+/** Preview as a stack of campaign cards, the front one filled in: the same footprint as the other tiles' graphics. */
 function PreviewMark() {
   return (
     <span className="ccd-dyn" aria-hidden>
       <svg width="58" height="40" viewBox="0 0 58 40" fill="none">
-        <rect x="8" y="3" width="42" height="34" rx="6" fill="#fff" stroke="#e0e3ec" strokeWidth="1.2" />
-        <rect x="8" y="3" width="42" height="9" rx="6" fill="#f1f2f6" />
-        <rect x="13" y="6.5" width="14" height="2.4" rx="1.2" fill="#c7ccd8" />
-        {[17, 24.5, 32].map((y, i) => (
-          <g key={y}>
-            <rect x="13" y={y} width="14" height="3" rx="1.5" fill="#dfe2ea" />
-            <rect x="31" y={y} width={14 - i * 2} height="3" rx="1.5" fill="#e9ebf1" />
-          </g>
-        ))}
+        <rect x="16" y="2" width="38" height="26" rx="6" fill="#f6f7fa" stroke="#e0e3ec" strokeWidth="1.2" />
+        <rect x="10" y="7" width="38" height="26" rx="6" fill="#fff" stroke="#d9dce4" strokeWidth="1.2" />
+        <rect x="4" y="12" width="38" height="26" rx="6" fill="#fff" stroke="#8a56b3" strokeWidth="1.3" />
+        <rect x="9" y="17" width="14" height="4" rx="2" fill="#77469b" />
+        <rect x="9" y="25" width="26" height="2.6" rx="1.3" fill="#dfe2ea" />
+        <rect x="9" y="30" width="18" height="2.6" rx="1.3" fill="#e9ebf1" />
       </svg>
     </span>
   );
@@ -229,8 +227,9 @@ export function JourneyBar() {
           const isDone = i < current;
           const reachable = i === 0 || i - 1 <= furthestIndex;
           return (
-            <li key={item.id} className={`ccd-jb-li${isActive ? ' is-active' : ''}`}>
-              {i > 0 && <span className={`ccd-jb-rail${i <= current ? ' is-done' : ''}`} aria-hidden />}
+            <Fragment key={item.id}>
+            {i > 0 && <li className={`ccd-jb-rail${i <= current ? ' is-done' : ''}`} aria-hidden />}
+            <li className={`ccd-jb-li${isActive ? ' is-active' : ''}`}>
               {isDone && (
                 <button type="button" className="ccd-jb-tile" disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}: ${done[item.id].value}. Go back to this step`}>
                   {graphic[item.id]}
@@ -248,6 +247,7 @@ export function JourneyBar() {
                 <div className="ccd-jb-chip"><span className="ccd-jb-node">{i}</span><span>{item.label}</span></div>
               )}
             </li>
+            </Fragment>
           );
         })}
       </ol>

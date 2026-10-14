@@ -35,12 +35,14 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [box, setBox] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const active = scopes.find((s) => s.id === activeId) ?? scopes[0];
+  const position = (Math.max(0, scopes.indexOf(active)) + 1).toLocaleString();
 
   useLayoutEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const r = triggerRef.current.getBoundingClientRect();
+    if (!open || !boxRef.current) return;
+    const r = boxRef.current.getBoundingClientRect();
     // Under the trigger; against the right edge of the screen the menu lines up with the trigger's right edge.
     setBox({ top: r.bottom + 8, left: r.left + WIDTH > window.innerWidth - 8 ? Math.max(8, r.right - WIDTH) : r.left });
   }, [open]);
@@ -50,7 +52,7 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
     const close = () => setOpen(false);
     const onDown = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (!menuRef.current?.contains(t) && !triggerRef.current?.contains(t)) close();
+      if (!menuRef.current?.contains(t) && !boxRef.current?.contains(t)) close();
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { close(); triggerRef.current?.focus(); } };
     document.addEventListener('mousedown', onDown);
@@ -91,16 +93,18 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
 
   return (
     <>
-      <button
-        ref={triggerRef} type="button" className={`ccd-gs-trigger${open ? ' is-open' : ''}`} aria-haspopup="dialog" aria-expanded={open}
-        aria-label={`Group being set up: ${active.name}. Change group`} onClick={() => { setOpen((o) => !o); setQuery(''); setChecked(new Set()); }}
-      >
-        <span className="ccd-gs-text">
-          <small>Group</small>
-          <strong><i className={`ccd-gdot ccd-gs-status ${pending.has(active.id) ? 'is-wait' : 'is-done'}`} aria-hidden /><span className="ccd-gs-title">{active.name}</span><span className="ccd-gs-count">{plural(active.products.length)}</span></strong>
-        </span>
-        <span className="ccd-gs-chev"><Chevron /></span>
-      </button>
+      <div ref={boxRef} className={`ccd-gs-box${open ? ' is-open' : ''}`}>
+        <button
+          ref={triggerRef} type="button" className="ccd-gs-trigger" aria-haspopup="dialog" aria-expanded={open}
+          aria-label={`Group being set up: ${active.name}. Change group`} onClick={() => { setOpen((o) => !o); setQuery(''); setChecked(new Set()); }}
+        >
+          <i className={`ccd-gdot ccd-gs-status ${pending.has(active.id) ? 'is-wait' : 'is-done'}`} aria-hidden />
+          <span className="ccd-gs-title">{active.name}</span>
+          <span className="ccd-gs-meta">{plural(active.products.length)}</span>
+          <span className="ccd-gs-pos">{position} of {scopes.length.toLocaleString()}</span>
+          <span className="ccd-gs-chev"><Chevron /></span>
+        </button>
+      </div>
 
       {open && createPortal(
         <div ref={menuRef} className="ccd-gs-menu" style={{ top: box.top, left: box.left, width: WIDTH }} role="dialog" aria-label="Choose a group to set up">
@@ -147,16 +151,11 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
               {appliedCount !== null && appliedCount !== undefined ? (
                 <span className="ccd-gs-done" role="status"><Tick />Applied to {appliedCount.toLocaleString()} {appliedCount === 1 ? 'group' : 'groups'}<button type="button" onClick={onUndo}>Undo</button></span>
               ) : (
-                <span className="ccd-gs-hint">{ticked > 0 ? `Copy this page from ${active.name}` : 'Tick groups to copy this page to'}</span>
+                <span className="ccd-gs-hint">{ticked > 0 ? `Copy this page from ${active.name}` : 'Select group to apply this configuration to'}</span>
               )}
               <button type="button" className="ccd-btn ccd-primary ccd-gs-apply" disabled={ticked === 0} onClick={apply}>{ticked > 0 ? `Apply to ${ticked.toLocaleString()}` : 'Apply'}</button>
             </div>
-          ) : (
-            <div className="ccd-gs-menu-foot">
-              Choices on this page apply to the group you pick.
-              <span>{rows.length.toLocaleString()} of {scopes.length.toLocaleString()}</span>
-            </div>
-          )}
+          ) : null}
         </div>,
         document.body,
       )}

@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import ScopeSwitch from '../scope-switch';
 import { MIN_KEYWORD_BID, generateCampaigns, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
 import { StepHeading } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
@@ -35,6 +36,11 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
   // Without groups the plan is one scope, exactly as before. With groups, each group builds its own campaigns from its own settings.
   const scopes: Scope[] = groupScopes.length > 0 ? groupScopes : [{ id: 'all', name: '', products: selectedProducts, color: UNGROUPED_COLOR, settings: pickSettings(sharedDraft), draft: sharedDraft }];
   const grouped = groupScopes.length > 0;
+  // Which group's campaigns the table shows: the first group until another is picked in the heading.
+  const [groupId, setGroupId] = useState('');
+  const shownScope = groupScopes.find((sc) => sc.id === groupId) ?? groupScopes[0];
+  const noneWaiting = useMemo(() => new Set<string>(), []);
+  const groupSwitch = grouped ? <ScopeSwitch scopes={groupScopes} activeId={shownScope.id} pending={noneWaiting} onChange={setGroupId} /> : undefined;
   const planBudget = scopes.reduce((sum, sc) => sum + sc.draft.dailyBudget, 0);
   const draft: CcDraft = { ...sharedDraft, dailyBudget: planBudget };
   const acosValues = Array.from(new Set(scopes.map((sc) => sc.draft.targetAcos)));
@@ -91,7 +97,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
 
   return (
     <div>
-      <StepHeading title="Review before we create" />
+      <StepHeading title="Review before we create" aside={groupSwitch} />
 
       <div className="ccd-pv-stack">
         <Panel title="Plan at a glance" pad="20px 22px">
@@ -100,7 +106,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
           </dl>
         </Panel>
 
-        <CampaignsTable draft={draft} campaigns={campaigns} selectedProducts={selectedProducts} onCommit={commit} onApplyNaming={(naming, next) => onChange({ naming, generatedCampaigns: next })} />
+        <CampaignsTable draft={draft} campaigns={campaigns} selectedProducts={selectedProducts} shownScope={shownScope} onCommit={commit} onApplyNaming={(naming, next) => onChange({ naming, generatedCampaigns: next })} />
         <RulesSection draft={draft} campaigns={campaigns} selectedProducts={selectedProducts} onChange={onChange} />
       </div>
     </div>

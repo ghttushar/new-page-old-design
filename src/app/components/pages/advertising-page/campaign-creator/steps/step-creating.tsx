@@ -57,7 +57,7 @@ export default function StepCreating({ draft, selectedProducts, onDone }: {
           animate={{ width: `${(doneCount / rows.length) * 100}%` }}
           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           className="cc-shimmer"
-          style={{ height: '100%', backgroundColor: BRAND, backgroundImage: 'var(--cc-gradient-primary)', borderRadius: 999, boxShadow: '0 0 12px rgba(119,70,155,.45)' }}
+          style={{ height: '100%', backgroundColor: BRAND, backgroundImage: 'var(--cc-gradient-primary)', borderRadius: 999 }}
         />
       </div>
 

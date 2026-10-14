@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import type { Scope } from '../product-groups';
 import { BIDDING_STRATEGIES, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
 import { DEFAULT_NAMING } from '../campaign-creator.types';
 import { Panel } from '../ccd-design';
@@ -8,7 +9,7 @@ import { rulesForCampaign } from './preview-rules';
 import { TargetingPopup } from './preview-targets';
 import NamingPopup from './preview-naming';
 import { applyNaming } from './naming';
-import { allocateByWeights, allocationGap, allocationMatches, performanceWeight, round2, withShares } from './budget-math';
+import { allocateByWeights, allocationGap, allocationMatches, round2, withShares } from './budget-math';
 
 // Sections 8.3 to 8.6 as one flat table: a row per campaign with its budget, bidding and targeting.
 // The pencil on Targeting type opens the keyword popup. Section 8.7.7: a campaign's Rules sit under its name.
@@ -19,22 +20,15 @@ const PencilIcon = () => <svg width={14} height={14} viewBox="0 0 16 16" fill="n
 const SettingsIcon = () => <svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2 4.5h6.2M11.6 4.5H14M2 11.5h2.4M7.8 11.5H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="9.9" cy="4.5" r="1.7" stroke="currentColor" strokeWidth="1.5" /><circle cx="6.1" cy="11.5" r="1.7" stroke="currentColor" strokeWidth="1.5" /></svg>;
 const NO_PLACEMENT: PlacementAdjust = { top: null, product: null, rest: null };
 
-type Mode = 'even' | 'performance' | 'custom';
-
-export default function CampaignsTable({ draft, campaigns, selectedProducts, onCommit, onApplyNaming }: {
-  draft: CcDraft; campaigns: CcCampaign[]; selectedProducts: CcProduct[]; onCommit: (next: CcCampaign[]) => void;
+export default function CampaignsTable({ draft, campaigns, selectedProducts, shownScope, onCommit, onApplyNaming }: {
+  /** The group whose campaigns the table shows (picked at the top of the page); left out when there are no groups. */
+  draft: CcDraft; campaigns: CcCampaign[]; selectedProducts: CcProduct[]; shownScope?: Scope; onCommit: (next: CcCampaign[]) => void;
   onApplyNaming: (naming: NamingSettings, next: CcCampaign[]) => void;
 }) {
   const overall = draft.dailyBudget;
-  const [mode, setMode] = useState<Mode>('even');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [namingOpen, setNamingOpen] = useState(false);
-  // Which group's campaigns the table shows.
-  const [groupFilter, setGroupFilter] = useState('');
-  const groupNames = useMemo(() => Array.from(new Set(campaigns.map((c) => c.groupName).filter(Boolean) as string[])), [campaigns]);
-  // One group at a time, the first until another is picked.
-  const shownGroup = groupNames.includes(groupFilter) ? groupFilter : groupNames[0] ?? '';
-  const visible = shownGroup ? campaigns.filter((c) => c.groupName === shownGroup) : campaigns;
+  const visible = shownScope ? campaigns.filter((c) => c.groupName === shownScope.name) : campaigns;
 
   const patchCampaign = (id: string, patch: Partial<CcCampaign>) => onCommit(campaigns.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const renameAdGroup = (id: string, name: string) => onCommit(campaigns.map((c) => (c.id === id ? { ...c, adGroups: c.adGroups.map((ag, i) => (i === 0 ? { ...ag, name } : ag)) } : c)));
@@ -45,16 +39,9 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
   const ok = allocationMatches(campaigns, overall);
 
   function setBudget(id: string, value: number) {
-    setMode('custom');
     onCommit(withShares(campaigns.map((c) => (c.id === id ? { ...c, dailyBudget: round2(value) } : c)), overall));
   }
-  function pickMode(next: Mode) {
-    setMode(next);
-    if (next === 'even') onCommit(allocateByWeights(campaigns, campaigns.map(() => 1), overall));
-    if (next === 'performance') onCommit(allocateByWeights(campaigns, campaigns.map((c) => performanceWeight(c, selectedProducts)), overall));
-  }
   function rebalance() {
-    setMode('custom');
     onCommit(allocateByWeights(campaigns, campaigns.map((c) => c.dailyBudget || 1), overall));
   }
 
@@ -67,22 +54,6 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
       title="Campaigns" pad="4px 20px 18px"
       aside={
         <span className="ccd-ctab-tools">
-          {groupNames.length > 0 && (
-            <label className="ccd-pb-mode">
-              <span>Group</span>
-              <select className="ccd-input" value={shownGroup} aria-label="Show the campaigns of one group" onChange={(e) => setGroupFilter(e.target.value)}>
-                {groupNames.map((g) => <option key={g} value={g}>{g}</option>)}
-              </select>
-            </label>
-          )}
-          <label className="ccd-pb-mode">
-            <span>Split budget</span>
-            <select className="ccd-input" value={mode} aria-label="How the budget is split" onChange={(e) => pickMode(e.target.value as Mode)}>
-              <option value="even">Evenly</option>
-              <option value="performance">By performance</option>
-              {mode === 'custom' && <option value="custom" disabled>Custom</option>}
-            </select>
-          </label>
           <button type="button" className="ccd-ctab-gear" aria-label="Naming settings" aria-haspopup="dialog" onClick={() => setNamingOpen(true)}><SettingsIcon /></button>
         </span>
       }

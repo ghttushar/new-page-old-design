@@ -72,7 +72,7 @@ export function CcGlobalStyles() {
       /* Inputs */
       .cc-input { transition: border-color 140ms ease-out, box-shadow 160ms ease-out, background-color 140ms ease-out; }
       .cc-input:hover { border-color: #cdd2dc !important; }
-      .cc-input:focus { border-color: var(--cc-brand) !important; box-shadow: 0 0 0 4px var(--cc-brand-ring); outline: none; background-color: #fff; }
+      .cc-input:focus { border-color: var(--cc-brand) !important; outline: none; background-color: #fff; }
       .cc-num { font-variant-numeric: tabular-nums; }
 
       .cc-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -90,7 +90,7 @@ export function CcGlobalStyles() {
       .cc-stage section { animation: cc-enter 460ms cubic-bezier(.22,.8,.3,1) both; animation-delay: 140ms; }
       @keyframes cc-pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
       .cc-pop { animation: cc-pop 360ms cubic-bezier(.2,.9,.3,1.3) both; }
-      @keyframes cc-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(119,70,155,.35); } 50% { box-shadow: 0 0 0 6px rgba(119,70,155,0); } }
+      @keyframes cc-pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
       .cc-pulse { animation: cc-pulse 1.6s ease-in-out infinite; }
       @keyframes cc-shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
       .cc-shimmer { background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); background-size: 200% 100%; animation: cc-shimmer 1.4s linear infinite; }

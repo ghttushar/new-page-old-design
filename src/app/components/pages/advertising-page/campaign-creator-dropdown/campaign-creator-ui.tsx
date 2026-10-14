@@ -71,7 +71,7 @@ export function CcGlobalStyles() {
       /* Inputs */
       .ccd-input { transition: border-color 140ms ease-out, box-shadow 160ms ease-out, background-color 140ms ease-out; }
       .ccd-input:hover { border-color: #cdd2dc !important; }
-      .ccd-input:focus { border-color: var(--ccd-brand) !important; box-shadow: 0 0 0 4px var(--ccd-brand-ring); outline: none; background-color: #fff; }
+      .ccd-input:focus { border-color: var(--ccd-brand) !important; outline: none; background-color: #fff; }
       .ccd-num { font-variant-numeric: tabular-nums; }
 
       .ccd-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -89,7 +89,7 @@ export function CcGlobalStyles() {
       .ccd-stage section { animation: ccd-enter 460ms cubic-bezier(.22,.8,.3,1) both; animation-delay: 140ms; }
       @keyframes ccd-pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
       .ccd-pop { animation: ccd-pop 360ms cubic-bezier(.2,.9,.3,1.3) both; }
-      @keyframes ccd-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(119,70,155,.35); } 50% { box-shadow: 0 0 0 6px rgba(119,70,155,0); } }
+      @keyframes ccd-pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
       .ccd-pulse { animation: ccd-pulse 1.6s ease-in-out infinite; }
       @keyframes ccd-shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
       .ccd-shimmer { background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); background-size: 200% 100%; animation: ccd-shimmer 1.4s linear infinite; }
@@ -204,7 +204,7 @@ export function TextButton({ children, onClick, tone = BRAND }: { children: Reac
 
 import { GroupSwitch } from './campaign-inline-summary';
 
-export function StepHeading({ eyebrow, title }: { eyebrow?: string; title: string }) {
+export function StepHeading({ eyebrow, title, aside }: { eyebrow?: string; title: string; aside?: React.ReactNode }) {
   return (
     <header className="ccd-step-heading">
       {eyebrow && (
@@ -214,7 +214,10 @@ export function StepHeading({ eyebrow, title }: { eyebrow?: string; title: strin
       )}
       <div className="ccd-step-heading__row">
         <h1 style={{ margin: 0, font: `700 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}</h1>
-        <GroupSwitch />
+        <div className="ccd-step-heading__tools">
+          {aside}
+          <GroupSwitch />
+        </div>
       </div>
     </header>
   );
