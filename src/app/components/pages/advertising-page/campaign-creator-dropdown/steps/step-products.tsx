@@ -1,7 +1,9 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
-import { Fragment, useMemo, useState } from 'react';
-import ProductGroupsPanel from './step-product-groups';
-import { type CcDraft, type CcProduct } from '../campaign-creator.types';
+import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
+import { GroupCell, GroupHint } from './step-product-groups';
+import GroupLayer, { type GroupLayerHandle } from './group-layer';
+import { groupIndex, groupNameIdeas, suggestGroupName } from '../product-groups';
+import { type CcDraft, type CcProduct, type ProductGroup } from '../campaign-creator.types';
 import {
   BAD, BORDER, BRAND, BRAND_LINE, BRAND_TINT, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, SearchIcon,
   StepHeading, SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY,
@@ -80,7 +82,7 @@ const BoxIcon = () => <svg width={20} height={20} viewBox="0 0 16 16" aria-hidde
 const CloseGlyph = ({ size = 10 }: { size?: number }) => <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden {...stroke} strokeWidth={1.8}><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>;
 
 function ToolButton({ children, onClick, disabled, primary, active, expanded, haspopup }: {
-  children: React.ReactNode; onClick?: () => void; disabled?: boolean; primary?: boolean; active?: boolean; expanded?: boolean; haspopup?: boolean;
+  children: React.ReactNode; onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void; disabled?: boolean; primary?: boolean; active?: boolean; expanded?: boolean; haspopup?: boolean;
 }) {
   const on = primary && !disabled;
   return (
@@ -176,6 +178,8 @@ function PanelHead({ title, count, children }: { title: string; count: number; c
 const TH: React.CSSProperties = {
   textAlign: 'left', padding: '12px 12px', font: `600 13px/1 ${FONT}`, color: TEXT_PRIMARY,
   background: '#fff', borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap',
+  // Each header cell sticks to the top on its own (a sticky row alone does not hold in every browser).
+  position: 'sticky', top: 0, zIndex: 1,
 };
 const TD: React.CSSProperties = { padding: '10px 12px', borderBottom: `1px solid ${HAIR}`, verticalAlign: 'middle' };
 const CHECK_COL: React.CSSProperties = { width: 46, padding: '10px 0 10px 14px' };
@@ -217,10 +221,13 @@ const NUM_TH: React.CSSProperties = { ...TH, textAlign: 'right', paddingLeft: 4,
 /** Ten columns: the two on the left stay in view while the rest scroll sideways. */
 const COLUMNS = [46, 300, 96, 96, 96, 96, 84, 104, 84, 76, 84];
 const TABLE_MIN = COLUMNS.reduce((a, b) => a + b, 0);
+/** The Added Products table has a Group column after Product. */
+const ADDED_COLUMNS = [COLUMNS[0], COLUMNS[1], 190, ...COLUMNS.slice(2)];
+const ADDED_MIN = ADDED_COLUMNS.reduce((a, b) => a + b, 0);
 const STICKY_CHECK: React.CSSProperties = { position: 'sticky', left: 0, zIndex: 2 };
 const STICKY_PRODUCT: React.CSSProperties = { position: 'sticky', left: COLUMNS[0], zIndex: 2, borderRight: `1px solid ${HAIR}` };
-const STICKY_HEAD_CHECK: React.CSSProperties = { position: 'sticky', left: 0, zIndex: 3 };
-const STICKY_HEAD_PRODUCT: React.CSSProperties = { position: 'sticky', left: COLUMNS[0], zIndex: 3, borderRight: `1px solid ${HAIR}` };
+const STICKY_HEAD_CHECK: React.CSSProperties = { position: 'sticky', top: 0, left: 0, zIndex: 3 };
+const STICKY_HEAD_PRODUCT: React.CSSProperties = { position: 'sticky', top: 0, left: COLUMNS[0], zIndex: 3, borderRight: `1px solid ${HAIR}` };
 
 function seedOf(text: string): number {
   let h = 0;
@@ -250,6 +257,25 @@ function compactMoney(n: number): string {
   if (n >= 1_000) return `$${(n / 1_000).toFixed(n >= 100_000 ? 0 : 1).replace(/\.0$/, '')}K`;
   return `$${Math.round(n)}`;
 }
+
+/** One row of the Added Products table. Memoised, so a change to one row, or to the picker, does not redraw thousands of others. */
+const AddedRow = memo(function AddedRow({ product: p, group, checked, factor, onToggle, onOpenGroup }: {
+  product: CcProduct; group: ProductGroup | undefined; checked: boolean; factor: number;
+  onToggle: (id: string) => void; onOpenGroup: (anchor: DOMRect, product: CcProduct) => void;
+}) {
+  return (
+    <tr className="ccd-row">
+      <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: '#fff' }}>
+        <RowCheck checked={checked} label={`Select ${p.title}`} onToggle={() => onToggle(p.id)} />
+      </td>
+      <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: '#fff' }}>
+        <ProductCell title={p.title} color={p.thumbnailColor} sku={p.sku} asin={p.asin} eligible={p.eligible} reason={p.ineligibleReason} indent={Boolean(p.parentTitle)} />
+      </td>
+      <td style={TD}><GroupCell product={p} group={group} onOpen={onOpenGroup} /></td>
+      <Metrics inventory={p.inventory} sales={p.sales} adSpend={p.adSpend} adSales={p.adSales} acos={p.acos} seed={p.asin} factor={factor} />
+    </tr>
+  );
+});
 
 function Metrics({ inventory, sales, adSpend, adSales, acos, seed, all = true, factor = 1 }: { inventory: number; sales: number; adSpend: number; adSales: number; acos: number; seed: string; all?: boolean; factor?: number }) {
   const acosColor = acos > 28 ? '#a8763f' : TEXT_MUTED;
@@ -282,11 +308,42 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
   const [addedFilters, setAddedFilters] = useState<Filters>(NO_FILTERS);
   // One range for both tables. The sample figures are per 30 days, so other ranges scale from that.
   const [range, setRange] = useState<DateRange>(DEFAULT_RANGE);
+  // The picker and the manager live in their own layer, so opening them does not redraw the table.
+  const layerRef = useRef<GroupLayerHandle>(null);
+  const [groupFilter, setGroupFilter] = useState<string | null>(null);
+  const groupByProduct = useMemo(() => groupIndex(draft.productGroups), [draft.productGroups]);
+  const groupById = useMemo(() => new Map(draft.productGroups.map((g) => [g.id, g])), [draft.productGroups]);
+  const viewingGroup = groupFilter && groupById.has(groupFilter) ? groupById.get(groupFilter) : null;
+  const groupByProductRef = useRef(groupByProduct);
+  groupByProductRef.current = groupByProduct;
+  const toggleStagedRemove = useCallback((id: string) => setStagedRemove((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; }), []);
+  // The ticked rows, the products and the groups as the callback below needs them, without it being rebuilt on every render.
+  const stagedRef = useRef<Set<string>>(new Set());
+  const productsRef = useRef<CcProduct[]>([]);
+  const groupsRef = useRef<ProductGroup[]>([]);
+  productsRef.current = selectedProducts;
+  groupsRef.current = draft.productGroups;
+  // Opened from a row: it groups that row, or every ticked row when that row is one of them.
+  const openGroupPicker = useCallback((anchor: DOMRect, product: CcProduct) => {
+    const staged = stagedRef.current;
+    const ids = staged.has(product.id) ? Array.from(staged) : [product.id];
+    const wanted = new Set(ids);
+    const chosen = productsRef.current.filter((x) => wanted.has(x.id));
+    layerRef.current?.openPicker(anchor, {
+      label: ids.length > 1 ? ids.length.toLocaleString() + ' selected products' : product.title,
+      currentId: ids.length === 1 ? groupByProductRef.current.get(product.id)?.id ?? null : null,
+      suggested: suggestGroupName(chosen, groupsRef.current),
+      ideas: groupNameIdeas(chosen, groupsRef.current),
+      ids,
+      after: ids.length > 1 ? () => setStagedRemove(new Set()) : undefined,
+    });
+  }, []);
   const factor = daysIn(range) / 30;
   // Ticked in the left table, waiting for "Add Selections".
   const [staged, setStaged] = useState<Set<string>>(new Set());
   // Ticked in the right table, waiting for "Clear".
   const [stagedRemove, setStagedRemove] = useState<Set<string>>(new Set());
+  stagedRef.current = stagedRemove;
   // Parents with child products start expanded.
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(products.filter((p) => p.children?.length).map((p) => p.id)));
 
@@ -305,8 +362,8 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
 
   const shownAdded = useMemo(() => {
     const q = addedSearch.trim().toLowerCase();
-    return selectedProducts.filter((p) => matchesFilters(p, addedFilters) && (!q || `${p.title} ${p.asin} ${p.sku}`.toLowerCase().includes(q)));
-  }, [selectedProducts, addedSearch, addedFilters]);
+    return selectedProducts.filter((p) => matchesFilters(p, addedFilters) && (!viewingGroup || groupByProduct.get(p.id)?.id === viewingGroup.id) && (!q || `${p.title} ${p.asin} ${p.sku}`.toLowerCase().includes(q)));
+  }, [selectedProducts, addedSearch, addedFilters, viewingGroup, groupByProduct]);
 
   // Everything in the left list a user can still add: eligible rows, plus the variations of expanded parents, not already added.
   const addableIds = useMemo(
@@ -331,6 +388,21 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
     onChange({ productIds: Array.from(new Set([...draft.productIds, ...Array.from(staged)])) });
     setStaged(new Set());
   }
+  // Ticked products go straight into a group: pick one or make one, and they are added to the selection with it.
+  function addStagedToGroup(anchor: DOMRect) {
+    const ids = Array.from(staged);
+    if (ids.length === 0) return;
+    const wanted = new Set(ids);
+    const chosen = products.flatMap((x) => [x, ...(x.children ?? [])]).filter((x) => wanted.has(x.id));
+    layerRef.current?.openPicker(anchor, {
+      label: ids.length === 1 && chosen[0] ? chosen[0].title : ids.length.toLocaleString() + ' selected products',
+      currentId: null,
+      suggested: suggestGroupName(chosen, draft.productGroups),
+      ideas: groupNameIdeas(chosen, draft.productGroups),
+      ids,
+      after: addStaged,
+    });
+  }
   function clearAdded() {
     const drop = stagedRemove.size > 0 ? stagedRemove : new Set(draft.productIds);
     onChange({ productIds: draft.productIds.filter((id) => !drop.has(id)) });
@@ -352,8 +424,8 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
           <SearchBox value={search} onChange={setSearch} label="Search all products" />
           <PanelHead title="All Products" count={listedCount}>
             <FilterButton filters={filters} onChange={setFilters} />
-            <ToolButton primary disabled={staged.size === 0} onClick={addStaged}>
-              Add Selections{staged.size > 0 ? ` (${staged.size})` : ''}
+            <ToolButton primary disabled={staged.size === 0} haspopup onClick={(e) => addStagedToGroup(e.currentTarget.getBoundingClientRect())}>
+              Add to a group{staged.size > 0 ? ` (${staged.size})` : ''}
             </ToolButton>
           </PanelHead>
           <FilterStrip filters={filters} onChange={setFilters} />
@@ -362,7 +434,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
             <table style={{ width: '100%', minWidth: TABLE_MIN, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
               <colgroup>{COLUMNS.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
               <thead>
-                <tr style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                <tr>
                   <th style={{ ...TH, ...CHECK_COL, ...STICKY_HEAD_CHECK }}>
                     <RowCheck
                       checked={allStaged} disabled={addableIds.length === 0} label="Select all products on this list"
@@ -389,11 +461,11 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                   const canAdd = p.eligible && !isAdded;
                   return (
                     <Fragment key={p.id}>
-                      <tr className="ccd-row" onClick={() => canAdd && toggleSet(setStaged, p.id)} style={{ cursor: canAdd ? 'pointer' : 'default', background: isAdded ? BRAND_TINT : undefined, opacity: p.eligible ? 1 : 0.6 }}>
-                        <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: isAdded ? BRAND_TINT : '#fff' }}>
-                          <RowCheck checked={staged.has(p.id) || isAdded} disabled={!canAdd} label={`Select ${p.title}`} onToggle={() => toggleSet(setStaged, p.id)} />
+                      <tr className="ccd-row" onClick={() => canAdd && toggleSet(setStaged, p.id)} style={{ cursor: canAdd ? 'pointer' : 'default', opacity: p.eligible && !isAdded ? 1 : 0.6 }}>
+                        <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: '#fff' }}>
+                          <RowCheck checked={!isAdded && staged.has(p.id)} disabled={!canAdd} label={`Select ${p.title}`} onToggle={() => toggleSet(setStaged, p.id)} />
                         </td>
-                        <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: isAdded ? BRAND_TINT : '#fff' }}>
+                        <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: '#fff' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
                             {kids.length > 0 ? (
                               <button
@@ -411,11 +483,11 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                         const kAdded = added.has(k.id);
                         const kCanAdd = p.eligible && !kAdded;
                         return (
-                          <tr key={k.id} className="ccd-row" onClick={() => kCanAdd && toggleSet(setStaged, k.id)} style={{ cursor: kCanAdd ? 'pointer' : 'default', background: kAdded ? BRAND_TINT : SURFACE_MUTED }}>
-                            <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: kAdded ? BRAND_TINT : SURFACE_MUTED }}>
-                              <RowCheck checked={staged.has(k.id) || kAdded} disabled={!kCanAdd} label={`Select ${k.title}`} onToggle={() => toggleSet(setStaged, k.id)} />
+                          <tr key={k.id} className="ccd-row" onClick={() => kCanAdd && toggleSet(setStaged, k.id)} style={{ cursor: kCanAdd ? 'pointer' : 'default', background: SURFACE_MUTED, opacity: kAdded ? 0.6 : 1 }}>
+                            <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: SURFACE_MUTED }}>
+                              <RowCheck checked={!kAdded && staged.has(k.id)} disabled={!kCanAdd} label={`Select ${k.title}`} onToggle={() => toggleSet(setStaged, k.id)} />
                             </td>
-                            <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, paddingLeft: 40, overflow: 'hidden', background: kAdded ? BRAND_TINT : SURFACE_MUTED }}>
+                            <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, paddingLeft: 40, overflow: 'hidden', background: SURFACE_MUTED }}>
                               <span aria-hidden style={{ position: 'absolute', left: 24, top: 0, bottom: '50%', width: 12, borderLeft: `1.5px solid ${BORDER}`, borderBottom: `1.5px solid ${BORDER}`, borderBottomLeftRadius: 6 }} />
                               <ProductCell title={k.title} color={p.thumbnailColor} sku={k.sku} asin={k.asin} indent />
                             </td>
@@ -453,18 +525,30 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
         <Panel pad={14} className="ccd-product-panel ccd-product-panel--selected">
           <SearchBox value={addedSearch} onChange={setAddedSearch} label="Search added products" />
           <PanelHead title="Added Products" count={selectedProducts.length}>
+            {draft.productGroups.length > 0 && (
+              <ToolButton onClick={(e) => layerRef.current?.openManager(e.currentTarget.getBoundingClientRect())} haspopup>
+                Groups <span className="ccd-gcount ccd-num">{draft.productGroups.length.toLocaleString()}</span>
+              </ToolButton>
+            )}
             <FilterButton filters={addedFilters} onChange={setAddedFilters} />
             <ToolButton disabled={selectedProducts.length === 0} onClick={clearAdded}>
               <TrashIcon /> {stagedRemove.size > 0 ? `Clear (${stagedRemove.size})` : 'Clear All'}
             </ToolButton>
           </PanelHead>
           <FilterStrip filters={addedFilters} onChange={setAddedFilters} />
+          {viewingGroup && (
+            <div className="ccd-gf" role="status">
+              Showing the {viewingGroup.productIds.length.toLocaleString()} {viewingGroup.productIds.length === 1 ? 'product' : 'products'} in <strong>{viewingGroup.name}</strong>
+              <button type="button" onClick={() => setGroupFilter(null)}>Show all</button>
+            </div>
+          )}
+          {draft.productGroups.length === 0 && <GroupHint products={selectedProducts.length} />}
 
           <div className="ccd-scroll" style={{ ...PANEL_TABLE, height: 460 }}>
-            <table style={{ width: '100%', minWidth: TABLE_MIN, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
-              <colgroup>{COLUMNS.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+            <table style={{ width: '100%', minWidth: ADDED_MIN, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
+              <colgroup>{ADDED_COLUMNS.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
               <thead>
-                <tr style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                <tr>
                   <th style={{ ...TH, ...CHECK_COL, ...STICKY_HEAD_CHECK }}>
                     <RowCheck
                       checked={allAddedStaged} disabled={shownAdded.length === 0} label="Select all added products"
@@ -472,6 +556,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                     />
                   </th>
                   <th style={{ ...TH, ...STICKY_HEAD_PRODUCT }}>Product</th>
+                  <th style={TH}>Group</th>
                   <th style={NUM_TH}>Inventory</th>
                   <th style={NUM_TH}>Sales</th>
                   <th style={NUM_TH}>Ad spend</th>
@@ -485,19 +570,11 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
               </thead>
               <tbody>
                 {shownAdded.map((p) => (
-                  <tr key={p.id} className="ccd-row">
-                    <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: '#fff' }}>
-                      <RowCheck checked={stagedRemove.has(p.id)} label={`Select ${p.title}`} onToggle={() => toggleSet(setStagedRemove, p.id)} />
-                    </td>
-                    <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: '#fff' }}>
-                      <ProductCell title={p.title} color={p.thumbnailColor} sku={p.sku} asin={p.asin} eligible={p.eligible} reason={p.ineligibleReason} indent={Boolean(p.parentTitle)} />
-                    </td>
-                    <Metrics inventory={p.inventory} sales={p.sales} adSpend={p.adSpend} adSales={p.adSales} acos={p.acos} seed={p.asin} factor={factor} />
-                  </tr>
+                  <AddedRow key={p.id} product={p} group={groupByProduct.get(p.id)} checked={stagedRemove.has(p.id)} factor={factor} onToggle={toggleStagedRemove} onOpenGroup={openGroupPicker} />
                 ))}
                 {shownAdded.length === 0 && (
                   <tr>
-                    <td colSpan={11} style={{ height: 380, textAlign: 'center', color: TEXT_MUTED }}>
+                    <td colSpan={12} style={{ height: 380, textAlign: 'center', color: TEXT_MUTED }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, font: `400 13px/1.4 ${FONT}` }}>
                         <span style={{ color: TEXT_FAINT, display: 'flex' }}><BoxIcon /></span>
                         {selectedProducts.length === 0 ? "There isn't any product added in the list." : 'No added products match these filters.'}
@@ -512,7 +589,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
       </div>
       </div>
 
-      <ProductGroupsPanel draft={draft} selectedProducts={selectedProducts} onChange={onChange} />
+      <GroupLayer ref={layerRef} draft={draft} onChange={onChange} viewingId={viewingGroup ? viewingGroup.id : null} onView={setGroupFilter} />
     </div>
   );
 }

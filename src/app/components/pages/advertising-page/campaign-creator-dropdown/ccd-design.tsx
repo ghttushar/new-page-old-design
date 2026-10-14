@@ -27,39 +27,6 @@ export function Panel({ children, title, aside, pad = 20, style, className }: {
   );
 }
 
-// ── Top-bar stepper ───────────────────────────────────────────────────────────────────────────
-
-interface StepDef { id: CcStepId; label: string }
-
-/** Compact numbered segments for the top bar; reached steps stay clickable. */
-export function Stepper({ steps, current, furthestIndex, onJump }: {
-  steps: StepDef[]; current: CcStepId; furthestIndex: number; onJump: (id: CcStepId) => void;
-}) {
-  const ci = steps.findIndex((s) => s.id === current);
-  return (
-    <ol aria-label="Campaign creation steps" className="ccd-journey">
-      {steps.map((s, i) => {
-        const active = i === ci;
-        const done = i < ci;
-        const reachable = i <= furthestIndex;
-        const next = i === ci + 1;
-        return (
-          <li key={s.id} className={`ccd-journey__step ${active ? 'is-active' : done ? 'is-done' : next ? 'is-next' : ''}`}>
-            {i > 0 && <span aria-hidden className="ccd-journey__rail"><motion.span initial={false} animate={{ scaleX: done || active ? 1 : 0 }} transition={{ type: 'spring', stiffness: 180, damping: 25 }} /></span>}
-            <button type="button" onClick={() => reachable && onJump(s.id)} disabled={!reachable} aria-current={active ? 'step' : undefined} className="ccd-btn ccd-journey__button">
-              {active && <motion.span layoutId="ccd-journey-active" className="ccd-journey__active" transition={{ type: 'spring', stiffness: 380, damping: 31 }} />}
-              <span className="ccd-journey__node">
-                {done ? <span className="ccd-pop" style={{ display: 'flex' }}><CheckIcon size={11} /></span> : i + 1}
-              </span>
-              <span className="ccd-journey__copy"><strong>{s.label}</strong></span>
-            </button>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
 // ── Previous-step summary (kept for reference by other modules) ────────────────────────────────
 
 export interface SummaryItem { id: CcStepId; label: string; value: string; sub?: string }

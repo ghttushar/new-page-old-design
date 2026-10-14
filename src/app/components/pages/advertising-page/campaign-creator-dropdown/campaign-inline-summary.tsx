@@ -1,22 +1,20 @@
 // @ts-nocheck -- presentation-only campaign brief for the ported creator
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, formatCurrency, type CcStepId } from './campaign-creator.types';
 import { useCampaignSummary } from './campaign-summary-context';
+import ScopeSwitch from './scope-switch';
 
 const ICONS = {
   ad: <><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m8 13 3-3 3 3 3-3 4 4M8 8h.01"/></>,
   products: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></>,
   budget: <><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5c-.8-.7-1.9-1-3.1-1-1.7 0-3 .8-3 2s1.1 1.8 3 2.2 3 1 3 2.2-1.3 2.1-3 2.1c-1.4 0-2.7-.5-3.6-1.3M12 5.5v13"/></>,
   target: <><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></>,
+  keywords: <><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5.5 5.5M8 10.5h5M10.5 8v5"/></>,
   structure: <><rect x="3" y="4" width="6" height="5" rx="1"/><rect x="15" y="4" width="6" height="5" rx="1"/><rect x="9" y="15" width="6" height="5" rx="1"/><path d="M6 9v3h12V9M12 12v3"/></>,
 };
 
 function Glyph({ type }: { type: keyof typeof ICONS }) {
   return <svg viewBox="0 0 24 24" aria-hidden>{ICONS[type]}</svg>;
-}
-
-function SummaryItem({ children }: { children: React.ReactNode }) {
-  return <div className="ccd-setup-edit">{children}</div>;
 }
 
 function ProductStack({ products }: { products: ReturnType<typeof useCampaignSummary>['selectedProducts'] }) {
@@ -48,6 +46,30 @@ function BudgetStack({ budget }: { budget: number }) {
           transition={{ type: 'spring', stiffness: 220, damping: 22, delay: i * 0.05 }}
         />
       ))}
+    </span>
+  );
+}
+
+/** Keywords as a short list that fills in as keywords are added, with a magnifier: the same footprint as the other tiles' graphics. */
+function KeywordsMark({ count }: { count: number }) {
+  const lit = count <= 0 ? 0 : count < 4 ? 1 : count < 10 ? 2 : 3;
+  const bars = [14, 18, 12];
+  return (
+    <span className="ccd-dyn" aria-hidden>
+      <svg width="58" height="40" viewBox="0 0 58 40" fill="none">
+        {[0, 1, 2].map((i) => {
+          const on = i < lit;
+          return (
+            <g key={i}>
+              <rect x="3" y={3 + i * 12} width="40" height="9.5" rx="4.75" fill="#fff" stroke={on ? '#8a56b3' : '#e0e3ec'} strokeWidth="1.2" style={{ transition: 'stroke 240ms ease-out' }} />
+              <circle cx="8.6" cy={7.75 + i * 12} r="2" fill={on ? '#77469b' : '#e6e8ef'} style={{ transition: 'fill 240ms ease-out' }} />
+              <rect x="14" y={6.5 + i * 12} width={bars[i] + 8} height="2.5" rx="1.25" fill={on ? '#c7ccd8' : '#eceef3'} />
+            </g>
+          );
+        })}
+        <circle cx="48" cy="26" r="6" fill="#fff" stroke="#77469b" strokeWidth="1.6" />
+        <path d="m52.4 30.4 3.4 3.4" stroke="#77469b" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
     </span>
   );
 }
@@ -137,55 +159,106 @@ function StructureNodes({ structureId }: { structureId?: string }) {
   );
 }
 
-export function InlineSummary() {
+/** The campaigns waiting to be created: a small table with a tick, the same footprint as the other tiles' graphics. */
+function PreviewMark() {
+  return (
+    <span className="ccd-dyn" aria-hidden>
+      <svg width="58" height="40" viewBox="0 0 58 40" fill="none">
+        <rect x="8" y="3" width="42" height="34" rx="6" fill="#fff" stroke="#e0e3ec" strokeWidth="1.2" />
+        <rect x="8" y="3" width="42" height="9" rx="6" fill="#f1f2f6" />
+        <rect x="13" y="6.5" width="14" height="2.4" rx="1.2" fill="#c7ccd8" />
+        {[17, 24.5, 32].map((y, i) => (
+          <g key={y}>
+            <rect x="13" y={y} width="14" height="3" rx="1.5" fill="#dfe2ea" />
+            <rect x="31" y={y} width={14 - i * 2} height="3" rx="1.5" fill="#e9ebf1" />
+          </g>
+        ))}
+      </svg>
+    </span>
+  );
+}
+
+/** The titles of the open step's tile. */
+const ACTIVE_TITLE = { products: 'Products', keywords: 'Keywords', objectives: 'Objectives', targeting: 'Targeting', structure: 'Structure', preview: 'Preview' };
+
+const Tick = () => (
+  <i className="ccd-jb-tick" aria-hidden><svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.4l3 3 6-6.4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg></i>
+);
+
+/**
+ * One bar for the whole journey. Steps already done are summary tiles you can go back to, the step you are on is
+ * the open tile (with the group dropdown), and the steps still to come are plain numbered chips.
+ */
+export function JourneyBar() {
   const context = useCampaignSummary();
-  if (!context || !['products', 'objectives', 'targeting', 'structure'].includes(context.step)) return null;
-  const { step, draft, selectedProducts } = context;
+  if (!context || !context.steps || !context.steps.some((st) => st.id === context.step)) return null;
+  const { step, draft, selectedProducts, totalProducts, onJump, steps, furthestIndex } = context;
   const structure = STRUCTURE_CATALOG.find((item) => item.id === draft.structureId);
-  const strategies = draft.targetingStrategies.map((id) => ({ id, label: TARGETING_STRATEGY_CATALOG[id].label.replace('Keyword — ', '') }));
-  const budgetPerProduct = selectedProducts.length ? draft.dailyBudget / selectedProducts.length : draft.dailyBudget;
+  const routes = draft.targetingStrategies.length;
+  const keywordCount = draft.keywordTargets?.length ?? 0;
+  const negativeCount = draft.negativeKeywords?.length ?? 0;
+  const kwTotal = keywordCount + negativeCount;
+  const kwSummary = kwTotal === 0 ? 'None added' : `${keywordCount} keywords${negativeCount ? ` · ${negativeCount} negative` : ''}`;
 
-  const history = step === 'products' ? [
-    { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
-  ] : step === 'objectives' ? [
-    { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
-    { step: 'products', label: 'products', eyebrow: 'Portfolio', value: `${selectedProducts.length} products`, icon: 'products' },
-  ] : step === 'targeting' ? [
-    { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
-    { step: 'products', label: 'products', eyebrow: 'Products', value: `${selectedProducts.length} selected`, icon: 'products' },
-    { step: 'objectives', label: 'goals', eyebrow: 'Daily budget', value: formatCurrency(draft.dailyBudget), icon: 'budget' },
-  ] : [
-    { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
-    { step: 'products', label: 'products', eyebrow: 'Products', value: `${selectedProducts.length} selected`, icon: 'products' },
-    { step: 'objectives', label: 'goals', eyebrow: 'Budget', value: `${formatCurrency(draft.dailyBudget)} / day`, icon: 'budget' },
-    { step: 'targeting', label: 'targeting', eyebrow: 'Targeting', value: `${strategies.length} routes`, icon: 'target' },
-  ];
-
-  const current = step === 'products' ? {
-    eyebrow: 'Live selection', value: `${selectedProducts.length} product${selectedProducts.length === 1 ? '' : 's'} docked`, icon: <ProductStack products={selectedProducts} />,
-    detail: null, level: Math.min(100, selectedProducts.length * 12),
-  } : step === 'objectives' ? {
-    eyebrow: 'Goal settings', value: `${formatCurrency(draft.dailyBudget)} daily budget`, icon: <BudgetStack budget={draft.dailyBudget} />,
-    detail: <><span><small>Per product</small><strong>{formatCurrency(budgetPerProduct)}</strong></span><span><small>Target ACOS</small><strong>{draft.targetAcos ? `${draft.targetAcos}%` : 'Open'}</strong></span></>, level: Math.min(100, Math.max(8, draft.dailyBudget / 4)),
-  } : step === 'targeting' ? {
-    eyebrow: 'Targeting routes', value: strategies.length ? `${strategies.length} routes connected` : 'Choose routes below', icon: <RouteDots routes={draft.targetingStrategies} />,
-    detail: <AnimatePresence mode="popLayout">{strategies.slice(0, 4).map((strategy) => <motion.span className="ccd-dock-tag" key={strategy.id} layout initial={{ opacity: 0, scale: .8 }} animate={{ opacity: 1, scale: 1 }}>{strategy.label}</motion.span>)}</AnimatePresence>, level: Math.min(100, strategies.length * 14),
-  } : {
-    eyebrow: 'Campaign structure', value: structure?.name ?? 'Choose a structure', icon: <StructureNodes structureId={draft.structureId} />,
-    detail: null, level: structure ? 100 : 12,
+  const graphic = {
+    entry: <AdFormatMark />,
+    products: <ProductStack products={selectedProducts} />,
+    keywords: <KeywordsMark count={kwTotal} />,
+    objectives: <BudgetStack budget={draft.dailyBudget} />,
+    targeting: <RouteDots routes={draft.targetingStrategies} />,
+    structure: <StructureNodes structureId={draft.structureId} />,
+    preview: <PreviewMark />,
+  };
+  const done = {
+    entry: { eyebrow: 'Ad format', value: 'Sponsored Products' },
+    products: { eyebrow: 'Products', value: `${totalProducts ?? selectedProducts.length} selected` },
+    keywords: { eyebrow: 'Keywords', value: kwSummary },
+    objectives: { eyebrow: 'Budget', value: `${formatCurrency(draft.dailyBudget)} / day` },
+    targeting: { eyebrow: 'Targeting', value: `${routes} ${routes === 1 ? 'route' : 'routes'}` },
+    structure: { eyebrow: 'Structure', value: structure?.name ?? 'Custom' },
   };
 
+  const list = [{ id: 'entry', label: 'Ad format' }, ...steps];
+  const current = list.findIndex((item) => item.id === step);
+
   return (
-    <motion.section className="ccd-setup ccd-setup--dock" aria-label="Live campaign setup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="ccd-setup-history">
-        {history.map((item) => <SummaryItem key={item.step}>{item.icon === 'products' ? <ProductStack products={selectedProducts} /> : item.icon === 'budget' ? <BudgetStack budget={draft.dailyBudget} /> : item.icon === 'target' ? <RouteDots routes={draft.targetingStrategies} /> : item.icon === 'ad' ? <AdFormatMark /> : <span className="ccd-setup-icon"><Glyph type={item.icon} /></span>}<span><small>{item.eyebrow}</small><strong>{item.value}</strong></span></SummaryItem>)}
-      </div>
-      <span className="ccd-setup-flow" aria-hidden><i /><b>+</b><i /></span>
-      <div className="ccd-selection-dock">
-        {current.icon}
-        <span className="ccd-selection-dock__copy"><small>{current.eyebrow}</small><strong><motion.b key={current.value} initial={{ y: -7, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>{current.value}</motion.b></strong></span>
-        <div className="ccd-selection-dock__details">{current.detail}</div>
-      </div>
-    </motion.section>
+    <nav className="ccd-jb" aria-label="Campaign creation steps">
+      <ol>
+        {list.map((item, i) => {
+          const isActive = i === current;
+          const isDone = i < current;
+          const reachable = i === 0 || i - 1 <= furthestIndex;
+          return (
+            <li key={item.id} className={`ccd-jb-li${isActive ? ' is-active' : ''}`}>
+              {i > 0 && <span className={`ccd-jb-rail${i <= current ? ' is-done' : ''}`} aria-hidden />}
+              {isDone && (
+                <button type="button" className="ccd-jb-tile" disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}: ${done[item.id].value}. Go back to this step`}>
+                  {graphic[item.id]}
+                  <span className="ccd-jb-copy"><small>{done[item.id].eyebrow}</small><strong>{done[item.id].value}</strong></span>
+                  <Tick />
+                </button>
+              )}
+              {isActive && ACTIVE_TITLE[item.id] && (
+                <div className="ccd-jb-active" aria-current="step">
+                  {graphic[item.id]}
+                  <span className="ccd-jb-title">{ACTIVE_TITLE[item.id]}</span>
+                </div>
+              )}
+              {i > current && (
+                <div className="ccd-jb-chip"><span className="ccd-jb-node">{i}</span><span>{item.label}</span></div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
+}
+
+/** The group dropdown, shown at the right of the page heading on the pages that are set up group by group. */
+export function GroupSwitch() {
+  const context = useCampaignSummary();
+  if (!context || !context.scopes || context.scopes.length === 0 || !context.onScopeChange) return null;
+  const { step, scopes, activeScopeId, pendingScopes, onScopeChange, onApplyToGroups, appliedCount, onUndoApply } = context;
+  return <ScopeSwitch scopes={scopes} activeId={activeScopeId ?? scopes[0].id} pending={pendingScopes ?? new Set()} onChange={onScopeChange} onApply={step === 'products' ? undefined : onApplyToGroups} appliedCount={appliedCount ?? null} onUndo={onUndoApply} />;
 }

@@ -32,6 +32,9 @@ function AttachPopover({ rule, campaigns, selected, anchor, onChange, onClose }:
   rule: CcRule; campaigns: CcCampaign[]; selected: string[]; anchor: DOMRect; onChange: (ids: string[]) => void; onClose: () => void;
 }) {
   const [query, setQuery] = useState('');
+  // Filter by group: a row of the groups under the search bar, opened from the funnel button.
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [groupFilter, setGroupFilter] = useState<string[]>([]);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
@@ -40,8 +43,16 @@ function AttachPopover({ rule, campaigns, selected, anchor, onChange, onClose }:
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const groupOf = (c: CcCampaign) => c.groupName ?? 'Ungrouped';
+  const groupCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    campaigns.forEach((c) => counts.set(groupOf(c), (counts.get(groupOf(c)) ?? 0) + 1));
+    return Array.from(counts.entries());
+  }, [campaigns]);
+  const toggleGroup = (name: string) => setGroupFilter((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]));
+
   const q = query.trim().toLowerCase();
-  const shown = campaigns.filter((c) => !q || ('anarix_' + c.name).toLowerCase().includes(q));
+  const shown = campaigns.filter((c) => (!q || ('anarix_' + c.name).toLowerCase().includes(q)) && (groupFilter.length === 0 || groupFilter.includes(groupOf(c))));
   const toggle = (id: string) => onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
   const width = 360;
   const left = Math.max(8, Math.min(anchor.right - width, window.innerWidth - width - 8));
@@ -66,12 +77,33 @@ function AttachPopover({ rule, campaigns, selected, anchor, onChange, onClose }:
             <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', display: 'flex' }}><SearchIcon /></span>
             <input className="ccd-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search campaigns" aria-label="Search campaigns" style={{ ...FIELD, width: '100%', padding: '7px 8px 7px 30px' }} />
           </span>
+          <button
+            type="button" className={`ccd-rl-filterbtn ccd-rl-pop__filter${filterOpen ? ' is-open' : ''}`} aria-expanded={filterOpen} aria-label="Filter campaigns by group"
+            onClick={() => setFilterOpen((v) => !v)}
+          >
+            <FunnelIcon />Filter{groupFilter.length > 0 && <i className="ccd-num">{groupFilter.length}</i>}
+          </button>
         </div>
+        {filterOpen && (
+          <div className="ccd-rl-pop__groups" role="group" aria-label="Filter by group">
+            <span className="ccd-rl-pop__groups-title">Group{groupFilter.length > 0 && <button type="button" onClick={() => setGroupFilter([])}>Clear</button>}</span>
+            {groupCounts.map(([name, n]) => {
+              const on = groupFilter.includes(name);
+              return (
+                <button key={name} type="button" role="checkbox" aria-checked={on} className="ccd-rl-pop__group" onClick={() => toggleGroup(name)}>
+                  <Checkbox checked={on} size={15} />
+                  <span title={name}>{name}</span>
+                  <small className="ccd-num">{n}</small>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className="ccd-rl-pop__bar">
           <span className="ccd-num">{selected.length} of {campaigns.length} attached</span>
           <span style={{ display: 'inline-flex', gap: 14 }}>
-            <TextButton onClick={() => onChange(campaigns.map((c) => c.id))}>Select all</TextButton>
-            <TextButton onClick={() => onChange([])}>Clear</TextButton>
+            <TextButton onClick={() => onChange(Array.from(new Set([...selected, ...shown.map((c) => c.id)])))}>Select all</TextButton>
+            <TextButton onClick={() => { const drop = new Set(shown.map((c) => c.id)); onChange(selected.filter((id) => !drop.has(id))); }}>Clear</TextButton>
           </span>
         </div>
 
@@ -82,11 +114,11 @@ function AttachPopover({ rule, campaigns, selected, anchor, onChange, onClose }:
               <button key={c.id} type="button" role="checkbox" aria-checked={on} onClick={() => toggle(c.id)} className="ccd-row ccd-rl-pop__item">
                 <Checkbox checked={on} size={16} />
                 <span className="ccd-rl-pop__name" title={c.name}>{c.name}</span>
-                <span className={`ccd-rl-kind ccd-rl-kind--${c.kind}`}>{c.kind === 'auto' ? 'Auto' : 'Manual'}</span>
+                <span className="ccd-rl-group" title={`Group: ${groupOf(c)}`}>{groupOf(c)}</span>
               </button>
             );
           })}
-          {shown.length === 0 && <div style={{ padding: '22px 14px', textAlign: 'center', font: `400 13px/1.5 ${FONT}`, color: TEXT_MUTED }}>No campaigns match that search.</div>}
+          {shown.length === 0 && <div style={{ padding: '22px 14px', textAlign: 'center', font: `400 13px/1.5 ${FONT}`, color: TEXT_MUTED }}>No campaigns match.</div>}
         </div>
 
         <div className="ccd-rl-pop__foot">
@@ -227,6 +259,8 @@ export default function RulesSection({ draft, campaigns, onChange }: {
   const [scopeFilter, setScopeFilter] = useState<RuleScope | 'all'>('all');
   const [popover, setPopover] = useState<{ ruleId: string; anchor: DOMRect } | null>(null);
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
+  // Rules are optional, so the section starts folded away.
+  const [expanded, setExpanded] = useState(false);
 
   const visible = useMemo(() => MOCK_RULES.filter((r) => {
     if (ruleIncompatibility(r, marketplace) !== null) return false;
@@ -246,7 +280,18 @@ export default function RulesSection({ draft, campaigns, onChange }: {
   const open = popover ? MOCK_RULES.find((r) => r.id === popover.ruleId) : undefined;
 
   return (
-    <Panel title="Rules">
+    <Panel
+      title={<>Rules <span className="ccd-rl-optional">(Optional)</span></>}
+      pad={expanded ? 20 : 0}
+      aside={
+        <button type="button" className={`ccd-rl-toggle${expanded ? ' is-open' : ''}`} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>
+          {!expanded && attachedRules.length > 0 && <span className="ccd-rl-toggle__n">{attachedRules.length} attached</span>}
+          {expanded ? 'Hide' : 'Show'}
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M4 6.2l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
+      }
+    >
+      {expanded && (<>
       <p style={{ margin: '0 0 16px', font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED }}>
         Attach your new campaigns to the Rules already in your account. Rules can't be created or changed from here.
       </p>
@@ -321,6 +366,7 @@ export default function RulesSection({ draft, campaigns, onChange }: {
           onChange={(ids) => setAssignment(open.id, ids)} onClose={() => setPopover(null)}
         />
       )}
+      </>)}
     </Panel>
   );
 }

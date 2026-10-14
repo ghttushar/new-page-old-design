@@ -115,7 +115,6 @@ export enum FeatureRoutes {
   CAMPAIGN_MANAGER = `campaign-manager`,
   CAMPAIGN_CREATOR = `campaign-creator`,
   CAMPAIGN_CREATOR_DROPDOWN = `campaign-creator-dropdown`,
-  CAMPAIGN_CREATOR_NEW_IDEA = `campaign-creator-new-idea`,
   QUERIES = `queries`,
   JOB_LIST = `job-list`,
   HISTORY = `history`,

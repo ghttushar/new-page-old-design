@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BIDDING_STRATEGIES, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
 import { DEFAULT_NAMING } from '../campaign-creator.types';
 import { Panel } from '../ccd-design';
@@ -29,6 +29,12 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
   const [mode, setMode] = useState<Mode>('even');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [namingOpen, setNamingOpen] = useState(false);
+  // Which group's campaigns the table shows.
+  const [groupFilter, setGroupFilter] = useState('');
+  const groupNames = useMemo(() => Array.from(new Set(campaigns.map((c) => c.groupName).filter(Boolean) as string[])), [campaigns]);
+  // One group at a time, the first until another is picked.
+  const shownGroup = groupNames.includes(groupFilter) ? groupFilter : groupNames[0] ?? '';
+  const visible = shownGroup ? campaigns.filter((c) => c.groupName === shownGroup) : campaigns;
 
   const patchCampaign = (id: string, patch: Partial<CcCampaign>) => onCommit(campaigns.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const renameAdGroup = (id: string, name: string) => onCommit(campaigns.map((c) => (c.id === id ? { ...c, adGroups: c.adGroups.map((ag, i) => (i === 0 ? { ...ag, name } : ag)) } : c)));
@@ -53,13 +59,22 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
   }
 
   const editing = campaigns.find((c) => c.id === editingId);
-  const adGroupTotal = sum(campaigns.map((c) => c.adGroups.length));
+  const adGroupTotal = sum(visible.map((c) => c.adGroups.length));
+  const shownAllocated = round2(sum(visible.map((c) => c.dailyBudget)));
 
   return (
     <Panel
       title="Campaigns" pad="4px 20px 18px"
       aside={
         <span className="ccd-ctab-tools">
+          {groupNames.length > 0 && (
+            <label className="ccd-pb-mode">
+              <span>Group</span>
+              <select className="ccd-input" value={shownGroup} aria-label="Show the campaigns of one group" onChange={(e) => setGroupFilter(e.target.value)}>
+                {groupNames.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </label>
+          )}
           <label className="ccd-pb-mode">
             <span>Split budget</span>
             <select className="ccd-input" value={mode} aria-label="How the budget is split" onChange={(e) => pickMode(e.target.value as Mode)}>
@@ -72,6 +87,20 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
         </span>
       }
     >
+      <div className={`ccd-pb-status ${ok ? 'is-ok' : 'is-off'}`} role="status">
+        {ok ? (
+          <>
+            <svg width={14} height={14} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3 8.4l3.2 3.2L13 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span>The campaigns add up to your {formatCurrency(overall)} daily budget.</span>
+          </>
+        ) : (
+          <>
+            <span>{gap > 0 ? `${formatCurrency(gap)} over` : `${formatCurrency(-gap)} under`} your {formatCurrency(overall)} daily budget. The campaigns can't be created until the total matches.</span>
+            <TextButton onClick={rebalance}>Rebalance to {formatCurrency(overall)}</TextButton>
+          </>
+        )}
+      </div>
+
       <div className="ccd-scroll ccd-ctab-scroll">
         <table className="ccd-ctab">
           <colgroup>
@@ -81,7 +110,7 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
             <tr><th>Campaign</th><th>Ad type</th><th>Budget</th><th>Bidding strategy</th><th>Adjust bids by placement</th><th>Ad group name</th><th>Targeting type</th></tr>
           </thead>
           <tbody>
-            {campaigns.map((c) => {
+            {visible.map((c) => {
               const rules = rulesForCampaign(draft, c.id);
               const targets = sum(c.adGroups.map((a) => a.targets.length));
               const negatives = sum(c.adGroups.map((a) => a.negatives.length));
@@ -92,7 +121,6 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
                   <td>
                     <span className="ccd-ctab-two">
                       <CounterInput value={c.name} max={106} label="Campaign name" onChange={(v) => patchCampaign(c.id, { name: v })} />
-                      {c.groupName && <span className="ccd-ctab-group">Group: {c.groupName}</span>}
                       {rules.length > 0 && <span className="ccd-ctab-ruleline">{plural(rules.length, 'rule')}: {rules.join(', ')}</span>}
                     </span>
                   </td>
@@ -128,26 +156,12 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, onC
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={2}>Total <span className="ccd-ctab-sub ccd-ctab-sub--inline">{plural(campaigns.length, 'campaign')} · {plural(adGroupTotal, 'ad group')}</span></td>
-              <td className={`ccd-num${ok ? '' : ' is-off'}`}>{formatCurrency(allocated)}</td>
+              <td colSpan={2}>Total <span className="ccd-ctab-sub ccd-ctab-sub--inline">{plural(visible.length, 'campaign')} · {plural(adGroupTotal, 'ad group')}</span></td>
+              <td className={`ccd-num${ok ? '' : ' is-off'}`}>{formatCurrency(shownAllocated)}</td>
               <td colSpan={4} />
             </tr>
           </tfoot>
         </table>
-      </div>
-
-      <div className={`ccd-pb-status ${ok ? 'is-ok' : 'is-off'}`} role="status">
-        {ok ? (
-          <>
-            <svg width={14} height={14} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3 8.4l3.2 3.2L13 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            <span>The campaigns add up to your {formatCurrency(overall)} daily budget.</span>
-          </>
-        ) : (
-          <>
-            <span>{gap > 0 ? `${formatCurrency(gap)} over` : `${formatCurrency(-gap)} under`} your {formatCurrency(overall)} daily budget. The campaigns can't be created until the total matches.</span>
-            <TextButton onClick={rebalance}>Rebalance to {formatCurrency(overall)}</TextButton>
-          </>
-        )}
       </div>
 
       {namingOpen && (

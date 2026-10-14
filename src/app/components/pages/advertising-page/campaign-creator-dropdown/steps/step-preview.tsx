@@ -6,7 +6,7 @@ import RulesSection from './preview-rules';
 import CampaignsTable from './preview-campaigns';
 import { decorateCampaigns } from './preview-cells';
 import { withShares } from './budget-math';
-import type { Scope } from '../product-groups';
+import { UNGROUPED_COLOR, pickSettings, type Scope } from '../product-groups';
 
 /** Puts the keywords from the Keywords step into the generated campaigns: targets on manual ones, negatives on all of them. */
 function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
@@ -33,7 +33,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
   draft: CcDraft; selectedProducts: CcProduct[]; scopes: Scope[]; onChange: (patch: Partial<CcDraft>) => void;
 }) {
   // Without groups the plan is one scope, exactly as before. With groups, each group builds its own campaigns from its own settings.
-  const scopes: Scope[] = groupScopes.length > 0 ? groupScopes : [{ id: 'all', name: '', products: selectedProducts, draft: sharedDraft }];
+  const scopes: Scope[] = groupScopes.length > 0 ? groupScopes : [{ id: 'all', name: '', products: selectedProducts, color: UNGROUPED_COLOR, settings: pickSettings(sharedDraft), draft: sharedDraft }];
   const grouped = groupScopes.length > 0;
   const planBudget = scopes.reduce((sum, sc) => sum + sc.draft.dailyBudget, 0);
   const draft: CcDraft = { ...sharedDraft, dailyBudget: planBudget };

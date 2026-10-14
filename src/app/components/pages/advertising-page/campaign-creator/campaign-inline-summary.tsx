@@ -8,6 +8,7 @@ const ICONS = {
   products: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></>,
   budget: <><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5c-.8-.7-1.9-1-3.1-1-1.7 0-3 .8-3 2s1.1 1.8 3 2.2 3 1 3 2.2-1.3 2.1-3 2.1c-1.4 0-2.7-.5-3.6-1.3M12 5.5v13"/></>,
   target: <><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></>,
+  keywords: <><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5.5 5.5M8 10.5h5M10.5 8v5"/></>,
   structure: <><rect x="3" y="4" width="6" height="5" rx="1"/><rect x="15" y="4" width="6" height="5" rx="1"/><rect x="9" y="15" width="6" height="5" rx="1"/><path d="M6 9v3h12V9M12 12v3"/></>,
 };
 
@@ -48,6 +49,30 @@ function BudgetStack({ budget }: { budget: number }) {
           transition={{ type: 'spring', stiffness: 220, damping: 22, delay: i * 0.05 }}
         />
       ))}
+    </span>
+  );
+}
+
+/** Keywords as a short list that fills in as keywords are added, with a magnifier: the same footprint as the other tiles' graphics. */
+function KeywordsMark({ count }: { count: number }) {
+  const lit = count <= 0 ? 0 : count < 4 ? 1 : count < 10 ? 2 : 3;
+  const bars = [14, 18, 12];
+  return (
+    <span className="cc-dyn" aria-hidden>
+      <svg width="58" height="40" viewBox="0 0 58 40" fill="none">
+        {[0, 1, 2].map((i) => {
+          const on = i < lit;
+          return (
+            <g key={i}>
+              <rect x="3" y={3 + i * 12} width="40" height="9.5" rx="4.75" fill="#fff" stroke={on ? '#8a56b3' : '#e0e3ec'} strokeWidth="1.2" style={{ transition: 'stroke 240ms ease-out' }} />
+              <circle cx="8.6" cy={7.75 + i * 12} r="2" fill={on ? '#77469b' : '#e6e8ef'} style={{ transition: 'fill 240ms ease-out' }} />
+              <rect x="14" y={6.5 + i * 12} width={bars[i] + 8} height="2.5" rx="1.25" fill={on ? '#c7ccd8' : '#eceef3'} />
+            </g>
+          );
+        })}
+        <circle cx="48" cy="26" r="6" fill="#fff" stroke="#77469b" strokeWidth="1.6" />
+        <path d="m52.4 30.4 3.4 3.4" stroke="#77469b" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
     </span>
   );
 }
@@ -139,29 +164,43 @@ function StructureNodes({ structureId }: { structureId?: string }) {
 
 export function InlineSummary() {
   const context = useCampaignSummary();
-  if (!context || !['products', 'objectives', 'targeting', 'structure'].includes(context.step)) return null;
+  if (!context || !['products', 'keywords', 'objectives', 'targeting', 'structure'].includes(context.step)) return null;
   const { step, draft, selectedProducts } = context;
   const structure = STRUCTURE_CATALOG.find((item) => item.id === draft.structureId);
   const strategies = draft.targetingStrategies.map((id) => ({ id, label: TARGETING_STRATEGY_CATALOG[id].label.replace('Keyword — ', '') }));
   const budgetPerProduct = selectedProducts.length ? draft.dailyBudget / selectedProducts.length : draft.dailyBudget;
 
+  const kwTotal = (draft.keywordTargets?.length ?? 0) + (draft.negativeKeywords?.length ?? 0);
+  const kwSummary = kwTotal === 0 ? 'None added' : `${draft.keywordTargets?.length ?? 0} keywords${draft.negativeKeywords?.length ? ` · ${draft.negativeKeywords.length} negative` : ''}`;
   const history = step === 'products' ? [
     { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
+  ] : step === 'keywords' ? [
+    { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
+    { step: 'products', label: 'products', eyebrow: 'Portfolio', value: `${selectedProducts.length} products`, icon: 'products' },
   ] : step === 'objectives' ? [
     { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
     { step: 'products', label: 'products', eyebrow: 'Portfolio', value: `${selectedProducts.length} products`, icon: 'products' },
+    { step: 'keywords', label: 'keywords', eyebrow: 'Keywords', value: kwSummary, icon: 'keywords' },
   ] : step === 'targeting' ? [
     { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
     { step: 'products', label: 'products', eyebrow: 'Products', value: `${selectedProducts.length} selected`, icon: 'products' },
+    { step: 'keywords', label: 'keywords', eyebrow: 'Keywords', value: kwSummary, icon: 'keywords' },
     { step: 'objectives', label: 'goals', eyebrow: 'Daily budget', value: formatCurrency(draft.dailyBudget), icon: 'budget' },
   ] : [
     { step: 'entry', label: 'Ad type', eyebrow: 'Ad format', value: 'Sponsored Products', icon: 'ad' },
     { step: 'products', label: 'products', eyebrow: 'Products', value: `${selectedProducts.length} selected`, icon: 'products' },
+    { step: 'keywords', label: 'keywords', eyebrow: 'Keywords', value: kwSummary, icon: 'keywords' },
     { step: 'objectives', label: 'goals', eyebrow: 'Budget', value: `${formatCurrency(draft.dailyBudget)} / day`, icon: 'budget' },
     { step: 'targeting', label: 'targeting', eyebrow: 'Targeting', value: `${strategies.length} routes`, icon: 'target' },
   ];
 
-  const current = step === 'products' ? {
+  const keywordCount = draft.keywordTargets?.length ?? 0;
+  const negativeCount = draft.negativeKeywords?.length ?? 0;
+  const current = step === 'keywords' ? {
+    eyebrow: 'Keywords', value: keywordCount + negativeCount === 0 ? 'None added yet' : `${keywordCount} keyword${keywordCount === 1 ? '' : 's'} added`,
+    icon: <KeywordsMark count={keywordCount + negativeCount} />,
+    detail: <span><small>Negative keywords</small><strong>{negativeCount}</strong></span>, level: Math.min(100, (keywordCount + negativeCount) * 8),
+  } : step === 'products' ? {
     eyebrow: 'Live selection', value: `${selectedProducts.length} product${selectedProducts.length === 1 ? '' : 's'} docked`, icon: <ProductStack products={selectedProducts} />,
     detail: null, level: Math.min(100, selectedProducts.length * 12),
   } : step === 'objectives' ? {
@@ -178,7 +217,7 @@ export function InlineSummary() {
   return (
     <motion.section className="cc-setup cc-setup--dock" aria-label="Live campaign setup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <div className="cc-setup-history">
-        {history.map((item) => <SummaryItem key={item.step}>{item.icon === 'products' ? <ProductStack products={selectedProducts} /> : item.icon === 'budget' ? <BudgetStack budget={draft.dailyBudget} /> : item.icon === 'target' ? <RouteDots routes={draft.targetingStrategies} /> : item.icon === 'ad' ? <AdFormatMark /> : <span className="cc-setup-icon"><Glyph type={item.icon} /></span>}<span><small>{item.eyebrow}</small><strong>{item.value}</strong></span></SummaryItem>)}
+        {history.map((item) => <SummaryItem key={item.step}>{item.icon === 'products' ? <ProductStack products={selectedProducts} /> : item.icon === 'budget' ? <BudgetStack budget={draft.dailyBudget} /> : item.icon === 'target' ? <RouteDots routes={draft.targetingStrategies} /> : item.icon === 'ad' ? <AdFormatMark /> : item.icon === 'keywords' ? <KeywordsMark count={kwTotal} /> : <span className="cc-setup-icon"><Glyph type={item.icon} /></span>}<span><small>{item.eyebrow}</small><strong>{item.value}</strong></span></SummaryItem>)}
       </div>
       <span className="cc-setup-flow" aria-hidden><i /><b>+</b><i /></span>
       <div className="cc-selection-dock">

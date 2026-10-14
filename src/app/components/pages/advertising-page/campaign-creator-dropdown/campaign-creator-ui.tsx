@@ -2,7 +2,6 @@
 // the app (Signals / Alerts), refined with depth, accent tints and motion.
 // Colours mirror the --ccd-* tokens in src/styles.css; they stay as hex here because SVG presentation
 // attributes (fill/stroke) cannot read CSS variables.
-import { InlineSummary } from './campaign-inline-summary';
 
 export const BRAND = '#77469b';
 export const BRAND_HOVER = '#653a86';
@@ -203,7 +202,9 @@ export function TextButton({ children, onClick, tone = BRAND }: { children: Reac
 
 // ── Layout pieces ─────────────────────────────────────────────────────────────────────────────
 
-export function StepHeading({ eyebrow, title, summary = true }: { eyebrow?: string; title: string; summary?: boolean }) {
+import { GroupSwitch } from './campaign-inline-summary';
+
+export function StepHeading({ eyebrow, title }: { eyebrow?: string; title: string }) {
   return (
     <header className="ccd-step-heading">
       {eyebrow && (
@@ -211,8 +212,10 @@ export function StepHeading({ eyebrow, title, summary = true }: { eyebrow?: stri
           <SparkleGlyph size={10} />{eyebrow}
         </div>
       )}
-      <h1 style={{ margin: 0, font: `700 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}</h1>
-      {summary && <InlineSummary />}
+      <div className="ccd-step-heading__row">
+        <h1 style={{ margin: 0, font: `700 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}</h1>
+        <GroupSwitch />
+      </div>
     </header>
   );
 }

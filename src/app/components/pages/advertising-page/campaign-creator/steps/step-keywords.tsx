@@ -149,7 +149,7 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
 
   return (
     <div>
-      <StepHeading title="Add keywords" summary={false} />
+      <StepHeading title="Add keywords" />
 
       <div className="cc-kw">
         {/* Left: what to add */}

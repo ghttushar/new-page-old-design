@@ -683,7 +683,7 @@ export const EMPTY_DRAFT: CcDraft = {
   endDate: '',
   biddingStrategy: 'Fixed bids',
   placementAdjust: { top: null, product: null, rest: null },
-  placementInclusion: ALL_PLACEMENTS,
+  placementInclusion: { ...ALL_PLACEMENTS, buyBox: false },
   totalBudgetMode: 'total',
   keywordTargets: [],
   negativeKeywords: [],

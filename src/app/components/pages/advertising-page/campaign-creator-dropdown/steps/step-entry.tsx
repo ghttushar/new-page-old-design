@@ -103,7 +103,7 @@ export default function StepEntry({ draft, onChange }: {
 }) {
   return (
     <div>
-      <StepHeading title="Choose an ad format" summary={false} />
+      <StepHeading title="Choose an ad format" />
       <div role="radiogroup" aria-label="Ad type" className="ccd-ad-grid">
         {FORMATS.map((f) => {
           const selected = f.ready && draft.adType === 'sponsored-products';
