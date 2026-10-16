@@ -8,6 +8,7 @@ import {
   ChartPieSliceIcon,
   ClockCountdownIcon,
   ClockIcon,
+  LayoutIcon,
   MegaphoneSimpleIcon,
   SoundcloudLogoIcon,
   SquaresFourIcon,
@@ -268,6 +269,13 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
     ),
     feature: FeaturesEnum.SIGNALS,
     divider: true,
+  });
+
+  subMenuItems.unshift({
+    key: FeatureRoutes.DASHBOARD,
+    primaryText: 'Dashboard',
+    icon: <LayoutIcon className={styles.icon} />,
+    feature: FeaturesEnum.DASHBOARD,
   });
 
   if (isInternalUser) {

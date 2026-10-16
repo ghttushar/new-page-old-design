@@ -1,0 +1,1886 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&display=swap');
+@import 'src/assets/styles/variables/variables.scss';
+
+// Dashboard. A cool grey canvas, white widgets with one shared anatomy, and the brand purple ($primary-color)
+// only on things you act on. Hierarchy comes from type and spacing; colour is kept for meaning (risk, gain).
+//
+// Radius scale (kept everywhere): containers 12px (widgets, cards, modal panes 16px), controls 8px, small controls 7px,
+// tags 6px. Sizes are in px on purpose: the app's root font-size makes 1rem about 10px.
+
+$ink: #1d2129;
+$body: #3b414b;
+$muted: #5f6672;
+$faint: #858b96;
+$line: #e3e6ec;
+$hair: #eef0f4;
+$canvas: #f4f5f8;
+$rail: #f7f8fa;
+$hover: #f2f4f7;
+$tint: #f5effb;
+$tint-line: #e3d8f0;
+$risk: #a8433b;
+$risk-soft: #fbefed;
+$risk-bar: #c97066;
+$gain: #2b7558;
+$gain-soft: #eaf5ef;
+$gain-bar: #5a9b80;
+$display: 'Inter Tight', Inter, sans-serif;
+$ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+
+// ── Page ─────────────────────────────────────────────────────────────────────────────────────
+
+.page {
+  position: relative;
+  min-height: calc(100dvh - 64px);
+  padding: 20px 28px 72px;
+  background: $canvas;
+  font-family: Inter, sans-serif;
+  color: $ink;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+// Today: a greeting, then the day in ink with the date and time in grey.
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.greeting {
+  margin: 0;
+  font: 600 24px/1.2 $display;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.todayLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+
+  strong {
+    color: $ink;
+    font: 600 13.5px/1.3 Inter, sans-serif;
+  }
+
+  span,
+  time {
+    color: $muted;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  time {
+    padding-left: 10px;
+    border-left: 1px solid #d6dae1;
+  }
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+
+// ── Buttons ──────────────────────────────────────────────────────────────────────────────────
+
+%btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: 600 13px/1 Inter, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, transform 120ms ease-out;
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  @extend %btn;
+  border: 1px solid $primary-color;
+  background: $primary-color;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    border-color: #643a85;
+    background: #643a85;
+  }
+
+  &:disabled {
+    border-color: #efe9f6;
+    background: #efe9f6;
+    color: #b6a3cc;
+  }
+}
+
+.btnGhost {
+  @extend %btn;
+  border: 1px solid #dde0e7;
+  background: #fff;
+  color: $ink;
+
+  &:hover:not(:disabled) {
+    border-color: #c9cdd6;
+    background: #fafbfc;
+  }
+}
+
+.btnDark {
+  @extend %btn;
+  height: 32px;
+  border: 1px solid $ink;
+  background: $ink;
+  color: #fff;
+
+  &:hover {
+    background: #30353f;
+  }
+}
+
+%btnSmall {
+  @extend %btn;
+  gap: 5px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+
+.btnSmall {
+  @extend %btnSmall;
+  border: 1px solid $tint-line;
+  background: $tint;
+  color: $primary-color;
+
+  &:hover {
+    border-color: $primary-color;
+    background: $primary-color;
+    color: #fff;
+  }
+}
+
+.btnSmallGhost {
+  @extend %btnSmall;
+  border: 1px solid #dde0e7;
+  background: #fff;
+  color: $ink;
+
+  &:hover {
+    border-color: #c9cdd6;
+  }
+}
+
+.btnSmallDanger {
+  @extend %btnSmall;
+  border: 1px solid #f0d3cf;
+  background: #fff;
+  color: $risk;
+
+  &:hover {
+    background: $risk-soft;
+  }
+}
+
+.textBtn,
+.textBtnMuted {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 12.5px/1.4 Inter, sans-serif;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &:disabled {
+    color: #c3c7d0;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+}
+
+.textBtn {
+  color: $primary-color;
+}
+
+.textBtnMuted {
+  color: $muted;
+}
+
+.iconBtn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: $faint;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    background: $hover;
+    color: $ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 1px;
+  }
+}
+
+// ── Grid ─────────────────────────────────────────────────────────────────────────────────────
+
+.gridWrap {
+  position: relative;
+}
+
+.grid {
+  position: relative;
+  z-index: 1;
+}
+
+.guides {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--dash-cols), 1fr);
+  gap: 16px;
+  pointer-events: none;
+  animation: fadeIn 200ms ease-out both;
+
+  span {
+    border-radius: 8px;
+    background: rgba(22, 24, 33, 0.035);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gridMoving {
+  :global(.react-grid-item) {
+    transition: transform 180ms $ease;
+  }
+
+  :global(.react-grid-item.react-draggable-dragging),
+  :global(.react-grid-item.resizing) {
+    z-index: 5;
+    transition: none;
+  }
+
+  :global(.react-grid-item.react-draggable-dragging) .widget {
+    box-shadow: 0 28px 50px -28px rgba(22, 24, 33, 0.42);
+  }
+
+  :global(.react-grid-placeholder) {
+    border: 1.5px dashed #a3a9b4;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    opacity: 1;
+    transition-duration: 120ms;
+  }
+}
+
+// A corner mark, drawn with two borders.
+.resizeHandle {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  z-index: 3;
+  width: 12px !important;
+  height: 12px !important;
+  border-right: 2px solid #a3a9b4;
+  border-bottom: 2px solid #a3a9b4;
+  border-radius: 0 0 4px 0;
+  background: none !important;
+  cursor: se-resize;
+  transform: none !important;
+  opacity: 0;
+  transition: border-color 150ms ease-out, opacity 140ms ease-out;
+
+  &::after {
+    display: none;
+  }
+
+  &:hover {
+    border-color: $ink;
+  }
+}
+
+:global(.react-grid-item):hover > .resizeHandle,
+:global(.react-grid-item.resizing) > .resizeHandle {
+  opacity: 1;
+}
+
+// ── Widget ───────────────────────────────────────────────────────────────────────────────────
+
+.widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.widgetHead {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 13px 10px 0 16px;
+}
+
+
+
+
+
+// The drag handle sits in the header's left margin and appears on hover.
+.grip {
+  position: absolute;
+  top: 13px;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 22px;
+  border-radius: 5px;
+  color: #a3a9b4;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 140ms ease-out, background-color 140ms ease-out, color 140ms ease-out;
+
+  &:hover {
+    background: $hover;
+    color: $ink;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.widget:hover .grip,
+.widget:focus-within .grip,
+:global(.react-draggable-dragging) .grip {
+  opacity: 1;
+}
+
+.widgetHeading {
+  flex: 1;
+  min-width: 0;
+}
+
+.widgetTitle {
+  overflow: hidden;
+  margin: 0;
+  color: $ink;
+  font: 600 13.5px/1.45 Inter, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.widgetScope {
+  overflow: hidden;
+  margin: 1px 0 0;
+  color: $faint;
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.widgetActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.widgetBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 16px 16px;
+}
+
+// ── Controls ─────────────────────────────────────────────────────────────────────────────────
+
+.selectChip,
+.selectPlain,
+.selectField {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  font: 500 12.5px/1 Inter, sans-serif;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  svg {
+    flex: none;
+    color: $faint;
+    transition: transform 160ms ease-out;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 1px;
+  }
+}
+
+.selectChip {
+  height: 28px;
+  margin-right: 2px;
+  padding: 0 8px 0 10px;
+  border: 1px solid $line;
+  border-radius: 7px;
+  background: #fff;
+  color: $ink;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    border-color: #c9cdd6;
+  }
+}
+
+.selectPlain {
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: $muted;
+
+  &:hover {
+    background: $hover;
+    color: $ink;
+  }
+}
+
+.selectField {
+  justify-content: space-between;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid $line;
+  border-radius: 8px;
+  background: #fff;
+  color: $ink;
+  font-size: 13px;
+
+  &[aria-expanded='true'] {
+    border-color: $primary-color;
+  }
+}
+
+.caretOpen {
+  transform: rotate(180deg);
+}
+
+.floating {
+  position: fixed;
+  z-index: 1500;
+  padding: 6px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 36px -16px rgba(22, 24, 33, 0.3);
+  font-family: Inter, sans-serif;
+  animation: floatIn 140ms ease-out both;
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.menuGroupLabel {
+  padding: 8px 10px 4px;
+  color: $faint;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.menuNote {
+  padding: 6px 10px 8px;
+  color: $faint;
+  font-size: 12.5px;
+}
+
+.menuList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: $ink;
+  font: 500 13px/1.3 Inter, sans-serif;
+  text-align: left;
+  cursor: pointer;
+
+  span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  svg {
+    flex: none;
+    color: $muted;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: $hover;
+    outline: none;
+  }
+
+  &[aria-selected='true'] {
+    color: $primary-color;
+    font-weight: 600;
+
+    svg {
+      color: $primary-color;
+    }
+  }
+}
+
+.menuDanger,
+.menuDanger svg {
+  color: $risk !important;
+}
+
+.menuSep {
+  height: 1px;
+  margin: 4px 6px;
+  background: $hair;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: #eff1f4;
+}
+
+.segment {
+  padding: 6px 11px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: $muted;
+  font: 500 12.5px/1 Inter, sans-serif;
+  cursor: pointer;
+
+  &[aria-checked='true'] {
+    background: #fff;
+    color: $ink;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(22, 24, 33, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 1px;
+  }
+}
+
+.toggle {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #d3d7de;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+
+  i {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(22, 24, 33, 0.2);
+    transition: transform 160ms $ease;
+  }
+
+  &[aria-checked='true'] {
+    background: $primary-color;
+
+    i {
+      transform: translateX(14px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 10px;
+  border: 1px solid $line;
+  border-radius: 7px;
+  background: #fff;
+  color: $body;
+  font: 500 12.5px/1.2 Inter, sans-serif;
+  cursor: pointer;
+  transition: background-color 140ms ease-out, border-color 140ms ease-out, color 140ms ease-out;
+
+  &:hover {
+    border-color: #c9cdd6;
+  }
+
+  &[aria-pressed='true'] {
+    border-color: $tint-line;
+    background: $tint;
+    color: $primary-color;
+    font-weight: 600;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 1px;
+  }
+}
+
+.customize {
+  padding: 10px 8px 4px;
+}
+
+.customizeHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+
+  strong {
+    font: 600 14px/1.3 Inter, sans-serif;
+  }
+
+  span {
+    color: $faint;
+    font-size: 12px;
+  }
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .fieldLabel {
+    margin: 0;
+  }
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: $body;
+  font: 500 12.5px/1.35 Inter, sans-serif;
+}
+
+.customizeFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 2px 4px;
+  border-top: 1px solid $hair;
+}
+
+// ── Value widgets ────────────────────────────────────────────────────────────────────────────
+
+.kpi {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.kpiFigure {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.kpiValue {
+  color: $ink;
+  font: 600 40px/1 $display;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font: 600 12px/1 Inter, sans-serif;
+  font-variant-numeric: tabular-nums;
+
+  span {
+    margin-left: 3px;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+}
+
+.deltaBad {
+  background: $risk-soft;
+  color: $risk;
+}
+
+.deltaGood {
+  background: $gain-soft;
+  color: $gain;
+}
+
+.kpiCaption {
+  margin: 8px 0 0;
+  color: $muted;
+  font-size: 12.5px;
+}
+
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.splitRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 36px;
+  grid-template-areas: 'name value share' 'bar bar bar';
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.splitName {
+  grid-area: name;
+  overflow: hidden;
+  color: $body;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.splitValue {
+  grid-area: value;
+  color: $ink;
+  font: 600 12.5px/1.3 Inter, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.splitShare {
+  grid-area: share;
+  color: $faint;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.splitBar {
+  grid-area: bar;
+  display: block;
+  height: 3px;
+
+  i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 2px;
+    transform-origin: left center;
+    transition: transform 320ms $ease;
+  }
+}
+
+.kpiRisk .splitBar i {
+  background: $risk-bar;
+}
+
+.kpiGain .splitBar i {
+  background: $gain-bar;
+}
+
+// ── Lists (messages, while you were away) ────────────────────────────────────────────────────
+
+.empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 20px;
+  color: $faint;
+  font-size: 13px;
+  text-align: center;
+}
+
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #d3d7de transparent;
+}
+
+.msgList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: -6px -8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.msg {
+  border-radius: 10px;
+  transition: background-color 160ms ease-out;
+}
+
+.msgOpen {
+  background: $rail;
+}
+
+.msgHead {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 12px;
+  align-items: start;
+  gap: 11px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-family: Inter, sans-serif;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $hover;
+  }
+
+  .msgOpen &:hover {
+    background: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -2px;
+  }
+}
+
+.msgIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #eef0f4;
+  color: $muted;
+}
+
+.msgText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.msgTop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.msgSender {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: $ink;
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msgTime {
+  flex: none;
+  color: $faint;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.msgSubject {
+  overflow: hidden;
+  color: $muted;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Unread reads heavier, in ink. No marker.
+.msgUnread {
+  color: $ink;
+  font-weight: 600;
+}
+
+.msgCaret {
+  margin-top: 9px;
+  color: $faint;
+}
+
+.msgBodyWrap {
+  overflow: hidden;
+}
+
+.msgBody {
+  padding: 0 14px 14px 49px;
+
+  p {
+    margin: 8px 0 0;
+    color: $body;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+}
+
+.msgFrom {
+  color: $faint;
+  font-size: 12px;
+}
+
+.msgFiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 6px 10px;
+    border: 1px solid $line;
+    border-radius: 8px;
+    background: #fff;
+    color: $body;
+    font-size: 12px;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      color: $faint;
+      font-size: 11px;
+    }
+  }
+}
+
+.msgActions {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.listMore {
+  width: 100%;
+  padding: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: $primary-color;
+  font: 600 12.5px/1 Inter, sans-serif;
+  cursor: pointer;
+
+  &:hover {
+    background: $hover;
+  }
+}
+
+.away {
+  margin: -6px -8px 0;
+}
+
+.awayGroup + .awayGroup {
+  margin-top: 4px;
+}
+
+.awayGroupLabel {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 8px 4px;
+  background: #fff;
+  color: $ink;
+  font: 600 12px/1.3 Inter, sans-serif;
+
+  span {
+    color: $faint;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.awayList {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 64px;
+    width: 1px;
+    background: $line;
+  }
+}
+
+.awayRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 18px;
+  width: 100%;
+  padding: 8px 10px 8px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-family: Inter, sans-serif;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -2px;
+  }
+}
+
+.awayTime {
+  position: relative;
+  padding-top: 1px;
+  color: $faint;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+
+  // Where this alert meets the rail.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 9px;
+    right: -13px;
+    width: 9px;
+    height: 1px;
+    background: #a3a9b4;
+  }
+}
+
+.awayText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.awayTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: $ink;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.awayMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: $faint;
+  font-size: 11.5px;
+}
+
+.awayHigh {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: $risk-soft;
+  color: $risk;
+  font-weight: 600;
+}
+
+.awayValue {
+  padding-top: 1px;
+  font: 600 12.5px/1.3 Inter, sans-serif;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.valueRisk {
+  color: $risk;
+}
+
+.valueGain {
+  color: $gain;
+}
+
+// ── Empty dashboard ──────────────────────────────────────────────────────────────────────────
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-top: 12px;
+}
+
+.emptyIntro {
+  max-width: 560px;
+
+  h2 {
+    margin: 0;
+    font: 600 26px/1.2 $display;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 8px 0 18px;
+    color: $muted;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+}
+
+.quickTitle {
+  margin: 0 0 12px;
+  font: 600 13px/1.3 Inter, sans-serif;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (max-width: 1280px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ── Widget library ───────────────────────────────────────────────────────────────────────────
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 20, 28, 0.36);
+  backdrop-filter: blur(4px);
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: rgba(18, 20, 28, 0.52);
+    backdrop-filter: none;
+  }
+}
+
+.library {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  width: min(1120px, 100%);
+  height: min(780px, 100%);
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 40px 80px -40px rgba(18, 20, 28, 0.5);
+  font-family: Inter, sans-serif;
+  color: $ink;
+  outline: none;
+
+  @media (max-width: 760px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  border-right: 1px solid $line;
+  background: $rail;
+
+  @media (max-width: 760px) {
+    padding: 14px;
+    border-right: 0;
+    border-bottom: 1px solid $line;
+  }
+}
+
+.railTitle {
+  margin: 0 6px 14px;
+  font: 600 15px/1.3 Inter, sans-serif;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid $line;
+  border-radius: 8px;
+  background: #fff;
+  color: $faint;
+  transition: border-color 150ms ease-out;
+
+  &:focus-within {
+    border-color: $primary-color;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: $ink;
+    font: 400 13px/1 Inter, sans-serif;
+  }
+}
+
+.railNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+
+  @media (max-width: 760px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.railLabel {
+  padding: 14px 10px 6px;
+  color: $faint;
+  font-size: 11.5px;
+  font-weight: 600;
+
+  @media (max-width: 760px) {
+    display: none;
+  }
+}
+
+.railItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: $body;
+  font: 500 13.5px/1 Inter, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+
+  svg {
+    color: $faint;
+  }
+
+  span {
+    flex: 1;
+  }
+
+  em {
+    color: $faint;
+    font-size: 12px;
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:hover {
+    background: #eceef2;
+  }
+
+  &[aria-current='page'] {
+    background: #fff;
+    color: $ink;
+    font-weight: 600;
+    box-shadow: 0 0 0 1px $line;
+
+    svg {
+      color: $ink;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -2px;
+  }
+}
+
+.libMain {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.libHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 20px 16px 26px;
+
+  h3 {
+    margin: 0;
+    font: 600 18px/1.25 Inter, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: $muted;
+    font-size: 13px;
+  }
+}
+
+.libScroll {
+  padding: 4px 26px 28px;
+}
+
+.libEmpty {
+  padding: 40px 0;
+  color: $muted;
+  font-size: 13.5px;
+}
+
+.libSection + .libSection {
+  margin-top: 30px;
+}
+
+.libSectionTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 12px;
+  font: 600 13px/1.3 Inter, sans-serif;
+
+  span {
+    color: $faint;
+    font-weight: 500;
+  }
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 150ms ease-out;
+
+  &:hover {
+    border-color: #ced2da;
+  }
+}
+
+// The real widget, rendered with its defaults and scaled down.
+.cardPreview {
+  position: relative;
+  height: 188px;
+  overflow: hidden;
+  border-bottom: 1px solid $hair;
+  background: $canvas;
+  pointer-events: none;
+}
+
+.cardStage {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: calc((100% - 28px) / 0.74);
+  transform: scale(0.74);
+  transform-origin: top left;
+}
+
+.miniTile {
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.miniHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 13px 14px 0 16px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  strong {
+    font: 600 13.5px/1.45 Inter, sans-serif;
+  }
+
+  span {
+    overflow: hidden;
+    color: $faint;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  em {
+    flex: none;
+    padding: 6px 9px;
+    border: 1px solid $line;
+    border-radius: 7px;
+    color: $ink;
+    font: 500 12.5px/1 Inter, sans-serif;
+    font-style: normal;
+  }
+}
+
+.miniBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 16px 16px;
+}
+
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+
+  p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    margin: 0;
+    color: $muted;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+
+  strong {
+    font: 600 14px/1.3 Inter, sans-serif;
+  }
+}
+
+.cardOn {
+  flex: none;
+  color: $primary-color;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.cardData {
+  overflow: hidden;
+  color: $faint;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.libFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px 12px 26px;
+  border-top: 1px solid $hair;
+  background: #fff;
+  color: $body;
+  font-size: 13px;
+}
+
+// Templates
+
+.tplView {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.saveBar {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: $rail;
+}
+
+.saveText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font: 600 14px/1.3 Inter, sans-serif;
+  }
+
+  span {
+    color: $muted;
+    font-size: 12.5px;
+  }
+}
+
+.saveField {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d8dbe2;
+  border-radius: 8px;
+  background: #fff;
+  color: $ink;
+  font: 400 13px/1 Inter, sans-serif;
+  outline: none;
+
+  &::placeholder {
+    color: #7d838e;
+  }
+
+  &:focus {
+    border-color: $primary-color;
+  }
+
+  &:disabled {
+    background: #f4f5f8;
+    cursor: not-allowed;
+  }
+}
+
+.formNote {
+  margin: 0;
+  color: $risk;
+  font-size: 12px;
+}
+
+.formNoteOk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: $gain;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tplGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tplCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: #fff;
+}
+
+// A template's layout: each widget as a labelled block at its real place and size.
+.thumb {
+  position: relative;
+  height: 132px;
+  margin: 12px 12px 0;
+  border-radius: 8px;
+  background: $canvas;
+
+  span {
+    position: absolute;
+    padding: 3px;
+  }
+
+  i {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    padding: 5px 6px;
+    border: 1px solid #dde1e8;
+    border-radius: 5px;
+    background: #fff;
+    color: $muted;
+    font: 500 10px/1.2 Inter, sans-serif;
+    font-style: normal;
+  }
+}
+
+.thumbBlank {
+  border: 1.5px dashed #d3d7de;
+  background: #fff;
+}
+
+.tplInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px 4px;
+
+  strong {
+    overflow: hidden;
+    font: 600 14px/1.3 Inter, sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: $faint;
+    font-size: 12px;
+  }
+}
+
+.tplActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 14px;
+
+  .iconBtn {
+    margin-left: auto;
+  }
+}
+
+.tplHint {
+  margin: -8px 0 0;
+  color: $muted;
+  font-size: 13px;
+}
+
+// ── Undo ─────────────────────────────────────────────────────────────────────────────────────
+
+.undo {
+  position: fixed;
+  right: 0;
+  bottom: 24px;
+  left: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  margin: 0 auto;
+  padding: 8px 8px 8px 16px;
+  border-radius: 10px;
+  background: $ink;
+  color: #fff;
+  font: 500 13px/1.3 Inter, sans-serif;
+  box-shadow: 0 16px 36px -18px rgba(22, 24, 33, 0.5);
+
+  button {
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: #d9c6ee;
+    font: 600 13px/1 Inter, sans-serif;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 16px 16px 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guides,
+  .floating {
+    animation: none;
+  }
+
+  .gridMoving :global(.react-grid-item),
+  .splitBar i {
+    transition: none;
+  }
+}

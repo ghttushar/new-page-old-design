@@ -67,6 +67,9 @@ export enum FeaturesEnum {
 
   // Signals
   SIGNALS = 'signals',
+
+  // Dashboard
+  DASHBOARD = 'dashboard',
 }
 
 export enum FeatureRoutes {
@@ -135,6 +138,7 @@ export enum FeatureRoutes {
   RULE_CREATION = 'rule-creation',
   JIVA_CHATBOT_PAGE = 'jiva-page',
   SIGNALS = 'signals',
+  DASHBOARD = 'dashboard',
 }
 
 export enum PermissionsEnum {

@@ -1,0 +1,288 @@
+import { CheckIcon, LayoutIcon, MagnifyingGlassIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import useModalLock from '../notifications/use-modal-lock';
+import type { DashboardTemplate, WidgetCategory, WidgetDefinition, WidgetInstance, WidgetKind } from './dashboard.types';
+import { CATEGORIES, WIDGETS, WIDGET_ORDER, widgetsIn } from './widget-registry';
+import styles from './dashboard.module.scss';
+
+/** Which part of the library is open: every widget, one area's widgets, or the templates. */
+export type LibraryView = 'all' | WidgetCategory | 'templates';
+
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const noop = () => undefined;
+
+/** The widget itself, rendered with its default settings and scaled down. What you see is what you add. */
+function LivePreview({ def }: { def: WidgetDefinition }) {
+  const { Body, defaults, title, header } = def;
+  const headerLabel = header?.options.find((o) => o.value === defaults[header.key])?.label;
+  return (
+    <div className={styles.cardPreview} aria-hidden>
+      <div className={styles.cardStage}>
+        <div className={styles.miniTile}>
+          <div className={styles.miniHead}>
+            <div>
+              <strong>{title}</strong>
+              <span>{def.describe(defaults)}</span>
+            </div>
+            {headerLabel && <em>{headerLabel}</em>}
+          </div>
+          <div className={styles.miniBody}><Body config={defaults} onConfig={noop} preview /></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function WidgetCard({ def, count, onAdd }: { def: WidgetDefinition; count: number; onAdd: () => void }) {
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!flash) return undefined;
+    const id = window.setTimeout(() => setFlash(false), 1200);
+    return () => window.clearTimeout(id);
+  }, [flash]);
+  return (
+    <li className={styles.card}>
+      <LivePreview def={def} />
+      <div className={styles.cardBody}>
+        <div className={styles.cardTop}>
+          <strong>{def.title}</strong>
+          {count > 0 && <span className={styles.cardOn}>{count > 1 ? `On dashboard ×${count}` : 'On dashboard'}</span>}
+        </div>
+        <p>{def.summary}</p>
+        <div className={styles.cardFoot}>
+          <span className={styles.cardData}>{def.dataPoints.join(', ')}</span>
+          <button type="button" className={styles.btnSmall} onClick={() => { onAdd(); setFlash(true); }} aria-label={`Add ${def.title}`}>
+            {flash ? <><CheckIcon size={13} weight="bold" />Added</> : <><PlusIcon size={13} weight="bold" />Add</>}
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/** A template drawn as its layout: one labelled block per widget, at its real place and size. */
+function LayoutThumb({ template }: { template?: DashboardTemplate }) {
+  const items = template?.layouts.lg ?? [];
+  const rows = Math.max(12, ...items.map((l) => l.y + l.h));
+  const kindOf = new Map(template?.widgets.map((w) => [w.id, w.kind]) ?? []);
+  return (
+    <div className={`${styles.thumb}${template ? '' : ` ${styles.thumbBlank}`}`} aria-hidden>
+      {items.map((l) => {
+        const kind = kindOf.get(l.i);
+        return (
+          <span
+            key={l.i}
+            style={{ left: `${(l.x / 12) * 100}%`, top: `${(l.y / rows) * 100}%`, width: `${(l.w / 12) * 100}%`, height: `${(l.h / rows) * 100}%` }}
+          >
+            <i>{kind ? WIDGETS[kind].title : ''}</i>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+function TemplatesView({ widgets, templates, currentName, onSave, onApply, onDelete, onBlank }: {
+  widgets: WidgetInstance[]; templates: DashboardTemplate[]; currentName: string;
+  onSave: (name: string) => void; onApply: (t: DashboardTemplate) => void; onDelete: (id: string) => void; onBlank: () => void;
+}) {
+  const [name, setName] = useState('');
+  const [saved, setSaved] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const taken = templates.some((t) => t.name.toLowerCase() === name.trim().toLowerCase());
+  const canSave = widgets.length > 0 && name.trim().length > 0 && !taken;
+
+  return (
+    <div className={styles.tplView}>
+      <form className={styles.saveBar} onSubmit={(e) => { e.preventDefault(); if (canSave) { onSave(name); setSaved(name.trim()); setName(''); } }}>
+        <div className={styles.saveText}>
+          <strong>Save the current dashboard</strong>
+          <span>{widgets.length === 0 ? 'Add a widget first, then save the layout to reuse it.' : `Keeps its ${widgets.length} widgets with their settings, sizes and places.`}</span>
+        </div>
+        <div className={styles.saveField}>
+          <input
+            className={styles.input} value={name} maxLength={48} placeholder="Name, for example Morning check-in"
+            aria-label="Template name" disabled={widgets.length === 0}
+            onChange={(e) => { setName(e.target.value); setSaved(null); }}
+          />
+          <button type="submit" className={styles.btnPrimary} disabled={!canSave}>Save template</button>
+        </div>
+        {taken && <p className={styles.formNote} role="alert">A template with this name already exists.</p>}
+        {saved && <p className={styles.formNoteOk} role="status"><CheckIcon size={13} weight="bold" />Saved as {saved}</p>}
+      </form>
+
+      <ul className={styles.tplGrid}>
+        <li className={styles.tplCard}>
+          <LayoutThumb />
+          <div className={styles.tplInfo}>
+            <strong>Blank dashboard</strong>
+            <span>Start again from an empty canvas.</span>
+          </div>
+          <div className={styles.tplActions}>
+            <button type="button" className={styles.btnSmallGhost} onClick={onBlank}>Use</button>
+          </div>
+        </li>
+        {templates.map((t) => (
+          <li key={t.id} className={styles.tplCard}>
+            <LayoutThumb template={t} />
+            <div className={styles.tplInfo}>
+              <strong title={t.name}>{t.name}</strong>
+              <span>
+                {t.widgets.length} {t.widgets.length === 1 ? 'widget' : 'widgets'}, saved {new Date(t.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+              </span>
+            </div>
+            <div className={styles.tplActions}>
+              {confirmDelete === t.id ? (
+                <>
+                  <button type="button" className={styles.btnSmallDanger} onClick={() => { onDelete(t.id); setConfirmDelete(null); }}>Delete</button>
+                  <button type="button" className={styles.btnSmallGhost} onClick={() => setConfirmDelete(null)}>Keep</button>
+                </>
+              ) : (
+                <>
+                  {currentName === t.name ? <span className={styles.cardOn}>Current</span> : (
+                    <button type="button" className={styles.btnSmall} onClick={() => onApply(t)}>Apply</button>
+                  )}
+                  <button type="button" className={styles.iconBtn} aria-label={`Delete ${t.name}`} title="Delete" onClick={() => setConfirmDelete(t.id)}><TrashIcon size={15} /></button>
+                </>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+      {templates.length === 0 && <p className={styles.tplHint}>Saved templates appear here. Apply one to swap the whole dashboard in a click.</p>}
+    </div>
+  );
+}
+
+interface LibraryProps {
+  widgets: WidgetInstance[];
+  templates: DashboardTemplate[];
+  currentName: string;
+  onAdd: (k: WidgetKind) => void;
+  onClose: () => void;
+  onSave: (name: string) => void;
+  onApply: (t: DashboardTemplate) => void;
+  onDelete: (id: string) => void;
+  onBlank: () => void;
+}
+
+function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onClose, onSave, onApply, onDelete, onBlank }: LibraryProps & { initialView: LibraryView }) {
+  const reduce = useReducedMotion();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = useState<LibraryView>(initialView);
+  const [query, setQuery] = useState('');
+  const [addedNow, setAddedNow] = useState(0);
+  useModalLock(true);
+  useEffect(() => { panelRef.current?.focus(); }, []);
+
+  const counts = useMemo(() => {
+    const m = new Map<WidgetKind, number>();
+    widgets.forEach((w) => m.set(w.kind, (m.get(w.kind) ?? 0) + 1));
+    return m;
+  }, [widgets]);
+
+  const q = query.trim().toLowerCase();
+  const matches = (d: WidgetDefinition) => !q || `${d.title} ${d.summary} ${d.dataPoints.join(' ')} ${d.category}`.toLowerCase().includes(q);
+  const categories = CATEGORIES.filter((c) => widgetsIn(c.id).length > 0);
+  // Searching always looks across every area.
+  const shownCategories = view === 'all' || q ? categories : categories.filter((c) => c.id === view);
+  const meta = view !== 'all' && view !== 'templates' ? CATEGORIES.find((c) => c.id === view) : null;
+  const resultCount = WIDGET_ORDER.filter((k) => matches(WIDGETS[k])).length;
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }
+    if (e.key !== 'Tab' || !panelRef.current) return;
+    const f = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+    if (f.length === 0) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  };
+
+  const add = (k: WidgetKind) => { onAdd(k); setAddedNow((n) => n + 1); };
+  const railItem = (id: LibraryView, label: string, n: number, Icon?: typeof LayoutIcon) => (
+    <button type="button" className={styles.railItem} aria-current={view === id && !q ? 'page' : undefined} onClick={() => { setView(id); setQuery(''); }}>
+      {Icon && <Icon size={16} />}<span>{label}</span><em>{n}</em>
+    </button>
+  );
+
+  return (
+    <motion.div className={styles.overlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : 0.16 }} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <motion.div
+        ref={panelRef} className={styles.library} role="dialog" aria-modal="true" aria-label="Add to dashboard" tabIndex={-1} onKeyDown={onKeyDown}
+        initial={reduce ? false : { opacity: 0, y: 12, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.99 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+      >
+        <aside className={styles.rail}>
+          <h2 className={styles.railTitle}>Add to dashboard</h2>
+          <label className={styles.search}>
+            <MagnifyingGlassIcon size={15} />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search widgets" aria-label="Search widgets" />
+          </label>
+          <nav className={styles.railNav} aria-label="Library">
+            <span className={styles.railLabel}>Widgets</span>
+            {railItem('all', 'All widgets', WIDGET_ORDER.length, SquaresFourIcon)}
+            {categories.map((c) => railItem(c.id, c.label, widgetsIn(c.id).length))}
+            <span className={styles.railLabel}>Layouts</span>
+            {railItem('templates', 'Templates', templates.length + 1, LayoutIcon)}
+          </nav>
+        </aside>
+
+        <section className={styles.libMain}>
+          <header className={styles.libHead}>
+            <div>
+              <h3>{q ? `Results for “${query.trim()}”` : view === 'templates' ? 'Templates' : meta ? meta.label : 'All widgets'}</h3>
+              <p>
+                {q ? `${resultCount} ${resultCount === 1 ? 'widget' : 'widgets'} found` : view === 'templates'
+                  ? 'Save this dashboard as a template, or swap to one you saved.'
+                  : meta ? meta.description : 'Every widget you can add, grouped by where its data comes from.'}
+              </p>
+            </div>
+            <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="Close"><XIcon size={17} /></button>
+          </header>
+
+          <div className={`${styles.libScroll} ${styles.scrollArea}`}>
+            {view === 'templates' && !q ? (
+              <TemplatesView
+                widgets={widgets} templates={templates} currentName={currentName} onSave={onSave}
+                onApply={(t) => { onApply(t); onClose(); }} onDelete={onDelete} onBlank={() => { onBlank(); onClose(); }}
+              />
+            ) : resultCount === 0 && q ? (
+              <div className={styles.libEmpty}>No widget matches “{query.trim()}”. Try a data point such as alerts, value or messages.</div>
+            ) : (
+              shownCategories.map((c) => {
+                const defs = widgetsIn(c.id).filter(matches);
+                if (defs.length === 0) return null;
+                return (
+                  <section key={c.id} className={styles.libSection}>
+                    {(view === 'all' || q) && <h4 className={styles.libSectionTitle}>{c.label}<span>{defs.length}</span></h4>}
+                    <ul className={styles.cardGrid}>
+                      {defs.map((d) => <WidgetCard key={d.kind} def={d} count={counts.get(d.kind) ?? 0} onAdd={() => add(d.kind)} />)}
+                    </ul>
+                  </section>
+                );
+              })
+            )}
+          </div>
+
+          <AnimatePresence>
+            {addedNow > 0 && view !== 'templates' && (
+              <motion.footer className={styles.libFoot} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
+                <span>{addedNow} {addedNow === 1 ? 'widget' : 'widgets'} added to your dashboard</span>
+                <button type="button" className={styles.btnDark} onClick={onClose}>Done</button>
+              </motion.footer>
+            )}
+          </AnimatePresence>
+        </section>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export default function WidgetLibrary({ open, ...rest }: LibraryProps & { open: LibraryView | null }) {
+  return createPortal(
+    <AnimatePresence>{open && <LibraryBody key="dash-library" initialView={open} {...rest} />}</AnimatePresence>,
+    document.body,
+  );
+}

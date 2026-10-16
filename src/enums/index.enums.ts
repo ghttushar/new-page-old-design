@@ -43,6 +43,7 @@ export enum PageTitleEnum {
   INTEGRATIONS = 'Integrations',
   BILLING = 'Plans & Billing',
   ALERTS = 'Signals',
+  DASHBOARD = 'Dashboard',
 }
 
 export enum DropdownLabelEnum {
