@@ -31,17 +31,6 @@ export function AlertsIcon(props: IconProps) {
   );
 }
 
-/** Brief: a page with a spark — the day at a glance. */
-export function BriefIcon(props: IconProps) {
-  return (
-    <Svg {...props}>
-      <path d="M6 3.6h8.2L19 8.4v11a1.2 1.2 0 0 1-1.2 1.2H6a1.2 1.2 0 0 1-1.2-1.2V4.8A1.2 1.2 0 0 1 6 3.6z" fill="currentColor" fillOpacity={0.1} />
-      <path d="M14 3.8v4.6h4.8" />
-      <path d="M8.4 12.6h7.2M8.4 16h4.4" />
-    </Svg>
-  );
-}
-
 /** Meetings: a calendar with a marked day. */
 export function MeetingsIcon(props: IconProps) {
   return (
@@ -63,4 +52,4 @@ export function WorkStationIcon(props: IconProps) {
   );
 }
 
-export const SIGNAL_TAB_ICONS = { brief: BriefIcon, alerts: AlertsIcon, meetings: MeetingsIcon, workstation: WorkStationIcon } as const;
+export const SIGNAL_TAB_ICONS = { alerts: AlertsIcon, meetings: MeetingsIcon, workstation: WorkStationIcon } as const;

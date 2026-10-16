@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
-import { SIGNAL_TABS, type SignalTabKey, type BriefState } from '@/constants/signals/tabs.constants';
+import { SIGNAL_TABS, type SignalTabKey } from '@/constants/signals/tabs.constants';
 import { SIGNAL_TAB_ICONS } from '../../signals/common/signals-icons';
-import { BriefWidgetGrid } from '../../signals/brief/widgets/brief-widget-grid';
-import { BriefNoIntegration } from '../../signals/brief/brief-no-integration';
-import { BriefOnboard } from '../../signals/brief/brief-onboard';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
 import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
 import { AskJivaPanel } from '../../signals/alerts/ask-jiva-panel';
@@ -31,9 +28,8 @@ export interface SignalsPagePreview {
   workStation?: Omit<React.ComponentProps<typeof WorkStation>, 'onOpenAlert' | 'onOpenMeeting' | 'forceJivaOpen'>;
 }
 
-export function SignalsPage({ initialTab = 'brief', preview }: { initialTab?: SignalTabKey; preview?: SignalsPagePreview } = {}) {
+export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: SignalTabKey; preview?: SignalsPagePreview } = {}) {
   const [activeTab, setActiveTab] = useState<SignalTabKey>(initialTab);
-  const [briefState, setBriefState] = useState<BriefState>('full');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
   const [meetingAskJivaOpen, setMeetingAskJivaOpen] = useState(false);
@@ -195,22 +191,6 @@ export function SignalsPage({ initialTab = 'brief', preview }: { initialTab?: Si
     return () => window.removeEventListener('keydown', onKey);
   }, [calendarOpen, selectedAlertId, selectedMeetingId]);
 
-  const renderBrief = () => {
-    if (briefState !== 'full') {
-      return briefState === 'nointeg'
-        ? <BriefNoIntegration onAlertClick={openAlert} />
-        : <BriefOnboard onComplete={() => setBriefState('full')} onSkip={() => setBriefState('nointeg')} />;
-    }
-
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <BriefWidgetGrid />
-        </div>
-      </div>
-    );
-  };
-
   const renderAlerts = () => {
     const detailPanel = (
       <AlertDetailPanel
@@ -354,7 +334,6 @@ export function SignalsPage({ initialTab = 'brief', preview }: { initialTab?: Si
 
   const tabContent = () => {
     switch (activeTab) {
-      case 'brief': return renderBrief();
       case 'alerts': return renderAlerts();
       case 'meetings': return renderMeetings();
       case 'workstation':
