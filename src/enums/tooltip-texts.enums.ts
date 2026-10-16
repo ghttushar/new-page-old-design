@@ -274,7 +274,7 @@ export enum PAGE_TITLE_TOOLTIPS {
   CONFIGURATION_WIZARD = 'Set global goals and mappings to optimize your campaigns automatically.',
   INTEGRATIONS = 'Connect Claude or ChatGPT to JIVA to unlock AI-powered marketplace intelligence.',
   BILLING = 'Manage your subscription plans, payment methods, and billing history.',
-  DASHBOARD = 'Your own view of Anarix: pick widgets, arrange them, and save the layout as a template.',
+  DASHBOARD = 'Your own view of Anarix: pick nuggets, arrange them, and save the layout as a template.',
 }
 
 export enum RULES_TOOLTIPS {

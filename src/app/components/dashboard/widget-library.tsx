@@ -1,4 +1,4 @@
-import { CheckIcon, LayoutIcon, MagnifyingGlassIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
+import { CheckIcon, FloppyDiskIcon, LayoutIcon, MagnifyingGlassIcon, PencilSimpleIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -84,35 +84,67 @@ function LayoutThumb({ template }: { template?: DashboardTemplate }) {
   );
 }
 
-function TemplatesView({ widgets, templates, currentName, onSave, onApply, onDelete, onBlank }: {
-  widgets: WidgetInstance[]; templates: DashboardTemplate[]; currentName: string;
-  onSave: (name: string) => void; onApply: (t: DashboardTemplate) => void; onDelete: (id: string) => void; onBlank: () => void;
+/** A template's name, edited in place: click it, type, then Enter or click away. Escape keeps the old name. */
+function TemplateName({ template, taken, editing, onEdit, onRename }: {
+  template: DashboardTemplate; taken: (name: string, id: string) => boolean; editing: boolean;
+  onEdit: (on: boolean) => void; onRename: (name: string) => void;
 }) {
-  const [name, setName] = useState('');
-  const [saved, setSaved] = useState<string | null>(null);
+  const [value, setValue] = useState(template.name);
+  const [error, setError] = useState<string | null>(null);
+  const nameRef = useRef<HTMLButtonElement>(null);
+  const wasEditing = useRef(editing);
+  useEffect(() => { if (editing) { setValue(template.name); setError(null); } }, [editing, template.name]);
+  // When editing ends, focus goes back to the name, so the keyboard stays inside the library.
+  useEffect(() => {
+    if (wasEditing.current && !editing) nameRef.current?.focus();
+    wasEditing.current = editing;
+  }, [editing]);
+
+  const commit = () => {
+    const next = value.trim();
+    if (!next || next === template.name) { onEdit(false); return; }
+    if (taken(next, template.id)) { setError('Another template already has this name.'); return; }
+    onRename(next);
+    onEdit(false);
+  };
+
+  if (!editing) {
+    return (
+      <button ref={nameRef} type="button" className={styles.tplName} onClick={() => onEdit(true)} title="Rename">
+        <span>{template.name}</span>
+        <PencilSimpleIcon size={13} />
+      </button>
+    );
+  }
+  return (
+    <>
+      <input
+        className={`${styles.tplNameInput}${error ? ` ${styles.tplNameInvalid}` : ''}`} value={value} maxLength={48}
+        aria-label="Template name" aria-invalid={Boolean(error)} autoFocus
+        onFocus={(e) => e.currentTarget.select()}
+        onChange={(e) => { setValue(e.target.value); setError(null); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onEdit(false); }
+        }}
+        onBlur={commit}
+      />
+      {error && <span className={styles.formNote} role="alert">{error}</span>}
+    </>
+  );
+}
+
+function TemplatesView({ templates, currentName, editingId, justSavedId, onEditing, onRename, onApply, onDelete, onBlank }: {
+  templates: DashboardTemplate[]; currentName: string; editingId: string | null; justSavedId: string | null;
+  onEditing: (id: string | null) => void; onRename: (id: string, name: string) => void;
+  onApply: (t: DashboardTemplate) => void; onDelete: (id: string) => void; onBlank: () => void;
+}) {
+  const reduce = useReducedMotion();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const taken = templates.some((t) => t.name.toLowerCase() === name.trim().toLowerCase());
-  const canSave = widgets.length > 0 && name.trim().length > 0 && !taken;
+  const taken = (name: string, id: string) => templates.some((t) => t.id !== id && t.name.toLowerCase() === name.toLowerCase());
 
   return (
     <div className={styles.tplView}>
-      <form className={styles.saveBar} onSubmit={(e) => { e.preventDefault(); if (canSave) { onSave(name); setSaved(name.trim()); setName(''); } }}>
-        <div className={styles.saveText}>
-          <strong>Save the current dashboard</strong>
-          <span>{widgets.length === 0 ? 'Add a widget first, then save the layout to reuse it.' : `Keeps its ${widgets.length} widgets with their settings, sizes and places.`}</span>
-        </div>
-        <div className={styles.saveField}>
-          <input
-            className={styles.input} value={name} maxLength={48} placeholder="Name, for example Morning check-in"
-            aria-label="Template name" disabled={widgets.length === 0}
-            onChange={(e) => { setName(e.target.value); setSaved(null); }}
-          />
-          <button type="submit" className={styles.btnPrimary} disabled={!canSave}>Save template</button>
-        </div>
-        {taken && <p className={styles.formNote} role="alert">A template with this name already exists.</p>}
-        {saved && <p className={styles.formNoteOk} role="status"><CheckIcon size={13} weight="bold" />Saved as {saved}</p>}
-      </form>
-
       <ul className={styles.tplGrid}>
         <li className={styles.tplCard}>
           <LayoutThumb />
@@ -124,34 +156,44 @@ function TemplatesView({ widgets, templates, currentName, onSave, onApply, onDel
             <button type="button" className={styles.btnSmallGhost} onClick={onBlank}>Use</button>
           </div>
         </li>
-        {templates.map((t) => (
-          <li key={t.id} className={styles.tplCard}>
-            <LayoutThumb template={t} />
-            <div className={styles.tplInfo}>
-              <strong title={t.name}>{t.name}</strong>
-              <span>
-                {t.widgets.length} {t.widgets.length === 1 ? 'widget' : 'widgets'}, saved {new Date(t.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-              </span>
-            </div>
-            <div className={styles.tplActions}>
-              {confirmDelete === t.id ? (
-                <>
-                  <button type="button" className={styles.btnSmallDanger} onClick={() => { onDelete(t.id); setConfirmDelete(null); }}>Delete</button>
-                  <button type="button" className={styles.btnSmallGhost} onClick={() => setConfirmDelete(null)}>Keep</button>
-                </>
-              ) : (
-                <>
-                  {currentName === t.name ? <span className={styles.cardOn}>Current</span> : (
-                    <button type="button" className={styles.btnSmall} onClick={() => onApply(t)}>Apply</button>
-                  )}
-                  <button type="button" className={styles.iconBtn} aria-label={`Delete ${t.name}`} title="Delete" onClick={() => setConfirmDelete(t.id)}><TrashIcon size={15} /></button>
-                </>
-              )}
-            </div>
-          </li>
-        ))}
+        <AnimatePresence initial={false}>
+          {templates.map((t) => (
+            <motion.li
+              key={t.id} layout={!reduce}
+              className={`${styles.tplCard}${justSavedId === t.id ? ` ${styles.tplCardNew}` : ''}`}
+              initial={reduce ? false : { opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <LayoutThumb template={t} />
+              <div className={styles.tplInfo}>
+                <TemplateName
+                  template={t} taken={taken} editing={editingId === t.id}
+                  onEdit={(on) => onEditing(on ? t.id : null)} onRename={(name) => onRename(t.id, name)}
+                />
+                <span>
+                  {t.widgets.length} {t.widgets.length === 1 ? 'nugget' : 'nuggets'}, saved {new Date(t.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                </span>
+              </div>
+              <div className={styles.tplActions}>
+                {confirmDelete === t.id ? (
+                  <>
+                    <button type="button" className={styles.btnSmallDanger} onClick={() => { onDelete(t.id); setConfirmDelete(null); }}>Delete</button>
+                    <button type="button" className={styles.btnSmallGhost} onClick={() => setConfirmDelete(null)}>Keep</button>
+                  </>
+                ) : (
+                  <>
+                    {currentName === t.name ? <span className={styles.cardOn}>Current</span> : (
+                      <button type="button" className={styles.btnSmall} onClick={() => onApply(t)}>Apply</button>
+                    )}
+                    <button type="button" className={styles.iconBtn} aria-label={`Delete ${t.name}`} title="Delete" onClick={() => setConfirmDelete(t.id)}><TrashIcon size={15} /></button>
+                  </>
+                )}
+              </div>
+            </motion.li>
+          ))}
+        </AnimatePresence>
       </ul>
-      {templates.length === 0 && <p className={styles.tplHint}>Saved templates appear here. Apply one to swap the whole dashboard in a click.</p>}
+      {templates.length === 0 && <p className={styles.tplHint}>Save the current dashboard to reuse its layout. Saved templates appear here.</p>}
     </div>
   );
 }
@@ -162,18 +204,29 @@ interface LibraryProps {
   currentName: string;
   onAdd: (k: WidgetKind) => void;
   onClose: () => void;
-  onSave: (name: string) => void;
+  /** Saves the current dashboard and returns the new template's id. */
+  onSave: () => string;
+  onRename: (id: string, name: string) => void;
   onApply: (t: DashboardTemplate) => void;
   onDelete: (id: string) => void;
   onBlank: () => void;
 }
 
-function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onClose, onSave, onApply, onDelete, onBlank }: LibraryProps & { initialView: LibraryView }) {
+function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onClose, onSave, onRename, onApply, onDelete, onBlank }: LibraryProps & { initialView: LibraryView }) {
   const reduce = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<LibraryView>(initialView);
   const [query, setQuery] = useState('');
   const [addedNow, setAddedNow] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [justSavedId, setJustSavedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!justSavedId) return undefined;
+    const id = window.setTimeout(() => setJustSavedId(null), 2400);
+    return () => window.clearTimeout(id);
+  }, [justSavedId]);
+  // Saving drops a new card into the grid with its name ready to type.
+  const saveCurrent = () => { const id = onSave(); setEditingId(id); setJustSavedId(id); };
   useModalLock(true);
   useEffect(() => { panelRef.current?.focus(); }, []);
 
@@ -218,11 +271,11 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
           <h2 className={styles.railTitle}>Add to dashboard</h2>
           <label className={styles.search}>
             <MagnifyingGlassIcon size={15} />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search widgets" aria-label="Search widgets" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search nuggets" aria-label="Search nuggets" />
           </label>
           <nav className={styles.railNav} aria-label="Library">
-            <span className={styles.railLabel}>Widgets</span>
-            {railItem('all', 'All widgets', WIDGET_ORDER.length, SquaresFourIcon)}
+            <span className={styles.railLabel}>Nuggets</span>
+            {railItem('all', 'All nuggets', WIDGET_ORDER.length, SquaresFourIcon)}
             {categories.map((c) => railItem(c.id, c.label, widgetsIn(c.id).length))}
             <span className={styles.railLabel}>Layouts</span>
             {railItem('templates', 'Templates', templates.length + 1, LayoutIcon)}
@@ -232,24 +285,33 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
         <section className={styles.libMain}>
           <header className={styles.libHead}>
             <div>
-              <h3>{q ? `Results for “${query.trim()}”` : view === 'templates' ? 'Templates' : meta ? meta.label : 'All widgets'}</h3>
+              <h3>{q ? `Results for “${query.trim()}”` : view === 'templates' ? 'Templates' : meta ? meta.label : 'All nuggets'}</h3>
               <p>
-                {q ? `${resultCount} ${resultCount === 1 ? 'widget' : 'widgets'} found` : view === 'templates'
-                  ? 'Save this dashboard as a template, or swap to one you saved.'
-                  : meta ? meta.description : 'Every widget you can add, grouped by where its data comes from.'}
+                {q ? `${resultCount} ${resultCount === 1 ? 'nugget' : 'nuggets'} found` : view === 'templates'
+                  ? 'Reuse a layout in one click. Click a template’s name to rename it.'
+                  : meta ? meta.description : 'Every nugget you can add, grouped by where its data comes from.'}
               </p>
             </div>
-            <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="Close"><XIcon size={17} /></button>
+            <div className={styles.libHeadActions}>
+              {view === 'templates' && !q && (
+                <button
+                  type="button" className={styles.btnSmall} onClick={saveCurrent} disabled={widgets.length === 0}
+                  title={widgets.length === 0 ? 'Add a nugget to the dashboard first' : 'Save the current dashboard as a template'}
+                ><FloppyDiskIcon size={14} />Save as template</button>
+              )}
+              <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="Close"><XIcon size={17} /></button>
+            </div>
           </header>
 
           <div className={`${styles.libScroll} ${styles.scrollArea}`}>
             {view === 'templates' && !q ? (
               <TemplatesView
-                widgets={widgets} templates={templates} currentName={currentName} onSave={onSave}
+                templates={templates} currentName={currentName} editingId={editingId} justSavedId={justSavedId}
+                onEditing={setEditingId} onRename={onRename}
                 onApply={(t) => { onApply(t); onClose(); }} onDelete={onDelete} onBlank={() => { onBlank(); onClose(); }}
               />
             ) : resultCount === 0 && q ? (
-              <div className={styles.libEmpty}>No widget matches “{query.trim()}”. Try a data point such as alerts, value or messages.</div>
+              <div className={styles.libEmpty}>No nugget matches “{query.trim()}”. Try a data point such as alerts, value or messages.</div>
             ) : (
               shownCategories.map((c) => {
                 const defs = widgetsIn(c.id).filter(matches);
@@ -269,7 +331,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
           <AnimatePresence>
             {addedNow > 0 && view !== 'templates' && (
               <motion.footer className={styles.libFoot} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
-                <span>{addedNow} {addedNow === 1 ? 'widget' : 'widgets'} added to your dashboard</span>
+                <span>{addedNow} {addedNow === 1 ? 'nugget' : 'nuggets'} added to your dashboard</span>
                 <button type="button" className={styles.btnDark} onClick={onClose}>Done</button>
               </motion.footer>
             )}

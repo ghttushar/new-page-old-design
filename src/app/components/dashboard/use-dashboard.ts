@@ -13,17 +13,18 @@ export const DEFAULT_NAME = 'My dashboard';
 
 const EMPTY: DashboardState = { name: DEFAULT_NAME, widgets: [], layouts: { lg: [], md: [], sm: [] }, templates: [] };
 
+/**
+ * Every visit starts fresh: the dashboard opens empty, in its skeleton state, so the first-visit flow plays each time.
+ * Only saved templates are kept between visits, so any layout can be brought back in one click.
+ */
 function load(): DashboardState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw) as DashboardState;
-    // Drop widgets whose kind no longer exists.
-    const widgets = (parsed.widgets ?? []).filter((w) => WIDGETS[w.kind]);
-    const ids = new Set(widgets.map((w) => w.id));
-    const layouts: Layouts = {};
-    (Object.keys(COLS) as Bp[]).forEach((bp) => { layouts[bp] = (parsed.layouts?.[bp] ?? []).filter((l) => ids.has(l.i)); });
-    return { name: parsed.name || DEFAULT_NAME, widgets, layouts, templates: parsed.templates ?? [] };
+    const parsed = JSON.parse(raw) as Partial<DashboardState>;
+    // Templates that refer to widgets which no longer exist are dropped.
+    const templates = (parsed.templates ?? []).filter((t) => t.widgets.every((w) => WIDGETS[w.kind]));
+    return { ...EMPTY, templates };
   } catch {
     return EMPTY;
   }
@@ -71,8 +72,8 @@ export default function useDashboard() {
   const [state, setState] = useState<DashboardState>(load);
 
   useEffect(() => {
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* storage unavailable */ }
-  }, [state]);
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ templates: state.templates })); } catch { /* storage unavailable */ }
+  }, [state.templates]);
 
   const snapshot = useCallback((): Snapshot => ({ name: state.name, widgets: state.widgets, layouts: state.layouts }), [state]);
   const restore = useCallback((s: Snapshot) => setState((prev) => ({ ...prev, name: s.name, widgets: s.widgets, layouts: s.layouts })), []);
@@ -108,11 +109,30 @@ export default function useDashboard() {
     setState((prev) => ({ ...prev, ...copy, name: t.name }));
   }, []);
 
-  const saveTemplate = useCallback((name: string) => {
+  /** Saves the current dashboard under a free default name and returns the new template's id, so its name can be edited. */
+  const saveTemplate = useCallback((): string => {
+    const id = newId('template');
     setState((prev) => {
       const copy = cloneWithNewIds(prev.widgets, prev.layouts);
-      const template: DashboardTemplate = { id: newId('template'), name: name.trim(), createdAt: Date.now(), ...copy };
+      const taken = new Set(prev.templates.map((t) => t.name.toLowerCase()));
+      let n = prev.templates.length + 1;
+      while (taken.has(`template ${n}`)) n += 1;
+      const template: DashboardTemplate = { id, name: `Template ${n}`, createdAt: Date.now(), ...copy };
       return { ...prev, name: template.name, templates: [template, ...prev.templates] };
+    });
+    return id;
+  }, []);
+
+  const renameTemplate = useCallback((id: string, name: string) => {
+    setState((prev) => {
+      const old = prev.templates.find((t) => t.id === id);
+      if (!old) return prev;
+      return {
+        ...prev,
+        // The dashboard keeps showing the template it came from under its new name.
+        name: prev.name === old.name ? name : prev.name,
+        templates: prev.templates.map((t) => (t.id === id ? { ...t, name } : t)),
+      };
     });
   }, []);
 
@@ -120,5 +140,5 @@ export default function useDashboard() {
     setState((prev) => ({ ...prev, templates: prev.templates.filter((t) => t.id !== id) }));
   }, []);
 
-  return { ...state, snapshot, restore, addWidget, removeWidget, updateConfig, setLayouts, clear, applyTemplate, saveTemplate, deleteTemplate };
+  return { ...state, snapshot, restore, addWidget, removeWidget, updateConfig, setLayouts, clear, applyTemplate, saveTemplate, renameTemplate, deleteTemplate };
 }

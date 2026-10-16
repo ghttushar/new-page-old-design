@@ -1,11 +1,12 @@
 import { LayoutIcon, PlusIcon } from '@phosphor-icons/react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import DashboardGrid from '@/app/components/dashboard/dashboard-grid';
 import styles from '@/app/components/dashboard/dashboard.module.scss';
 import useDashboard, { type Snapshot } from '@/app/components/dashboard/use-dashboard';
-import WidgetLibrary, { WidgetCard, type LibraryView } from '@/app/components/dashboard/widget-library';
-import { CATEGORIES, WIDGETS, widgetsIn } from '@/app/components/dashboard/widget-registry';
+import SkeletonLayout from '@/app/components/dashboard/skeleton-layout';
+import WidgetLibrary, { type LibraryView } from '@/app/components/dashboard/widget-library';
+import { WIDGETS } from '@/app/components/dashboard/widget-registry';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import { pickGreeting, rememberGreeting } from '@/constants/dashboard/greetings';
@@ -18,10 +19,16 @@ const UNDO_MS = 6000;
 function Today() {
   const now = new Date(useNow(15000));
   const [greeting] = useState(() => pickGreeting());
+  const reduce = useReducedMotion();
   useEffect(() => { rememberGreeting(greeting.index); }, [greeting.index]);
   return (
     <div className={styles.today}>
-      <h2 className={styles.greeting}>{greeting.text}</h2>
+      <motion.h2
+        className={styles.greeting}
+        initial={reduce ? false : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 0.8, 0.3, 1] }}
+      >{greeting.text}</motion.h2>
       <p className={styles.todayLine}>
         <strong>{now.toLocaleDateString(undefined, { weekday: 'long' })}</strong>
         <span>{now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
@@ -36,6 +43,7 @@ export function DashboardPage() {
   const dash = useDashboard();
   const { name, widgets, layouts, templates, snapshot, restore, addWidget, removeWidget, updateConfig, setLayouts, applyTemplate, clear } = dash;
   const [library, setLibrary] = useState<LibraryView | null>(null);
+  const empty = widgets.length === 0;
   const [undo, setUndo] = useState<{ label: string; before: Snapshot } | null>(null);
 
   useEffect(() => {
@@ -46,7 +54,7 @@ export function DashboardPage() {
 
   const remove = useCallback((id: string) => {
     const w = widgets.find((x) => x.id === id);
-    setUndo({ label: `${w ? WIDGETS[w.kind].title : 'Widget'} removed`, before: snapshot() });
+    setUndo({ label: `${w ? WIDGETS[w.kind].title : 'Nugget'} removed`, before: snapshot() });
     removeWidget(id);
   }, [widgets, snapshot, removeWidget]);
 
@@ -58,35 +66,22 @@ export function DashboardPage() {
   const apply = (t: (typeof templates)[number]) => { setUndo({ label: `Switched to ${t.name}`, before: snapshot() }); applyTemplate(t); };
   const blank = () => { if (widgets.length) setUndo({ label: 'Dashboard cleared', before: snapshot() }); clear(); };
 
-  const empty = widgets.length === 0;
-
   return (
     <div className={styles.page}>
       <div className={styles.head}>
         <Today />
         <div className={styles.headActions}>
-          <button type="button" className={styles.btnPrimary} onClick={() => setLibrary('all')}><PlusIcon size={14} weight="bold" />Add widget</button>
+          {empty && templates.length > 0 && (
+            <button type="button" className={styles.btnGhost} onClick={() => setLibrary('templates')}><LayoutIcon size={15} />Use a template</button>
+          )}
+          <button
+            type="button" className={`${styles.btnPrimary}${empty ? ` ${styles.btnInvite}` : ''}`} onClick={() => setLibrary('all')}
+          ><PlusIcon size={14} weight="bold" />Add nugget</button>
         </div>
       </div>
 
       {empty ? (
-        <section className={styles.emptyState} aria-label="Empty dashboard">
-          <div className={styles.emptyIntro}>
-            <h2>Build your dashboard</h2>
-            <p>Pick the numbers and feeds you check every day, then arrange them the way you work.</p>
-            {templates.length > 0 && (
-              <button type="button" className={styles.btnGhost} onClick={() => setLibrary('templates')}><LayoutIcon size={15} />Use a template</button>
-            )}
-          </div>
-          {CATEGORIES.filter((c) => widgetsIn(c.id).length > 0).map((c) => (
-            <div key={c.id} className={styles.quickAdd}>
-              <h3 className={styles.quickTitle}>From {c.label}</h3>
-              <ul className={styles.quickGrid}>
-                {widgetsIn(c.id).map((d) => <WidgetCard key={d.kind} def={d} count={0} onAdd={() => addWidget(d.kind)} />)}
-              </ul>
-            </div>
-          ))}
-        </section>
+        <SkeletonLayout />
       ) : (
         <DashboardGrid
           widgets={widgets} layouts={layouts}
@@ -111,6 +106,7 @@ export function DashboardPage() {
         onClose={() => setLibrary(null)}
         onAdd={(k) => addWidget(k)}
         onSave={dash.saveTemplate}
+        onRename={dash.renameTemplate}
         onDelete={dash.deleteTemplate}
         onApply={apply}
         onBlank={blank}
