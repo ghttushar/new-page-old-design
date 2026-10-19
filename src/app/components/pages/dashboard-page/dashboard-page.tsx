@@ -1,7 +1,8 @@
 import { LayoutIcon, PlusIcon } from '@phosphor-icons/react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import DashboardGrid from '@/app/components/dashboard/dashboard-grid';
+import DashboardHello from '@/app/components/dashboard/dashboard-hello';
 import styles from '@/app/components/dashboard/dashboard.module.scss';
 import useDashboard, { type Snapshot } from '@/app/components/dashboard/use-dashboard';
 import SkeletonLayout from '@/app/components/dashboard/skeleton-layout';
@@ -9,34 +10,9 @@ import WidgetLibrary, { type LibraryView } from '@/app/components/dashboard/widg
 import { WIDGETS } from '@/app/components/dashboard/widget-registry';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
-import { pickGreeting, rememberGreeting } from '@/constants/dashboard/greetings';
-import useNow from '@/hooks/use-now.hook';
 import useSubHeader from '@/hooks/use-sub-header.hook';
 
 const UNDO_MS = 6000;
-
-/** A greeting that changes on every visit, with today's day, date and time under it. */
-function Today() {
-  const now = new Date(useNow(15000));
-  const [greeting] = useState(() => pickGreeting());
-  const reduce = useReducedMotion();
-  useEffect(() => { rememberGreeting(greeting.index); }, [greeting.index]);
-  return (
-    <div className={styles.today}>
-      <motion.h2
-        className={styles.greeting}
-        initial={reduce ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 0.8, 0.3, 1] }}
-      >{greeting.text}</motion.h2>
-      <p className={styles.todayLine}>
-        <strong>{now.toLocaleDateString(undefined, { weekday: 'long' })}</strong>
-        <span>{now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-        <time dateTime={now.toISOString()}>{now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</time>
-      </p>
-    </div>
-  );
-}
 
 export function DashboardPage() {
   useSubHeader(PageTitleEnum.DASHBOARD, PAGE_TITLE_TOOLTIPS.DASHBOARD);
@@ -69,7 +45,7 @@ export function DashboardPage() {
   return (
     <div className={styles.page}>
       <div className={styles.head}>
-        <Today />
+        <DashboardHello />
         <div className={styles.headActions}>
           {empty && templates.length > 0 && (
             <button type="button" className={styles.btnGhost} onClick={() => setLibrary('templates')}><LayoutIcon size={15} />Use a template</button>

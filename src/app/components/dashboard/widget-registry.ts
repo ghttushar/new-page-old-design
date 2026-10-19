@@ -1,4 +1,5 @@
 import type { CategoryMeta, WidgetCategory, WidgetDefinition, WidgetKind } from './dashboard.types';
+import { RULES_WIDGETS } from './widgets/rules';
 import { SIGNALS_WIDGETS } from './widgets/signals';
 
 // Every widget the dashboard can hold, grouped by the area of Anarix it comes from.
@@ -6,9 +7,10 @@ import { SIGNALS_WIDGETS } from './widgets/signals';
 
 export const CATEGORIES: CategoryMeta[] = [
   { id: 'Signals', label: 'Signals', description: 'Alerts, the money they carry, and the messages that come with them.' },
+  { id: 'Rules', label: 'Rules', description: 'What your automation rules change, measured against a baseline or against each other.' },
 ];
 
-const ALL: WidgetDefinition[] = [...SIGNALS_WIDGETS];
+const ALL: WidgetDefinition[] = [...SIGNALS_WIDGETS, ...RULES_WIDGETS];
 
 export const WIDGETS = Object.fromEntries(ALL.map((d) => [d.kind, d])) as Record<WidgetKind, WidgetDefinition>;
 

@@ -1,13 +1,13 @@
 import type { ComponentType } from 'react';
 import type { Layouts } from 'react-grid-layout';
 
-export type WidgetKind = 'value-at-risk' | 'opportunity-value' | 'important-messages' | 'while-away';
+export type WidgetKind = 'value-at-risk' | 'opportunity-value' | 'important-messages' | 'while-away' | 'rule-impact' | 'rule-compare';
 
 /**
  * The area of Anarix a widget's data comes from. Each area gets its own entry in the widget library, so adding
  * widgets from another area (Advertising, Profitability, Catalog...) is one new category plus its widget definitions.
  */
-export type WidgetCategory = 'Signals';
+export type WidgetCategory = 'Signals' | 'Rules';
 
 export interface CategoryMeta {
   id: WidgetCategory;

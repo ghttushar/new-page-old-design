@@ -255,7 +255,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
 
   const add = (k: WidgetKind) => { onAdd(k); setAddedNow((n) => n + 1); };
   const railItem = (id: LibraryView, label: string, n: number, Icon?: typeof LayoutIcon) => (
-    <button type="button" className={styles.railItem} aria-current={view === id && !q ? 'page' : undefined} onClick={() => { setView(id); setQuery(''); }}>
+    <button key={id} type="button" className={styles.railItem} aria-current={view === id && !q ? 'page' : undefined} onClick={() => { setView(id); setQuery(''); }}>
       {Icon && <Icon size={16} />}<span>{label}</span><em>{n}</em>
     </button>
   );
