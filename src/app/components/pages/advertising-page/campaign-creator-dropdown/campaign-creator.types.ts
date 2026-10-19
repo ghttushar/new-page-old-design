@@ -565,7 +565,7 @@ export function totalTargets(campaigns: CcCampaign[]): number {
 
 export type CcStepId = 'entry' | 'products' | 'keywords' | 'objectives' | 'targeting' | 'structure' | 'preview' | 'creating' | 'result';
 
-export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'keywords', 'objectives', 'targeting', 'structure', 'preview', 'creating', 'result'];
+export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'targeting', 'structure', 'objectives', 'keywords', 'preview', 'creating', 'result'];
 
 /** A keyword the person adds on the Keywords step. It is applied to every manual campaign. */
 export type KeywordMatch = 'broad' | 'phrase' | 'exact';
@@ -607,9 +607,70 @@ export function todayIso(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+/** Which campaigns to create, chosen right after the ad format: Auto only, Manual only, or both. */
+export type CampaignMode = 'auto' | 'manual' | 'both';
+
+export const CAMPAIGN_MODES: { id: CampaignMode; label: string; description: string }[] = [
+  { id: 'auto', label: 'Auto', description: 'Amazon finds the shoppers and search terms for you. Quickest to set up.' },
+  { id: 'manual', label: 'Manual', description: 'You choose the keywords and products to target, with full control of bids.' },
+  { id: 'both', label: 'Auto and manual', description: 'Run both side by side: Auto to discover, Manual to scale what works.' },
+];
+
+/** The structures that make sense for each campaign type. Auto-only drops the ones that only split Manual campaigns, and the other way round. */
+export const MODE_STRUCTURES: Record<CampaignMode, StructureId[]> = {
+  auto: ['consolidated', 'product-single-auto', 'product-multi-auto', 'custom'],
+  manual: ['consolidated', 'targeting-type', 'product-targeting', 'custom'],
+  both: ['consolidated', 'targeting-type', 'product-targeting', 'product-single-auto', 'product-multi-auto', 'custom'],
+};
+
+/** A structure's one-line description, worded for the campaign type. */
+export function structureTagline(def: StructureDef, mode: CampaignMode): string {
+  if (mode === 'auto') {
+    if (def.id === 'consolidated') return 'One Auto campaign for everything';
+    if (def.id === 'product-single-auto') return 'One Auto campaign per product';
+    if (def.id === 'product-multi-auto') return 'Auto campaigns per product and Auto type';
+  }
+  if (mode === 'manual') {
+    if (def.id === 'consolidated') return 'One Manual campaign for everything';
+    if (def.id === 'targeting-type') return 'One Manual campaign per targeting type';
+    if (def.id === 'product-targeting') return 'Manual campaigns split by product and type';
+  }
+  return def.tagline;
+}
+
+/** Keeps only the targeting a campaign type can use: just Auto, everything but Auto, or all of it. */
+export function strategiesForMode(list: TargetingStrategyId[], mode: CampaignMode): TargetingStrategyId[] {
+  if (mode === 'auto') return ['auto'];
+  if (mode === 'manual') return list.filter((s) => s !== 'auto');
+  return list;
+}
+
+/**
+ * Switches the draft to a campaign type: targeting keeps only what the type can use, a structure that no longer
+ * fits is cleared, and a custom structure built for the old type is dropped. Applies to every product group too.
+ */
+export function applyCampaignMode(draft: CcDraft, mode: CampaignMode): Partial<CcDraft> {
+  const changed = draft.campaignMode !== mode;
+  const fit = <T extends Pick<CcDraft, 'targetingStrategies' | 'structureId' | 'customCampaigns' | 'customPrompt'>>(s: T): Pick<CcDraft, 'targetingStrategies' | 'structureId' | 'customCampaigns' | 'customPrompt'> => ({
+    // Untouched targeting stays empty, so Targeting can fill in its recommendation for the type.
+    targetingStrategies: s.targetingStrategies.length === 0 ? [] : strategiesForMode(s.targetingStrategies, mode),
+    structureId: s.structureId && MODE_STRUCTURES[mode].includes(s.structureId) && !(changed && s.structureId === 'custom') ? s.structureId : null,
+    customCampaigns: changed ? null : s.customCampaigns,
+    customPrompt: changed ? '' : s.customPrompt,
+  });
+  return {
+    campaignMode: mode,
+    ...fit(draft),
+    productGroups: draft.productGroups.map((g) => ({ ...g, settings: { ...g.settings, ...fit(g.settings) } })),
+    generatedCampaigns: changed ? null : draft.generatedCampaigns,
+    generatedKey: changed ? null : draft.generatedKey,
+  };
+}
+
 export interface CcDraft {
   marketplace: Marketplace | null;
   adType: AdType | null;
+  campaignMode: CampaignMode;
   productIds: string[];
   groupingMode: GroupingMode;
   targetAcos: number | null;
@@ -665,6 +726,7 @@ export interface ProductGroup {
 export const EMPTY_DRAFT: CcDraft = {
   marketplace: 'amazon',
   adType: null,
+  campaignMode: 'both',
   productIds: [],
   groupingMode: 'split-by-campaign',
   targetAcos: null,

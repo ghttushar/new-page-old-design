@@ -1,8 +1,8 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AUTO_TYPE_CATALOG, STRUCTURE_CATALOG, accountCampaignLimits, formatCurrency, generateCampaigns, structureCounts, recommendStructure, validateCampaignLimit,
-  type CcCampaign, type CcDraft, type CcProduct, type StructureId, type TargetingStrategyId,
+  AUTO_TYPE_CATALOG, MODE_STRUCTURES, STRUCTURE_CATALOG, accountCampaignLimits, structureTagline, formatCurrency, generateCampaigns, structureCounts, recommendStructure, validateCampaignLimit,
+  type CampaignMode, type CcCampaign, type CcDraft, type CcProduct, type StructureId, type TargetingStrategyId,
 } from '../campaign-creator.types';
 import { StructureMap, groupCampaigns } from './structure-map';
 import { Panel } from '../ccd-design';
@@ -118,7 +118,9 @@ const COMPARE_COPY: Record<StructureId, { auto: string; manual: string }> = {
   custom: { auto: 'User-defined', manual: 'User-defined' },
 };
 
-function CompareTable({ activeId, estimateFor, limit }: { activeId: StructureId; estimateFor: (id: StructureId) => number; limit: number }) {
+function CompareTable({ activeId, estimateFor, limit, catalog, mode }: { activeId: StructureId; estimateFor: (id: StructureId) => number; limit: number; catalog: typeof STRUCTURE_CATALOG; mode: CampaignMode }) {
+  const showAuto = mode !== 'manual';
+  const showManual = mode !== 'auto';
   const th: React.CSSProperties = { textAlign: 'left', padding: '9px 10px', font: `600 11.5px/1.3 ${FONT}`, color: TEXT_MUTED, borderBottom: `1px solid ${BORDER}` };
   const td: React.CSSProperties = { padding: '9px 10px', font: `400 12.5px/1.4 ${FONT}`, color: '#3d434b', borderTop: `1px solid ${HAIR}`, verticalAlign: 'top' };
   return (
@@ -129,20 +131,20 @@ function CompareTable({ activeId, estimateFor, limit }: { activeId: StructureId;
         </colgroup>
         <thead>
           <tr>
-            <th style={th}>Structure</th><th style={th}>Auto campaigns</th><th style={th}>Manual campaigns</th>
+            <th style={th}>Structure</th>{showAuto && <th style={th}>Auto campaigns</th>}{showManual && <th style={th}>Manual campaigns</th>}
             <th style={th}>Product separation</th><th style={th}>Granularity</th><th style={th}>Est. campaigns</th>
           </tr>
         </thead>
         <tbody>
-          {STRUCTURE_CATALOG.map((s) => {
+          {catalog.map((s, i) => {
             const isActive = s.id === activeId;
             const est = s.id === 'custom' ? null : estimateFor(s.id);
             const rowBg = isActive ? BRAND_TINT : 'transparent';
             return (
               <tr key={s.id} aria-current={isActive ? 'true' : undefined}>
-                <td style={{ ...td, background: rowBg, fontWeight: 600, color: TEXT_PRIMARY }}>{s.number}. {s.name}</td>
-                <td style={{ ...td, background: rowBg }}>{COMPARE_COPY[s.id].auto}</td>
-                <td style={{ ...td, background: rowBg }}>{COMPARE_COPY[s.id].manual}</td>
+                <td style={{ ...td, background: rowBg, fontWeight: 600, color: TEXT_PRIMARY }}>{i + 1}. {s.name}</td>
+                {showAuto && <td style={{ ...td, background: rowBg }}>{COMPARE_COPY[s.id].auto}</td>}
+                {showManual && <td style={{ ...td, background: rowBg }}>{COMPARE_COPY[s.id].manual}</td>}
                 <td style={{ ...td, background: rowBg }}>{s.id === 'custom' ? 'User-defined' : s.productSeparation ? 'Yes' : 'No'}</td>
                 <td style={{ ...td, background: rowBg }}>{s.granularity}</td>
                 <td className="ccd-num" style={{ ...td, background: rowBg, color: est !== null && est > limit ? BAD : '#3d434b' }}>
@@ -197,13 +199,14 @@ const MapViewIcon = () => (
 );
 
 /** The visualization card: an icon diagram or the written structure, switchable. */
-function StructureCard({ view, onView, title, empty, legend, graphic, written, compare }: {
+function StructureCard({ view, onView, title, empty, legend, graphic, written, compare, count }: {
+  count: number;
   view: StructureView; onView: (v: StructureView) => void; title?: string; empty?: string; legend: boolean; graphic: React.ReactNode; written: React.ReactNode; compare: React.ReactNode;
 }) {
   return (
     <div className="ccd-structure-card">
       <div className="ccd-structure-card__head">
-        <div><strong>{view === 'compare' ? 'Compare all six structures' : title ?? 'Campaign architecture'}</strong></div>
+        <div><strong>{view === 'compare' ? `Compare the ${count} structures` : title ?? 'Campaign architecture'}</strong></div>
       </div>
       <div className={`ccd-structure-card__body ccd-structure-card__body--${view}`}>
         {view === 'compare' ? compare : empty ? (
@@ -231,11 +234,20 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   const autoLabels = draft.autoTypes.map((id) => AUTO_TYPE_CATALOG.find((a) => a.id === id)?.label ?? id);
   const limits = accountCampaignLimits(draft.marketplace ?? 'amazon');
   const countsFor = (id: StructureId) => structureCounts(id, productCount, hasAuto, manualTypesCount, autoTypesCount);
+  const mode: CampaignMode = draft.campaignMode ?? 'both';
+  const catalog = STRUCTURE_CATALOG.filter((st) => MODE_STRUCTURES[mode].includes(st.id));
+  // A recommendation the type can't use becomes its closest fit.
+  const fitToMode = (id: StructureId): StructureId => {
+    if (MODE_STRUCTURES[mode].includes(id)) return id;
+    if (mode === 'auto') return id === 'product-targeting' ? 'product-single-auto' : 'consolidated';
+    return id === 'product-single-auto' || id === 'product-multi-auto' ? 'product-targeting' : 'consolidated';
+  };
 
-  const recommendation = useMemo(
-    () => recommendStructure(productCount, manualTypesCount, draft.dailyBudget, campaignLimit),
-    [productCount, manualTypesCount, draft.dailyBudget, campaignLimit],
-  );
+  const recommendation = useMemo(() => {
+    const r = recommendStructure(productCount, manualTypesCount, draft.dailyBudget, campaignLimit);
+    return { ...r, structureId: fitToMode(r.structureId) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productCount, manualTypesCount, draft.dailyBudget, campaignLimit, mode]);
 
   function selectStructure(id: StructureId) {
     onChange({ structureId: id, customCampaigns: id === 'custom' ? draft.customCampaigns : null });
@@ -265,11 +277,11 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeId, draft.customCampaigns, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.autoTypes.join(',')],
   );
-  const alternatives = STRUCTURE_CATALOG
+  const alternatives = catalog
     .filter((s) => s.id !== 'custom' && s.id !== activeId && activeCounts
       && countsFor(s.id).totalCampaigns < activeCounts.totalCampaigns && validateCampaignLimit(countsFor(s.id).totalCampaigns, campaignLimit).ok)
     .slice(0, 3)
-    .map((s) => ({ id: s.id, label: `Use Structure ${s.number} — ${s.name}` }));
+    .map((s) => ({ id: s.id, label: `Use Structure ${catalog.indexOf(s) + 1} — ${s.name}` }));
 
   return (
     <div>
@@ -281,7 +293,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             <div><strong>Choose your structure</strong></div>
           </div>
           <div role="radiogroup" aria-label="Campaign structure" className="ccd-structure-options">
-          {STRUCTURE_CATALOG.map((s) => {
+          {catalog.map((s, i) => {
             const isCustom = s.id === 'custom';
             const counts = isCustom ? null : countsFor(s.id);
             const check = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
@@ -291,9 +303,9 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
               <StructureOption
                 key={s.id}
                 id={s.id}
-                number={s.number}
+                number={i + 1}
                 name={s.name}
-                tagline={s.tagline}
+                tagline={structureTagline(s, mode)}
                 meta={meta}
                 recommended={recommendation.structureId === s.id}
                 committed={draft.structureId === s.id}
@@ -353,7 +365,8 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
                 empty={draft.customCampaigns ? undefined : 'Ask Jiva to build a structure and it will appear here.'}
                 graphic={draft.customCampaigns ? <StructureMap structureId="custom" campaigns={draft.customCampaigns} products={selectedProducts} /> : null}
                 written={draft.customCampaigns ? <WrittenStructure campaigns={draft.customCampaigns} products={selectedProducts} /> : null}
-                compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} />}
+                count={catalog.length}
+                compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} catalog={catalog} mode={mode} />}
               />
               <div style={{ marginTop: 18 }}>
                 <button
@@ -369,7 +382,8 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
               view={view} onView={setView} legend
               graphic={viewedCampaigns ? <StructureMap structureId={activeId} campaigns={viewedCampaigns} products={selectedProducts} /> : null}
               written={viewedCampaigns ? <WrittenStructure campaigns={viewedCampaigns} products={selectedProducts} /> : null}
-              compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} />}
+              count={catalog.length}
+                compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} catalog={catalog} mode={mode} />}
             />
           )}
 

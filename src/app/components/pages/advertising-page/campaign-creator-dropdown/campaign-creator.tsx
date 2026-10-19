@@ -6,7 +6,7 @@ import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, flattenProducts, productsFor, recommendTargetingStrategies, structureCounts, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, applyCampaignMode, strategiesForMode, flattenProducts, productsFor, recommendTargetingStrategies, structureCounts, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -23,14 +23,15 @@ import StepPreview from './steps/step-preview';
 import { DEFAULT_SCOPE_ID, applyPageToGroups, applyScopedPatch, buildScopes, pickSettings, placeUngrouped, pruneGroups, totalCampaignsFor } from './product-groups';
 import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
+import CampaignModeDialog from './steps/campaign-mode-dialog';
 import StepResult from './steps/step-result';
 
 const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
   { id: 'products', label: 'Products' },
-  { id: 'keywords', label: 'Keywords' },
-  { id: 'objectives', label: 'Objectives' },
   { id: 'targeting', label: 'Targeting' },
   { id: 'structure', label: 'Structure' },
+  { id: 'objectives', label: 'Objectives' },
+  { id: 'keywords', label: 'Keywords' },
   { id: 'preview', label: 'Preview' },
 ];
 
@@ -41,6 +42,8 @@ export default function CampaignCreator() {
   const [furthestIndex, setFurthestIndex] = useState(0);
   const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
   const [jivaOpen, setJivaOpen] = useState(false);
+  // Asked after the ad format: Auto, Manual, or both.
+  const [modeOpen, setModeOpen] = useState(false);
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
   // Which group the later steps are being set up for, once the products have been grouped.
   const [scopeId, setScopeId] = useState(DEFAULT_SCOPE_ID);
@@ -105,14 +108,14 @@ export default function CampaignCreator() {
       let changed = false;
       const groups = prev.productGroups.map((g) => {
         if (g.settings.targetingStrategies.length > 0) return g;
-        const recommended = recommendTargetingStrategies(all.filter((p) => g.productIds.includes(p.id)), marketplace);
+        const recommended = strategiesForMode(recommendTargetingStrategies(all.filter((p) => g.productIds.includes(p.id)), marketplace), prev.campaignMode);
         if (recommended.length === 0) return g;
         changed = true;
         return { ...g, settings: { ...g.settings, targetingStrategies: recommended } };
       });
       let base = prev.targetingStrategies;
       if (prev.productGroups.length > 0 && base.length === 0) {
-        const recommended = recommendTargetingStrategies(all.filter((p) => !grouped.has(p.id)), marketplace);
+        const recommended = strategiesForMode(recommendTargetingStrategies(all.filter((p) => !grouped.has(p.id)), marketplace), prev.campaignMode);
         if (recommended.length > 0) { base = recommended; changed = true; }
       }
       return changed ? { ...prev, productGroups: groups, targetingStrategies: base } : prev;
@@ -184,14 +187,14 @@ export default function CampaignCreator() {
   const previewBudgetOk = allocationMatches(previewCampaigns, planBudget);
 
   const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next: () => void; nextLabel: string; disabled?: boolean }>> = {
-    entry: { next: () => advance('products'), nextLabel: 'Get started', disabled: !draft.adType },
-    products: { back: () => goTo('entry'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
-    keywords: { back: () => goTo('products'), next: () => advance('objectives'), nextLabel: 'Continue' },
-    objectives: { back: () => goTo('keywords'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate)) },
-    targeting: { back: () => goTo('objectives'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.targetingStrategies.length === 0) },
-    structure: { back: () => goTo('targeting'), next: () => advance('preview'), nextLabel: 'Continue', disabled: structureBlocked },
+    entry: { next: () => setModeOpen(true), nextLabel: 'Get started', disabled: !draft.adType },
+    products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
+    keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue' },
+    objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate)) },
+    targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.targetingStrategies.length === 0) },
+    structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
-      back: () => goTo('structure'), next: () => { setDir('fwd'); setStep('creating'); },
+      back: () => goTo('keywords'), next: () => { setDir('fwd'); setStep('creating'); },
       nextLabel: previewCount > 0 ? `Create ${previewCount} campaign${previewCount === 1 ? '' : 's'}` : 'Create campaigns',
       disabled: previewCount === 0 || !previewBudgetOk,
     },
@@ -259,6 +262,10 @@ export default function CampaignCreator() {
         </footer>
       )}
       </div>
+        <CampaignModeDialog
+          open={modeOpen} value={draft.campaignMode} onClose={() => setModeOpen(false)}
+          onConfirm={(mode) => { setDraft((prev) => ({ ...prev, ...applyCampaignMode(prev, mode) })); setModeOpen(false); advance('products'); }}
+        />
         <AnimatePresence>
           {step === 'structure' && jivaOpen && (
             <motion.div

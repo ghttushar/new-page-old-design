@@ -110,6 +110,8 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
   const productStyleOnly = selected.length > 0 && selected.every((s) => s === 'product' || s === 'category');
   const unsupported = selected.filter((s) => !supported.includes(s));
   const hasAuto = selected.includes('auto');
+  // Only the sections the chosen campaign type needs.
+  const mode = draft.campaignMode ?? 'both';
   const autoTypes = draft.autoTypes;
 
   function toggleAutoType(id: AutoTypeId) {
@@ -123,6 +125,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
       <StepHeading title="Pick how shoppers find you" />
 
       <div className="ccd-tg">
+        {mode !== 'manual' && (
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Auto</div>
         <div className="ccd-tg-card">
@@ -164,7 +167,9 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         )}
         </div>
         </div>
+        )}
 
+        {mode !== 'auto' && (
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Manual</div>
         <div className="ccd-tg-card">
@@ -194,6 +199,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
 
         </div>
         </div>
+        )}
       </div>
 
       <div style={{ marginTop: 14 }}>
