@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bell · New notification animation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+/*
+  New notification on the header bell. The same motion as src/app/components/notifications/notification-bell.tsx,
+  written in plain CSS and a few lines of JS so it can be dropped into any page.
+
+  When a notification arrives, all at once:
+  1. The bell tilts back and forth and grows a little (1s).
+  2. A soft purple glow behind the button fades out (1.4s).
+  3. Two rings ripple out from the button, 0.2s apart (1.1s each).
+  4. The badge pops in (first notification) and its number bounces from big to normal; a ring ripples off the badge (0.9s).
+  5. A small card drops in under the bell naming the notification, and leaves after 3.8s.
+  With reduced motion turned on, only the badge number changes and the card fades.
+*/
+:root {
+  --brand: #77469b;
+  --glow: #f1e6fa;
+  --ink: #1d2129;
+  --body: #464646;
+  --muted: #646b76;
+  --faint: #7b808a;
+  --line: #dadeeb;
+  --page: #f3f5fa;
+}
+body { margin: 0; min-height: 100vh; background: var(--page); font-family: Inter, sans-serif; color: var(--ink); }
+.demo { display: flex; align-items: flex-start; justify-content: flex-end; gap: 16px; padding: 24px 32px; }
+.demo button.trigger { height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: 600 13px/1 Inter, sans-serif; cursor: pointer; }
+
+/* ── The bell ── */
+.bell-wrap { position: relative; display: inline-flex; }
+.bell {
+  position: relative; display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  border: 1px solid #fff; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(29, 33, 41, .06);
+  color: var(--body); cursor: pointer;
+}
+.bell:hover { border-color: var(--line); }
+.bell:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* The icon swings from near its top, like a real bell. */
+.bell-icon { position: relative; display: grid; place-items: center; font-size: 24px; transform-origin: 50% 12%; }
+.bell.is-ringing .bell-icon { animation: bell-swing 1s ease-out, bell-grow 1s ease-out; }
+@keyframes bell-swing {
+  0% { rotate: 0deg; } 14.3% { rotate: -24deg; } 28.6% { rotate: 20deg; } 42.9% { rotate: -16deg; }
+  57.1% { rotate: 12deg; } 71.4% { rotate: -8deg; } 85.7% { rotate: 4deg; } 100% { rotate: 0deg; }
+}
+@keyframes bell-grow {
+  0% { scale: 1; } 16.7% { scale: 1.22; } 33.3% { scale: 1.22; } 50% { scale: 1.14; }
+  66.7% { scale: 1.08; } 83.3% { scale: 1.04; } 100% { scale: 1; }
+}
+
+/* A soft glow behind the button that fades. */
+.bell-glow { position: absolute; inset: -2px; border-radius: 10px; background: var(--glow); pointer-events: none; opacity: 0; }
+.bell.is-ringing .bell-glow { animation: fade-out 1.4s ease-out; }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* Two rings that grow out of the button. */
+.bell-ripple { position: absolute; inset: 0; border: 2px solid var(--brand); border-radius: 8px; pointer-events: none; opacity: 0; }
+.bell.is-ringing .bell-ripple { animation: ripple 1.1s ease-out; }
+.bell.is-ringing .bell-ripple + .bell-ripple { animation-delay: .2s; }
+@keyframes ripple { from { opacity: .55; scale: 1; } to { opacity: 0; scale: 2.6; } }
+
+/* The unread count. */
+.badge {
+  position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--brand); box-shadow: 0 0 0 2px var(--page); color: #fff; font: 600 10px/16px Inter, sans-serif;
+  text-align: center; font-variant-numeric: tabular-nums; pointer-events: none;
+}
+.badge[hidden] { display: none; }
+.badge.is-entering { animation: badge-in 320ms cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes badge-in { from { opacity: 0; scale: .4; } to { opacity: 1; scale: 1; } }
+.badge-num { display: inline-block; }
+.badge.is-bumped .badge-num { animation: number-pop 600ms linear; }
+@keyframes number-pop { 0% { scale: 1.8; } 35% { scale: .88; } 60% { scale: 1.06; } 80% { scale: .98; } 100% { scale: 1; } }
+.badge-ring { position: absolute; inset: 0; border: 2px solid var(--brand); border-radius: 8px; opacity: 0; }
+.badge.is-bumped .badge-ring { animation: badge-ring .9s ease-out; }
+@keyframes badge-ring { from { opacity: .7; scale: 1; } to { opacity: 0; scale: 2.2; } }
+
+/* The card under the bell that names the new notification. */
+.peek {
+  position: absolute; top: 50px; right: 0; z-index: 10; display: flex; flex-direction: column; gap: 4px; width: 300px;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+  box-shadow: 0 16px 32px -16px rgba(20, 18, 30, .32); font: inherit; text-align: left; cursor: pointer;
+}
+.peek[hidden] { display: none; }
+.peek.is-in { animation: peek-in 360ms cubic-bezier(.22, 1.2, .36, 1); }
+.peek.is-out { animation: peek-out 220ms ease-in forwards; }
+@keyframes peek-in { from { opacity: 0; translate: 0 -10px; scale: .94; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes peek-out { to { opacity: 0; translate: 0 -6px; scale: .96; } }
+.peek-top { display: flex; align-items: center; gap: 8px; }
+.peek-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+.peek-title { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.peek-time { flex: none; color: var(--faint); font-size: 12px; }
+.peek-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; padding-left: 16px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bell.is-ringing .bell-icon, .bell.is-ringing .bell-glow, .bell.is-ringing .bell-ripple,
+  .badge.is-entering, .badge.is-bumped .badge-num, .badge.is-bumped .badge-ring { animation: none; }
+  .peek.is-in { animation: fade 200ms ease-out; }
+  .peek.is-out { animation: fade 200ms ease-in reverse forwards; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<div class="demo">
+  <button type="button" class="trigger" id="simulate">Simulate a new notification</button>
+
+  <div class="bell-wrap">
+    <button type="button" class="bell" id="bell" aria-label="Notifications" aria-haspopup="dialog">
+      <span class="bell-glow" aria-hidden="true"></span>
+      <span class="bell-ripple" aria-hidden="true"></span>
+      <span class="bell-ripple" aria-hidden="true"></span>
+      <span class="bell-icon"><i class="ph ph-bell-simple" id="bell-glyph"></i></span>
+      <span class="badge" id="badge" hidden aria-hidden="true"><span class="badge-ring"></span><span class="badge-num" id="badge-num">0</span></span>
+    </button>
+    <button type="button" class="peek" id="peek" hidden>
+      <span class="peek-top"><span class="peek-dot" aria-hidden="true"></span><span class="peek-title" id="peek-title"></span><span class="peek-time">just now</span></span>
+      <span class="peek-text" id="peek-text"></span>
+    </button>
+    <span class="sr-only" role="status" aria-live="polite" id="announce"></span>
+  </div>
+</div>
+
+<script>
+// Restart a CSS animation by removing its class, forcing a reflow, then adding it back.
+function replay(el, cls) {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+const bell = document.getElementById('bell');
+const glyph = document.getElementById('bell-glyph');
+const badge = document.getElementById('badge');
+const badgeNum = document.getElementById('badge-num');
+const peek = document.getElementById('peek');
+const PEEK_MS = 3800;
+let unread = 0;
+let peekTimer;
+
+/** Call this whenever a notification arrives. */
+function notify({ title, text }) {
+  unread += 1;
+  const firstOne = badge.hidden;
+
+  // 1–3: the bell swings, glows and ripples.
+  replay(bell, 'is-ringing');
+  glyph.className = 'ph-fill ph-bell-simple';
+
+  // 4: the badge pops in or bumps its number.
+  badge.hidden = false;
+  badgeNum.textContent = unread > 9 ? '9+' : String(unread);
+  if (firstOne) replay(badge, 'is-entering');
+  replay(badge, 'is-bumped');
+  bell.setAttribute('aria-label', `Notifications, ${unread} unread`);
+
+  // 5: the card names the notification for a few seconds.
+  document.getElementById('peek-title').textContent = title;
+  document.getElementById('peek-text').textContent = text;
+  peek.hidden = false;
+  peek.classList.remove('is-out');
+  replay(peek, 'is-in');
+  clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => {
+    replay(peek, 'is-out');
+    peek.addEventListener('animationend', () => { if (peek.classList.contains('is-out')) peek.hidden = true; }, { once: true });
+  }, PEEK_MS);
+
+  document.getElementById('announce').textContent = `New notification: ${title}`;
+}
+
+const SAMPLES = [
+  { title: 'Summer Sale is pacing ahead of budget', text: 'At this rate it will spend its daily budget by 4 PM.' },
+  { title: 'Placement Optimization raised bids', text: 'Raised top of search bids on 9 campaigns.' },
+  { title: 'Daily budget reached on 3 campaigns', text: 'They stopped showing ads at 2:10 PM.' },
+];
+let i = 0;
+document.getElementById('simulate').addEventListener('click', () => notify(SAMPLES[i++ % SAMPLES.length]));
+</script>
+</body>
+</html>
