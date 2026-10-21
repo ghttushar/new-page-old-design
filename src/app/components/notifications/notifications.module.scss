@@ -146,7 +146,7 @@ $warn-tint: #fbf1de;
   background: #fff;
   border-left: 1px solid $line;
   box-shadow: -24px 0 48px -24px rgba(20, 18, 30, 0.28);
-  border-radius: 8px 0 0 8px;
+  border-radius: 12px 0 0 12px;
   overflow: hidden;
   outline: none;
 }
@@ -280,10 +280,10 @@ $warn-tint: #fbf1de;
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 8px 14px 18px;
+  padding: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: $surface;
+  background: #fff;
   scrollbar-width: thin;
   scrollbar-color: #cfd3de transparent;
 
@@ -292,7 +292,7 @@ $warn-tint: #fbf1de;
   }
 
   &::-webkit-scrollbar-thumb {
-    border: 2px solid $surface;
+    border: 2px solid #fff;
     border-radius: 8px;
     background: #cfd3de;
   }
@@ -301,7 +301,7 @@ $warn-tint: #fbf1de;
 .group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -309,45 +309,47 @@ $warn-tint: #fbf1de;
 
 .groupLabel {
   margin: 0;
-  padding: 18px 4px 8px;
+  padding: 16px 16px 8px;
+  border-bottom: 1px solid $hairline;
   color: $muted;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
-// ── Row: each notification is its own card ───────────────────────────────────────────────────
+// ── Row: a flat inbox line ───────────────────────────────────────────────────────────────────
+// Full-width rows split by hairlines. Unread rows carry a faint brand tint, a filled tile and a heavier title; the
+// time sits on the right and gives way to Remove on hover.
+
+$unread-tint: #fbf8fe;
+$unread-hover: #f6f0fc;
+$read-hover: #f7f8fa;
 
 .row {
   position: relative;
-  overflow: hidden;
-  border: 1px solid $hairline;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.62);
-  transition: background-color 180ms ease-out, border-color 180ms ease-out, box-shadow 180ms ease-out;
+  border-bottom: 1px solid $hairline;
+  background: #fff;
+  transition: background-color 160ms ease-out;
 
   &:hover {
-    background: #fff;
-    border-color: $line;
+    background: $read-hover;
   }
 }
 
-// Unread: a plain white card. Read: flat and quiet. The difference is in the tile, the dot and the title weight.
 .rowUnread {
-  border-color: #e4e7ee;
-  background: #fff;
+  background: $unread-tint;
 
   &:hover {
-    border-color: #d4d8e2;
+    background: $unread-hover;
   }
 }
 
 @keyframes arrive {
   from {
-    background: #f1e6fa;
+    background: #efe3f9;
   }
   to {
-    background: #fff;
+    background: $unread-tint;
   }
 }
 
@@ -359,15 +361,21 @@ $warn-tint: #fbf1de;
   }
 }
 
+.rowHead {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
 .rowMain {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   column-gap: 12px;
   align-items: start;
   width: 100%;
-  padding: 14px 44px 4px 14px;
+  padding: 12px 8px 12px 16px;
   border: 0;
-  border-radius: 14px;
   background: none;
   color: inherit;
   font: inherit;
@@ -377,34 +385,32 @@ $warn-tint: #fbf1de;
   &:focus-visible {
     outline: 2px solid $primary-color;
     outline-offset: -2px;
+    border-radius: 6px;
   }
 }
 
-// The type icon: plain, no box and no tint.
+// The type tile: grey for read, brand tint with a filled glyph for unread.
 .iconTile {
-  position: relative;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: $tile;
   color: #7b808a;
+  transition: background-color 160ms ease-out, color 160ms ease-out;
 }
 
-// The unread dot sits on the corner of the tile.
-.iconDot {
-  position: absolute;
-  top: -2px;
-  right: -3px;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: $primary-color;
+.rowUnread .iconTile {
+  background: $brand-tint;
+  color: $primary-color;
 }
 
 .text {
+  display: flex;
+  align-items: center;
   min-width: 0;
+  min-height: 32px;
 }
 
 .title {
@@ -415,37 +421,36 @@ $warn-tint: #fbf1de;
   overflow: hidden;
   margin: 0;
   color: $muted;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .titleUnread {
   color: $ink;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.005em;
 }
 
-.foot {
+// The right column: the time, and the chevron when the notification opens. Lines up with the title's first line.
+.rowSide {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 28px;
-  padding: 0 14px 12px 48px;
+  justify-content: flex-end;
+  min-width: 64px;
+  padding: 21px 16px 0 0;
+  transition: opacity 120ms ease-out;
 }
 
 .meta {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-left: auto;
   padding: 0;
   border: 0;
   background: none;
   color: $faint;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.2;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -456,45 +461,6 @@ button.meta {
   &:hover {
     color: $ink;
   }
-
-  &:focus-visible {
-    outline: 2px solid $primary-color;
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-}
-
-// The X in the top right corner.
-.dismiss {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: none;
-  color: #9aa0ab;
-  cursor: pointer;
-  transition: background-color 150ms ease-out, color 150ms ease-out;
-
-  &:hover {
-    background: $tile;
-    color: $ink;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $primary-color;
-    outline-offset: 1px;
-  }
-}
-
-.metaUnread {
-  color: $primary-color;
-  font-weight: 600;
 }
 
 .chevron {
@@ -508,13 +474,66 @@ button.meta {
   transform: rotate(180deg);
 }
 
+// Remove: hidden until the row is hovered or something in it has focus.
+.rowActions {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+.row:hover,
+.row:focus-within {
+  .rowActions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .rowSide {
+    opacity: 0;
+  }
+}
+
+.rowAction {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: $muted;
+  cursor: pointer;
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+
+  &:hover {
+    background: rgba(29, 33, 41, 0.06);
+    color: $ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: -1px;
+  }
+}
+
+// Lines up with the title: 16px row padding + 32px tile + 12px gap.
+.rowCta {
+  margin-top: -6px;
+  padding: 0 16px 12px 60px;
+}
+
 .expand {
   overflow: hidden;
 }
 
-// Lines up with the title and preview above it: card padding 14 + icon 22 + 12px gap.
 .expandInner {
-  padding: 2px 16px 16px 48px;
+  padding: 0 18px 16px 60px;
 }
 
 .details {
@@ -532,9 +551,9 @@ button.meta {
 }
 
 .fact {
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: $surface;
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: #f4f5f9;
 
   dt {
     color: $faint;
@@ -832,14 +851,14 @@ button.meta {
 }
 
 .pageBody {
-  padding: 4px 16px 18px;
+  padding: 0 0 8px;
   border-radius: 0 0 12px 12px;
-  background: $surface;
+  background: #fff;
 }
 
 .pageList {
   margin: 0;
-  padding: 4px 12px 12px;
+  padding: 0;
   list-style: none;
 }
 

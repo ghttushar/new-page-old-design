@@ -61,23 +61,54 @@ export default function NotificationRow({ item, now, isNew, onRead, onDismiss, o
       exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 320, damping: 30 }}
     >
-      <button
-        type="button"
-        className={styles.rowMain}
-        onClick={open}
-        aria-expanded={expandable ? expanded : undefined}
-      >
-        <span className={styles.iconTile} aria-hidden>
-          <Icon size={20} />
-          {item.read ? null : <span className={styles.iconDot} />}
-        </span>
-        <span className={styles.text}>
-          <span className={`${styles.title}${item.read ? '' : ` ${styles.titleUnread}`}`}>
-            {item.read ? null : <span className={styles.srOnly}>Unread. </span>}
-            {item.title}
+      {/* One line: the type tile and title, then the time on the right. On hover the time gives way to Remove. */}
+      <div className={styles.rowHead}>
+        <button
+          type="button"
+          className={styles.rowMain}
+          onClick={open}
+          aria-expanded={expandable ? expanded : undefined}
+        >
+          <span className={styles.iconTile} aria-hidden>
+            <Icon size={17} weight={item.read ? 'regular' : 'fill'} />
           </span>
-        </span>
-      </button>
+          <span className={styles.text}>
+            <span className={`${styles.title}${item.read ? '' : ` ${styles.titleUnread}`}`}>
+              {item.read ? null : <span className={styles.srOnly}>Unread. </span>}
+              {item.title}
+            </span>
+          </span>
+        </button>
+
+        <div className={styles.rowSide}>
+          {expandable ? (
+            <button
+              type="button"
+              className={styles.meta}
+              onClick={open}
+              aria-expanded={expanded}
+              aria-label={`${time}. ${expanded ? 'Show less' : 'Show more'}`}
+              tabIndex={-1}
+            >
+              {time}
+              <span className={`${styles.chevron}${expanded ? ` ${styles.chevronOpen}` : ''}`} aria-hidden>
+                <CaretDownIcon size={11} weight="bold" />
+              </span>
+            </button>
+          ) : (
+            <span className={styles.meta}>{time}</span>
+          )}
+        </div>
+
+        <div className={styles.rowActions}>
+          <button type="button" className={styles.rowAction} onClick={() => onDismiss(item.id)} aria-label={`Remove notification: ${item.title}`} title="Remove">
+            <XIcon size={14} weight="bold" />
+          </button>
+        </div>
+      </div>
+
+      {/* A notification that does not open has its action right under the title. */}
+      {!expandable && cta ? <div className={styles.rowCta}>{cta}</div> : null}
 
       <AnimatePresence initial={false}>
         {expandable && expanded && (
@@ -107,31 +138,6 @@ export default function NotificationRow({ item, now, isNew, onRead, onDismiss, o
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Bottom row: the time on the right, with the arrow when the notification opens. A notification that does not open has its action here, right after the title. */}
-      <div className={styles.foot}>
-        <span>{expandable ? null : cta}</span>
-        {expandable ? (
-          <button
-            type="button"
-            className={`${styles.meta}${item.read ? '' : ` ${styles.metaUnread}`}`}
-            onClick={open}
-            aria-expanded={expanded}
-            aria-label={`${time}. ${expanded ? 'Show less' : 'Show more'}`}
-          >
-            {time}
-            <span className={`${styles.chevron}${expanded ? ` ${styles.chevronOpen}` : ''}`} aria-hidden>
-              <CaretDownIcon size={12} weight="bold" />
-            </span>
-          </button>
-        ) : (
-          <span className={`${styles.meta}${item.read ? '' : ` ${styles.metaUnread}`}`}>{time}</span>
-        )}
-      </div>
-
-      <button type="button" className={styles.dismiss} onClick={() => onDismiss(item.id)} aria-label={`Remove notification: ${item.title}`} title="Remove">
-        <XIcon size={14} weight="bold" />
-      </button>
     </motion.li>
   );
 }
