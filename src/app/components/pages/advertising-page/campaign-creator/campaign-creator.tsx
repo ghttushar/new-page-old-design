@@ -25,6 +25,8 @@ import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
 import CampaignModeDialog from './steps/campaign-mode-dialog';
 import StepResult from './steps/step-result';
+import CreationActivity, { ActivityButton } from './steps/creation-activity';
+import { SEED_RUNS, advanceCounts, type CreationRun, type RunIssue } from './steps/creation-runs.mock';
 
 const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
   { id: 'products', label: 'Products' },
@@ -36,7 +38,7 @@ const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
 ];
 
 export default function CampaignCreator() {
-  useSubHeader(PageTitleEnum.CAMPAIGN_CREATOR_DROPDOWN, PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR_DROPDOWN);
+  useSubHeader(PageTitleEnum.CAMPAIGN_CREATOR, PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR);
 
   const [step, setStep] = useState<CcStepId>('entry');
   const [furthestIndex, setFurthestIndex] = useState(0);
@@ -47,6 +49,29 @@ export default function CampaignCreator() {
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
   // Which group the later steps are being set up for, once the products have been grouped.
   const [scopeId, setScopeId] = useState(DEFAULT_SCOPE_ID);
+
+  // Creation activity: runs still being created, and the ones that failed.
+  const [runs, setRuns] = useState<CreationRun[]>(SEED_RUNS);
+  const [finishedId, setFinishedId] = useState<string | null>(null);
+  // A rejected setting being fixed after a configuration retry.
+  const [issue, setIssue] = useState<(RunIssue & { runId: string }) | null>(null);
+
+  // Runs in process count up, each at its own pace, and finish once everything is created.
+  const processingKey = runs.filter((r) => r.status === 'processing' && !r.steady).map((r) => r.id + (r.pace ?? 300)).join(',');
+  useEffect(() => {
+    const live = runs.filter((r) => r.status === 'processing' && !r.steady);
+    const timers = live.map((run) => window.setInterval(() => {
+      setRuns((prev) => prev.map((r) => {
+        if (r.id !== run.id || r.status !== 'processing') return r;
+        const next = advanceCounts(r.created);
+        if (next) return { ...r, created: next };
+        setFinishedId(r.id);
+        return { ...r, status: 'done' };
+      }));
+    }, run.pace ?? 300));
+    return () => timers.forEach(window.clearInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [processingKey]);
 
   // Pin the wizard to the viewport so the footer always sits at the bottom, whatever the step's content height.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -125,7 +150,7 @@ export default function CampaignCreator() {
 
   // Groups that still need a choice on the page being shown, marked in the dropdown.
   const pendingScopes = new Set(scopes.filter((g) => {
-    if (step === 'objectives') return g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate);
+    if (step === 'objectives') return g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate) || Boolean(issue && g.settings.dailyBudget < issue.min);
     if (step === 'targeting') return g.settings.targetingStrategies.length === 0;
     if (step === 'structure') return !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns);
     return false;
@@ -159,6 +184,9 @@ export default function CampaignCreator() {
     setAppliedCount(null);
   };
 
+  // The rejected setting is open while any group still breaks it.
+  const issueOpen = Boolean(issue && issue.field === 'dailyBudget' && gateScopes.some((g) => g.settings.dailyBudget < issue.min));
+
   const totalCampaigns = totalCampaignsFor(gateScopes);
   const limitCheck = totalCampaigns !== null ? validateCampaignLimit(totalCampaigns, campaignLimit) : { ok: true };
 
@@ -178,6 +206,33 @@ export default function CampaignCreator() {
 
   const numberedIndex = NUMBERED_STEPS.findIndex((s) => s.id === step);
 
+  // Leaving the flow for the start or the activity page drops the fix in progress.
+  useEffect(() => { if (step === 'entry' || step === 'activity') setIssue(null); }, [step]);
+
+  function retryRun(run: CreationRun) {
+    setFinishedId(null);
+    if (run.kind === 'backend') {
+      // The same request again: progress starts over and counts up.
+      setRuns((prev) => prev.map((r) => (r.id === run.id ? {
+        ...r, status: 'processing', pace: 320,
+        created: { campaigns: [0, r.created.campaigns[1]], adGroups: [0, r.created.adGroups[1]], productAds: [0, r.created.productAds[1]], targets: [0, r.created.targets[1]] },
+      } : r)));
+      return;
+    }
+    if (run.kind === 'config' && run.draft && run.issue) {
+      // The saved setup goes back into the creator, on the step where the marketplace rejected it.
+      const saved = run.draft();
+      setDraft(saved);
+      setScopeId(saved.productGroups[0]?.id ?? DEFAULT_SCOPE_ID);
+      setFurthestIndex(NUMBERED_STEPS.length - 1);
+      setIssue({ ...run.issue, runId: run.id });
+      setDir('fwd');
+      setJivaOpen(false);
+      setStep(run.issue.step);
+    }
+  }
+
+
   const structureBlocked = gateScopes.some((g) => !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns)) || !limitCheck.ok;
 
   // Preview guards the Create button: nothing to create, or budgets that don't add up to the daily budget (spec §8.4).
@@ -186,15 +241,21 @@ export default function CampaignCreator() {
   const planBudget = gateScopes.reduce((sum, g) => sum + g.settings.dailyBudget, 0);
   const previewBudgetOk = allocationMatches(previewCampaigns, planBudget);
 
-  const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next: () => void; nextLabel: string; disabled?: boolean }>> = {
+  const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next?: () => void; nextLabel?: string; disabled?: boolean }>> = {
     entry: { next: () => setModeOpen(true), nextLabel: 'Get started', disabled: !draft.adType },
+    activity: { back: () => goTo('entry'), backLabel: 'Back to ad formats' },
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
     keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue' },
-    objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate)) },
+    objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate)) },
     targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.targetingStrategies.length === 0) },
     structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
-      back: () => goTo('keywords'), next: () => { setDir('fwd'); setStep('creating'); },
+      back: () => goTo('keywords'),
+      next: () => {
+        // A fixed run goes through this time, so it leaves the failed list.
+        if (issue) { setRuns((prev) => prev.map((r) => (r.id === issue.runId ? { ...r, status: 'done' } : r))); setIssue(null); }
+        setDir('fwd'); setStep('creating');
+      },
       nextLabel: previewCount > 0 ? `Create ${previewCount} campaign${previewCount === 1 ? '' : 's'}` : 'Create campaigns',
       disabled: previewCount === 0 || !previewBudgetOk,
     },
@@ -210,7 +271,7 @@ export default function CampaignCreator() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <CampaignSummaryProvider value={{ step, draft: step === 'products' ? draft : viewDraft, selectedProducts: step === 'products' ? selectedProducts : viewProducts, onJump: goTo, steps: NUMBERED_STEPS, furthestIndex, totalProducts: selectedProducts.length, scopes: ['keywords', 'objectives', 'targeting', 'structure'].includes(step) ? scopes : undefined, activeScopeId: activeScopeId ?? undefined, pendingScopes: notDone, onScopeChange: setScopeId, onApplyToGroups: applyToGroups, onUndoApply: undoApply, appliedCount }}>
+    <CampaignSummaryProvider value={{ step, draft: step === 'products' ? draft : viewDraft, selectedProducts: step === 'products' ? selectedProducts : viewProducts, onJump: goTo, steps: NUMBERED_STEPS, furthestIndex, totalProducts: selectedProducts.length, scopes: ['keywords', 'objectives', 'targeting', 'structure'].includes(step) ? scopes : undefined, activeScopeId: activeScopeId ?? undefined, pendingScopes: notDone, onScopeChange: setScopeId, onApplyToGroups: applyToGroups, onUndoApply: undoApply, appliedCount, issueStep: issueOpen ? issue?.step : undefined }}>
     <div ref={rootRef} className="ccd-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: 'var(--ccd-page-bg)', fontFamily: 'Inter, sans-serif' }}>
       <CcGlobalStyles />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
@@ -221,7 +282,7 @@ export default function CampaignCreator() {
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <main ref={mainRef} className="ccd-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-          <div className={framed || step === 'entry' ? 'ccd-workspace' : 'ccd-focus'} style={{ maxWidth: framed || step === 'entry' ? 1560 : focusWidth + 64 }}>
+          <div className={framed || step === 'entry' || step === 'activity' ? 'ccd-workspace' : 'ccd-focus'} style={{ maxWidth: framed || step === 'entry' || step === 'activity' ? 1560 : focusWidth + 64 }}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={step}
@@ -232,10 +293,13 @@ export default function CampaignCreator() {
                 transition={{ duration: 0.3, ease: [0.22, 0.8, 0.3, 1] }}
                 style={{ flex: 1, minWidth: 0 }}
               >
-                {step === 'entry' && <StepEntry draft={draft} onChange={update} />}
+                {step === 'entry' && (
+                  <StepEntry draft={draft} onChange={update} />
+                )}
+                {step === 'activity' && <CreationActivity runs={runs} finished={runs.find((r) => r.id === finishedId) ?? null} onRetry={retryRun} />}
                 {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
                 {step === 'keywords' && <StepKeywords key={activeScopeId} draft={viewDraft} onChange={viewUpdate} />}
-                {step === 'objectives' && <StepObjectives key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
+                {step === 'objectives' && <StepObjectives key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} issue={issueOpen ? issue : null} />}
                 {step === 'targeting' && <StepTargeting key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
                 {step === 'structure' && (
                   <StepStructure key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={viewUpdate} onJivaChange={setJivaOpen} />
@@ -251,13 +315,20 @@ export default function CampaignCreator() {
       </div>
       {footer && step !== 'creating' && (
         <footer className="ccd-footer">
-          <div>{footer.back && <GhostButton onClick={footer.back}>{footer.backLabel ?? 'Back'}</GhostButton>}</div>
+          <div>
+            {step === 'entry' ? (
+              <ActivityButton
+                processing={runs.filter((r) => r.status === 'processing').length} failed={runs.filter((r) => r.status === 'failed').length}
+                onClick={() => { setFinishedId(null); goTo('activity'); }}
+              />
+            ) : footer.back && <GhostButton onClick={footer.back}>{footer.backLabel ?? 'Back'}</GhostButton>}
+          </div>
           <div />
           <div className="ccd-footer__end">
             {scopes.length > 0 && ['keywords', 'objectives', 'targeting', 'structure'].includes(step) && (
               <span className={`ccd-footer__groups${completedScopes === scopes.length ? ' is-done' : ''}`}><small>Groups completed</small><strong>{completedScopes} of {scopes.length}</strong></span>
             )}
-            <PrimaryButton onClick={footer.next} disabled={footer.disabled}>{footer.nextLabel} {step !== 'result' && <ArrowRightIcon size={14} />}</PrimaryButton>
+            {footer.next && <PrimaryButton onClick={footer.next} disabled={footer.disabled}>{footer.nextLabel} {step !== 'result' && <ArrowRightIcon size={14} />}</PrimaryButton>}
           </div>
         </footer>
       )}

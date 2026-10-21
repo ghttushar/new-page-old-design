@@ -183,6 +183,10 @@ const Tick = () => (
   <i className="ccd-jb-tick" aria-hidden><svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.4l3 3 6-6.4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg></i>
 );
 
+const Cross = () => (
+  <i className="ccd-jb-tick ccd-jb-cross" aria-hidden><svg width="8" height="8" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" /></svg></i>
+);
+
 /**
  * One bar for the whole journey. Steps already done are summary tiles you can go back to, the step you are on is
  * the open tile (with the group dropdown), and the steps still to come are plain numbered chips.
@@ -190,7 +194,7 @@ const Tick = () => (
 export function JourneyBar() {
   const context = useCampaignSummary();
   if (!context || !context.steps || !context.steps.some((st) => st.id === context.step)) return null;
-  const { step, draft, selectedProducts, totalProducts, onJump, steps, furthestIndex } = context;
+  const { step, draft, selectedProducts, totalProducts, onJump, steps, furthestIndex, issueStep } = context;
   const structure = STRUCTURE_CATALOG.find((item) => item.id === draft.structureId);
   const routes = draft.targetingStrategies.length;
   const keywordCount = draft.keywordTargets?.length ?? 0;
@@ -226,21 +230,23 @@ export function JourneyBar() {
           const isActive = i === current;
           const isDone = i < current;
           const reachable = i === 0 || i - 1 <= furthestIndex;
+          const hasIssue = item.id === issueStep;
           return (
             <Fragment key={item.id}>
             {i > 0 && <li className={`ccd-jb-rail${i <= current ? ' is-done' : ''}`} aria-hidden />}
             <li className={`ccd-jb-li${isActive ? ' is-active' : ''}`}>
               {isDone && (
-                <button type="button" className="ccd-jb-tile" disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}: ${done[item.id].value}. Go back to this step`}>
+                <button type="button" className={`ccd-jb-tile${hasIssue ? ' is-issue' : ''}`} disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}: ${done[item.id].value}.${hasIssue ? ' Needs a fix.' : ''} Go back to this step`}>
                   {graphic[item.id]}
                   <span className="ccd-jb-copy"><small>{done[item.id].eyebrow}</small><strong>{done[item.id].value}</strong></span>
-                  <Tick />
+                  {hasIssue ? <Cross /> : <Tick />}
                 </button>
               )}
               {isActive && ACTIVE_TITLE[item.id] && (
-                <div className="ccd-jb-active" aria-current="step">
+                <div className={`ccd-jb-active${hasIssue ? ' is-issue' : ''}`} aria-current="step">
                   {graphic[item.id]}
                   <span className="ccd-jb-title">{ACTIVE_TITLE[item.id]}</span>
+                  {hasIssue && <Cross />}
                 </div>
               )}
               {i > current && (

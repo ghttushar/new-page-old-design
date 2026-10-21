@@ -23,6 +23,8 @@ export type CampaignSummaryContextValue = {
   /** How many groups the last apply changed, for a few seconds; null otherwise. */
   appliedCount?: number | null;
   onUndoApply?: () => void;
+  /** The step a rejected setting sits on, while it is still wrong: its tile shows a red cross instead of a tick. */
+  issueStep?: CcStepId;
 };
 
 const CampaignSummaryContext = createContext<CampaignSummaryContextValue | null>(null);

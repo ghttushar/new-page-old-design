@@ -98,9 +98,17 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
           ref={triggerRef} type="button" className="ccd-gs-trigger" aria-haspopup="dialog" aria-expanded={open}
           aria-label={`Group being set up: ${active.name}. Change group`} onClick={() => { setOpen((o) => !o); setQuery(''); setChecked(new Set()); }}
         >
-          <i className={`ccd-gdot ccd-gs-status ${pending.has(active.id) ? 'is-wait' : 'is-done'}`} aria-hidden />
-          <span className="ccd-gs-title">{active.name}</span>
-          <span className="ccd-gs-meta">{plural(active.products.length)}</span>
+          {/* Two lines: what this is ("Setting up"), then the group's name with its product count. */}
+          <span className="ccd-gs-lines">
+            <span className="ccd-gs-label">
+              <i className={`ccd-gdot ccd-gs-status ${pending.has(active.id) ? 'is-wait' : 'is-done'}`} aria-hidden />
+              Setting up
+            </span>
+            <span className="ccd-gs-line">
+              <span className="ccd-gs-title">{active.name}</span>
+              <span className="ccd-gs-meta">{plural(active.products.length)}</span>
+            </span>
+          </span>
           <span className="ccd-gs-pos">{position} of {scopes.length.toLocaleString()}</span>
           <span className="ccd-gs-chev"><Chevron /></span>
         </button>

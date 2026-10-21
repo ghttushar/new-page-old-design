@@ -136,7 +136,7 @@ export const getMockNotifications = (now = Date.now()): INotificationItem[] => [
     tone: 'info',
     title: 'Product groups are in Campaign Creator. Split products and set up each group on its own.',
     preview: 'Split products into groups and set up each group on its own.',
-    cta: { label: 'Try it', path: '/advertising/campaign-creator-dropdown' },
+    cta: { label: 'Try it', path: '/advertising/campaign-creator' },
     createdAt: now - 3 * DAY,
     read: true,
   },

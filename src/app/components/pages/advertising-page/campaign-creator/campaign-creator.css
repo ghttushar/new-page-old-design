@@ -792,19 +792,23 @@ select.ccd-date { max-width: 100%; cursor: pointer; }
 
 /* The products tile of the flow summary, as a group dropdown */
 /* The group button: a framed box as wide as its menu, everything on one line: dot, name, product count, position, chevron. */
-.ccd-gs-box { display: flex; align-items: stretch; flex: none; width: 340px; max-width: 100%; min-height: 48px; overflow: hidden; border: 1px solid #dfe2e9; border-radius: 10px; background: #fff; transition: border-color 140ms ease-out; }
+.ccd-gs-box { display: flex; align-items: stretch; flex: none; width: 340px; max-width: 100%; min-height: 56px; overflow: hidden; border: 1px solid #cfd3dc; border-radius: 10px; background: #fff; transition: border-color 140ms ease-out; }
 .ccd-gs-box:hover { border-color: var(--ccd-brand-line); }
 .ccd-gs-box.is-open { border-color: var(--ccd-brand); }
 .ccd-gs-trigger { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; padding: 8px 12px 8px 14px; border: 0; background: transparent; text-align: left; cursor: pointer; transition: background-color 140ms ease-out; }
 .ccd-gs-trigger:hover { background: #fafbfc; }
 .ccd-gs-trigger:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: -2px; }
+.ccd-gs-lines { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.ccd-gs-label .ccd-gdot { width: 7px; height: 7px; }
+.ccd-gs-label { display: flex; align-items: center; gap: 6px; color: #8a909b; font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.ccd-gs-line { display: flex; align-items: baseline; gap: 0; min-width: 0; }
 .ccd-gs-meta { flex: 1; min-width: 0; overflow: hidden; color: #7b808a; font: 500 12px/1.2 Inter, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
-.ccd-gs-meta::before { content: '·'; margin-right: 10px; color: #b4b9c3; }
+.ccd-gs-meta::before { content: '·'; margin: 0 8px; color: #b4b9c3; }
 .ccd-gs-pos { flex: none; padding: 3px 8px; border-radius: 6px; background: #f1f2f6; color: #646b76; font: 600 11px/1.2 Inter, sans-serif; white-space: nowrap; }
 .ccd-gs-chev { flex: none; }
 .ccd-gs-chev { display: flex; color: #646b76; transition: transform 160ms ease-out; }
 .ccd-gs-box.is-open .ccd-gs-chev { transform: rotate(180deg); }
-.ccd-gs-title { max-width: 190px; color: #1d2129; font: 650 13.5px/1.2 Inter, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ccd-gs-title { flex: none; max-width: 180px; color: #1d2129; font: 650 15px/1.25 'Inter Tight', Inter, sans-serif; letter-spacing: -.005em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ccd-gs-menu { position: fixed; z-index: 1400; max-width: calc(100vw - 16px); border: 1px solid #e4e7ee; border-radius: 12px; background: #fff; box-shadow: 0 16px 36px -18px rgba(29, 33, 41, .35); font-family: Inter, sans-serif; overflow: hidden; }
 .ccd-gs-search { display: flex; align-items: center; gap: 8px; height: 34px; margin: 8px; padding: 0 10px; border: 1px solid #dfe2e9; border-radius: 9px; color: #9aa0ab; transition: border-color 140ms ease-out, box-shadow 160ms ease-out; }
 .ccd-gs-search:focus-within { border-color: var(--ccd-brand); }
@@ -900,3 +904,25 @@ select.ccd-date { max-width: 100%; cursor: pointer; }
 .ccd-cm-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 30px 24px; }
 @media (max-width: 720px) { .ccd-cm-options { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .ccd-cm-option, .ccd-cm-radio i, .ccd-cm-icon { transition: none; } }
+
+/* Creation activity: the button on the ad format page, the status tabs and the runs table */
+.ccd-act-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 1px solid #e4e7ee; border-radius: 10px; background: #fff; color: #2d2f36; font: 600 13px/1 Inter, sans-serif; white-space: nowrap; cursor: pointer; transition: border-color 140ms ease-out, background-color 140ms ease-out; }
+.ccd-act-btn:hover { border-color: #cfd3dc; background: #f9fafc; }
+.ccd-act-btn:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
+.ccd-act-btn svg { color: #646b76; }
+.ccd-act-dot { position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; background: var(--ccd-brand); }
+.ccd-act-panel { min-height: 120px; }
+.ccd-act-empty { margin: 0; padding: 36px 0; color: #9aa0ab; font: 400 13.5px/1.5 Inter, sans-serif; text-align: center; }
+.ccd-act-made { display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 0; list-style: none; color: #646b76; font: 400 12.5px/1.35 Inter, sans-serif; }
+.ccd-act-made b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ccd-act-live { display: inline-flex; align-items: center; gap: 7px; }
+.ccd-act-live::before { content: ''; width: 12px; height: 12px; border: 2px solid var(--ccd-brand-tint); border-top-color: var(--ccd-brand); border-radius: 50%; animation: ccd-act-spin 900ms linear infinite; }
+@keyframes ccd-act-spin { to { transform: rotate(360deg); } }
+.ccd-act-done { display: flex; align-items: center; gap: 9px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid #cfe9db; border-radius: 9px; background: #f2faf5; color: #2d4a3c; font: 400 13px/1.45 Inter, sans-serif; }
+.ccd-act-done svg { flex: none; }
+@media (prefers-reduced-motion: reduce) { .ccd-act-live::before { animation: none; } .ccd-act-btn { transition: none; } }
+
+/* A step whose setting was rejected: a red cross in place of the tick, and a red outline on the open tile */
+.ccd-jb-cross { background: #c0443d; }
+.ccd-jb-tile.is-issue { border-color: #efc4c0; }
+.ccd-jb-active.is-issue { position: relative; border-color: #d98a84; background: #fffafa; }

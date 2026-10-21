@@ -20,8 +20,8 @@ const OUTCOMES: { id: Outcome; label: string }[] = [
   { id: 'failed', label: 'Failed' },
 ];
 
-const TH: React.CSSProperties = { textAlign: 'left', padding: '10px 14px', font: `500 12px/1 ${FONT}`, color: TEXT_MUTED, background: SURFACE_MUTED, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap' };
-const TD: React.CSSProperties = { padding: '12px 14px', borderBottom: `1px solid ${HAIR}`, verticalAlign: 'top', font: `400 13px/1.45 ${FONT}`, color: TEXT_MUTED };
+export const TH: React.CSSProperties = { textAlign: 'left', padding: '10px 14px', font: `500 12px/1 ${FONT}`, color: TEXT_MUTED, background: SURFACE_MUTED, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap' };
+export const TD: React.CSSProperties = { padding: '12px 14px', borderBottom: `1px solid ${HAIR}`, verticalAlign: 'top', font: `400 13px/1.45 ${FONT}`, color: TEXT_MUTED };
 
 function adGroupCount(c: CcCampaign) { return c.adGroups.length; }
 function targetCount(c: CcCampaign) { return c.adGroups.reduce((n, ag) => n + ag.targets.length, 0); }

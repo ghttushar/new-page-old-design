@@ -26,7 +26,6 @@ import KeywordActionWrapper from '../keyword-actions-page/keyword-action-wrapper
 import AdvertisingTypesWrapper from './advertising-types-wrapper';
 import AnalysisWrapper from './analysis-page/analysis-page-wrapper';
 import CampaignCreator from './campaign-creator/campaign-creator';
-import CampaignCreatorDropdown from './campaign-creator-dropdown/campaign-creator';
 import ComparisonPage from './comparison-page/comparison-page';
 
 export function AdvertisingWrapper() {
@@ -150,15 +149,8 @@ export function AdvertisingWrapper() {
           />
         }
       />
-      <Route
-        path="/campaign-creator-dropdown/*"
-        element={
-          <PrivateRoute
-            component={<CampaignCreatorDropdown />}
-            feature={FeaturesEnum.ADVERTISING_CAMPAIGN_CREATOR}
-          />
-        }
-      />
+      {/* The old Campaign Creator Grouping address now opens Campaign Creator. */}
+      <Route path="/campaign-creator-dropdown/*" element={<Navigate to="/advertising/campaign-creator" replace />} />
       <Route path="*" element={<Navigate to="campaign-manager" replace />} />
     </Routes>
   );

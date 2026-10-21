@@ -73,8 +73,10 @@ function CardHead({ icon, label, htmlFor }: { icon: string; label: string; htmlF
   );
 }
 
-export default function StepObjectives({ draft, onChange }: {
+export default function StepObjectives({ draft, onChange, issue }: {
   draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+  /** A daily budget the marketplace rejected on an earlier run: the field stays red until it is raised enough. */
+  issue?: { field: 'dailyBudget'; min: number; message: string } | null;
 }) {
   const cap = draft.marketplace ? MARKETPLACE_CAPABILITY[draft.marketplace] : null;
   const ex = draft.extraObjectives;
@@ -92,6 +94,7 @@ export default function StepObjectives({ draft, onChange }: {
 
   function errorFor(id: Tile['id']): string | null {
     const v = value(id);
+    if (id === 'budget' && issue && draft.dailyBudget < issue.min) return issue.message;
     if (id === 'budget') return cap && draft.dailyBudget < cap.minDailyBudget ? `The minimum for this marketplace is ${formatCurrency(cap.minDailyBudget)}.` : null;
     if (v === null) return null;
     if (id === 'acos') return v < 1 || v > (cap?.maxTargetAcos ?? 90) ? `Enter a value between 1 and ${cap?.maxTargetAcos ?? 90}.` : null;

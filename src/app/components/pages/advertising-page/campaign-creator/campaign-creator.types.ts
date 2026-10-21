@@ -563,9 +563,9 @@ export function totalTargets(campaigns: CcCampaign[]): number {
 
 // ── Draft state ───────────────────────────────────────────────────────────────────────────────
 
-export type CcStepId = 'entry' | 'products' | 'keywords' | 'objectives' | 'targeting' | 'structure' | 'preview' | 'creating' | 'result';
+export type CcStepId = 'entry' | 'activity' | 'products' | 'keywords' | 'objectives' | 'targeting' | 'structure' | 'preview' | 'creating' | 'result';
 
-export const STEP_ORDER: CcStepId[] = ['entry', 'products', 'targeting', 'structure', 'objectives', 'keywords', 'preview', 'creating', 'result'];
+export const STEP_ORDER: CcStepId[] = ['entry', 'activity', 'products', 'targeting', 'structure', 'objectives', 'keywords', 'preview', 'creating', 'result'];
 
 /** A keyword the person adds on the Keywords step. It is applied to every manual campaign. */
 export type KeywordMatch = 'broad' | 'phrase' | 'exact';
