@@ -11,14 +11,14 @@ const LIST_HEIGHT = 312;
 const WIDTH = 340;
 
 const Chevron = () => (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M4 6.2l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M4 6.2l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 const Tick = () => (
   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3.5 8.4l3 3 6-6.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 
 /**
- * The products tile of the flow summary, as a group dropdown built for thousands of groups: search, a filter for the
+ * The group being set up, written into the page heading ("Set your goals for Group 1") as a dropdown built for thousands of groups: search, a filter for the
  * groups that still need a choice, a shortcut to the next one, and a list that only draws the rows in view.
  */
 export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApply, appliedCount, onUndo }: {
@@ -35,7 +35,7 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [box, setBox] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const active = scopes.find((s) => s.id === activeId) ?? scopes[0];
   const position = (Math.max(0, scopes.indexOf(active)) + 1).toLocaleString();
@@ -93,26 +93,15 @@ export default function ScopeSwitch({ scopes, activeId, pending, onChange, onApp
 
   return (
     <>
-      <div ref={boxRef} className={`ccd-gs-box${open ? ' is-open' : ''}`}>
+      <span ref={boxRef} className={`ccd-gs-inline${open ? ' is-open' : ''}`}>
         <button
           ref={triggerRef} type="button" className="ccd-gs-trigger" aria-haspopup="dialog" aria-expanded={open}
-          aria-label={`Group being set up: ${active.name}. Change group`} onClick={() => { setOpen((o) => !o); setQuery(''); setChecked(new Set()); }}
+          aria-label={`Group being set up: ${active.name}, ${position} of ${scopes.length.toLocaleString()}. Change group`} onClick={() => { setOpen((o) => !o); setQuery(''); setChecked(new Set()); }}
         >
-          {/* Two lines: what this is ("Setting up"), then the group's name with its product count. */}
-          <span className="ccd-gs-lines">
-            <span className="ccd-gs-label">
-              <i className={`ccd-gdot ccd-gs-status ${pending.has(active.id) ? 'is-wait' : 'is-done'}`} aria-hidden />
-              Setting up
-            </span>
-            <span className="ccd-gs-line">
-              <span className="ccd-gs-title">{active.name}</span>
-              <span className="ccd-gs-meta">{plural(active.products.length)}</span>
-            </span>
-          </span>
-          <span className="ccd-gs-pos">{position} of {scopes.length.toLocaleString()}</span>
+          <span className="ccd-gs-title">{active.name}</span>
           <span className="ccd-gs-chev"><Chevron /></span>
         </button>
-      </div>
+      </span>
 
       {open && createPortal(
         <div ref={menuRef} className="ccd-gs-menu" style={{ top: box.top, left: box.left, width: WIDTH }} role="dialog" aria-label="Choose a group to set up">

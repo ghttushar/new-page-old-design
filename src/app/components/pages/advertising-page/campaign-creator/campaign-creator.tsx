@@ -1,7 +1,8 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import useSubHeader from '@/hooks/use-sub-header.hook';
+import { useAppDispatch } from '@/redux/hooks';
+import { setSubheaderOptions } from '@/redux/slices/advertising/sub-header.slice';
 import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import './campaign-creator.css';
@@ -24,6 +25,7 @@ import { DEFAULT_SCOPE_ID, applyPageToGroups, applyScopedPatch, buildScopes, pic
 import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
 import CampaignModeDialog from './steps/campaign-mode-dialog';
+import MarketplaceHeader from './marketplace-header';
 import StepResult from './steps/step-result';
 import CreationActivity, { ActivityButton } from './steps/creation-activity';
 import { SEED_RUNS, advanceCounts, type CreationRun, type RunIssue } from './steps/creation-runs.mock';
@@ -38,9 +40,17 @@ const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
 ];
 
 export default function CampaignCreator() {
-  useSubHeader(PageTitleEnum.CAMPAIGN_CREATOR, PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR);
 
   const [step, setStep] = useState<CcStepId>('entry');
+
+  // The page header: on the ad format page it carries the Marketplace dropdown (MarketplaceHeader, below);
+  // on every other step it is just the title.
+  const dispatch = useAppDispatch();
+  const onEntry = step === 'entry';
+  useEffect(() => {
+    if (onEntry) return;
+    dispatch(setSubheaderOptions({ title: PageTitleEnum.CAMPAIGN_CREATOR, titleTooltip: PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR, isDropdownRequired: false, dropdownOptions: [] }));
+  }, [onEntry, dispatch]);
   const [furthestIndex, setFurthestIndex] = useState(0);
   const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
   const [jivaOpen, setJivaOpen] = useState(false);
@@ -243,7 +253,7 @@ export default function CampaignCreator() {
 
   const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next?: () => void; nextLabel?: string; disabled?: boolean }>> = {
     entry: { next: () => setModeOpen(true), nextLabel: 'Get started', disabled: !draft.adType },
-    activity: { back: () => goTo('entry'), backLabel: 'Back to ad formats' },
+    activity: { back: () => goTo('entry'), backLabel: 'Create campaign' },
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
     keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue' },
     objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate)) },
@@ -333,6 +343,12 @@ export default function CampaignCreator() {
         </footer>
       )}
       </div>
+        {onEntry && (
+          <MarketplaceHeader
+            value={draft.marketplace}
+            onMarketplace={(marketplace) => setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, adType: prev.adType, marketplace }))}
+          />
+        )}
         <CampaignModeDialog
           open={modeOpen} value={draft.campaignMode} onClose={() => setModeOpen(false)}
           onConfirm={(mode) => { setDraft((prev) => ({ ...prev, ...applyCampaignMode(prev, mode) })); setModeOpen(false); advance('products'); }}

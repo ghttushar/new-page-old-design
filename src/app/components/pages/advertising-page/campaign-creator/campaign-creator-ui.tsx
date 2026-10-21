@@ -204,7 +204,12 @@ export function TextButton({ children, onClick, tone = BRAND }: { children: Reac
 
 import { GroupSwitch } from './campaign-inline-summary';
 
-export function StepHeading({ eyebrow, title, aside }: { eyebrow?: string; title: string; aside?: React.ReactNode }) {
+/** The page heading. On the pages set up group by group the title ends in the group dropdown: "Set your goals for Group 1". */
+export function StepHeading({ eyebrow, title, aside, group }: {
+  eyebrow?: string; title: string; aside?: React.ReactNode;
+  /** A group dropdown of the page's own (wrapped in HeadingGroup), in place of the one from the flow. */
+  group?: React.ReactNode;
+}) {
   return (
     <header className="ccd-step-heading">
       {eyebrow && (
@@ -213,11 +218,8 @@ export function StepHeading({ eyebrow, title, aside }: { eyebrow?: string; title
         </div>
       )}
       <div className="ccd-step-heading__row">
-        <h1 style={{ margin: 0, font: `700 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}</h1>
-        <div className="ccd-step-heading__tools">
-          {aside}
-          <GroupSwitch />
-        </div>
+        <h1 style={{ margin: 0, font: `600 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}{group ?? <GroupSwitch />}</h1>
+        {aside && <div className="ccd-step-heading__tools">{aside}</div>}
       </div>
     </header>
   );

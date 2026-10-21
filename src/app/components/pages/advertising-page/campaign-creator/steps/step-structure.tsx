@@ -284,7 +284,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
     .map((s) => ({ id: s.id, label: `Use Structure ${catalog.indexOf(s) + 1} — ${s.name}` }));
 
   return (
-    <div>
+    <div className="ccd-step-structure">
       <StepHeading title="Choose how campaigns are organised" />
 
       <div className="ccd-structure-workspace">

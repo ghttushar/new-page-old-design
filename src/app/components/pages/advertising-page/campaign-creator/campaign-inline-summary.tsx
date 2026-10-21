@@ -261,10 +261,19 @@ export function JourneyBar() {
   );
 }
 
-/** The group dropdown, shown at the right of the page heading on the pages that are set up group by group. */
+/** Ends a page heading with "for" and a group dropdown. */
+export function HeadingGroup({ children }: { children: React.ReactNode }) {
+  return <span className="ccd-h-group">{' for '}{children}</span>;
+}
+
+/** The group dropdown, written into the page heading on the pages that are set up group by group. */
 export function GroupSwitch() {
   const context = useCampaignSummary();
   if (!context || !context.scopes || context.scopes.length === 0 || !context.onScopeChange) return null;
   const { step, scopes, activeScopeId, pendingScopes, onScopeChange, onApplyToGroups, appliedCount, onUndoApply } = context;
-  return <ScopeSwitch scopes={scopes} activeId={activeScopeId ?? scopes[0].id} pending={pendingScopes ?? new Set()} onChange={onScopeChange} onApply={step === 'products' ? undefined : onApplyToGroups} appliedCount={appliedCount ?? null} onUndo={onUndoApply} />;
+  return (
+    <HeadingGroup>
+      <ScopeSwitch scopes={scopes} activeId={activeScopeId ?? scopes[0].id} pending={pendingScopes ?? new Set()} onChange={onScopeChange} onApply={step === 'products' ? undefined : onApplyToGroups} appliedCount={appliedCount ?? null} onUndo={onUndoApply} />
+    </HeadingGroup>
+  );
 }
