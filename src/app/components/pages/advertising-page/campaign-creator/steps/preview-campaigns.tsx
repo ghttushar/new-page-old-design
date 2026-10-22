@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Scope } from '../product-groups';
-import { BIDDING_STRATEGIES, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
+import { BIDDING_STRATEGIES, DEFAULT_BIDDING, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
 import { DEFAULT_NAMING } from '../campaign-creator.types';
 import { Panel } from '../ccd-design';
 import { TextButton } from '../campaign-creator-ui';
@@ -26,6 +26,8 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
   onApplyNaming: (naming: NamingSettings, next: CcCampaign[]) => void;
 }) {
   const overall = draft.dailyBudget;
+  // Bid adjustments by placement are an Amazon setting; Walmart sets bid multipliers on Objectives instead.
+  const amazon = draft.marketplace !== 'walmart';
   const [editingId, setEditingId] = useState<string | null>(null);
   const [namingOpen, setNamingOpen] = useState(false);
   const visible = shownScope ? campaigns.filter((c) => c.groupName === shownScope.name) : campaigns;
@@ -75,10 +77,10 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
       <div className="ccd-scroll ccd-ctab-scroll">
         <table className="ccd-ctab">
           <colgroup>
-            <col style={{ width: 270 }} /><col style={{ width: 84 }} /><col style={{ width: 170 }} /><col style={{ width: 196 }} /><col style={{ width: 210 }} /><col style={{ width: 210 }} /><col style={{ width: 210 }} />
+            <col style={{ width: 270 }} /><col style={{ width: 84 }} /><col style={{ width: 170 }} /><col style={{ width: 196 }} />{amazon && <col style={{ width: 210 }} />}<col style={{ width: 210 }} /><col style={{ width: 210 }} />
           </colgroup>
           <thead>
-            <tr><th>Campaign</th><th>Ad type</th><th>Budget</th><th>Bidding strategy</th><th>Adjust bids by placement</th><th>Ad group name</th><th>Targeting type</th></tr>
+            <tr><th>Campaign</th><th>Ad type</th><th>Budget</th><th>Bidding strategy</th>{amazon && <th>Adjust bids by placement</th>}<th>Ad group name</th><th>Targeting type</th></tr>
           </thead>
           <tbody>
             {visible.map((c) => {
@@ -104,13 +106,13 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
                   </td>
                   <td>
                     <select
-                      className="ccd-input ccd-ctab-select" value={c.biddingStrategy ?? 'Fixed bids'} aria-label={`Bidding strategy for ${campaignLabel(c)}`}
+                      className="ccd-input ccd-ctab-select" value={c.biddingStrategy ?? DEFAULT_BIDDING[draft.marketplace ?? 'amazon']} aria-label={`Bidding strategy for ${campaignLabel(c)}`}
                       onChange={(e) => patchCampaign(c.id, { biddingStrategy: e.target.value as BiddingStrategy })}
                     >
-                      {BIDDING_STRATEGIES.map((b) => <option key={b} value={b}>{b}</option>)}
+                      {BIDDING_STRATEGIES[draft.marketplace ?? 'amazon'].map((b) => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </td>
-                  <td><PlacementCell value={c.placement ?? NO_PLACEMENT} campaignName={campaignLabel(c)} onChange={(v) => patchCampaign(c.id, { placement: v })} /></td>
+                  {amazon && <td><PlacementCell value={c.placement ?? NO_PLACEMENT} campaignName={campaignLabel(c)} onChange={(v) => patchCampaign(c.id, { placement: v })} /></td>}
                   <td><CounterInput value={c.adGroups[0]?.name ?? ''} max={235} label={`Ad group name for ${campaignLabel(c)}`} onChange={(v) => renameAdGroup(c.id, v)} /></td>
                   <td>
                     <span className="ccd-ctab-targets">

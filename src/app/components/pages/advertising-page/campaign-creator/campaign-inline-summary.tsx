@@ -1,7 +1,7 @@
 // @ts-nocheck -- presentation-only campaign brief for the ported creator
 import { Fragment } from 'react';
 import { motion } from 'motion/react';
-import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, formatCurrency, type CcStepId } from './campaign-creator.types';
+import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, budgetSummary, type CcStepId } from './campaign-creator.types';
 import { useCampaignSummary } from './campaign-summary-context';
 import ScopeSwitch from './scope-switch';
 
@@ -215,7 +215,7 @@ export function JourneyBar() {
     entry: { eyebrow: 'Ad format', value: 'Sponsored Products' },
     products: { eyebrow: 'Products', value: `${totalProducts ?? selectedProducts.length} selected` },
     keywords: { eyebrow: 'Keywords', value: kwSummary },
-    objectives: { eyebrow: 'Budget', value: `${formatCurrency(draft.dailyBudget)} / day` },
+    objectives: { eyebrow: 'Budget', value: budgetSummary(draft) },
     targeting: { eyebrow: 'Targeting', value: `${routes} ${routes === 1 ? 'route' : 'routes'}` },
     structure: { eyebrow: 'Structure', value: structure?.name ?? 'Custom' },
   };

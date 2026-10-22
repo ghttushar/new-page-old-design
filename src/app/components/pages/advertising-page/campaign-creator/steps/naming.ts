@@ -30,7 +30,7 @@ interface Parts { parentAsin: string; campaignType: string; adType: string; bidd
 /** Example values for the preview when there is no campaign yet. */
 const SAMPLE: Parts = { parentAsin: 'B0XXXXXXXXX', campaignType: 'SP', adType: 'Manual', biddingStrategy: 'Fixed', targetType: 'Broad', adGroupText: 'Anarix ad group', adGroupTarget: 'Broad' };
 
-const BIDDING_SHORT: Record<string, string> = { 'Fixed bids': 'Fixed', 'Dynamic bids - down only': 'DynamicDown', 'Dynamic bids - up and down': 'DynamicUpDown' };
+const BIDDING_SHORT: Record<string, string> = { 'Fixed bids': 'Fixed', 'Dynamic bids - down only': 'DynamicDown', 'Dynamic bids - up and down': 'DynamicUpDown', Fixed: 'Fixed', Dynamic: 'Dynamic' };
 
 function partsFor(c: CcCampaign, products: CcProduct[]): Parts {
   const types = Array.from(new Set(c.adGroups.flatMap((ag) => ag.targets.map((t) => t.matchType))));

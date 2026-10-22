@@ -208,7 +208,7 @@ export function groupNameIdeas(chosen: CcProduct[], groups: ProductGroup[]): str
 /** The settings each page sets, so copying one page across groups leaves the others alone. */
 export const PAGE_FIELDS: Partial<Record<CcStepId, GroupField[]>> = {
   keywords: ['keywordTargets', 'negativeKeywords'],
-  objectives: ['targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate', 'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode'],
+  objectives: ['targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate', 'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode', 'budgetType', 'totalBudget', 'budgetRollover', 'expandedTargeting', 'bidMultipliers'],
   targeting: ['targetingStrategies', 'autoTypes'],
   structure: ['structureId', 'customPrompt', 'customCampaigns'],
 };

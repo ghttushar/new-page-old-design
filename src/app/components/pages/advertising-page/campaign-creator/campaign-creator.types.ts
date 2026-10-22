@@ -377,8 +377,13 @@ export interface CcAdGroup {
   negatives: CcNegative[];
 }
 
-export type BiddingStrategy = 'Fixed bids' | 'Dynamic bids - down only' | 'Dynamic bids - up and down';
-export const BIDDING_STRATEGIES: BiddingStrategy[] = ['Fixed bids', 'Dynamic bids - down only', 'Dynamic bids - up and down'];
+/** Amazon's three strategies, and Walmart's two. Each marketplace offers only its own, first one the default. */
+export type BiddingStrategy = 'Fixed bids' | 'Dynamic bids - down only' | 'Dynamic bids - up and down' | 'Fixed' | 'Dynamic';
+export const BIDDING_STRATEGIES: Record<Marketplace, BiddingStrategy[]> = {
+  amazon: ['Dynamic bids - down only', 'Dynamic bids - up and down', 'Fixed bids'],
+  walmart: ['Fixed', 'Dynamic'],
+};
+export const DEFAULT_BIDDING: Record<Marketplace, BiddingStrategy> = { amazon: 'Dynamic bids - down only', walmart: 'Fixed' };
 
 /** Percent change to the bid per placement; null means no adjustment. */
 export interface PlacementAdjust { top: number | null; product: number | null; rest: number | null }
@@ -597,9 +602,56 @@ export const DEFAULT_NAMING: NamingSettings = {
   adGroupTokens: ['adGroupText', 'targetType'],
 };
 
-/** Where the ads may show. Search in-grid is always on. */
+/** Where the ads may show (Walmart). Search in-grid is always on; Buy box is always on for Auto campaigns. */
 export interface PlacementInclusion { searchInGrid: boolean; buyBox: boolean; searchCarousel: boolean; itemCarousel: boolean }
 export const ALL_PLACEMENTS: PlacementInclusion = { searchInGrid: true, buyBox: true, searchCarousel: true, itemCarousel: true };
+
+// ── Walmart-only objectives ──────────────────────────────────────────────────────────────────
+
+/** Walmart budgets: a daily budget, a total for the campaign's life, or both. Amazon is daily only. */
+export type BudgetType = 'daily' | 'total' | 'both';
+/** Walmart's extra Auto reach, on top of the Auto campaign's own targeting. */
+export interface ExpandedTargeting { brandTerms: boolean; complementary: boolean }
+/** Walmart bid multipliers in percent, 0 meaning none. Placement sets differ for Auto and Manual campaigns. */
+export interface BidMultipliers {
+  auto: { buyBox: number; searchInGrid: number; homePage: number; stockUp: number };
+  manual: { buyBox: number; searchInGrid: number };
+  platform: { desktop: number; app: number; mobile: number };
+}
+export const NO_BID_MULTIPLIERS: BidMultipliers = {
+  auto: { buyBox: 0, searchInGrid: 0, homePage: 0, stockUp: 0 },
+  manual: { buyBox: 0, searchInGrid: 0 },
+  platform: { desktop: 0, app: 0, mobile: 0 },
+};
+
+/**
+ * Whether the Objectives page can't be left yet: a budget the campaigns use is missing (Amazon always uses the daily
+ * one; Walmart the daily, the total, or both), a total below the daily budget, or an end date before the start.
+ */
+export function objectivesBlocked(
+  s: Pick<CcDraft, 'dailyBudget' | 'totalBudget' | 'budgetType' | 'startDate' | 'endDate'>, marketplace: Marketplace | null,
+): boolean {
+  const walmart = marketplace === 'walmart';
+  const usesDaily = !walmart || s.budgetType !== 'total';
+  const usesTotal = walmart && s.budgetType !== 'daily';
+  if (usesDaily && s.dailyBudget <= 0) return true;
+  if (usesTotal && !(s.totalBudget && s.totalBudget > 0)) return true;
+  if (usesDaily && usesTotal && (s.totalBudget ?? 0) < s.dailyBudget) return true;
+  return Boolean(s.endDate && s.endDate < s.startDate);
+}
+
+/** The budget in a few words for the summaries: the daily one, or the total when a Walmart plan has only a total. */
+export function budgetSummary(d: Pick<CcDraft, 'marketplace' | 'budgetType' | 'dailyBudget' | 'totalBudget'>): string {
+  return d.marketplace === 'walmart' && d.budgetType === 'total' ? `${formatCurrency(d.totalBudget ?? 0)} total` : `${formatCurrency(d.dailyBudget)} / day`;
+}
+
+/** The objective defaults that differ by marketplace, applied whenever the marketplace is chosen. */
+export function objectiveDefaults(marketplace: Marketplace): Pick<CcDraft, 'biddingStrategy' | 'placementInclusion'> {
+  return {
+    biddingStrategy: DEFAULT_BIDDING[marketplace],
+    placementInclusion: { searchInGrid: true, buyBox: true, searchCarousel: false, itemCarousel: false },
+  };
+}
 
 /** Today as yyyy-mm-dd in the viewer's own calendar. */
 export function todayIso(): string {
@@ -700,6 +752,14 @@ export interface CcDraft {
   placementInclusion: PlacementInclusion;
   /** Whether the total budget is one figure for the campaigns together, or divided across them. */
   totalBudgetMode: 'total' | 'division';
+  /** Walmart only: which budgets the campaigns have, the total one, and whether unspent daily budget carries over. */
+  budgetType: BudgetType;
+  totalBudget: number | null;
+  budgetRollover: boolean;
+  /** Walmart only, for Auto campaigns. */
+  expandedTargeting: ExpandedTargeting;
+  /** Walmart only; optional, all 0% until set. */
+  bidMultipliers: BidMultipliers;
   /** Added on the Keywords step; optional. */
   keywordTargets: KeywordEntry[];
   negativeKeywords: NegativeKeywordEntry[];
@@ -711,6 +771,7 @@ export interface CcDraft {
 export const GROUP_FIELDS = [
   'keywordTargets', 'negativeKeywords', 'targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate',
   'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode',
+  'budgetType', 'totalBudget', 'budgetRollover', 'expandedTargeting', 'bidMultipliers',
   'targetingStrategies', 'autoTypes', 'structureId', 'customPrompt', 'customCampaigns',
 ] as const;
 export type GroupField = (typeof GROUP_FIELDS)[number];
@@ -743,10 +804,14 @@ export const EMPTY_DRAFT: CcDraft = {
   naming: DEFAULT_NAMING,
   startDate: todayIso(),
   endDate: '',
-  biddingStrategy: 'Fixed bids',
+  ...objectiveDefaults('amazon'),
   placementAdjust: { top: null, product: null, rest: null },
-  placementInclusion: { ...ALL_PLACEMENTS, buyBox: false },
   totalBudgetMode: 'total',
+  budgetType: 'daily',
+  totalBudget: null,
+  budgetRollover: true,
+  expandedTargeting: { brandTerms: true, complementary: false },
+  bidMultipliers: NO_BID_MULTIPLIERS,
   keywordTargets: [],
   negativeKeywords: [],
   productGroups: [],

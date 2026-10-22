@@ -1,6 +1,6 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { AnimatePresence, motion } from 'motion/react';
-import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, formatCurrency, type CcDraft, type CcProduct, type CcStepId } from './campaign-creator.types';
+import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, budgetSummary, type CcDraft, type CcProduct, type CcStepId } from './campaign-creator.types';
 import { BORDER, BRAND, CheckIcon, FONT, GOOD, HAIR, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from './campaign-creator-ui';
 export { CampaignSummaryProvider } from './campaign-summary-context';
 
@@ -41,7 +41,7 @@ export function summaryFor(step: CcStepId, draft: CcDraft, selectedProducts: CcP
   if (['targeting', 'structure'].includes(step)) {
     const extras = Object.values(draft.extraObjectives).filter((v) => v !== null).length;
     items.push({
-      id: 'objectives', label: 'Goals', value: `${formatCurrency(draft.dailyBudget)} a day`,
+      id: 'objectives', label: 'Goals', value: budgetSummary(draft),
       sub: [draft.targetAcos != null ? `${draft.targetAcos}% target ACOS` : 'No ACOS target', ...(extras ? [`+${extras} more`] : [])].join(' · '),
     });
   }
@@ -67,7 +67,7 @@ function liveRows(step: CcStepId, draft: CcDraft, selectedProducts: CcProduct[])
   return [
     { id: 'entry', label: 'Ad type', set: passed('entry'), value: 'Sponsored Products', sub: 'Amazon' },
     { id: 'products', label: 'Products', set: passed('products'), value: `${n} product${n === 1 ? '' : 's'}`, sub: selectedProducts.slice(0, 2).map((p) => p.name ?? p.title).filter(Boolean).join(', ') || undefined },
-    { id: 'objectives', label: 'Goals', set: passed('objectives'), value: `${formatCurrency(draft.dailyBudget)} / day`, sub: [draft.targetAcos != null ? `${draft.targetAcos}% target ACOS` : 'No ACOS target', ...(extras ? [`+${extras} more`] : [])].join(' · ') },
+    { id: 'objectives', label: 'Goals', set: passed('objectives'), value: budgetSummary(draft), sub: [draft.targetAcos != null ? `${draft.targetAcos}% target ACOS` : 'No ACOS target', ...(extras ? [`+${extras} more`] : [])].join(' · ') },
     { id: 'targeting', label: 'Targeting', set: passed('targeting'), value: names.length ? names.join(', ') : 'None', sub: draft.targetingStrategies.includes('auto') ? `${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}` : undefined },
     { id: 'structure', label: 'Structure', set: passed('structure'), value: structure ? structure.name : draft.structureId === 'custom' ? 'Custom' : '—', sub: structure?.tagline },
   ] as { id: CcStepId; label: string; set: boolean; value: string; sub?: string }[];

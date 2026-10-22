@@ -576,6 +576,10 @@ select.ccd-tm-cell { padding-right: 2px; cursor: pointer; }
 .ccd-date { width: 100%; max-width: 220px; margin-top: 14px; padding: 10px 12px; border: 1px solid #e4e7ee; border-radius: 8px; background: #fff; color: var(--ccd-ink); font: 500 14px/1.2 Inter, sans-serif; outline: none; }
 .ccd-date[aria-invalid="true"] { border-color: #e0a5a0; }
 select.ccd-date { max-width: 100%; cursor: pointer; }
+.ccd-date:disabled { background: #f6f7f9; color: #a3a8b1; cursor: not-allowed; }
+/* A checkbox with its label, as one button. */
+.ccd-check-btn { display: inline-flex; align-items: center; gap: 8px; padding: 2px 0; border: 0; background: none; color: var(--ccd-ink); font: 500 13px/1.3 Inter, sans-serif; cursor: pointer; }
+.ccd-check-btn:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 3px; border-radius: 4px; }
 .ccd-place-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 24px; margin-top: 14px; }
 .ccd-pi { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; align-items: center; margin-top: 22px; }
 .ccd-pi__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 40px; }
@@ -602,6 +606,47 @@ select.ccd-date { max-width: 100%; cursor: pointer; }
 .ccd-pi { margin-top: 14px; }
 .ccd-pi__cols { gap: 12px 24px; }
 .ccd-pi__row { font: 500 13px/1.3 Inter, sans-serif; color: var(--ccd-ink); }
+.ccd-pi__row > span:not(.ccd-tm-info) { display: flex; flex-direction: column; gap: 2px; }
+.ccd-pi__cap { color: #8a909b; font: 400 11.5px/1.3 Inter, sans-serif; }
+
+/* Objectives: cards that take two columns or the whole row (each takes the whole row once the grid is narrower) */
+.ccd-goal-card--span2 { grid-column: span 2; }
+.ccd-goal-card--span3 { grid-column: 1 / -1; }
+@media (max-width: 1100px) { .ccd-goal-card--span2 { grid-column: 1 / -1; } }
+
+/* Amazon placement adjustments: one row per placement, label left, field right */
+.ccd-place-grid--stack { grid-template-columns: 1fr; gap: 10px; }
+.ccd-place-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.ccd-place-row > [role="alert"] { flex-basis: 100%; }
+
+/* Walmart budget: the type in the card's header, then the daily and/or total budget, then rollover */
+.ccd-wm-btype { flex: none; width: auto; padding: 6px 26px 6px 10px; border: 1px solid #e4e7ee; border-radius: 7px; background-color: #fff; color: var(--ccd-ink); font: 500 12.5px/1.2 Inter, sans-serif; cursor: pointer; outline: none; }
+.ccd-wm-btype:focus-visible { border-color: var(--ccd-brand); }
+.ccd-wm-budget { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 16px; margin-top: 14px; }
+.ccd-wm-budget.is-pair { grid-template-columns: repeat(2, minmax(0, max-content)); }
+/* A one-column list of switches in the Walmart Placement inclusions card */
+.ccd-pi--list { grid-template-columns: 1fr; }
+.ccd-pi--list .ccd-pi__cols { grid-template-columns: 1fr; gap: 12px; }
+@media (max-width: 1100px) {
+  .ccd-goal-grid > .ccd-goal-card--pi:has(+ .ccd-goal-card--span2) { grid-column: 1 / -1; }
+  .ccd-goal-grid > .ccd-goal-card--pi:has(+ .ccd-goal-card--span2) .ccd-pi__cols { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) { .ccd-goal-grid > .ccd-goal-card--pi .ccd-pi__cols { grid-template-columns: 1fr; } }
+.ccd-wm-rollover { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #eef0f3; }
+.ccd-wm-rollover__label { display: inline-flex; align-items: center; gap: 6px; color: var(--ccd-ink); font: 500 13px/1.3 Inter, sans-serif; }
+.ccd-seg { display: inline-flex; padding: 2px; border: 1px solid #dfe2e9; border-radius: 8px; background: #f6f7f9; }
+.ccd-seg button { min-width: 52px; padding: 5px 12px; border: 0; border-radius: 6px; background: none; color: #646b76; font: 600 12.5px/1.2 Inter, sans-serif; cursor: pointer; }
+.ccd-seg button.is-on { background: #fff; color: var(--ccd-ink); box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
+.ccd-seg button:disabled { color: #b4b9c3; cursor: not-allowed; }
+.ccd-seg button:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 1px; }
+
+/* Walmart expanded targeting and bid multipliers */
+.ccd-wm-checks { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 14px; }
+.ccd-wm-mult { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 16px 24px; margin-top: 14px; }
+.ccd-wm-mult__group { display: flex; flex-direction: column; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.ccd-wm-mult .ccd-place-row { flex-wrap: nowrap; justify-content: flex-start; }
+.ccd-wm-mult .ccd-place-row > label { flex: none; width: 92px; }
+.ccd-wm-mult__group > legend { margin-bottom: 10px; padding: 0; color: #8a909b; font: 600 11px/1.2 Inter, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
 
 /* Targeting: Auto and Manual are two separate tables */
 .ccd-tg-group + .ccd-tg-group { margin-top: 28px; }
@@ -714,12 +759,12 @@ select.ccd-date { max-width: 100%; cursor: pointer; }
 
 /* Rules on the Preview page: optional, folded away until opened */
 .ccd-rl-optional { color: #7b808a; font-weight: 400; }
-.ccd-rl-toggle { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px 0 12px; border: 1px solid #dfe2e9; border-radius: 8px; background: #fff; color: #2d2f36; font: 600 12.5px/1 Inter, sans-serif; cursor: pointer; transition: border-color 140ms ease-out, background-color 140ms ease-out; }
-.ccd-rl-toggle:hover { border-color: #aab0bb; background: #fafbfc; }
+/* Just the arrow: no frame, no label. */
+.ccd-rl-toggle { display: inline-flex; align-items: center; justify-content: center; padding: 4px; border: 0; background: none; color: #646b76; cursor: pointer; transition: color 140ms ease-out; }
+.ccd-rl-toggle:hover { color: #1d2129; }
 .ccd-rl-toggle:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
 .ccd-rl-toggle svg { transition: transform 160ms ease-out; }
 .ccd-rl-toggle.is-open svg { transform: rotate(180deg); }
-.ccd-rl-toggle__n { color: #1b6b43; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .ccd-rl-toggle, .ccd-rl-toggle svg { transition: none; } }
 
 .ccd-gh { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: #7b808a; font: 400 12px/1.4 Inter, sans-serif; }

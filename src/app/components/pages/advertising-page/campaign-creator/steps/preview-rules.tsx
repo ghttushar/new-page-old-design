@@ -284,10 +284,8 @@ export default function RulesSection({ draft, campaigns, onChange }: {
       title={<>Rules <span className="ccd-rl-optional">(Optional)</span></>}
       pad={expanded ? 20 : 0}
       aside={
-        <button type="button" className={`ccd-rl-toggle${expanded ? ' is-open' : ''}`} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>
-          {!expanded && attachedRules.length > 0 && <span className="ccd-rl-toggle__n">{attachedRules.length} attached</span>}
-          {expanded ? 'Hide' : 'Show'}
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M4 6.2l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <button type="button" className={`ccd-rl-toggle${expanded ? ' is-open' : ''}`} aria-expanded={expanded} aria-label={expanded ? 'Hide rules' : 'Show rules'} onClick={() => setExpanded((v) => !v)}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M4 6.2l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
       }
     >

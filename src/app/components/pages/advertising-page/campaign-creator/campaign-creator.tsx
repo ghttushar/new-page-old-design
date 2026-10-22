@@ -7,7 +7,7 @@ import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, applyCampaignMode, strategiesForMode, flattenProducts, productsFor, recommendTargetingStrategies, structureCounts, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, strategiesForMode, flattenProducts, productsFor, recommendTargetingStrategies, structureCounts, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -160,7 +160,7 @@ export default function CampaignCreator() {
 
   // Groups that still need a choice on the page being shown, marked in the dropdown.
   const pendingScopes = new Set(scopes.filter((g) => {
-    if (step === 'objectives') return g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate) || Boolean(issue && g.settings.dailyBudget < issue.min);
+    if (step === 'objectives') return objectivesBlocked(g.settings, draft.marketplace) || Boolean(issue && g.settings.dailyBudget < issue.min);
     if (step === 'targeting') return g.settings.targetingStrategies.length === 0;
     if (step === 'structure') return !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns);
     return false;
@@ -256,7 +256,7 @@ export default function CampaignCreator() {
     activity: { back: () => goTo('entry'), backLabel: 'Create campaign' },
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
     keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue' },
-    objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => g.settings.dailyBudget <= 0 || Boolean(g.settings.endDate && g.settings.endDate < g.settings.startDate)) },
+    objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => objectivesBlocked(g.settings, draft.marketplace)) },
     targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.targetingStrategies.length === 0) },
     structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
@@ -346,7 +346,7 @@ export default function CampaignCreator() {
         {onEntry && (
           <MarketplaceHeader
             value={draft.marketplace}
-            onMarketplace={(marketplace) => setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, adType: prev.adType, marketplace }))}
+            onMarketplace={(marketplace) => setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, ...objectiveDefaults(marketplace), adType: prev.adType, marketplace }))}
           />
         )}
         <CampaignModeDialog
