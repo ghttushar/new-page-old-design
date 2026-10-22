@@ -92,11 +92,51 @@ const DisplayArt = () => (
   </svg>
 );
 
-const FORMATS = [
-  { id: 'sponsored-products', name: 'Sponsored Products', blurb: 'Promote individual products in search results and on product pages.', icon: <ProductsIcon />, art: <ProductsArt />, ready: true },
-  { id: 'sponsored-brands', name: 'Sponsored Brands', blurb: 'Brand-led ads with a logo, headline and several products.', icon: <BrandsIcon />, art: <BrandsArt />, ready: false },
-  { id: 'sponsored-display', name: 'Sponsored Display', blurb: 'Retargeting and audience ads on and off the marketplace.', icon: <DisplayIcon />, art: <DisplayArt />, ready: false },
-] as const;
+/** Where a Sponsored Videos ad shows: a product video, with its item beside it, among the search results. */
+const VideosArt = () => (
+  <svg viewBox="0 0 320 136" className="ccd-ad-art__svg" aria-hidden>
+    <rect className="a-bar" x="62" y="12" width="196" height="16" rx="8" />
+    <circle className="a-mark-fill" cx="74" cy="20" r="3.2" />
+    <rect className="a-line" x="84" y="18" width="64" height="4" rx="2" />
+    <g className="a-lift">
+      <rect className="a-card a-card--on" x="54" y="38" width="212" height="88" rx="10" />
+      <rect className="a-thumb" x="64" y="46" width="122" height="66" rx="7" />
+      <circle className="a-btn" cx="125" cy="79" r="12" />
+      <path className="a-play" d="M121 72.5v13l10.5-6.5z" />
+      <rect className="a-line" x="64" y="117" width="122" height="3" rx="1.5" />
+      <rect className="a-chip-ink" x="64" y="117" width="46" height="3" rx="1.5" />
+      <Thumb x={196} y={46} s={30} />
+      <rect className="a-line a-line--dark" x="196" y="84" width="60" height="5" rx="2.5" />
+      <rect className="a-line" x="196" y="94" width="44" height="4" rx="2" />
+      <rect className="a-btn" x="196" y="104" width="46" height="12" rx="6" />
+    </g>
+  </svg>
+);
+
+/** A screen with a play button — Sponsored Videos. */
+const VideosIcon = () => (
+  <svg width={20} height={20} viewBox="0 0 20 20" aria-hidden {...ico}>
+    <rect x="2.6" y="3.6" width="14.8" height="10.4" rx="1.8" /><path d="M8.6 6.6v4.4l3.6-2.2z" /><path d="M5 16.6h10" />
+  </svg>
+);
+
+type Format = { id: string; name: string; blurb: string; icon: React.ReactNode; art: React.ReactNode; ready: boolean };
+
+/** Amazon's ad formats, or Walmart's, where Sponsored Videos takes the place of Sponsored Display. */
+function formatsFor(marketplace: CcDraft['marketplace']): Format[] {
+  if (marketplace === 'walmart') {
+    return [
+      { id: 'sponsored-products', name: 'Sponsored Products', blurb: 'Promote individual items in Walmart search results and on item pages.', icon: <ProductsIcon />, art: <ProductsArt />, ready: true },
+      { id: 'sponsored-brands', name: 'Sponsored Brands', blurb: 'Brand-led ads with a logo, headline and several items at the top of search.', icon: <BrandsIcon />, art: <BrandsArt />, ready: false },
+      { id: 'sponsored-videos', name: 'Sponsored Videos', blurb: 'Short product videos that play in Walmart search results.', icon: <VideosIcon />, art: <VideosArt />, ready: false },
+    ];
+  }
+  return [
+    { id: 'sponsored-products', name: 'Sponsored Products', blurb: 'Promote individual products in search results and on product pages.', icon: <ProductsIcon />, art: <ProductsArt />, ready: true },
+    { id: 'sponsored-brands', name: 'Sponsored Brands', blurb: 'Brand-led ads with a logo, headline and several products.', icon: <BrandsIcon />, art: <BrandsArt />, ready: false },
+    { id: 'sponsored-display', name: 'Sponsored Display', blurb: 'Retargeting and audience ads on and off the marketplace.', icon: <DisplayIcon />, art: <DisplayArt />, ready: false },
+  ];
+}
 
 export default function StepEntry({ draft, onChange }: {
   draft: CcDraft; onChange: (patch: Partial<CcDraft>) => void;
@@ -105,7 +145,7 @@ export default function StepEntry({ draft, onChange }: {
     <div>
       <StepHeading title="Choose an ad format" />
       <div role="radiogroup" aria-label="Ad type" className="ccd-ad-grid">
-        {FORMATS.map((f) => {
+        {formatsFor(draft.marketplace).map((f) => {
           const selected = f.ready && draft.adType === 'sponsored-products';
           const pick = () => f.ready && onChange({ adType: 'sponsored-products' });
           return (
