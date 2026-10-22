@@ -1,3 +1,4 @@
+import { ClockCounterClockwiseIcon, EnvelopeSimpleIcon, TrendUpIcon, WarningDiamondIcon } from '@phosphor-icons/react';
 import type { CustomizeField, Option, WidgetConfig, WidgetDefinition } from '../../dashboard.types';
 import { ALERT_CATEGORIES, VALUE_CATEGORIES } from './data';
 import ImportantMessages, { isRead, messagesFor } from './important-messages';
@@ -56,6 +57,7 @@ export const SIGNALS_WIDGETS: WidgetDefinition[] = [
     fields: VALUE_FIELDS,
     describe: describeValue,
     link: { label: 'Open Signals', to: '/signals' },
+    icon: WarningDiamondIcon,
     Body: makeValueKpi('risk'),
   },
   {
@@ -70,6 +72,7 @@ export const SIGNALS_WIDGETS: WidgetDefinition[] = [
     fields: VALUE_FIELDS,
     describe: describeValue,
     link: { label: 'Open Signals', to: '/signals' },
+    icon: TrendUpIcon,
     Body: makeValueKpi('opportunity'),
   },
   {
@@ -100,6 +103,7 @@ export const SIGNALS_WIDGETS: WidgetDefinition[] = [
       return unread > 0 ? `${unread} unread of ${all.length}` : `${all.length} messages, all read`;
     },
     link: { label: 'Open Signals', to: '/signals' },
+    icon: EnvelopeSimpleIcon,
     Body: ImportantMessages,
   },
   {
@@ -131,6 +135,7 @@ export const SIGNALS_WIDGETS: WidgetDefinition[] = [
       return `${list.length} new since your last visit${high && config.priority !== 'high' ? `, ${high} high priority` : ''}`;
     },
     link: { label: 'Open Signals', to: '/signals' },
+    icon: ClockCounterClockwiseIcon,
     Body: WhileYouWereAway,
   },
 ];

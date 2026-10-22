@@ -1,9 +1,10 @@
-import { CheckIcon, FloppyDiskIcon, LayoutIcon, MagnifyingGlassIcon, PencilSimpleIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
+import { CheckIcon, FloppyDiskIcon, LayoutIcon, MagnifyingGlassIcon, PencilSimpleIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon, type Icon } from '@phosphor-icons/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import useModalLock from '../notifications/use-modal-lock';
 import type { DashboardTemplate, WidgetCategory, WidgetDefinition, WidgetInstance, WidgetKind } from './dashboard.types';
+import NuggetArt, { nuggetTint } from './nugget-art';
 import { CATEGORIES, WIDGETS, WIDGET_ORDER, widgetsIn } from './widget-registry';
 import styles from './dashboard.module.scss';
 
@@ -11,30 +12,11 @@ import styles from './dashboard.module.scss';
 export type LibraryView = 'all' | WidgetCategory | 'templates';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
-const noop = () => undefined;
 
-/** The widget itself, rendered with its default settings and scaled down. What you see is what you add. */
-function LivePreview({ def }: { def: WidgetDefinition }) {
-  const { Body, defaults, title, header } = def;
-  const headerLabel = header?.options.find((o) => o.value === defaults[header.key])?.label;
-  return (
-    <div className={styles.cardPreview} aria-hidden>
-      <div className={styles.cardStage}>
-        <div className={styles.miniTile}>
-          <div className={styles.miniHead}>
-            <div>
-              <strong>{title}</strong>
-              <span>{def.describe(defaults)}</span>
-            </div>
-            {headerLabel && <em>{headerLabel}</em>}
-          </div>
-          <div className={styles.miniBody}><Body config={defaults} onConfig={noop} preview /></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+/**
+ * One nugget in the library: a simple drawing of its shape, its name and what it shows, and an Add button along the
+ * bottom so the buttons line up across a row. What it is built from is in the card's tooltip.
+ */
 export function WidgetCard({ def, count, onAdd }: { def: WidgetDefinition; count: number; onAdd: () => void }) {
   const [flash, setFlash] = useState(false);
   useEffect(() => {
@@ -43,20 +25,17 @@ export function WidgetCard({ def, count, onAdd }: { def: WidgetDefinition; count
     return () => window.clearTimeout(id);
   }, [flash]);
   return (
-    <li className={styles.card}>
-      <LivePreview def={def} />
+    <li className={styles.card} title={`Built from ${def.dataPoints.join(', ')}`}>
+      <div className={`${styles.cardArt} ${nuggetTint(def.kind)}`}>
+        <NuggetArt kind={def.kind} />
+        {count > 0 && <span className={styles.cardOn}><CheckIcon size={11} weight="bold" />{count > 1 ? `On dashboard ×${count}` : 'On dashboard'}</span>}
+      </div>
       <div className={styles.cardBody}>
-        <div className={styles.cardTop}>
-          <strong>{def.title}</strong>
-          {count > 0 && <span className={styles.cardOn}>{count > 1 ? `On dashboard ×${count}` : 'On dashboard'}</span>}
-        </div>
+        <strong className={styles.cardTitle}>{def.title}</strong>
         <p>{def.summary}</p>
-        <div className={styles.cardFoot}>
-          <span className={styles.cardData}>{def.dataPoints.join(', ')}</span>
-          <button type="button" className={styles.btnSmall} onClick={() => { onAdd(); setFlash(true); }} aria-label={`Add ${def.title}`}>
-            {flash ? <><CheckIcon size={13} weight="bold" />Added</> : <><PlusIcon size={13} weight="bold" />Add</>}
-          </button>
-        </div>
+        <button type="button" className={`${styles.btnSmall} ${styles.cardAdd}`} onClick={() => { onAdd(); setFlash(true); }} aria-label={`Add ${def.title}`}>
+          {flash ? <><CheckIcon size={13} weight="bold" />Added</> : <><PlusIcon size={13} weight="bold" />Add</>}
+        </button>
       </div>
     </li>
   );
@@ -254,9 +233,9 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
   };
 
   const add = (k: WidgetKind) => { onAdd(k); setAddedNow((n) => n + 1); };
-  const railItem = (id: LibraryView, label: string, n: number, Icon?: typeof LayoutIcon) => (
+  const railItem = (id: LibraryView, label: string, n: number, Icon: Icon) => (
     <button key={id} type="button" className={styles.railItem} aria-current={view === id && !q ? 'page' : undefined} onClick={() => { setView(id); setQuery(''); }}>
-      {Icon && <Icon size={16} />}<span>{label}</span><em>{n}</em>
+      <Icon size={17} /><span>{label}</span><em>{n}</em>
     </button>
   );
 
@@ -276,7 +255,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
           <nav className={styles.railNav} aria-label="Library">
             <span className={styles.railLabel}>Nuggets</span>
             {railItem('all', 'All nuggets', WIDGET_ORDER.length, SquaresFourIcon)}
-            {categories.map((c) => railItem(c.id, c.label, widgetsIn(c.id).length))}
+            {categories.map((c) => railItem(c.id, c.label, widgetsIn(c.id).length, c.icon))}
             <span className={styles.railLabel}>Layouts</span>
             {railItem('templates', 'Templates', templates.length + 1, LayoutIcon)}
           </nav>

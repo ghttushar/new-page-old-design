@@ -1,12 +1,12 @@
-import { CaretDownIcon, CheckIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { CalendarBlankIcon, CaretDownIcon, CheckIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useMemo, useRef, useState } from 'react';
 import { Floating, Segmented } from '../../controls';
 import type { Option } from '../../dashboard.types';
-import { METRIC, type MetricId } from './data';
+import { METRIC, RANGE_DAYS, type MetricId, type RangeId } from './data';
 import { VIZ, type VizId } from './rule-compare-views';
 import styles from '../../dashboard.module.scss';
 
-// The comparison toolbar: two quiet side pickers on the left, a metrics dropdown and a view dropdown on the right.
+// The comparison's control strip: the two side pickers on the left, then the metrics, view and date range dropdowns.
 // Everything opens on demand; the face of the nugget only says what is being compared.
 
 export interface PickItem { id: string; name: string; detail: string; group: string; tag?: string }
@@ -59,9 +59,12 @@ function PickerPanel({ items, groups, value, onPick }: {
   );
 }
 
-/** One side of the comparison, as a letter and the picked name. What the side means is in its tooltip and the legend. */
-export function SideButton({ letter, caption, color, items, groups, value, onPick, preview }: {
-  letter: 'A' | 'B'; caption: string; color: string; items: PickItem[]; groups: Option[]; value: string; onPick: (id: string) => void; preview?: boolean;
+/**
+ * One side of the comparison: a small label line (the letter and what the side is, e.g. "A · With rule") over the picked
+ * name in bold, so the choice reads at a glance.
+ */
+export function SideButton({ letter, label, caption, color, items, groups, value, onPick, preview }: {
+  letter: 'A' | 'B'; label: string; caption: string; color: string; items: PickItem[]; groups: Option[]; value: string; onPick: (id: string) => void; preview?: boolean;
 }) {
   const a = useAnchor();
   const item = items.find((i) => i.id === value) ?? items[0];
@@ -72,9 +75,14 @@ export function SideButton({ letter, caption, color, items, groups, value, onPic
         aria-label={`Side ${letter}, ${caption}: ${item?.name}. Change`} title={`${caption}: ${item?.name}`}
         disabled={preview} tabIndex={preview ? -1 : undefined} onClick={a.toggle}
       >
-        <span className={styles.rcLetter} style={{ ['--c' as string]: color }}>{letter}</span>
-        <span className={styles.rcSideName}>{item?.name}</span>
-        <CaretDownIcon size={10} weight="bold" className={`${styles.rcCaret} ${a.open ? styles.caretOpen : ''}`} />
+        <span className={styles.rcSideLines}>
+          <span className={styles.rcSideLabel}>
+            <span className={styles.rcLetter} style={{ ['--c' as string]: color }}>{letter}</span>
+            {label}
+          </span>
+          <span className={styles.rcSideName}>{item?.name}</span>
+        </span>
+        <CaretDownIcon size={11} weight="bold" className={`${styles.rcCaret} ${a.open ? styles.caretOpen : ''}`} />
       </button>
       {a.open && a.ref.current && (
         <Floating anchor={a.ref.current} onClose={a.close} label={`Choose side ${letter}`} width={320}>
@@ -132,6 +140,38 @@ export function MetricSelect({ options, value, onChange, preview }: {
                 </li>
               );
             })}
+          </ul>
+        </Floating>
+      )}
+    </>
+  );
+}
+
+/** The date range, as a dropdown: "7 days" on the strip, "Last 7 days" in the list. */
+export function RangeSelect({ value, onChange, preview }: { value: RangeId; onChange: (v: RangeId) => void; preview?: boolean }) {
+  const a = useAnchor();
+  const ranges = Object.keys(RANGE_DAYS) as RangeId[];
+  return (
+    <>
+      <button
+        ref={a.ref} type="button" className={styles.rcDrop} aria-haspopup="listbox" aria-expanded={a.open}
+        aria-label={`Date range: last ${RANGE_DAYS[value]} days`} disabled={preview} tabIndex={preview ? -1 : undefined} onClick={a.toggle}
+      >
+        <CalendarBlankIcon size={14} />
+        <span>{RANGE_DAYS[value]} days</span>
+        <CaretDownIcon size={10} weight="bold" className={`${styles.rcCaret} ${a.open ? styles.caretOpen : ''}`} />
+      </button>
+      {a.open && a.ref.current && (
+        <Floating anchor={a.ref.current} onClose={a.close} label="Date range" align="end" width={180}>
+          <ul role="listbox" aria-label="Date range" className={styles.menuList}>
+            {ranges.map((r) => (
+              <li key={r}>
+                <button type="button" role="option" aria-selected={r === value} className={styles.rcOption} onClick={() => { onChange(r); a.close(); a.ref.current?.focus(); }}>
+                  <span>Last {RANGE_DAYS[r]} days</span>
+                  {r === value && <CheckIcon size={13} weight="bold" className={styles.rcPickTick} />}
+                </button>
+              </li>
+            ))}
           </ul>
         </Floating>
       )}

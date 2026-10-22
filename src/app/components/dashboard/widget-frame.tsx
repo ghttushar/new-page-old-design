@@ -6,8 +6,9 @@ import { WIDGETS } from './widget-registry';
 import styles from './dashboard.module.scss';
 
 /**
- * The frame every widget sits in: a drag handle, the title and a scope line on the left, the widget's own control and a
- * menu on the right. The handle moves the widget; the bottom right corner resizes it. Both show on hover.
+ * The frame every widget sits in: a drag handle in the top-left corner, an icon tile, the title and a scope line on the
+ * left, the widget's own control and a menu on the right. The handle moves the widget; the bottom right corner resizes
+ * it. Both show on hover.
  */
 export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate }: {
   widget: WidgetInstance; onConfig: (patch: WidgetConfig) => void; onRemove: () => void; onDuplicate: () => void;
@@ -15,14 +16,15 @@ export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate }:
   const def = WIDGETS[widget.kind];
   const moreRef = useRef<HTMLButtonElement>(null);
   const [menu, setMenu] = useState(false);
-  const { Body } = def;
+  const { Body, icon: Icon } = def;
 
   return (
     <article className={styles.widget} aria-label={def.title}>
       <header className={styles.widgetHead}>
         <span className={`${styles.grip} dash-drag-handle`} title="Drag to move" aria-label={`Move ${def.title}`} role="button" tabIndex={-1}>
-          <DotsSixVerticalIcon size={16} weight="bold" />
+          <DotsSixVerticalIcon size={14} weight="bold" />
         </span>
+        <span className={styles.widgetIcon} aria-hidden><Icon size={16} /></span>
         <div className={styles.widgetHeading}>
           <h3 className={styles.widgetTitle}>{def.title}</h3>
           <p className={styles.widgetScope}>{def.describe(widget.config)}</p>

@@ -11,6 +11,9 @@ type Channel = 'all' | DashboardMessage['channel'];
 const CHANNEL_ICON = { email: EnvelopeSimpleIcon, slack: SlackLogoIcon, workspace: GoogleLogoIcon } as const;
 const CHANNEL_NAME = { email: 'Email', slack: 'Slack', workspace: 'Google Workspace' } as const;
 
+/** "Priya Nair" → "PN". */
+const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+
 /** Read state lives in the widget's settings, so it survives a reload. */
 export function isRead(m: DashboardMessage, config: WidgetConfig): boolean {
   const read = (config.readIds as string[]) ?? [];
@@ -36,7 +39,11 @@ function MessageRow({ m, read, open, onToggle, onRead, preview }: {
   return (
     <li className={`${styles.msg}${open ? ` ${styles.msgOpen}` : ''}`}>
       <button type="button" className={styles.msgHead} aria-expanded={open} onClick={onToggle} tabIndex={preview ? -1 : 0}>
-        <span className={styles.msgIcon} title={`${CHANNEL_NAME[m.channel]}, ${m.thread}`}><Icon size={15} /></span>
+        {/* The sender's initials, with the channel as a small badge on the corner. */}
+        <span className={styles.msgAvatar} title={`${CHANNEL_NAME[m.channel]}, ${m.thread}`}>
+          {initials(m.sender)}
+          <span className={styles.msgChannel} aria-hidden><Icon size={9} weight="bold" /></span>
+        </span>
         <span className={styles.msgText}>
           <span className={styles.msgTop}>
             <span className={`${styles.msgSender}${read ? '' : ` ${styles.msgUnread}`}`}>{m.sender}</span>

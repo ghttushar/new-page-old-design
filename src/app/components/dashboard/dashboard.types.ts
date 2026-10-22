@@ -1,3 +1,4 @@
+import type { Icon } from '@phosphor-icons/react';
 import type { ComponentType } from 'react';
 import type { Layouts } from 'react-grid-layout';
 
@@ -12,6 +13,8 @@ export type WidgetCategory = 'Signals' | 'Rules';
 export interface CategoryMeta {
   id: WidgetCategory;
   label: string;
+  /** The glyph beside the area's name in the library. */
+  icon: Icon;
   description: string;
 }
 
@@ -58,6 +61,8 @@ export interface WidgetDefinition {
   describe: (config: WidgetConfig) => string;
   /** Where the full picture lives. */
   link?: { label: string; to: string };
+  /** A small glyph for the nugget's header tile. */
+  icon: Icon;
   Body: ComponentType<WidgetBodyProps>;
 }
 

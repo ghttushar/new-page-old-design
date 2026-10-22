@@ -25,9 +25,9 @@ export default function makeValueKpi(side: ValueSide) {
     // Risk going up is bad news; opportunity going up is good news.
     const good = pct !== null && (side === 'risk' ? pct < 0 : pct > 0);
 
-    // What fits: the figure always, then as many category rows as the height allows (rows are 38px).
+    // What fits: the figure always, then as many category rows as the height allows (rows are 41px).
     // Before the first measurement, assume room for three rows so they do not pop in a frame later.
-    const rowRoom = size.height === 0 ? 3 : Math.max(0, Math.floor((size.height - 96 - 22) / 38));
+    const rowRoom = size.height === 0 ? 3 : Math.max(0, Math.floor((size.height - 96 - 22) / 41));
     const rows = showSplit ? s.shares.slice(0, Math.min(5, rowRoom)) : [];
 
     return (

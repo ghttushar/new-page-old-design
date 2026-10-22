@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import type { WidgetBodyProps, WidgetConfig } from '../../dashboard.types';
-import { MetricSelect, SideButton, VizSelect, type PickItem } from './compare-controls';
+import { MetricSelect, RangeSelect, SideButton, VizSelect, type PickItem } from './compare-controls';
 import {
   ENTITIES, ENTITY, ENTITY_TYPES, METRICS, RANGE_DAYS, RULE, RULES, RULE_COMPARE_METRICS, RULE_TYPES, entitySeries, rulesOfType, ruleSeries,
   type MetricId, type RangeId, type RuleDef, type RuleType,
@@ -47,16 +47,20 @@ export function readRuleCompare(c: WidgetConfig): RuleCompareConfig {
   };
 }
 
-/** One row: the two sides on the left, the metrics and the view on the right. */
-function Toolbar({ sides, options, metrics, viz, onConfig, preview }: {
-  sides: ReactNode; options: MetricId[]; metrics: MetricId[]; viz: VizId; onConfig: WidgetBodyProps['onConfig']; preview?: boolean;
+/**
+ * Every control on one strip: what is compared (the two sides) on the left, how to look at it (metrics, view, dates) on
+ * the right. On a narrow nugget the right half wraps under the sides.
+ */
+function ControlStrip({ sides, options, metrics, viz, range, onConfig, preview }: {
+  sides: ReactNode; options: MetricId[]; metrics: MetricId[]; viz: VizId; range: RangeId; onConfig: WidgetBodyProps['onConfig']; preview?: boolean;
 }) {
   return (
-    <div className={styles.rcBar}>
+    <div className={styles.rcStrip}>
       <div className={styles.rcSides}>{sides}</div>
       <div className={styles.rcDrops}>
         <MetricSelect options={options} value={metrics} onChange={(m) => onConfig({ metrics: m })} preview={preview} />
         <VizSelect value={viz} onChange={(v) => onConfig({ viz: v })} preview={preview} />
+        <RangeSelect value={range} onChange={(r) => onConfig({ range: r })} preview={preview} />
       </div>
     </div>
   );
@@ -75,13 +79,13 @@ export function RuleImpact({ config, onConfig, preview }: WidgetBodyProps) {
 
   return (
     <div className={styles.rc}>
-      <Toolbar
-        options={ALL_METRICS} metrics={c.metrics} viz={c.viz} onConfig={onConfig} preview={preview}
+      <ControlStrip
+        options={ALL_METRICS} metrics={c.metrics} viz={c.viz} range={c.range} onConfig={onConfig} preview={preview}
         sides={(
           <>
-            <SideButton letter="A" caption={`With ${rule?.name ?? 'rule'}`} color={COLOR_A} items={ENTITY_ITEMS} groups={ENTITY_GROUPS} value={c.a} onPick={(id) => onConfig({ a: id })} preview={preview} />
+            <SideButton letter="A" label="With rule" caption={`With ${rule?.name ?? 'rule'}`} color={COLOR_A} items={ENTITY_ITEMS} groups={ENTITY_GROUPS} value={c.a} onPick={(id) => onConfig({ a: id })} preview={preview} />
             <span className={styles.rcVs} aria-hidden>vs</span>
-            <SideButton letter="B" caption={bCaption} color={COLOR_BASELINE} items={ENTITY_ITEMS} groups={ENTITY_GROUPS} value={c.b} onPick={(id) => onConfig({ b: id })} preview={preview} />
+            <SideButton letter="B" label="Baseline" caption={bCaption} color={COLOR_BASELINE} items={ENTITY_ITEMS} groups={ENTITY_GROUPS} value={c.b} onPick={(id) => onConfig({ b: id })} preview={preview} />
           </>
         )}
       />
@@ -117,13 +121,13 @@ export function RuleCompare({ config, onConfig, preview }: WidgetBodyProps) {
 
   return (
     <div className={styles.rc}>
-      <Toolbar
-        options={RULE_COMPARE_METRICS} metrics={c.metrics} viz={c.viz} onConfig={onConfig} preview={preview}
+      <ControlStrip
+        options={RULE_COMPARE_METRICS} metrics={c.metrics} viz={c.viz} range={c.range} onConfig={onConfig} preview={preview}
         sides={(
           <>
-            <SideButton letter="A" caption={ruleCaption(ra)} color={COLOR_A} items={RULE_ITEMS} groups={RULE_GROUPS} value={c.a} onPick={(id) => pick('a', id)} preview={preview} />
+            <SideButton letter="A" label={ra.kind} caption={ruleCaption(ra)} color={COLOR_A} items={RULE_ITEMS} groups={RULE_GROUPS} value={c.a} onPick={(id) => pick('a', id)} preview={preview} />
             <span className={styles.rcVs} aria-hidden>vs</span>
-            <SideButton letter="B" caption={ruleCaption(rb)} color={COLOR_B} items={RULE_ITEMS} groups={RULE_GROUPS} value={c.b} onPick={(id) => pick('b', id)} preview={preview} />
+            <SideButton letter="B" label={rb.kind} caption={ruleCaption(rb)} color={COLOR_B} items={RULE_ITEMS} groups={RULE_GROUPS} value={c.b} onPick={(id) => pick('b', id)} preview={preview} />
           </>
         )}
       />

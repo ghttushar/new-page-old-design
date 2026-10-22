@@ -1,3 +1,4 @@
+import { BroadcastIcon, LightningIcon } from '@phosphor-icons/react';
 import type { CategoryMeta, WidgetCategory, WidgetDefinition, WidgetKind } from './dashboard.types';
 import { RULES_WIDGETS } from './widgets/rules';
 import { SIGNALS_WIDGETS } from './widgets/signals';
@@ -6,8 +7,8 @@ import { SIGNALS_WIDGETS } from './widgets/signals';
 // To add an area: give it a CategoryMeta entry and a folder under widgets/ that exports its definitions.
 
 export const CATEGORIES: CategoryMeta[] = [
-  { id: 'Signals', label: 'Signals', description: 'Alerts, the money they carry, and the messages that come with them.' },
-  { id: 'Rules', label: 'Rules', description: 'What your automation rules change, measured against a baseline or against each other.' },
+  { id: 'Signals', label: 'Signals', icon: BroadcastIcon, description: 'Alerts, the money they carry, and the messages that come with them.' },
+  { id: 'Rules', label: 'Rules', icon: LightningIcon, description: 'What your automation rules change, measured against a baseline or against each other.' },
 ];
 
 const ALL: WidgetDefinition[] = [...SIGNALS_WIDGETS, ...RULES_WIDGETS];
