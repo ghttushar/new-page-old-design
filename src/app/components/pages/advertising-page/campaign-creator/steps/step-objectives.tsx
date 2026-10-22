@@ -4,7 +4,7 @@ import {
   BIDDING_STRATEGIES, MARKETPLACE_CAPABILITY, formatCurrency, todayIso,
   type BidMultipliers, type BiddingStrategy, type BudgetType, type CcDraft, type CcProduct, type PlacementAdjust, type PlacementInclusion,
 } from '../campaign-creator.types';
-import { BAD, BORDER, BRAND, BRAND_TINT, Checkbox, FONT, InfoIcon, StepHeading, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
+import { BORDER, Checkbox, FONT, InfoIcon, StepHeading, TEXT_PRIMARY } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
 
 const glyph = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
@@ -19,12 +19,9 @@ const icons: Record<string, React.ReactNode> = {
   multiply: <><path d="M4 4l8 8M12 4l-8 8" /></>,
 };
 
-const HINT = { margin: '10px 0 0', minHeight: 40, font: `400 13px/1.55 ${FONT}`, color: TEXT_MUTED } as const;
-const NOTE = { margin: '10px 0 0', font: `400 12.5px/1.4 ${FONT}`, minHeight: 17 } as const;
-const FIELD_LABEL = { display: 'block', margin: '0 0 6px', font: `500 12.5px/1.3 ${FONT}`, color: TEXT_MUTED } as const;
-const inputStyle = (bad: boolean, width = 130) => ({
-  width, padding: '10px 12px', border: `1px solid ${bad ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: `500 14px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff',
-});
+/** Every number field on the page is one of two widths: on its own in a card, or in a list of fields. */
+const SINGLE_WIDTH = 120;
+const LIST_WIDTH = 84;
 
 const BIDDING_HINT: Record<BiddingStrategy, string> = {
   'Dynamic bids - down only': 'Bids are lowered in real time when an ad is less likely to convert.',
@@ -59,40 +56,78 @@ const MULTIPLIER_GROUPS: { key: keyof BidMultipliers; title: string; fields: [st
 type Patch = (patch: Partial<CcDraft>) => void;
 type Issue = { field: 'dailyBudget'; min: number; message: string } | null | undefined;
 
-function CardHead({ icon, label, htmlFor, optional, aside }: { icon: string; label: string; htmlFor?: string; optional?: boolean; aside?: React.ReactNode }) {
-  const text = <>{label}{optional && <span style={{ fontWeight: 400, color: TEXT_FAINT }}> (Optional)</span>}</>;
+// ── The parts every card is made of ───────────────────────────────────────────────────────────
+
+/**
+ * One card: icon and title, a two-line hint, the controls, then a note line for an error or a quiet range. Every card on
+ * the page is this shape, so titles, hints and controls line up across a row.
+ */
+function GoalCard({ icon, title, htmlFor, optional, hint, error, note, wide, children }: {
+  icon: string; title: string; htmlFor?: string; optional?: boolean; hint: React.ReactNode;
+  error?: string | null; note?: React.ReactNode; wide?: boolean; children: React.ReactNode;
+}) {
+  const heading = <>{title}{optional && <span className="ccd-gc-optional"> Optional</span>}</>;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{ width: 30, height: 30, borderRadius: 8, background: BRAND_TINT, color: BRAND, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-        <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden {...glyph}>{icons[icon]}</svg>
-      </span>
-      {htmlFor ? <label htmlFor={htmlFor} style={{ flex: 1, font: `600 14px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{text}</label> : <h2 style={{ flex: 1, margin: 0, font: `600 14px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>{text}</h2>}
-      {aside}
+    <Panel pad={18} className={`ccd-goal-card${wide ? ' ccd-goal-card--span3' : ''}${error ? ' is-error' : ''}`}>
+      <div className="ccd-gc-head">
+        <span className="ccd-gc-icon"><svg width={16} height={16} viewBox="0 0 16 16" aria-hidden {...glyph}>{icons[icon]}</svg></span>
+        {htmlFor ? <label htmlFor={htmlFor}>{heading}</label> : <h2>{heading}</h2>}
+      </div>
+      <p className="ccd-gc-hint">{hint}</p>
+      <div className="ccd-gc-body">{children}</div>
+      <p className={`ccd-gc-note${error ? ' is-error' : ''}`} role={error ? 'alert' : undefined}>{error ?? note ?? ''}</p>
+    </Panel>
+  );
+}
+
+/** A label and its control on one line; a list of these shares one label column. */
+function FieldRow({ label, htmlFor, children }: { label: React.ReactNode; htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <div className="ccd-field-row">
+      {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : <span className="ccd-field-row__label">{label}</span>}
+      <div className="ccd-field-row__control">{children}</div>
+    </div>
+  );
+}
+
+/** A checkbox or a switch with its label, and a grey caption under the label when there is one. */
+function OptionRow({ kind, checked, disabled, label, caption, info, onToggle }: {
+  kind: 'check' | 'switch'; checked: boolean; disabled?: boolean; label: string; caption?: string | null; info?: string; onToggle: () => void;
+}) {
+  const text = <span className="ccd-option-row__text"><span>{label}</span>{caption && <small>{caption}</small>}</span>;
+  if (kind === 'check') {
+    return (
+      <button type="button" role="checkbox" aria-checked={checked} disabled={disabled} className="ccd-option-row" onClick={onToggle}>
+        <Checkbox checked={checked} disabled={disabled} size={16} />{text}
+      </button>
+    );
+  }
+  return (
+    <div className="ccd-option-row">
+      <button type="button" role="switch" aria-checked={checked} aria-label={label} disabled={disabled} className={`ccd-nm-toggle${checked ? ' is-on' : ''}`} onClick={onToggle}><i /></button>
+      {text}
+      {info && <span className="ccd-tm-info" title={info}><InfoIcon size={13} color="#8a909b" /></span>}
     </div>
   );
 }
 
 /** A number with its unit either side, e.g. "$ [ 50 ] per day". */
-function NumberField({ id, value, placeholder, prefix, suffix, step = 1, min = 0, max, error, width, label, onChange }: {
+function NumberField({ id, value, placeholder, prefix, suffix, step = 1, min = 0, max, error, width = SINGLE_WIDTH, onChange }: {
   id: string; value: number | null; placeholder: string; prefix?: string; suffix?: string; step?: number; min?: number; max?: number;
-  error?: boolean; width?: number; label?: string; onChange: (v: number | null) => void;
+  error?: boolean; width?: number; onChange: (v: number | null) => void;
 }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      {prefix && <span style={{ font: `500 14px/1 ${FONT}`, color: TEXT_MUTED }}>{prefix}</span>}
+    <div className="ccd-num-field">
+      {prefix && <span className="ccd-num-field__unit">{prefix}</span>}
       <input
-        id={id} className="ccd-input" type="number" inputMode="decimal" step={step} min={min} max={max} aria-label={label}
+        id={id} className="ccd-input" type="number" inputMode="decimal" step={step} min={min} max={max}
         value={value ?? ''} placeholder={placeholder} aria-invalid={Boolean(error)}
         onChange={(e) => { const raw = e.target.value.trim(); const n = raw === '' ? null : Number(raw); onChange(n !== null && Number.isNaN(n) ? value : n); }}
-        style={inputStyle(Boolean(error), width)}
+        style={{ width, padding: '9px 12px', border: `1px solid ${error ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: `500 14px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' }}
       />
-      {suffix && <span style={{ font: `400 13px/1 ${FONT}`, color: TEXT_MUTED }}>{suffix}</span>}
+      {suffix && <span className="ccd-num-field__unit">{suffix}</span>}
     </div>
   );
-}
-
-function Note({ error, children }: { error?: string | null; children?: React.ReactNode }) {
-  return <p role={error ? 'alert' : undefined} style={{ ...NOTE, color: error ? BAD : TEXT_FAINT }}>{error ?? children ?? ''}</p>;
 }
 
 // ── Cards both marketplaces use ───────────────────────────────────────────────────────────────
@@ -100,12 +135,9 @@ function Note({ error, children }: { error?: string | null; children?: React.Rea
 function StartDateCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
   const error = draft.startDate && draft.startDate < todayIso() ? "The start date can't be in the past." : null;
   return (
-    <Panel pad={18} className="ccd-goal-card">
-      <CardHead icon="date" label="Start date" htmlFor="ccd-obj-start" />
-      <p style={HINT}>The day the new campaigns begin running.</p>
+    <GoalCard icon="date" title="Start date" htmlFor="ccd-obj-start" hint="The day the new campaigns begin running." error={error}>
       <input id="ccd-obj-start" type="date" className="ccd-input ccd-date" value={draft.startDate} min={todayIso()} onChange={(e) => onChange({ startDate: e.target.value })} aria-invalid={Boolean(error)} />
-      <Note error={error} />
-    </Panel>
+    </GoalCard>
   );
 }
 
@@ -115,23 +147,18 @@ function EndDateCard({ draft, onChange, indefiniteBox }: { draft: CcDraft; onCha
   const indefinite = Boolean(indefiniteBox) && !draft.endDate && !pickEnd;
   const error = draft.endDate && draft.endDate < draft.startDate ? 'The end date is before the start date.' : null;
   return (
-    <Panel pad={18} className="ccd-goal-card">
-      <CardHead icon="date" label="End date" htmlFor="ccd-obj-end" optional />
-      <p style={HINT}>{indefiniteBox ? 'Pick the day the campaigns stop, or let them run until you stop them.' : 'Leave it empty to keep running until you stop the campaigns.'}</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 16px', marginTop: 14 }}>
-        <input id="ccd-obj-end" type="date" className="ccd-input ccd-date" style={{ marginTop: 0 }} value={draft.endDate} min={draft.startDate || todayIso()} disabled={indefinite} onChange={(e) => onChange({ endDate: e.target.value })} aria-invalid={Boolean(error)} />
-        {indefiniteBox && (
-          <button
-            type="button" role="checkbox" aria-checked={indefinite} className="ccd-check-btn"
-            onClick={() => { if (indefinite) setPickEnd(true); else { setPickEnd(false); onChange({ endDate: '' }); } }}
-          >
-            <Checkbox checked={indefinite} size={16} />
-            <span>Run indefinitely</span>
-          </button>
-        )}
-      </div>
-      <Note error={error} />
-    </Panel>
+    <GoalCard
+      icon="date" title="End date" htmlFor="ccd-obj-end" optional error={error}
+      hint={indefiniteBox ? 'Pick the day the campaigns stop, or let them run until you stop them.' : 'Leave it empty to keep running until you stop the campaigns.'}
+    >
+      <input id="ccd-obj-end" type="date" className="ccd-input ccd-date" value={draft.endDate} min={draft.startDate || todayIso()} disabled={indefinite} onChange={(e) => onChange({ endDate: e.target.value })} aria-invalid={Boolean(error)} />
+      {indefiniteBox && (
+        <OptionRow
+          kind="check" checked={indefinite} label="Run indefinitely"
+          onToggle={() => { if (indefinite) setPickEnd(true); else { setPickEnd(false); onChange({ endDate: '' }); } }}
+        />
+      )}
+    </GoalCard>
   );
 }
 
@@ -140,14 +167,9 @@ function AcosCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
   const v = draft.targetAcos;
   const error = v !== null && (v < 1 || v > max) ? `Enter a value between 1 and ${max}.` : null;
   return (
-    <Panel pad={18} className="ccd-goal-card" style={error ? { borderColor: '#e0a5a0' } : undefined}>
-      <CardHead icon="acos" label="Target ACOS" htmlFor="ccd-obj-acos" optional />
-      <p style={HINT}>The advertising cost of sale you are aiming for.</p>
-      <div style={{ marginTop: 14 }}>
-        <NumberField id="ccd-obj-acos" value={v} placeholder="25" suffix="%" error={Boolean(error)} onChange={(n) => onChange({ targetAcos: n })} />
-      </div>
-      <Note error={error}>Allowed range: 1–{max}%</Note>
-    </Panel>
+    <GoalCard icon="acos" title="Target ACOS" htmlFor="ccd-obj-acos" optional hint="The advertising cost of sale you are aiming for." error={error} note={`Allowed range: 1–${max}%`}>
+      <NumberField id="ccd-obj-acos" value={v} placeholder="25" suffix="%" error={Boolean(error)} onChange={(n) => onChange({ targetAcos: n })} />
+    </GoalCard>
   );
 }
 
@@ -155,14 +177,11 @@ function BiddingCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
   const options = BIDDING_STRATEGIES[draft.marketplace ?? 'amazon'];
   const value = options.includes(draft.biddingStrategy) ? draft.biddingStrategy : options[0];
   return (
-    <Panel pad={18} className="ccd-goal-card">
-      <CardHead icon="bidding" label="Bidding strategy" htmlFor="ccd-obj-bidding" />
-      <p style={HINT}>{BIDDING_HINT[value]}</p>
+    <GoalCard icon="bidding" title="Bidding strategy" htmlFor="ccd-obj-bidding" hint={BIDDING_HINT[value]}>
       <select id="ccd-obj-bidding" className="ccd-input ccd-date" value={value} onChange={(e) => onChange({ biddingStrategy: e.target.value as BiddingStrategy })}>
         {options.map((b) => <option key={b} value={b}>{b}</option>)}
       </select>
-      <Note />
-    </Panel>
+    </GoalCard>
   );
 }
 
@@ -172,40 +191,35 @@ function AmazonObjectives({ draft, onChange, issue }: { draft: CcDraft; onChange
   const cap = MARKETPLACE_CAPABILITY.amazon;
   const budgetError = issue && draft.dailyBudget < issue.min ? issue.message
     : draft.dailyBudget < cap.minDailyBudget ? `The minimum for this marketplace is ${formatCurrency(cap.minDailyBudget)}.` : null;
+  const badPlacement = PLACEMENT_FIELDS.some(([key]) => { const v = draft.placementAdjust[key]; return v !== null && (v < 0 || v > 900); });
   return (
     <div className="ccd-goal-grid">
       <StartDateCard draft={draft} onChange={onChange} />
       <EndDateCard draft={draft} onChange={onChange} />
-
-      <Panel pad={18} className="ccd-goal-card" style={budgetError ? { borderColor: '#e0a5a0' } : undefined}>
-        <CardHead icon="budget" label="Daily budget" htmlFor="ccd-obj-budget" />
-        <p style={HINT}>How much you are happy to spend across all the new campaigns each day.</p>
-        <div style={{ marginTop: 14 }}>
-          <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" suffix="per day" error={Boolean(budgetError)} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
-        </div>
-        <Note error={budgetError} />
-      </Panel>
+      <GoalCard
+        icon="budget" title="Daily budget" htmlFor="ccd-obj-budget" error={budgetError} note={`Minimum ${formatCurrency(cap.minDailyBudget)} a day`}
+        hint="How much you are happy to spend across all the new campaigns each day."
+      >
+        <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" suffix="per day" error={Boolean(budgetError)} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
+      </GoalCard>
 
       <AcosCard draft={draft} onChange={onChange} />
       <BiddingCard draft={draft} onChange={onChange} />
-
-      <Panel pad={18} className="ccd-goal-card">
-        <CardHead icon="layout" label="Adjust bids by placement" optional />
-        <p style={HINT}>Raise your bid where ads show, from 0% to 900%. Leave a field empty for no change.</p>
-        <div className="ccd-place-grid ccd-place-grid--stack">
+      <GoalCard
+        icon="layout" title="Adjust bids by placement" optional error={badPlacement ? 'Enter a value from 0 to 900.' : null}
+        hint="Raise your bid where ads show, from 0% to 900%. Leave a field empty for no change."
+      >
+        <div className="ccd-field-list">
           {PLACEMENT_FIELDS.map(([key, text]) => {
             const v = draft.placementAdjust[key];
-            const bad = v !== null && (v < 0 || v > 900);
             return (
-              <div key={key} className="ccd-place-row">
-                <label htmlFor={`ccd-place-${key}`} style={{ ...FIELD_LABEL, margin: 0 }}>{text}</label>
-                <NumberField id={`ccd-place-${key}`} value={v} placeholder="0" suffix="%" min={0} max={900} width={92} error={bad} onChange={(n) => onChange({ placementAdjust: { ...draft.placementAdjust, [key]: n } })} />
-                {bad && <p role="alert" style={{ ...NOTE, margin: 0, color: BAD }}>Enter a value from 0 to 900.</p>}
-              </div>
+              <FieldRow key={key} label={text} htmlFor={`ccd-place-${key}`}>
+                <NumberField id={`ccd-place-${key}`} value={v} placeholder="0" suffix="%" min={0} max={900} width={LIST_WIDTH} error={v !== null && (v < 0 || v > 900)} onChange={(n) => onChange({ placementAdjust: { ...draft.placementAdjust, [key]: n } })} />
+              </FieldRow>
             );
           })}
         </div>
-      </Panel>
+      </GoalCard>
     </div>
   );
 }
@@ -224,45 +238,36 @@ function WalmartBudgetCard({ draft, onChange, issue }: { draft: CcDraft; onChang
     : usesDaily && draft.totalBudget < draft.dailyBudget ? 'The total budget is below the daily budget.' : null;
   const type = BUDGET_TYPES.find((t) => t.id === draft.budgetType) ?? BUDGET_TYPES[0];
   return (
-    <Panel pad={18} className="ccd-goal-card" style={dailyError || totalError ? { borderColor: '#e0a5a0' } : undefined}>
-      {/* The budget type is a quiet dropdown in the card's header; the fields below follow it. */}
-      <CardHead
-        icon="budget" label="Budget"
-        aside={(
-          <select id="ccd-obj-btype" className="ccd-input ccd-wm-btype" aria-label="Budget type" value={draft.budgetType} onChange={(e) => onChange({ budgetType: e.target.value as BudgetType })}>
+    <GoalCard
+      icon="budget" title="Budget" hint={type.hint} error={dailyError ?? totalError}
+      note={usesDaily ? `Minimum ${formatCurrency(cap.minDailyBudget)} a day` : undefined}
+    >
+      <div className="ccd-field-list">
+        <FieldRow label="Budget type" htmlFor="ccd-obj-btype">
+          <select id="ccd-obj-btype" className="ccd-input ccd-field-select" value={draft.budgetType} onChange={(e) => onChange({ budgetType: e.target.value as BudgetType })}>
             {BUDGET_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
           </select>
-        )}
-      />
-      <p style={HINT}>{type.hint}</p>
-      <div className={`ccd-wm-budget${usesDaily && usesTotal ? ' is-pair' : ''}`}>
+        </FieldRow>
         {usesDaily && (
-          <div>
-            <label htmlFor="ccd-obj-budget" style={FIELD_LABEL}>Daily budget</label>
-            <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" suffix={usesTotal ? undefined : 'per day'} width={usesTotal ? 96 : 130} error={Boolean(dailyError)} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
-          </div>
+          <FieldRow label="Daily budget" htmlFor="ccd-obj-budget">
+            <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" width={LIST_WIDTH} error={Boolean(dailyError)} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
+          </FieldRow>
         )}
         {usesTotal && (
-          <div>
-            <label htmlFor="ccd-obj-total" style={FIELD_LABEL}>Total budget</label>
-            <NumberField id="ccd-obj-total" value={draft.totalBudget} placeholder="1,500" prefix="$" width={usesDaily ? 96 : 130} error={Boolean(totalError)} onChange={(n) => onChange({ totalBudget: n })} />
-          </div>
+          <FieldRow label="Total budget" htmlFor="ccd-obj-total">
+            <NumberField id="ccd-obj-total" value={draft.totalBudget} placeholder="1500" prefix="$" width={LIST_WIDTH} error={Boolean(totalError)} onChange={(n) => onChange({ totalBudget: n })} />
+          </FieldRow>
+        )}
+        {usesDaily && (
+          <FieldRow label={<>Roll over unused <span className="ccd-tm-info" title="Carries what wasn't spent yesterday into today's daily budget."><InfoIcon size={13} color="#8a909b" /></span></>}>
+            <div className="ccd-seg" role="radiogroup" aria-label="Roll over unspent daily budget">
+              <button type="button" role="radio" aria-checked={draft.budgetRollover} className={draft.budgetRollover ? 'is-on' : ''} onClick={() => onChange({ budgetRollover: true })}>Yes</button>
+              <button type="button" role="radio" aria-checked={!draft.budgetRollover} disabled title="Not available at the moment">No</button>
+            </div>
+          </FieldRow>
         )}
       </div>
-      {usesDaily && (
-        <div className="ccd-wm-rollover">
-          <span id="ccd-obj-rollover" className="ccd-wm-rollover__label">
-            Roll over unspent daily budget
-            <span className="ccd-tm-info" title="Carries what wasn't spent yesterday into today's daily budget."><InfoIcon size={13} color="#8a909b" /></span>
-          </span>
-          <div className="ccd-seg" role="radiogroup" aria-labelledby="ccd-obj-rollover">
-            <button type="button" role="radio" aria-checked={draft.budgetRollover} className={draft.budgetRollover ? 'is-on' : ''} onClick={() => onChange({ budgetRollover: true })}>Yes</button>
-            <button type="button" role="radio" aria-checked={!draft.budgetRollover} disabled title="Not available at the moment">No</button>
-          </div>
-        </div>
-      )}
-      <Note error={dailyError ?? totalError} />
-    </Panel>
+    </GoalCard>
   );
 }
 
@@ -270,78 +275,66 @@ function ExpandedTargetingCard({ draft, onChange }: { draft: CcDraft; onChange: 
   const et = draft.expandedTargeting;
   const options: [keyof typeof et, string][] = [['brandTerms', 'Brand term targeting'], ['complementary', 'Complementary product targeting']];
   return (
-    <Panel pad={18} className="ccd-goal-card">
-      <CardHead icon="expand" label="Expanded targeting" />
-      <p style={HINT}>Extra reach for the Auto campaigns, on top of their own targeting.</p>
-      <div className="ccd-wm-checks">
+    <GoalCard icon="expand" title="Expanded targeting" hint="Extra reach for the Auto campaigns, on top of their own targeting.">
+      <div className="ccd-option-list">
         {options.map(([key, text]) => (
-          <button key={key} type="button" role="checkbox" aria-checked={et[key]} className="ccd-check-btn" onClick={() => onChange({ expandedTargeting: { ...et, [key]: !et[key] } })}>
-            <Checkbox checked={et[key]} size={16} />
-            <span>{text}</span>
-          </button>
+          <OptionRow key={key} kind="check" checked={et[key]} label={text} onToggle={() => onChange({ expandedTargeting: { ...et, [key]: !et[key] } })} />
         ))}
       </div>
-    </Panel>
+    </GoalCard>
   );
 }
 
-function InclusionsCard({ draft, onChange, hasAuto, hasManual }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean }) {
+/** As its own card, a list of switches; across the page (`wide`), the same switches side by side. */
+function InclusionsCard({ draft, onChange, hasAuto, hasManual, wide }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean; wide?: boolean }) {
   const pi = draft.placementInclusion;
   // Buy box can only be turned off for Manual campaigns; Auto campaigns always show there.
   const locked = (key: keyof PlacementInclusion) => key === 'searchInGrid' || (key === 'buyBox' && !hasManual);
-  const on = (key: keyof PlacementInclusion) => (locked(key) ? true : pi[key]);
   const caption = (key: keyof PlacementInclusion) => (key === 'searchInGrid' ? 'Always on' : key === 'buyBox' && hasAuto ? 'Always on for Auto campaigns' : null);
   return (
-    <Panel pad={18} className="ccd-goal-card ccd-goal-card--pi">
-      <CardHead icon="eye" label="Placement inclusions" />
-      <p style={HINT}>Choose where you'd like customers to see your ads.</p>
-      <div className="ccd-pi ccd-pi--list">
-        <div className="ccd-pi__cols">
-          {INCLUSIONS.map(([key, text, info]) => (
-            <div key={key} className="ccd-pi__row">
-              <button
-                type="button" role="switch" aria-checked={on(key)} aria-label={text} disabled={locked(key)}
-                className={`ccd-nm-toggle${on(key) ? ' is-on' : ''}`}
-                onClick={() => onChange({ placementInclusion: { ...pi, [key]: !pi[key] } })}
-              ><i /></button>
-              <span>{text}{caption(key) && <small className="ccd-pi__cap">{caption(key)}</small>}</span>
-              <span className="ccd-tm-info" title={info}><InfoIcon size={13} color="#8a909b" /></span>
-            </div>
-          ))}
-        </div>
+    <GoalCard icon="eye" title="Placement inclusions" wide={wide} hint="Choose where you'd like customers to see your ads.">
+      <div className={`ccd-option-list${wide ? ' ccd-option-list--across' : ''}`}>
+        {INCLUSIONS.map(([key, text, info]) => (
+          <OptionRow
+            key={key} kind="switch" checked={locked(key) ? true : pi[key]} disabled={locked(key)} label={text} caption={caption(key)} info={info}
+            onToggle={() => onChange({ placementInclusion: { ...pi, [key]: !pi[key] } })}
+          />
+        ))}
       </div>
-    </Panel>
+    </GoalCard>
   );
 }
 
-function MultipliersCard({ draft, onChange, hasAuto, hasManual, span }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean; span: 2 | 3 }) {
+function MultipliersCard({ draft, onChange, hasAuto, hasManual }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean }) {
   const bm = draft.bidMultipliers;
   const groups = MULTIPLIER_GROUPS.filter((g) => g.when === 'always' || (g.when === 'auto' ? hasAuto : hasManual));
+  const bad = groups.some((g) => g.fields.some(([field]) => { const v = bm[g.key][field]; return v < 0 || v > 900; }));
   return (
-    <Panel pad={18} className={`ccd-goal-card ccd-goal-card--span${span}`}>
-      <CardHead icon="multiply" label="Bid multipliers" optional />
-      <p style={HINT}>Raise bids by a percentage for a placement or a device, from 0% to 900%. 0% leaves the bid as it is.</p>
-      <div className="ccd-wm-mult">
+    <GoalCard
+      icon="multiply" title="Bid multipliers" optional wide error={bad ? 'Enter a value from 0 to 900.' : null}
+      hint="Raise bids for a placement or a device, from 0% to 900%. 0% leaves the bid as it is."
+    >
+      <div className="ccd-gc-groups">
         {groups.map((g) => (
-          <fieldset key={g.key} className="ccd-wm-mult__group">
+          <fieldset key={g.key} className="ccd-gc-group">
             <legend>{g.title}</legend>
-            {g.fields.map(([field, text]) => {
-              const v = bm[g.key][field];
-              const bad = v !== null && (v < 0 || v > 900);
-              return (
-                <div key={field} className="ccd-place-row">
-                  <label htmlFor={`ccd-mult-${g.key}-${field}`} style={{ ...FIELD_LABEL, margin: 0 }}>{text}</label>
-                  <NumberField
-                    id={`ccd-mult-${g.key}-${field}`} value={v} placeholder="0" suffix="%" min={0} max={900} width={72} error={bad}
-                    onChange={(n) => onChange({ bidMultipliers: { ...bm, [g.key]: { ...bm[g.key], [field]: n ?? 0 } } })}
-                  />
-                </div>
-              );
-            })}
+            <div className="ccd-field-list">
+              {g.fields.map(([field, text]) => {
+                const v = bm[g.key][field];
+                return (
+                  <FieldRow key={field} label={text} htmlFor={`ccd-mult-${g.key}-${field}`}>
+                    <NumberField
+                      id={`ccd-mult-${g.key}-${field}`} value={v} placeholder="0" suffix="%" min={0} max={900} width={LIST_WIDTH} error={v < 0 || v > 900}
+                      onChange={(n) => onChange({ bidMultipliers: { ...bm, [g.key]: { ...bm[g.key], [field]: n ?? 0 } } })}
+                    />
+                  </FieldRow>
+                );
+              })}
+            </div>
           </fieldset>
         ))}
       </div>
-    </Panel>
+    </GoalCard>
   );
 }
 
@@ -351,8 +344,8 @@ function WalmartObjectives({ draft, onChange, issue }: { draft: CcDraft; onChang
   const mode = draft.campaignMode ?? 'both';
   const hasAuto = strategies.length ? strategies.includes('auto') : mode !== 'manual';
   const hasManual = strategies.length ? strategies.some((s) => s !== 'auto') : mode !== 'auto';
-  // Three cards a row, every row full: with Auto, Expanded targeting closes row two and Placement inclusions sits beside
-  // the bid multipliers; without it, Placement inclusions closes row two and the multipliers take the last row alone.
+  // Three cards a row, every row full. With Auto, Expanded targeting closes row two and the placements take a row of
+  // their own; without it, the placements close row two as a card like the rest.
   return (
     <div className="ccd-goal-grid">
       <StartDateCard draft={draft} onChange={onChange} />
@@ -361,10 +354,12 @@ function WalmartObjectives({ draft, onChange, issue }: { draft: CcDraft; onChang
 
       <WalmartBudgetCard draft={draft} onChange={onChange} issue={issue} />
       <AcosCard draft={draft} onChange={onChange} />
-      {hasAuto && <ExpandedTargetingCard draft={draft} onChange={onChange} />}
+      {hasAuto
+        ? <ExpandedTargetingCard draft={draft} onChange={onChange} />
+        : <InclusionsCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} />}
 
-      <InclusionsCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} />
-      <MultipliersCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} span={hasAuto ? 2 : 3} />
+      {hasAuto && <InclusionsCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} wide />}
+      <MultipliersCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} />
     </div>
   );
 }
