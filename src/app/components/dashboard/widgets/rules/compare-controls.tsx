@@ -1,4 +1,4 @@
-import { CalendarBlankIcon, CaretDownIcon, CheckIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { CalendarBlankIcon, CaretDownIcon, CheckIcon, MagnifyingGlassIcon, type Icon } from '@phosphor-icons/react';
 import { useMemo, useRef, useState } from 'react';
 import { Floating, Segmented } from '../../controls';
 import type { Option } from '../../dashboard.types';
@@ -94,7 +94,7 @@ export function SideButton({ letter, label, caption, color, items, groups, value
   );
 }
 
-function Check({ on }: { on: boolean }) {
+export function Check({ on }: { on: boolean }) {
   return <span className={styles.rcCheck} data-on={on} aria-hidden>{on && <CheckIcon size={10} weight="bold" />}</span>;
 }
 
@@ -172,6 +172,57 @@ export function RangeSelect({ value, onChange, preview }: { value: RangeId; onCh
                 </button>
               </li>
             ))}
+          </ul>
+        </Floating>
+      )}
+    </>
+  );
+}
+
+/**
+ * One choice from a short list, as a strip dropdown: the face shows `short` (or the label), the list shows `label`.
+ * With `heading`, the face is a side picker like the Rule nuggets': the heading small and uppercase over the choice in bold.
+ */
+export function StripSelect<V extends string>({ value, options, onChange, label, heading, icon: FaceIcon, width = 190, preview }: {
+  value: V; options: { value: V; label: string; short?: string; icon?: Icon }[]; onChange: (v: V) => void; label: string;
+  heading?: string; icon?: Icon; width?: number; preview?: boolean;
+}) {
+  const a = useAnchor();
+  const current = options.find((o) => o.value === value) ?? options[0];
+  const Face = current.icon ?? FaceIcon;
+  return (
+    <>
+      <button
+        ref={a.ref} type="button" className={heading ? styles.rcSide : styles.rcDrop} aria-haspopup="listbox" aria-expanded={a.open}
+        aria-label={`${label}: ${current.label}`} disabled={preview} tabIndex={preview ? -1 : undefined} onClick={a.toggle}
+      >
+        {heading ? (
+          <span className={styles.rcSideLines}>
+            <span className={styles.rcSideLabel}>{heading}</span>
+            <span className={styles.rcSideName}>{current.short ?? current.label}</span>
+          </span>
+        ) : (
+          <>
+            {Face && <Face size={14} />}
+            <span>{current.short ?? current.label}</span>
+          </>
+        )}
+        <CaretDownIcon size={heading ? 11 : 10} weight="bold" className={`${styles.rcCaret} ${a.open ? styles.caretOpen : ''}`} />
+      </button>
+      {a.open && a.ref.current && (
+        <Floating anchor={a.ref.current} onClose={a.close} label={label} align={heading ? 'start' : 'end'} width={width}>
+          <ul role="listbox" aria-label={label} className={styles.menuList}>
+            {options.map((o) => {
+              const OptionIcon = o.icon;
+              return (
+                <li key={o.value}>
+                  <button type="button" role="option" aria-selected={o.value === value} className={styles.rcOption} onClick={() => { onChange(o.value); a.close(); a.ref.current?.focus(); }}>
+                    {OptionIcon && <OptionIcon size={15} className={styles.rcOptionIcon} />}<span>{o.label}</span>
+                    {o.value === value && <CheckIcon size={13} weight="bold" className={styles.rcPickTick} />}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </Floating>
       )}

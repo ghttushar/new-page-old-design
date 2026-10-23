@@ -1,5 +1,6 @@
-import { BroadcastIcon, LightningIcon } from '@phosphor-icons/react';
+import { BroadcastIcon, LightningIcon, MegaphoneSimpleIcon } from '@phosphor-icons/react';
 import type { CategoryMeta, WidgetCategory, WidgetDefinition, WidgetKind } from './dashboard.types';
+import { CAMPAIGN_MANAGER_WIDGETS } from './widgets/campaign-manager';
 import { RULES_WIDGETS } from './widgets/rules';
 import { SIGNALS_WIDGETS } from './widgets/signals';
 
@@ -9,9 +10,10 @@ import { SIGNALS_WIDGETS } from './widgets/signals';
 export const CATEGORIES: CategoryMeta[] = [
   { id: 'Signals', label: 'Signals', icon: BroadcastIcon, description: 'Alerts, the money they carry, and the messages that come with them.' },
   { id: 'Rules', label: 'Rules', icon: LightningIcon, description: 'What your automation rules change, measured against a baseline or against each other.' },
+  { id: 'Campaign Manager', label: 'Campaign Manager', icon: MegaphoneSimpleIcon, description: 'Your campaigns and keywords ranked on a metric, and the health of the items they advertise.' },
 ];
 
-const ALL: WidgetDefinition[] = [...SIGNALS_WIDGETS, ...RULES_WIDGETS];
+const ALL: WidgetDefinition[] = [...SIGNALS_WIDGETS, ...RULES_WIDGETS, ...CAMPAIGN_MANAGER_WIDGETS];
 
 export const WIDGETS = Object.fromEntries(ALL.map((d) => [d.kind, d])) as Record<WidgetKind, WidgetDefinition>;
 

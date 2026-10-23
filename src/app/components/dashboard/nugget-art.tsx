@@ -147,6 +147,55 @@ function CompareArt() {
   );
 }
 
+/** Top performers: a ranked list, each row a rank, a name and a bar that shortens down the list. */
+function RankArt() {
+  const rows = [1, 0.74, 0.52, 0.34];
+  return (
+    <g className={s.artLift}>
+      <Panel x={30} y={16} w={180} h={104} title={46}>
+        <rect className={s.artLine} x="150" y="11.5" width="50" height="4.5" rx="2.25" />
+        {rows.map((share, i) => {
+          const y = 34 + i * 20;
+          return (
+            <g key={y}>
+              <rect className={i === 0 ? s.artRankFirst : s.artRankChip} x="39" y={y} width="12" height="12" rx="3" />
+              <rect className={i === 0 ? s.artLineDark : s.artLine} x="57" y={y + 1} width={[46, 38, 50, 34][i]} height="3.5" rx="1.75" />
+              <rect className={s.artRankTrack} x="57" y={y + 8} width="140" height="4" rx="2" />
+              <rect className={i === 0 ? s.artRankBar : s.artRankBarSoft} x="57" y={y + 8} width={140 * share} height="4" rx="2" />
+            </g>
+          );
+        })}
+      </Panel>
+    </g>
+  );
+}
+
+/** Item health: the overall score over one long health bar, then three items, each with a short bar of its own. */
+function HealthArt() {
+  const items = [0.86, 0.58, 0.32];
+  return (
+    <g className={s.artLift}>
+      <Panel x={30} y={16} w={180} h={104} title={36}>
+        <rect className={s.artFigure} x="39" y="30" width="34" height="12" rx="3" />
+        <rect className={s.artGainSoft} x="78" y="31.5" width="30" height="9" rx="4.5" />
+        <rect className={s.artRankTrack} x="39" y="48" width="162" height="5" rx="2.5" />
+        <rect className={s.artHealthBar} x="39" y="48" width={162 * 0.74} height="5" rx="2.5" />
+        {items.map((share, i) => {
+          const y = 64 + i * 17;
+          return (
+            <g key={y}>
+              <rect className={i === 0 ? s.artLineDark : s.artLine} x="39" y={y} width={[58, 46, 52][i]} height="3.5" rx="1.75" />
+              <rect className={s.artLine} x="39" y={y + 7} width="30" height="2.5" rx="1.25" />
+              <rect className={s.artRankTrack} x="150" y={y + 1} width="51" height="4" rx="2" />
+              <rect className={[s.artHealthBar, s.artHealthMid, s.artHealthLow][i]} x="150" y={y + 1} width={51 * share} height="4" rx="2" />
+            </g>
+          );
+        })}
+      </Panel>
+    </g>
+  );
+}
+
 const ART: Record<WidgetKind, { draw: () => JSX.Element; tint: string }> = {
   'value-at-risk': { draw: RiskArt, tint: s.artTintRisk },
   'opportunity-value': { draw: GainArt, tint: s.artTintGain },
@@ -154,6 +203,8 @@ const ART: Record<WidgetKind, { draw: () => JSX.Element; tint: string }> = {
   'while-away': { draw: AwayArt, tint: s.artTintAway },
   'rule-impact': { draw: ImpactArt, tint: s.artTintRule },
   'rule-compare': { draw: CompareArt, tint: s.artTintCompare },
+  'top-performers': { draw: RankArt, tint: s.artTintRank },
+  'item-health': { draw: HealthArt, tint: s.artTintHealth },
 };
 
 /** The tint class for one nugget's drawing panel. */

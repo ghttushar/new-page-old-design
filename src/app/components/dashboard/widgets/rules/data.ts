@@ -44,7 +44,7 @@ export const RULE_TYPES: { id: RuleType; label: string }[] = [
   { id: 'harvest', label: 'Keyword harvesting' },
 ];
 
-interface Drivers { imp: number; ctr: number; cpc: number; cvr: number; aov: number }
+export interface Drivers { imp: number; ctr: number; cpc: number; cvr: number; aov: number }
 type Lift = Partial<Record<keyof Drivers, number>>;
 
 export interface RuleDef {
@@ -159,7 +159,7 @@ const BASE: Record<EntityType | 'portfolio', Drivers> = {
 };
 
 /** The entity's own level: its type's base, nudged up to 20% either way. */
-function driversFor(id: string, type: EntityType | 'portfolio'): Drivers {
+export function driversFor(id: string, type: EntityType | 'portfolio'): Drivers {
   const r = seeded(hash(`drivers|${id}`));
   const b = BASE[type];
   const v = () => 0.8 + r() * 0.4;
@@ -186,7 +186,7 @@ function daysAgo(n: number): Date {
  * A daily series ending today. Each day is seeded on its own, so shorter windows are the tail of longer ones.
  * `ramp` eases the lift in over the first part of the window, the way a rule's effect builds after it switches on.
  */
-function series(salt: string, drivers: Drivers, days: number, lift: Lift = {}, ramp = false): Day[] {
+export function series(salt: string, drivers: Drivers, days: number, lift: Lift = {}, ramp = false): Day[] {
   const out: Day[] = [];
   const phase = hash(salt) % 7;
   for (let back = days - 1; back >= 0; back--) {
