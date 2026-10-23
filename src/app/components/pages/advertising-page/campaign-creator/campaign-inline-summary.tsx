@@ -1,7 +1,7 @@
 // @ts-nocheck -- presentation-only campaign brief for the ported creator
 import { Fragment } from 'react';
 import { motion } from 'motion/react';
-import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, budgetSummary, type CcStepId } from './campaign-creator.types';
+import { STRUCTURE_CATALOG, type CcStepId } from './campaign-creator.types';
 import { useCampaignSummary } from './campaign-summary-context';
 import ScopeSwitch from './scope-switch';
 
@@ -204,11 +204,10 @@ export function JourneyBar() {
   const keywordCount = draft.keywordTargets?.length ?? 0;
   const negativeCount = draft.negativeKeywords?.length ?? 0;
   const kwTotal = keywordCount + negativeCount;
+  // On Amazon the step also takes product targets, so it is named for both.
+  const keywordsName = draft.marketplace === 'walmart' ? 'Keywords' : 'Keywords & product targets';
   const kwSummary = `${plural(keywordCount, 'keyword')} · ${plural(negativeCount, 'negative')}`;
   const productCount = totalProducts ?? selectedProducts.length;
-  const hasAuto = draft.targetingStrategies.includes('auto');
-  const hasManual = draft.targetingStrategies.some((s) => s !== 'auto');
-  const routeSummary = hasAuto && hasManual ? 'Auto and manual' : hasAuto ? 'Auto' : hasManual ? 'Manual' : 'None';
 
   const graphic = {
     entry: <AdFormatMark />,
@@ -222,9 +221,9 @@ export function JourneyBar() {
   const done = {
     entry: { eyebrow: 'Sponsored Products', value: MODE_LABEL[draft.campaignMode ?? 'both'] },
     products: { eyebrow: 'Products', value: `${plural(productCount, 'product')} · ${plural(groupCount, 'group')}` },
-    keywords: { eyebrow: 'Keywords', value: kwSummary },
-    objectives: { eyebrow: 'Budget', value: budgetSummary(draft) },
-    targeting: { eyebrow: 'Targeting', value: routeSummary },
+    keywords: { eyebrow: keywordsName, value: kwSummary },
+    objectives: { eyebrow: 'Objectives', value: null },
+    targeting: { eyebrow: 'Targeting', value: null },
     structure: { eyebrow: 'Structure', value: structure?.name ?? 'Custom' },
   };
 
@@ -244,21 +243,25 @@ export function JourneyBar() {
             {i > 0 && <li className={`ccd-jb-rail${i <= current ? ' is-done' : ''}`} aria-hidden />}
             <li className={`ccd-jb-li${isActive ? ' is-active' : ''}`}>
               {isDone && (
-                <button type="button" className={`ccd-jb-tile${hasIssue ? ' is-issue' : ''}`} disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}: ${done[item.id].value}.${hasIssue ? ' Needs a fix.' : ''} Go back to this step`}>
+                <button type="button" className={`ccd-jb-tile${hasIssue ? ' is-issue' : ''}`} disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}${done[item.id].value ? `: ${done[item.id].value}` : ''}.${hasIssue ? ' Needs a fix.' : ''} Go back to this step`}>
                   {graphic[item.id]}
-                  <span className="ccd-jb-copy" title={item.id === 'keywords' ? `${plural(keywordCount, 'keyword')} · ${plural(negativeCount, 'negative keyword')}` : `${done[item.id].eyebrow}: ${done[item.id].value}`}><small>{done[item.id].eyebrow}</small><strong>{done[item.id].value}</strong></span>
+                  {done[item.id].value === null ? (
+                    <span className="ccd-jb-copy ccd-jb-copy--name"><strong>{done[item.id].eyebrow}</strong></span>
+                  ) : (
+                    <span className="ccd-jb-copy" title={item.id === 'keywords' ? `${plural(keywordCount, 'keyword')} · ${plural(negativeCount, 'negative keyword')}` : `${done[item.id].eyebrow}: ${done[item.id].value}`}><small>{done[item.id].eyebrow}</small><strong>{done[item.id].value}</strong></span>
+                  )}
                   {hasIssue ? <Cross /> : <Tick />}
                 </button>
               )}
               {isActive && ACTIVE_TITLE[item.id] && (
                 <div className={`ccd-jb-active${hasIssue ? ' is-issue' : ''}`} aria-current="step">
                   {graphic[item.id]}
-                  <span className="ccd-jb-title">{ACTIVE_TITLE[item.id]}</span>
+                  <span className="ccd-jb-title">{item.id === 'keywords' ? keywordsName : ACTIVE_TITLE[item.id]}</span>
                   {hasIssue && <Cross />}
                 </div>
               )}
               {i > current && (
-                <div className="ccd-jb-chip"><span className="ccd-jb-node">{i}</span><span>{item.label}</span></div>
+                <div className="ccd-jb-chip"><span className="ccd-jb-node">{i}</span><span>{item.id === 'keywords' ? keywordsName : item.label}</span></div>
               )}
             </li>
             </Fragment>

@@ -48,9 +48,9 @@ const BUDGET_TYPES: { id: BudgetType; label: string; hint: string }[] = [
   { id: 'both', label: 'BOTH', hint: 'A daily limit, and a total the campaigns never go past.' },
 ];
 
-/** Walmart placements. Search In-Grid is always on; Buy Box is always on for Auto campaigns. */
+/** Walmart placements. All start on; only plans with Manual campaigns can switch them off. */
 const INCLUSIONS: [keyof PlacementInclusion, string, string][] = [
-  ['searchInGrid', 'Search In-Grid', 'Ads shown inside the grid of search results. This placement is always on.'],
+  ['searchInGrid', 'Search In-Grid', 'Ads shown inside the grid of search results.'],
   ['searchCarousel', 'Search Carousel', 'Ads shown in a carousel within search results.'],
   ['itemCarousel', 'Item Carousel', 'Ads shown in a carousel on item pages.'],
   ['buyBox', 'Buy Box', 'Ads shown beside the Buy Box on an item page.'],
@@ -299,17 +299,16 @@ function ExpandedTargetingCard({ draft, onChange }: { draft: CcDraft; onChange: 
 }
 
 /** As its own card, a list of switches; across the page (`wide`), the same switches side by side. */
-function InclusionsCard({ draft, onChange, hasAuto, hasManual, wide }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean; wide?: boolean }) {
+function InclusionsCard({ draft, onChange, hasManual, wide }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean; wide?: boolean }) {
   const pi = draft.placementInclusion;
-  // Buy box can only be turned off for Manual campaigns; Auto campaigns always show there.
-  const locked = (key: keyof PlacementInclusion) => key === 'searchInGrid' || (key === 'buyBox' && !hasManual);
-  const caption = (key: keyof PlacementInclusion) => (key === 'searchInGrid' ? 'Always on' : key === 'buyBox' && hasAuto ? 'Always on for Auto campaigns' : null);
+  // Every placement starts on. Manual campaigns can switch any of them off; a plan of Automatic campaigns only keeps them all on.
+  const locked = !hasManual;
   return (
     <GoalCard icon="eye" title="Placement inclusions" wide={wide} hint="Choose where you'd like customers to see your ads.">
       <div className={`ccd-option-list${wide ? ' ccd-option-list--across' : ''}`}>
         {INCLUSIONS.map(([key, text, info]) => (
           <OptionRow
-            key={key} kind="switch" checked={locked(key) ? true : pi[key]} disabled={locked(key)} label={text} caption={caption(key)} info={info}
+            key={key} kind="switch" checked={locked || pi[key]} disabled={locked} label={text} info={info}
             onToggle={() => onChange({ placementInclusion: { ...pi, [key]: !pi[key] } })}
           />
         ))}

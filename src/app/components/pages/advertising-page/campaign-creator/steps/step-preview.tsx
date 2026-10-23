@@ -10,28 +10,42 @@ import { decorateCampaigns } from './preview-cells';
 import { withShares } from './budget-math';
 import { UNGROUPED_COLOR, pickSettings, type Scope } from '../product-groups';
 
+const PRODUCT_MATCHES = ['product', 'category'];
+
 /**
- * Puts the keywords from the Keywords step into the generated campaigns: targets on manual ones when the plan uses them,
- * negatives on every campaign that can take them (not Walmart Automatic campaigns with Dynamic bidding).
+ * Puts the lists from the Keywords step into the generated campaigns:
+ * - keyword targets on Manual ad groups that target keywords, and product targets (Amazon) on those that target products;
+ * - negative keywords on every campaign that can take them (not Walmart Automatic campaigns with Dynamic bidding), and
+ *   negative product targets (Amazon) on every campaign.
  */
 function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
   const rules = keywordRules(draft, draft.marketplace);
   const keywords = rules.keywords === 'required' ? draft.keywordTargets.filter((k) => k.enabled) : [];
+  const products = rules.products === 'required' ? (draft.productTargets ?? []).filter((p) => p.enabled) : [];
   const negatives = rules.negatives === 'unavailable' ? [] : draft.negativeKeywords.filter((k) => k.enabled);
-  if (keywords.length === 0 && negatives.length === 0) return campaigns;
+  const negativeAsins = rules.negativeProducts ? (draft.negativeProducts ?? []).filter((p) => p.enabled) : [];
+  if (keywords.length + products.length + negatives.length + negativeAsins.length === 0) return campaigns;
   return campaigns.map((c) => ({
     ...c,
     adGroups: c.adGroups.map((ag) => {
       const haveTarget = new Set(ag.targets.map((t) => `${t.label.toLowerCase()}|${t.matchType}`));
-      const haveNegative = new Set(ag.negatives.filter((n) => n.kind === 'keyword').map((n) => `${n.text.toLowerCase()}|${n.matchType ?? 'negative-exact'}`));
-      const targets = c.kind === 'manual'
+      const haveNegative = new Set(ag.negatives.map((n) => `${n.kind}|${n.text.toLowerCase()}|${n.matchType ?? ''}`));
+      const targetsProducts = ag.targets.some((t) => PRODUCT_MATCHES.includes(t.matchType));
+      const targetsKeywords = ag.targets.length === 0 || ag.targets.some((t) => !PRODUCT_MATCHES.includes(t.matchType));
+      const keywordTargets = c.kind === 'manual' && targetsKeywords
         ? keywords.filter((k) => !haveTarget.has(`${k.text.toLowerCase()}|${k.match}`)).map((k) => ({ id: `${ag.id}-${k.id}`, label: k.text, matchType: k.match, bid: Math.max(k.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
         : [];
+      const productTargets = c.kind === 'manual' && targetsProducts
+        ? products.filter((p) => !haveTarget.has(`${p.text.toLowerCase()}|${p.match}`)).map((p) => ({ id: `${ag.id}-${p.id}`, label: p.text, matchType: p.match, bid: Math.max(p.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
+        : [];
       const takesNegatives = !(c.kind === 'auto' && rules.negatives === 'manual-only');
-      const added = (takesNegatives ? negatives : [])
-        .filter((n) => !haveNegative.has(`${n.text.toLowerCase()}|${n.match}`))
-        .map((n) => ({ id: `${ag.id}-${n.id}`, text: n.text, kind: 'keyword' as const, matchType: n.match, level: n.level ?? 'ad-group' }));
-      return { ...ag, targets: [...ag.targets, ...targets], negatives: [...ag.negatives, ...added] };
+      const addedKeywords = (takesNegatives ? negatives : [])
+        .filter((n) => !haveNegative.has(`keyword|${n.text.toLowerCase()}|${n.match}`))
+        .map((n) => ({ id: `${ag.id}-${n.id}`, text: n.text, kind: 'keyword' as const, matchType: n.match }));
+      const addedAsins = negativeAsins
+        .filter((n) => !haveNegative.has(`product|${n.text.toLowerCase()}|`))
+        .map((n) => ({ id: `${ag.id}-${n.id}`, text: n.text.toUpperCase(), kind: 'product' as const }));
+      return { ...ag, targets: [...ag.targets, ...keywordTargets, ...productTargets], negatives: [...ag.negatives, ...addedKeywords, ...addedAsins] };
     }),
   }));
 }
@@ -59,6 +73,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
     sc.draft.structureId === 'custom' ? sc.draft.customCampaigns ?? null : '',
     sc.draft.biddingStrategy, sc.draft.placementAdjust,
     sc.draft.keywordTargets.filter((k) => k.enabled), sc.draft.negativeKeywords.filter((n) => n.enabled),
+    (sc.draft.productTargets ?? []).filter((p) => p.enabled), (sc.draft.negativeProducts ?? []).filter((n) => n.enabled),
   ]));
 
   useEffect(() => {

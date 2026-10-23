@@ -1,13 +1,12 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  TARGET_SOURCES,
   type CcAdGroup, type CcCampaign, type CcNegative, type CcTarget, type NegativeMatch, type TargetSource,
 } from '../campaign-creator.types';
 import { BORDER, Checkbox, FONT, InfoIcon, TEXT_PRIMARY } from '../campaign-creator-ui';
 import { MATCH_LABEL, NumField, campaignLabel } from './preview-cells';
 
-// Sections 8.5 and 8.6: one popup to add and edit a campaign's keywords, product targets and negatives, with each item's source.
+// Sections 8.5 and 8.6: one popup to add and edit a campaign's keywords, product targets and negatives.
 
 export const FIELD: React.CSSProperties = {
   padding: '6px 8px', border: `1px solid ${BORDER}`, borderRadius: 6, font: `400 13px/1.2 ${FONT}`,
@@ -114,22 +113,6 @@ function addRows(ag: CcAdGroup, kind: Kind, rows: Row[]): CcAdGroup {
 let idCounter = 0;
 const newId = () => `new-${Date.now().toString(36)}-${idCounter++}`;
 
-/** Saved lists a person can pull keywords from (sources 4 and 5). */
-type ListSource = 'Custom input' | 'Keyword list' | 'Labels / tags';
-const LIST_SOURCES: ListSource[] = ['Custom input', 'Keyword list', 'Labels / tags'];
-const SAVED_LISTS: Record<'Keyword list' | 'Labels / tags', { name: string; keywords: string[] }[]> = {
-  'Keyword list': [
-    { name: 'Top converting terms', keywords: ['best protein powder', 'whey isolate high protein', 'protein shake mix'] },
-    { name: 'Brand defence terms', keywords: ['nutrabay whey', 'nutrabay protein', 'nutrabay official'] },
-    { name: 'Seasonal gifting', keywords: ['fitness gift set', 'gym gift for him', 'health gift hamper'] },
-  ],
-  'Labels / tags': [
-    { name: 'Bestsellers', keywords: ['bestseller protein', 'top rated supplement', 'popular gym nutrition'] },
-    { name: 'New launches', keywords: ['new protein flavour', 'latest pre workout', 'new arrival supplement'] },
-    { name: 'High margin', keywords: ['premium whey isolate', 'clean label protein', 'lab tested supplement'] },
-  ],
-};
-
 const parseTerms = (text: string): string[] => {
   const seen = new Set<string>();
   return text.split(/[\n,;]+/).map((t) => t.trim()).filter((t) => {
@@ -157,7 +140,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
   const [work, setWork] = useState<CcCampaign>(campaign);
   const [agId, setAgId] = useState(campaign.adGroups[0]?.id ?? '');
   const [kind, setKind] = useState<Kind>(kinds[0]);
-  const [source, setSource] = useState<ListSource>('Custom input');
   const [text, setText] = useState('');
   const [matches, setMatches] = useState<string[]>([]);
   const [bid, setBid] = useState(() => campaign.adGroups.flatMap((a) => a.targets)[0]?.bid ?? 0.75);
@@ -165,7 +147,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
   const [selected, setSelected] = useState<string[]>([]);
   const [filterText, setFilterText] = useState('');
   const [filterMatch, setFilterMatch] = useState<string[]>([]);
-  const [filterSource, setFilterSource] = useState<string[]>([]);
   const [menu, setMenu] = useState(false);
 
   const ag = work.adGroups.find((a) => a.id === agId) ?? work.adGroups[0];
@@ -198,7 +179,7 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
   }
 
   const editAdGroup = (fn: (a: CcAdGroup) => CcAdGroup) => setWork((w) => ({ ...w, adGroups: w.adGroups.map((a) => (a.id === ag.id ? fn(a) : a)) }));
-  const pickKind = (next: Kind) => { setKind(next); setMatches([]); setNotice(null); setSelected([]); setFilterText(''); setFilterMatch([]); setFilterSource([]); setMenu(false); };
+  const pickKind = (next: Kind) => { setKind(next); setMatches([]); setNotice(null); setSelected([]); setFilterText(''); setFilterMatch([]); setMenu(false); };
 
   // The list on the left
   const terms = useMemo(() => parseTerms(text), [text]);
@@ -219,7 +200,7 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
       const key = `${value.toLowerCase()}|${m}`;
       if (existing.has(key)) { duplicates += 1; return; }
       existing.add(key);
-      fresh.push({ id: newId(), text: value, match: m, bid: def.hasBid ? bid : null, source: def.hasBid ? (kind === 'keyword' ? source : 'Custom input') : null });
+      fresh.push({ id: newId(), text: value, match: m, bid: def.hasBid ? bid : null, source: def.hasBid ? 'Custom input' : null });
     }));
     if (fresh.length) editAdGroup((a) => addRows(a, kind, fresh));
     if (fresh.length) setText('');
@@ -231,10 +212,10 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
 
   // The table on the right
   const q = filterText.trim().toLowerCase();
-  const shown = rows.filter((r) => (!q || r.text.toLowerCase().includes(q)) && (filterMatch.length === 0 || filterMatch.includes(r.match)) && (filterSource.length === 0 || (r.source !== null && filterSource.includes(r.source))));
+  const shown = rows.filter((r) => (!q || r.text.toLowerCase().includes(q)) && (filterMatch.length === 0 || filterMatch.includes(r.match)));
   const selectedHere = selected.filter((id) => rows.some((r) => r.id === id));
   const allOn = shown.length > 0 && shown.every((r) => selectedHere.includes(r.id));
-  const activeFilters = filterMatch.length + filterSource.length;
+  const activeFilters = filterMatch.length;
   const toggleRow = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   const toggleAll = () => setSelected(allOn ? selected.filter((id) => !shown.some((r) => r.id === id)) : Array.from(new Set([...selected, ...shown.map((r) => r.id)])));
   const clearSelected = () => { editAdGroup((a) => removeRows(a, kind, selectedHere)); setSelected([]); };
@@ -244,7 +225,7 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
     const base = def.matches.map((m) => m.id);
     return base.includes(current) ? base : [...base, current];
   };
-  const cols = def.hasBid ? '44px minmax(0,1fr) 112px 104px 196px' : kind === 'neg-keyword' ? '44px minmax(0,1fr) 170px' : '44px minmax(0,1fr) 150px';
+  const cols = def.hasBid ? '44px minmax(0,1fr) 112px 104px' : kind === 'neg-keyword' ? '44px minmax(0,1fr) 170px' : '44px minmax(0,1fr) 150px';
   const filterMatchChoices = Array.from(new Set([...def.matches.map((m) => m.id), ...rows.map((r) => r.match)]));
 
   return createPortal(
@@ -287,15 +268,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
               </div>
             )}
 
-            {kind === 'keyword' && (
-              <div className="ccd-tm-field">
-                <label className="ccd-tm-label" htmlFor={`${uid}-src`}>Targeting source <Info tip="Where these keywords come from. It is shown next to every keyword." /></label>
-                <select id={`${uid}-src`} className="ccd-tm-select ccd-input" value={source} onChange={(e) => setSource(e.target.value as ListSource)}>
-                  {LIST_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-            )}
-
             <div className="ccd-tm-field">
               <div className="ccd-tm-labelrow">
                 <label className="ccd-tm-label" htmlFor={`${uid}-list`}>Enter list <Info tip="One entry per line. Commas also work." /></label>
@@ -306,16 +278,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
                 onChange={(e) => { setText(e.target.value); setNotice(null); }}
               />
               <div className="ccd-tm-count ccd-num">{String(terms.length).padStart(2, '0')} {terms.length === 1 ? def.noun : `${def.noun}s`} entered</div>
-              {kind === 'keyword' && source !== 'Custom input' && (
-                <div className="ccd-tm-lists">
-                  <span>{source === 'Keyword list' ? 'Add from a keyword list' : 'Add from a label'}</span>
-                  {SAVED_LISTS[source].map((l) => (
-                    <button key={l.name} type="button" className="ccd-tm-chipbtn" onClick={() => { setText((t) => `${t.trim() ? `${t.trim()}\n` : ''}${l.keywords.join('\n')}`); setNotice(null); }}>
-                      {l.name}<small>{l.keywords.length}</small>
-                    </button>
-                  ))}
-                </div>
-              )}
               {notice && <div role="status" className="ccd-tm-notice">{notice}</div>}
             </div>
 
@@ -364,13 +326,7 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
                           <Checkbox checked={filterMatch.includes(m)} size={16} />{MATCH_LABEL[m] ?? m}
                         </button>
                       ))}
-                      <div className="ccd-tm-menuhead">Source</div>
-                      {TARGET_SOURCES.map((s) => (
-                        <button key={s} type="button" role="checkbox" aria-checked={filterSource.includes(s)} className="ccd-tm-check" onClick={() => toggleIn(filterSource, setFilterSource, s)}>
-                          <Checkbox checked={filterSource.includes(s)} size={16} />{s}
-                        </button>
-                      ))}
-                      <button type="button" className="ccd-tm-menureset" disabled={activeFilters === 0} onClick={() => { setFilterMatch([]); setFilterSource([]); }}>Reset filters</button>
+                      <button type="button" className="ccd-tm-menureset" disabled={activeFilters === 0} onClick={() => setFilterMatch([])}>Reset filters</button>
                     </div>
                   </>
                 )}
@@ -380,7 +336,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
             <div className="ccd-tm-filters">
               <span>Filters:</span>
               {filterMatch.map((m) => <button key={m} type="button" className="ccd-tm-tag" onClick={() => toggleIn(filterMatch, setFilterMatch, m)} aria-label={`Remove filter ${MATCH_LABEL[m] ?? m}`}>{MATCH_LABEL[m] ?? m}<span aria-hidden>×</span></button>)}
-              {filterSource.map((s) => <button key={s} type="button" className="ccd-tm-tag" onClick={() => toggleIn(filterSource, setFilterSource, s)} aria-label={`Remove filter ${s}`}>{s}<span aria-hidden>×</span></button>)}
               <input value={filterText} onChange={(e) => setFilterText(e.target.value)} placeholder="Search added targets" aria-label="Search added targets" />
             </div>
 
@@ -390,7 +345,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
                 <span className="ccd-tm-td">{def.term}</span>
                 <span className="ccd-tm-td">Match type</span>
                 {def.hasBid && <span className="ccd-tm-td">Bid</span>}
-                {def.hasBid && <span className="ccd-tm-td">Source</span>}
               </div>
               <div className="ccd-tm-tbody">
                 {shown.map((r) => {
@@ -418,13 +372,6 @@ export function TargetingPopup({ campaign, onSave, onClose }: { campaign: CcCamp
                       </span>
                       {def.hasBid && (
                         <span className="ccd-tm-td"><NumField value={r.bid ?? 0} prefix="$" width={44} label={`Bid for ${r.text}`} onCommit={(v) => editAdGroup((a) => patchRow(a, kind, r.id, { bid: v }))} /></span>
-                      )}
-                      {def.hasBid && (
-                        <span className="ccd-tm-td">
-                          <select className="ccd-tm-cell" aria-label={`Source of ${r.text}`} value={r.source ?? 'Custom input'} onChange={(e) => editAdGroup((a) => patchRow(a, kind, r.id, { source: e.target.value as TargetSource }))}>
-                            {TARGET_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
-                          </select>
-                        </span>
                       )}
                     </div>
                   );

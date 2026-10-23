@@ -701,11 +701,12 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-kw-hint b { color: #2d2f36; font-weight: 600; }
 /* The rule for the list being added: what this plan needs from it, or why it is locked */
 .ccd-kw-rule { margin: 0; padding: 8px 10px; border-radius: 8px; background: #f7f5fa; color: #5b5266; font: 400 12px/1.5 Inter, sans-serif; }
-.ccd-kw-rule.is-off { background: #f3f4f6; color: #5b616b; }
+.ccd-kw-none { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 1px solid #e8ebf1; border-radius: 12px; background: #fff; color: #646b76; font: 400 13px/1.5 Inter, sans-serif; }
+.ccd-kw-none strong { color: var(--ccd-ink); font: 600 15px/1.3 Inter, sans-serif; }
+.ccd-kw-fixed { color: #7b808a; font: 400 13px/1.3 Inter, sans-serif; }
 .ccd-kw-input:disabled { background: #f6f7f9; color: #a3a8b1; cursor: not-allowed; }
 .ccd-kw-input:disabled::placeholder { color: #b8bcc5; }
 .ccd-tm-check:disabled { color: #a3a8b1; cursor: not-allowed; }
-.ccd-kw-level { width: auto; min-width: 140px; }
 .ccd-tm-select:disabled { background: #f6f7f9; color: #7b808a; cursor: not-allowed; }
 .ccd-nf.is-disabled { background: #f6f7f9; }
 .ccd-nf.is-disabled input { color: #a3a8b1; cursor: not-allowed; }
@@ -730,7 +731,8 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-kw-input:focus { border-color: var(--ccd-brand); }
 
 .ccd-kw-right { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-.ccd-kw-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e8ebf1; }
+.ccd-kw-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #e8ebf1; scrollbar-width: none; }
+.ccd-kw-tab { flex: none; white-space: nowrap; }
 .ccd-kw-tab { display: inline-flex; align-items: center; gap: 8px; height: 40px; margin-bottom: -1px; padding: 0 14px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #646b76; font: 500 13.5px/1 Inter, sans-serif; cursor: pointer; transition: color 140ms ease-out, border-color 140ms ease-out; }
 .ccd-kw-tab:hover { color: #2d2f36; }
 .ccd-kw-tab.is-on { border-bottom-color: var(--ccd-brand); color: #4b2a6a; font-weight: 600; }
@@ -751,8 +753,9 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 
 .ccd-kw-table { display: flex; flex-direction: column; max-height: 520px; overflow: auto; border: 1px solid #dfe2e9; border-radius: 8px; }
 .ccd-kw-grid { display: grid; align-items: center; min-width: 420px; }
-.ccd-kw-grid--keyword { grid-template-columns: 76px minmax(0, 1fr) 110px 112px 64px; }
-.ccd-kw-grid--negative { grid-template-columns: 76px minmax(0, 1fr) 140px 104px 64px; }
+.ccd-kw-grid--keyword, .ccd-kw-grid--product { grid-template-columns: 76px minmax(0, 1fr) 128px 112px 64px; }
+.ccd-kw-grid--negative { grid-template-columns: 76px minmax(0, 1fr) 160px 64px; }
+.ccd-kw-grid--neg-product { grid-template-columns: 76px minmax(0, 1fr) 64px; }
 .ccd-kw-grid > span { min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 10px; border-right: 1px solid #eef0f5; }
 .ccd-kw-grid > span:last-child { border-right: 0; }
 .ccd-kw-th { position: sticky; top: 0; z-index: 1; flex: none; height: 44px; border-bottom: 1px solid #dfe2e9; background: #f9fafd; color: #1d2129; font: 600 12.5px/1 Inter, sans-serif; }
@@ -950,6 +953,7 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-jb-tile:focus-visible { outline: 2px solid #2d2f36; outline-offset: 2px; }
 .ccd-jb-tile .ccd-dyn, .ccd-jb-tile .ccd-setup-products { zoom: .62; flex: none; }
 .ccd-jb-copy { min-width: 0; }
+.ccd-jb-copy--name strong { margin-top: 0; }
 .ccd-jb-copy small { display: block; overflow: hidden; text-overflow: ellipsis; color: var(--ccd-muted); font: 500 10px/1.2 Inter, sans-serif; white-space: nowrap; }
 .ccd-jb-copy strong { display: block; max-width: 190px; min-width: 0; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ccd-ink); font: 650 12px/1.25 'Inter Tight', Inter, sans-serif; }
 .ccd-jb-tick { position: absolute; top: 5px; right: 4px; display: grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; background: #2f7d65; color: #fff; }
