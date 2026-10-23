@@ -176,6 +176,11 @@ function PreviewMark() {
   );
 }
 
+/** The campaigns chosen with the ad format, as the Ad format tile writes them. */
+const MODE_LABEL = { auto: 'Auto', manual: 'Manual', both: 'Auto and manual' };
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
 /** The titles of the open step's tile. */
 const ACTIVE_TITLE = { products: 'Products', keywords: 'Keywords', objectives: 'Objectives', targeting: 'Targeting', structure: 'Structure', preview: 'Preview' };
 
@@ -194,13 +199,16 @@ const Cross = () => (
 export function JourneyBar() {
   const context = useCampaignSummary();
   if (!context || !context.steps || !context.steps.some((st) => st.id === context.step)) return null;
-  const { step, draft, selectedProducts, totalProducts, onJump, steps, furthestIndex, issueStep } = context;
+  const { step, draft, selectedProducts, totalProducts, groupCount = 0, onJump, steps, furthestIndex, issueStep } = context;
   const structure = STRUCTURE_CATALOG.find((item) => item.id === draft.structureId);
-  const routes = draft.targetingStrategies.length;
   const keywordCount = draft.keywordTargets?.length ?? 0;
   const negativeCount = draft.negativeKeywords?.length ?? 0;
   const kwTotal = keywordCount + negativeCount;
-  const kwSummary = kwTotal === 0 ? 'None added' : `${keywordCount} keywords${negativeCount ? ` · ${negativeCount} negative` : ''}`;
+  const kwSummary = `${plural(keywordCount, 'keyword')} · ${plural(negativeCount, 'negative')}`;
+  const productCount = totalProducts ?? selectedProducts.length;
+  const hasAuto = draft.targetingStrategies.includes('auto');
+  const hasManual = draft.targetingStrategies.some((s) => s !== 'auto');
+  const routeSummary = hasAuto && hasManual ? 'Auto and manual' : hasAuto ? 'Auto' : hasManual ? 'Manual' : 'None';
 
   const graphic = {
     entry: <AdFormatMark />,
@@ -212,11 +220,11 @@ export function JourneyBar() {
     preview: <PreviewMark />,
   };
   const done = {
-    entry: { eyebrow: 'Ad format', value: 'Sponsored Products' },
-    products: { eyebrow: 'Products', value: `${totalProducts ?? selectedProducts.length} selected` },
+    entry: { eyebrow: 'Sponsored Products', value: MODE_LABEL[draft.campaignMode ?? 'both'] },
+    products: { eyebrow: 'Products', value: `${plural(productCount, 'product')} · ${plural(groupCount, 'group')}` },
     keywords: { eyebrow: 'Keywords', value: kwSummary },
     objectives: { eyebrow: 'Budget', value: budgetSummary(draft) },
-    targeting: { eyebrow: 'Targeting', value: `${routes} ${routes === 1 ? 'route' : 'routes'}` },
+    targeting: { eyebrow: 'Targeting', value: routeSummary },
     structure: { eyebrow: 'Structure', value: structure?.name ?? 'Custom' },
   };
 
@@ -238,7 +246,7 @@ export function JourneyBar() {
               {isDone && (
                 <button type="button" className={`ccd-jb-tile${hasIssue ? ' is-issue' : ''}`} disabled={!reachable} onClick={() => onJump(item.id)} aria-label={`${done[item.id].eyebrow}: ${done[item.id].value}.${hasIssue ? ' Needs a fix.' : ''} Go back to this step`}>
                   {graphic[item.id]}
-                  <span className="ccd-jb-copy"><small>{done[item.id].eyebrow}</small><strong>{done[item.id].value}</strong></span>
+                  <span className="ccd-jb-copy" title={item.id === 'keywords' ? `${plural(keywordCount, 'keyword')} · ${plural(negativeCount, 'negative keyword')}` : `${done[item.id].eyebrow}: ${done[item.id].value}`}><small>{done[item.id].eyebrow}</small><strong>{done[item.id].value}</strong></span>
                   {hasIssue ? <Cross /> : <Tick />}
                 </button>
               )}

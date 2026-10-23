@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ScopeSwitch from '../scope-switch';
 import { HeadingGroup } from '../campaign-inline-summary';
-import { MIN_KEYWORD_BID, generateCampaigns, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
+import { MIN_KEYWORD_BID, generateCampaigns, keywordRules, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
 import { StepHeading } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
 import RulesSection from './preview-rules';
@@ -10,10 +10,14 @@ import { decorateCampaigns } from './preview-cells';
 import { withShares } from './budget-math';
 import { UNGROUPED_COLOR, pickSettings, type Scope } from '../product-groups';
 
-/** Puts the keywords from the Keywords step into the generated campaigns: targets on manual ones, negatives on all of them. */
+/**
+ * Puts the keywords from the Keywords step into the generated campaigns: targets on manual ones when the plan uses them,
+ * negatives on every campaign that can take them (not Walmart Automatic campaigns with Dynamic bidding).
+ */
 function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
-  const keywords = draft.keywordTargets.filter((k) => k.enabled);
-  const negatives = draft.negativeKeywords.filter((k) => k.enabled);
+  const rules = keywordRules(draft, draft.marketplace);
+  const keywords = rules.keywords === 'required' ? draft.keywordTargets.filter((k) => k.enabled) : [];
+  const negatives = rules.negatives === 'unavailable' ? [] : draft.negativeKeywords.filter((k) => k.enabled);
   if (keywords.length === 0 && negatives.length === 0) return campaigns;
   return campaigns.map((c) => ({
     ...c,
@@ -23,7 +27,10 @@ function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
       const targets = c.kind === 'manual'
         ? keywords.filter((k) => !haveTarget.has(`${k.text.toLowerCase()}|${k.match}`)).map((k) => ({ id: `${ag.id}-${k.id}`, label: k.text, matchType: k.match, bid: Math.max(k.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
         : [];
-      const added = negatives.filter((n) => !haveNegative.has(`${n.text.toLowerCase()}|${n.match}`)).map((n) => ({ id: `${ag.id}-${n.id}`, text: n.text, kind: 'keyword' as const, matchType: n.match }));
+      const takesNegatives = !(c.kind === 'auto' && rules.negatives === 'manual-only');
+      const added = (takesNegatives ? negatives : [])
+        .filter((n) => !haveNegative.has(`${n.text.toLowerCase()}|${n.match}`))
+        .map((n) => ({ id: `${ag.id}-${n.id}`, text: n.text, kind: 'keyword' as const, matchType: n.match, level: n.level ?? 'ad-group' }));
       return { ...ag, targets: [...ag.targets, ...targets], negatives: [...ag.negatives, ...added] };
     }),
   }));

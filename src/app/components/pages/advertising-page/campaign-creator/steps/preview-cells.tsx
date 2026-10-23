@@ -51,8 +51,8 @@ export function SourceTag({ source }: { source: TargetSource }) {
 const fmt = (n: number, money: boolean) => (money && !Number.isInteger(Math.round(n * 100) / 100) ? n.toFixed(2) : String(Math.round(n * 100) / 100));
 
 /** A small number input with an optional $ or % beside it. Typing is free-form; the value is tidied when you leave the field. */
-export function NumField({ value, onCommit, label, prefix, suffix, max, width = 72, invalid }: {
-  value: number; onCommit: (n: number) => void; label: string; prefix?: string; suffix?: string; max?: number; width?: number; invalid?: boolean;
+export function NumField({ value, onCommit, label, prefix, suffix, max, width = 72, invalid, disabled }: {
+  value: number; onCommit: (n: number) => void; label: string; prefix?: string; suffix?: string; max?: number; width?: number; invalid?: boolean; disabled?: boolean;
 }) {
   const money = prefix === '$';
   const [text, setText] = useState(fmt(value, money));
@@ -60,10 +60,10 @@ export function NumField({ value, onCommit, label, prefix, suffix, max, width = 
   useEffect(() => { if (!editing.current) setText(fmt(value, money)); }, [value, money]);
 
   return (
-    <span className={`ccd-nf${invalid ? ' is-invalid' : ''}`}>
+    <span className={`ccd-nf${invalid ? ' is-invalid' : ''}${disabled ? ' is-disabled' : ''}`}>
       {prefix && <i>{prefix}</i>}
       <input
-        className="ccd-num" inputMode="decimal" aria-label={label} value={text} style={{ width }}
+        className="ccd-num" inputMode="decimal" aria-label={label} value={text} disabled={disabled} style={{ width }}
         onFocus={(e) => { editing.current = true; e.currentTarget.select(); }}
         onChange={(e) => {
           const t = e.target.value;

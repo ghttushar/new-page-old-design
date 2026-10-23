@@ -4,7 +4,7 @@ import {
   BIDDING_STRATEGIES, MARKETPLACE_CAPABILITY, formatCurrency, todayIso,
   type BidMultipliers, type BiddingStrategy, type BudgetType, type CcDraft, type CcProduct, type PlacementAdjust, type PlacementInclusion,
 } from '../campaign-creator.types';
-import { BORDER, Checkbox, FONT, InfoIcon, StepHeading, TEXT_PRIMARY } from '../campaign-creator-ui';
+import { BORDER, Checkbox, FONT, InfoIcon, Radio, StepHeading, TEXT_PRIMARY } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
 
 const glyph = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
@@ -16,7 +16,7 @@ const icons: Record<string, React.ReactNode> = {
   eye: <><path d="M1.5 8s2.3-4.5 6.5-4.5S14.5 8 14.5 8s-2.3 4.5-6.5 4.5S1.5 8 1.5 8z" /><circle cx="8" cy="8" r="1.9" /></>,
   layout: <><rect x="2" y="2.5" width="12" height="4" rx="1.2" /><rect x="2" y="9" width="5.4" height="4.5" rx="1.2" /><rect x="8.6" y="9" width="5.4" height="4.5" rx="1.2" /></>,
   expand: <><circle cx="8" cy="8" r="2.2" /><path d="M8 1.8v2.4M8 11.8v2.4M1.8 8h2.4M11.8 8h2.4" /></>,
-  multiply: <><path d="M2 4h3.2M8.4 4H14M2 8h7.6M12.8 8H14M2 12h1.6M6.8 12H14" /><circle cx="6.8" cy="4" r="1.6" /><circle cx="11.2" cy="8" r="1.6" /><circle cx="5.2" cy="12" r="1.6" /></>,
+  multiply: <><circle cx="8" cy="8" r="6.2" /><path d="M9.7 6.3c-.35-.55-.95-.85-1.7-.85-.95 0-1.65.5-1.65 1.2 0 1.7 3.4.85 3.4 2.6 0 .75-.75 1.25-1.75 1.25-.8 0-1.45-.3-1.8-.85M8 4.3v1.15M8 10.55v1.15" /></>,
 };
 
 /** Every number field on the page is one of two widths: on its own in a card, or in a list of fields. */
@@ -31,26 +31,35 @@ const BIDDING_HINT: Record<BiddingStrategy, string> = {
   Dynamic: 'Walmart adjusts your bid in real time to the chance of a sale.',
 };
 
+/** How each strategy is written on the page, as in the marketplace spec. */
+const BIDDING_LABEL: Record<BiddingStrategy, string> = {
+  'Dynamic bids - down only': 'Dynamic bids - down only',
+  'Dynamic bids - up and down': 'Dynamic bids - up and down',
+  'Fixed bids': 'Fixed Bids',
+  Fixed: 'FIXED',
+  Dynamic: 'DYNAMIC',
+};
+
 const PLACEMENT_FIELDS: [keyof PlacementAdjust, string][] = [['top', 'Top of search (first page)'], ['product', 'Product pages'], ['rest', 'Rest of search']];
 
 const BUDGET_TYPES: { id: BudgetType; label: string; hint: string }[] = [
-  { id: 'daily', label: 'Daily', hint: 'The most the new campaigns spend each day.' },
-  { id: 'total', label: 'Total', hint: 'The most the new campaigns spend over their whole run.' },
-  { id: 'both', label: 'Daily and total', hint: 'A daily limit, and a total the campaigns never go past.' },
+  { id: 'daily', label: 'DAILY', hint: 'The most the new campaigns spend each day.' },
+  { id: 'total', label: 'TOTAL', hint: 'The most the new campaigns spend over their whole run.' },
+  { id: 'both', label: 'BOTH', hint: 'A daily limit, and a total the campaigns never go past.' },
 ];
 
-/** Walmart placements. Search in-grid is always on; Buy box is always on for Auto campaigns. */
+/** Walmart placements. Search In-Grid is always on; Buy Box is always on for Auto campaigns. */
 const INCLUSIONS: [keyof PlacementInclusion, string, string][] = [
-  ['searchInGrid', 'Search in-grid', 'Ads shown inside the grid of search results. This placement is always on.'],
-  ['searchCarousel', 'Search carousel', 'Ads shown in a carousel within search results.'],
-  ['itemCarousel', 'Item carousel', 'Ads shown in a carousel on item pages.'],
-  ['buyBox', 'Buy box', 'Ads shown beside the Buy Box on an item page.'],
+  ['searchInGrid', 'Search In-Grid', 'Ads shown inside the grid of search results. This placement is always on.'],
+  ['searchCarousel', 'Search Carousel', 'Ads shown in a carousel within search results.'],
+  ['itemCarousel', 'Item Carousel', 'Ads shown in a carousel on item pages.'],
+  ['buyBox', 'Buy Box', 'Ads shown beside the Buy Box on an item page.'],
 ];
 
 const MULTIPLIER_GROUPS: { key: keyof BidMultipliers; title: string; fields: [string, string][]; when: 'auto' | 'manual' | 'always' }[] = [
-  { key: 'auto', title: 'Placement · Auto campaigns', when: 'auto', fields: [['buyBox', 'Buy box'], ['searchInGrid', 'Search in-grid'], ['homePage', 'Home page'], ['stockUp', 'Stock up']] },
-  { key: 'manual', title: 'Placement · Manual campaigns', when: 'manual', fields: [['buyBox', 'Buy box'], ['searchInGrid', 'Search in-grid']] },
-  { key: 'platform', title: 'Platform', when: 'always', fields: [['desktop', 'Desktop'], ['app', 'App'], ['mobile', 'Mobile']] },
+  { key: 'auto', title: 'Placement Bid Multipliers · AUTO', when: 'auto', fields: [['buyBox', 'Buy Box'], ['searchInGrid', 'Search In-Grid'], ['homePage', 'Home Page'], ['stockUp', 'Stock Up']] },
+  { key: 'manual', title: 'Placement Bid Multipliers · MANUAL', when: 'manual', fields: [['buyBox', 'Buy Box'], ['searchInGrid', 'Search In-Grid']] },
+  { key: 'platform', title: 'Platform Bid Multipliers', when: 'always', fields: [['desktop', 'Desktop'], ['app', 'App'], ['mobile', 'Mobile']] },
 ];
 
 type Patch = (patch: Partial<CcDraft>) => void;
@@ -66,7 +75,7 @@ function GoalCard({ icon, title, htmlFor, optional, hint, error, note, wide, chi
   icon: string; title: string; htmlFor?: string; optional?: boolean; hint: React.ReactNode;
   error?: string | null; note?: React.ReactNode; wide?: boolean; children: React.ReactNode;
 }) {
-  const heading = <>{title}{optional && <span className="ccd-gc-optional"> Optional</span>}</>;
+  const heading = <>{title}{optional && <span className="ccd-gc-optional"> (Optional)</span>}</>;
   return (
     <Panel pad={18} className={`ccd-goal-card${wide ? ' ccd-goal-card--span3' : ''}${error ? ' is-error' : ''}`}>
       <div className="ccd-gc-head">
@@ -81,9 +90,9 @@ function GoalCard({ icon, title, htmlFor, optional, hint, error, note, wide, chi
 }
 
 /** A label and its control on one line; a list of these shares one label column. */
-function FieldRow({ label, htmlFor, children }: { label: React.ReactNode; htmlFor?: string; children: React.ReactNode }) {
+function FieldRow({ label, htmlFor, disabled, children }: { label: React.ReactNode; htmlFor?: string; disabled?: boolean; children: React.ReactNode }) {
   return (
-    <div className="ccd-field-row">
+    <div className={`ccd-field-row${disabled ? ' is-disabled' : ''}`}>
       {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : <span className="ccd-field-row__label">{label}</span>}
       <div className="ccd-field-row__control">{children}</div>
     </div>
@@ -92,13 +101,20 @@ function FieldRow({ label, htmlFor, children }: { label: React.ReactNode; htmlFo
 
 /** A checkbox or a switch with its label, and a grey caption under the label when there is one. */
 function OptionRow({ kind, checked, disabled, label, caption, info, onToggle }: {
-  kind: 'check' | 'switch'; checked: boolean; disabled?: boolean; label: string; caption?: string | null; info?: string; onToggle: () => void;
+  kind: 'check' | 'radio' | 'switch'; checked: boolean; disabled?: boolean; label: string; caption?: string | null; info?: string; onToggle: () => void;
 }) {
   const text = <span className="ccd-option-row__text"><span>{label}</span>{caption && <small>{caption}</small>}</span>;
   if (kind === 'check') {
     return (
       <button type="button" role="checkbox" aria-checked={checked} disabled={disabled} className="ccd-option-row" onClick={onToggle}>
         <Checkbox checked={checked} disabled={disabled} size={16} />{text}
+      </button>
+    );
+  }
+  if (kind === 'radio') {
+    return (
+      <button type="button" role="radio" aria-checked={checked} disabled={disabled} className="ccd-option-row" onClick={onToggle}>
+        <Radio checked={checked} disabled={disabled} />{text}
       </button>
     );
   }
@@ -112,18 +128,18 @@ function OptionRow({ kind, checked, disabled, label, caption, info, onToggle }: 
 }
 
 /** A number with its unit either side, e.g. "$ [ 50 ] per day". */
-function NumberField({ id, value, placeholder, prefix, suffix, step = 1, min = 0, max, error, width = SINGLE_WIDTH, onChange }: {
+function NumberField({ id, value, placeholder, prefix, suffix, step = 1, min = 0, max, error, disabled, width = SINGLE_WIDTH, onChange }: {
   id: string; value: number | null; placeholder: string; prefix?: string; suffix?: string; step?: number; min?: number; max?: number;
-  error?: boolean; width?: number; onChange: (v: number | null) => void;
+  error?: boolean; disabled?: boolean; width?: number; onChange: (v: number | null) => void;
 }) {
   return (
-    <div className="ccd-num-field">
+    <div className={`ccd-num-field${disabled ? ' is-disabled' : ''}`}>
       {prefix && <span className="ccd-num-field__unit">{prefix}</span>}
       <input
-        id={id} className="ccd-input" type="number" inputMode="decimal" step={step} min={min} max={max}
+        id={id} className="ccd-input" type="number" inputMode="decimal" step={step} min={min} max={max} disabled={disabled}
         value={value ?? ''} placeholder={placeholder} aria-invalid={Boolean(error)}
         onChange={(e) => { const raw = e.target.value.trim(); const n = raw === '' ? null : Number(raw); onChange(n !== null && Number.isNaN(n) ? value : n); }}
-        style={{ width, padding: '9px 12px', border: `1px solid ${error ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: `500 14px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' }}
+        style={{ width, padding: '9px 12px', border: `1px solid ${error ? '#e0a5a0' : BORDER}`, borderRadius: 8, font: `500 14px/1.2 ${FONT}`, color: disabled ? '#a3a8b1' : TEXT_PRIMARY, outline: 'none', background: disabled ? '#f6f7f9' : '#fff', cursor: disabled ? 'not-allowed' : undefined }}
       />
       {suffix && <span className="ccd-num-field__unit">{suffix}</span>}
     </div>
@@ -135,7 +151,7 @@ function NumberField({ id, value, placeholder, prefix, suffix, step = 1, min = 0
 function StartDateCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
   const error = draft.startDate && draft.startDate < todayIso() ? "The start date can't be in the past." : null;
   return (
-    <GoalCard icon="date" title="Start date" htmlFor="ccd-obj-start" hint="The day the new campaigns begin running." error={error}>
+    <GoalCard icon="date" title="Start Date" htmlFor="ccd-obj-start" hint="The day the new campaigns begin running." error={error}>
       <input id="ccd-obj-start" type="date" className="ccd-input ccd-date" value={draft.startDate} min={todayIso()} onChange={(e) => onChange({ startDate: e.target.value })} aria-invalid={Boolean(error)} />
     </GoalCard>
   );
@@ -148,7 +164,7 @@ function EndDateCard({ draft, onChange, indefiniteBox }: { draft: CcDraft; onCha
   const error = draft.endDate && draft.endDate < draft.startDate ? 'The end date is before the start date.' : null;
   return (
     <GoalCard
-      icon="date" title="End date" htmlFor="ccd-obj-end" optional error={error}
+      icon="date" title="End Date" htmlFor="ccd-obj-end" optional error={error}
       hint={indefiniteBox ? 'Pick the day the campaigns stop, or let them run until you stop them.' : 'Leave it empty to keep running until you stop the campaigns.'}
     >
       <input id="ccd-obj-end" type="date" className="ccd-input ccd-date" value={draft.endDate} min={draft.startDate || todayIso()} disabled={indefinite} onChange={(e) => onChange({ endDate: e.target.value })} aria-invalid={Boolean(error)} />
@@ -177,9 +193,9 @@ function BiddingCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
   const options = BIDDING_STRATEGIES[draft.marketplace ?? 'amazon'];
   const value = options.includes(draft.biddingStrategy) ? draft.biddingStrategy : options[0];
   return (
-    <GoalCard icon="bidding" title="Bidding strategy" htmlFor="ccd-obj-bidding" hint={BIDDING_HINT[value]}>
+    <GoalCard icon="bidding" title="Strategy" htmlFor="ccd-obj-bidding" hint={BIDDING_HINT[value]}>
       <select id="ccd-obj-bidding" className="ccd-input ccd-date" value={value} onChange={(e) => onChange({ biddingStrategy: e.target.value as BiddingStrategy })}>
-        {options.map((b) => <option key={b} value={b}>{b}</option>)}
+        {options.map((b) => <option key={b} value={b}>{BIDDING_LABEL[b]}</option>)}
       </select>
     </GoalCard>
   );
@@ -197,7 +213,7 @@ function AmazonObjectives({ draft, onChange, issue }: { draft: CcDraft; onChange
       <StartDateCard draft={draft} onChange={onChange} />
       <EndDateCard draft={draft} onChange={onChange} />
       <GoalCard
-        icon="budget" title="Daily budget" htmlFor="ccd-obj-budget" error={budgetError} note={`Minimum ${formatCurrency(cap.minDailyBudget)} a day`}
+        icon="budget" title="Daily Budget" htmlFor="ccd-obj-budget" error={budgetError} note={`Minimum ${formatCurrency(cap.minDailyBudget)} a day`}
         hint="How much you are happy to spend across all the new campaigns each day."
       >
         <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" suffix="per day" error={Boolean(budgetError)} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
@@ -206,7 +222,7 @@ function AmazonObjectives({ draft, onChange, issue }: { draft: CcDraft; onChange
       <AcosCard draft={draft} onChange={onChange} />
       <BiddingCard draft={draft} onChange={onChange} />
       <GoalCard
-        icon="layout" title="Adjust bids by placement" optional error={badPlacement ? 'Enter a value from 0 to 900.' : null}
+        icon="layout" title="Adjust Placement Bids" optional error={badPlacement ? 'Enter a value from 0 to 900.' : null}
         hint="Raise your bid where ads show, from 0% to 900%. Leave a field empty for no change."
       >
         <div className="ccd-field-list">
@@ -243,29 +259,26 @@ function WalmartBudgetCard({ draft, onChange, issue }: { draft: CcDraft; onChang
       note={usesDaily ? `Minimum ${formatCurrency(cap.minDailyBudget)} a day` : undefined}
     >
       <div className="ccd-field-list">
-        <FieldRow label="Budget type" htmlFor="ccd-obj-btype">
-          <select id="ccd-obj-btype" className="ccd-input ccd-field-select" value={draft.budgetType} onChange={(e) => onChange({ budgetType: e.target.value as BudgetType })}>
-            {BUDGET_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
-          </select>
+        <span id="ccd-obj-btype" className="ccd-field-row__label">Budget Type</span>
+        <div className="ccd-option-list ccd-option-list--inline" role="radiogroup" aria-labelledby="ccd-obj-btype">
+          {BUDGET_TYPES.map((t) => (
+            <OptionRow key={t.id} kind="radio" checked={draft.budgetType === t.id} label={t.label} onToggle={() => onChange({ budgetType: t.id })} />
+          ))}
+        </div>
+        {/* Every row stays on the card whatever the type; the ones it does not use are locked, so the card never changes size. */}
+        <FieldRow label="Daily Budget" htmlFor="ccd-obj-budget" disabled={!usesDaily}>
+          <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" width={LIST_WIDTH} error={Boolean(dailyError)} disabled={!usesDaily} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
         </FieldRow>
-        {usesDaily && (
-          <FieldRow label="Daily budget" htmlFor="ccd-obj-budget">
-            <NumberField id="ccd-obj-budget" value={draft.dailyBudget} placeholder="50" prefix="$" width={LIST_WIDTH} error={Boolean(dailyError)} onChange={(n) => onChange({ dailyBudget: Math.max(0, n ?? 0) })} />
-          </FieldRow>
-        )}
-        {usesTotal && (
-          <FieldRow label="Total budget" htmlFor="ccd-obj-total">
-            <NumberField id="ccd-obj-total" value={draft.totalBudget} placeholder="1500" prefix="$" width={LIST_WIDTH} error={Boolean(totalError)} onChange={(n) => onChange({ totalBudget: n })} />
-          </FieldRow>
-        )}
-        {usesDaily && (
-          <FieldRow label={<>Roll over unused <span className="ccd-tm-info" title="Carries what wasn't spent yesterday into today's daily budget."><InfoIcon size={13} color="#8a909b" /></span></>}>
-            <div className="ccd-seg" role="radiogroup" aria-label="Roll over unspent daily budget">
-              <button type="button" role="radio" aria-checked={draft.budgetRollover} className={draft.budgetRollover ? 'is-on' : ''} onClick={() => onChange({ budgetRollover: true })}>Yes</button>
-              <button type="button" role="radio" aria-checked={!draft.budgetRollover} disabled title="Not available at the moment">No</button>
-            </div>
-          </FieldRow>
-        )}
+        <FieldRow label="TOTAL Budget" htmlFor="ccd-obj-total" disabled={!usesTotal}>
+          <NumberField id="ccd-obj-total" value={draft.totalBudget} placeholder="1500" prefix="$" width={LIST_WIDTH} error={Boolean(totalError)} disabled={!usesTotal} onChange={(n) => onChange({ totalBudget: n })} />
+        </FieldRow>
+        {/* Always Yes for now: shown so the setting is known, but it can't be changed yet. */}
+        <FieldRow label={<>Rollover <span className="ccd-tm-info" title="The indicator to suggest if the unspent daily budget from the previous day should be carried forward to next day’s daily budget."><InfoIcon size={13} color="#8a909b" /></span></>} disabled>
+          <div className="ccd-seg" role="radiogroup" aria-label="Rollover" title="Not available to change at the moment">
+            <button type="button" role="radio" aria-checked className="is-on" disabled>YES</button>
+            <button type="button" role="radio" aria-checked={false} disabled>NO</button>
+          </div>
+        </FieldRow>
       </div>
     </GoalCard>
   );
@@ -273,9 +286,9 @@ function WalmartBudgetCard({ draft, onChange, issue }: { draft: CcDraft; onChang
 
 function ExpandedTargetingCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
   const et = draft.expandedTargeting;
-  const options: [keyof typeof et, string][] = [['brandTerms', 'Brand term targeting'], ['complementary', 'Complementary product targeting']];
+  const options: [keyof typeof et, string][] = [['brandTerms', 'Brand Term Targeting'], ['complementary', 'Complementary Product Targeting']];
   return (
-    <GoalCard icon="expand" title="Expanded targeting" hint="Extra reach for the Auto campaigns, on top of their own targeting.">
+    <GoalCard icon="expand" title="Expanded Targeting" hint="Extra reach for the Auto campaigns, on top of their own targeting.">
       <div className="ccd-option-list">
         {options.map(([key, text]) => (
           <OptionRow key={key} kind="check" checked={et[key]} label={text} onToggle={() => onChange({ expandedTargeting: { ...et, [key]: !et[key] } })} />
@@ -311,27 +324,29 @@ function MultipliersCard({ draft, onChange, hasAuto, hasManual }: { draft: CcDra
   const bad = groups.some((g) => g.fields.some(([field]) => { const v = bm[g.key][field]; return v < 0 || v > 900; }));
   return (
     <GoalCard
-      icon="multiply" title="Bid multipliers" optional wide error={bad ? 'Enter a value from 0 to 900.' : null}
+      icon="multiply" title="Bid Multipliers" optional wide error={bad ? 'Enter a value from 0 to 900.' : null}
       hint="Raise bids for a placement or a device, from 0% to 900%. 0% leaves the bid as it is."
     >
-      <div className="ccd-gc-groups">
+      {/* One row a group: its name on the left, its fields across, each label over its box. */}
+      <div className="ccd-mult">
         {groups.map((g) => (
-          <fieldset key={g.key} className="ccd-gc-group">
-            <legend>{g.title}</legend>
-            <div className="ccd-field-list">
+          <div key={g.key} className="ccd-mult-row" role="group" aria-labelledby={`ccd-mult-${g.key}`}>
+            <span id={`ccd-mult-${g.key}`} className="ccd-mult-name">{g.title}</span>
+            <div className="ccd-mult-fields">
               {g.fields.map(([field, text]) => {
                 const v = bm[g.key][field];
                 return (
-                  <FieldRow key={field} label={text} htmlFor={`ccd-mult-${g.key}-${field}`}>
+                  <div key={field} className="ccd-mult-field">
+                    <label htmlFor={`ccd-mult-${g.key}-${field}`}>{text}</label>
                     <NumberField
                       id={`ccd-mult-${g.key}-${field}`} value={v} placeholder="0" suffix="%" min={0} max={900} width={LIST_WIDTH} error={v < 0 || v > 900}
                       onChange={(n) => onChange({ bidMultipliers: { ...bm, [g.key]: { ...bm[g.key], [field]: n ?? 0 } } })}
                     />
-                  </FieldRow>
+                  </div>
                 );
               })}
             </div>
-          </fieldset>
+          </div>
         ))}
       </div>
     </GoalCard>

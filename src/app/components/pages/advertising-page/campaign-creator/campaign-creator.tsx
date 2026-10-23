@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, structureCounts, targetingBlocked, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, structureCounts, targetingBlocked, keywordsBlocked, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -132,7 +132,7 @@ export default function CampaignCreator() {
   }).map((g) => g.id));
 
   // A group is done on a page once it has what the page asks for. Keywords are optional, so there it means some were added.
-  const notDone = step === 'keywords' ? new Set(scopes.filter((g) => g.settings.keywordTargets.length + g.settings.negativeKeywords.length === 0).map((g) => g.id)) : pendingScopes;
+  const notDone = step === 'keywords' ? new Set(scopes.filter((g) => keywordsBlocked(g.settings, draft.marketplace)).map((g) => g.id)) : pendingScopes;
   const completedScopes = scopes.length - notDone.size;
 
   // Copy this page's setup from the group being set up to the groups ticked in the dropdown, with one step of undo.
@@ -220,7 +220,7 @@ export default function CampaignCreator() {
     entry: { next: () => setModeOpen(true), nextLabel: 'Get started', disabled: !draft.adType },
     activity: { back: () => goTo('entry'), backLabel: 'Create campaign' },
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
-    keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue' },
+    keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue', disabled: gateScopes.some((g) => keywordsBlocked(g.settings, draft.marketplace)) },
     objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => objectivesBlocked(g.settings, draft.marketplace)) },
     targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => targetingBlocked(g.settings)) },
     structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
@@ -246,7 +246,7 @@ export default function CampaignCreator() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <CampaignSummaryProvider value={{ step, draft: step === 'products' ? draft : viewDraft, selectedProducts: step === 'products' ? selectedProducts : viewProducts, onJump: goTo, steps: NUMBERED_STEPS, furthestIndex, totalProducts: selectedProducts.length, scopes: ['keywords', 'objectives', 'targeting', 'structure'].includes(step) ? scopes : undefined, activeScopeId: activeScopeId ?? undefined, pendingScopes: notDone, onScopeChange: setScopeId, onApplyToGroups: applyToGroups, onUndoApply: undoApply, appliedCount, issueStep: issueOpen ? issue?.step : undefined }}>
+    <CampaignSummaryProvider value={{ step, draft: step === 'products' ? draft : viewDraft, selectedProducts: step === 'products' ? selectedProducts : viewProducts, onJump: goTo, steps: NUMBERED_STEPS, furthestIndex, totalProducts: selectedProducts.length, groupCount: draft.productGroups.length, scopes: ['keywords', 'objectives', 'targeting', 'structure'].includes(step) ? scopes : undefined, activeScopeId: activeScopeId ?? undefined, pendingScopes: notDone, onScopeChange: setScopeId, onApplyToGroups: applyToGroups, onUndoApply: undoApply, appliedCount, issueStep: issueOpen ? issue?.step : undefined }}>
     <div ref={rootRef} className="ccd-root" style={{ height: rootHeight ?? '100%', display: 'flex', background: 'var(--ccd-page-bg)', fontFamily: 'Inter, sans-serif' }}>
       <CcGlobalStyles />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>

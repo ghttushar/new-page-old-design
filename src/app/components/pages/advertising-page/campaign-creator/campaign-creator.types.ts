@@ -367,6 +367,8 @@ export interface CcNegative {
   kind: 'keyword' | 'product';
   /** Only negative keywords have a match type; a missing one reads as Negative exact. */
   matchType?: NegativeMatch;
+  /** Amazon can set a negative on the whole campaign; otherwise it sits on the ad group. */
+  level?: NegativeLevel;
 }
 
 export interface CcAdGroup {
@@ -576,12 +578,75 @@ export const STEP_ORDER: CcStepId[] = ['entry', 'activity', 'products', 'targeti
 export type KeywordMatch = 'broad' | 'phrase' | 'exact';
 export interface KeywordEntry { id: string; text: string; match: KeywordMatch; bid: number; enabled: boolean }
 
-/** A negative keyword added on the Keywords step. It is applied to every campaign. */
-export interface NegativeKeywordEntry { id: string; text: string; match: NegativeMatch; enabled: boolean }
+/** A negative keyword added on the Keywords step. It is applied to every campaign that can take it. */
+export interface NegativeKeywordEntry { id: string; text: string; match: NegativeMatch; enabled: boolean; level?: NegativeLevel }
+
+/** Where a negative keyword applies. Walmart only has ad group negatives; Amazon has both. */
+export type NegativeLevel = 'campaign' | 'ad-group';
 
 export const KEYWORD_LIMIT = 1000;
 export const NEGATIVE_KEYWORD_LIMIT = 10000;
 export const MIN_KEYWORD_BID = 0.02;
+
+const KEYWORD_STRATEGIES: TargetingStrategyId[] = ['exact', 'phrase', 'broad', 'brand', 'competitor'];
+
+/**
+ * What the Keywords step allows for a plan (or group), from its marketplace, its targeting and its bidding:
+ * - Keywords are required by Manual campaigns (on Amazon, by keyword targeting), not applicable to Automatic ones, and
+ *   not used by Amazon product targeting.
+ * - Negative keywords are optional, except on Walmart Automatic campaigns with Dynamic bidding, which can't take them.
+ */
+export interface KeywordRules {
+  keywords: 'required' | 'not-applicable' | 'not-used';
+  keywordNote: string;
+  negatives: 'available' | 'manual-only' | 'unavailable';
+  negativeNote: string;
+  /** The match types, in the order the marketplace lists them. */
+  keywordMatches: KeywordMatch[];
+  negativeLevels: NegativeLevel[];
+}
+
+export function keywordRules(s: Pick<CcDraft, 'targetingStrategies' | 'biddingStrategy'>, marketplace: Marketplace | null): KeywordRules {
+  const strategies = s.targetingStrategies ?? [];
+  const hasAuto = strategies.includes('auto');
+  const hasManual = strategies.some((t) => t !== 'auto');
+  const keywordTargeting = strategies.some((t) => KEYWORD_STRATEGIES.includes(t));
+  if (marketplace === 'walmart') {
+    const dynamicAuto = hasAuto && s.biddingStrategy === 'Dynamic';
+    return {
+      keywords: hasManual ? 'required' : 'not-applicable',
+      keywordNote: hasManual
+        ? 'Required for Manual campaigns. Pick the keywords and set a bid for each match type.'
+        : 'Not applicable to Automatic campaigns. Walmart picks the keywords; bids are set per item.',
+      negatives: !dynamicAuto ? 'available' : hasManual ? 'manual-only' : 'unavailable',
+      negativeNote: !dynamicAuto
+        ? 'Optional. Negatives sit on the ad group, with an exact or phrase match and no bid.'
+        : hasManual
+          ? "Optional, for the Manual campaigns only: Automatic campaigns with Dynamic bidding can't take them. Switch to Fixed bidding on Objectives to use them on Automatic too."
+          : 'Not available for Automatic campaigns with Dynamic bidding. Switch to Fixed bidding on Objectives to use them.',
+      keywordMatches: ['exact', 'phrase', 'broad'],
+      negativeLevels: ['ad-group'],
+    };
+  }
+  const productTargeting = strategies.some((t) => t === 'product' || t === 'category');
+  return {
+    keywords: keywordTargeting ? 'required' : hasManual ? 'not-used' : 'not-applicable',
+    keywordNote: keywordTargeting
+      ? `Required for keyword targeting. Pick the keywords and set a bid for each match type: broad, phrase, exact.${productTargeting ? " Product targets don't need them." : ''}`
+      : hasManual
+        ? 'Not used for product targeting. Its targets are products, with at least one product or category target.'
+        : 'Not applicable to Automatic campaigns. Amazon picks the keywords across four targeting groups: close, loose, substitutes and complements.',
+    negatives: 'available',
+    negativeNote: 'Optional. Set them on the campaign or the ad group, with an exact or phrase match and no bid.',
+    keywordMatches: ['broad', 'phrase', 'exact'],
+    negativeLevels: ['campaign', 'ad-group'],
+  };
+}
+
+/** Whether the Keywords page can't be left yet: keywords are required and none is switched on. */
+export function keywordsBlocked(s: Pick<CcDraft, 'targetingStrategies' | 'biddingStrategy' | 'keywordTargets'>, marketplace: Marketplace | null) {
+  return keywordRules(s, marketplace).keywords === 'required' && !s.keywordTargets.some((k) => k.enabled);
+}
 
 /** Objectives beyond Target ACOS and Daily budget — all optional. */
 export type ExtraObjectiveId = 'roas' | 'maxCpc' | 'cvr' | 'monthlyCap';

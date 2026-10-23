@@ -13,6 +13,8 @@ export type CampaignSummaryContextValue = {
   furthestIndex?: number;
   /** Every selected product, whichever group the bar is showing. */
   totalProducts?: number;
+  /** How many product groups the products were put in. */
+  groupCount?: number;
   /** Product groups: set when the products have been grouped, so the products tile becomes a group dropdown. */
   scopes?: Scope[];
   activeScopeId?: string;

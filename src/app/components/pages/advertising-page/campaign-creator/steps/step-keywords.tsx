@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import {
-  KEYWORD_LIMIT, MIN_KEYWORD_BID, NEGATIVE_KEYWORD_LIMIT,
-  type CcDraft, type KeywordEntry, type KeywordMatch, type NegativeKeywordEntry, type NegativeMatch,
+  KEYWORD_LIMIT, MIN_KEYWORD_BID, NEGATIVE_KEYWORD_LIMIT, keywordRules,
+  type CcDraft, type KeywordEntry, type KeywordMatch, type NegativeKeywordEntry, type NegativeLevel, type NegativeMatch,
 } from '../campaign-creator.types';
 import { Checkbox, InfoIcon, SearchIcon, StepHeading } from '../campaign-creator-ui';
 import { NumField } from './preview-cells';
@@ -27,9 +27,14 @@ const KEYWORD_MATCHES: { id: KeywordMatch; label: string }[] = [
   { id: 'broad', label: 'Broad' }, { id: 'phrase', label: 'Phrase' }, { id: 'exact', label: 'Exact' },
 ];
 const NEGATIVE_MATCHES: { id: NegativeMatch; label: string }[] = [
-  { id: 'negative-phrase', label: 'Negative phrase' }, { id: 'negative-exact', label: 'Negative exact' },
+  { id: 'negative-exact', label: 'Negative exact' }, { id: 'negative-phrase', label: 'Negative phrase' },
 ];
 const MATCH_TEXT: Record<string, string> = Object.fromEntries([...KEYWORD_MATCHES, ...NEGATIVE_MATCHES].map((m) => [m.id, m.label]));
+const LEVEL_TEXT: Record<NegativeLevel, string> = { campaign: 'Campaign', 'ad-group': 'Ad group' };
+
+/** How each list reads in "Add as": whether this plan needs it, may use it, or can't. */
+const KEYWORD_STATUS = { required: 'Required', 'not-applicable': 'Not applicable', 'not-used': 'Not used' };
+const NEGATIVE_STATUS = { available: 'Optional', 'manual-only': 'Optional', unavailable: 'Not available' };
 
 const DEFAULT_BID = 0.02;
 const plural = (n: number, one: string) => `${n.toLocaleString()} ${n === 1 ? one : `${one}s`}`;
@@ -48,8 +53,14 @@ function Switch({ on, label, onToggle }: { on: boolean; label: string; onToggle:
 
 export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onChange: (patch: Partial<CcDraft>) => void }) {
   const uid = useId();
-  const [mode, setMode] = useState<Mode>('keyword');
-  const [tab, setTab] = useState<Mode>('keyword');
+  // What this plan's targeting and bidding allow. A list it can't use stays on the page, locked, with the reason.
+  const rules = keywordRules(draft, draft.marketplace);
+  const off: Record<Mode, boolean> = { keyword: rules.keywords !== 'required', negative: rules.negatives === 'unavailable' };
+  const firstMode: Mode = off.keyword && !off.negative ? 'negative' : 'keyword';
+  const [mode, setMode] = useState<Mode>(firstMode);
+  const [tab, setTab] = useState<Mode>(firstMode);
+  const [level, setLevel] = useState<NegativeLevel>('ad-group');
+  const negativeLevel = rules.negativeLevels.includes(level) ? level : rules.negativeLevels[rules.negativeLevels.length - 1];
   const [entry, setEntry] = useState('');
   const [staged, setStaged] = useState<string[]>([]);
   const [keywordMatches, setKeywordMatches] = useState<KeywordMatch[]>(['broad', 'phrase', 'exact']);
@@ -62,7 +73,9 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
   const used = mode === 'keyword' ? draft.keywordTargets.length : draft.negativeKeywords.length;
   const matches: string[] = mode === 'keyword' ? keywordMatches : negativeMatches;
   const bidOk = mode === 'negative' || bid >= MIN_KEYWORD_BID;
-  const canAdd = staged.length > 0 && matches.length > 0 && bidOk;
+  const locked = off[mode];
+  const canAdd = !locked && staged.length > 0 && matches.length > 0 && bidOk;
+  const keywordOptions = rules.keywordMatches.map((id) => KEYWORD_MATCHES.find((m) => m.id === id)!);
 
   const stage = (raw: string) => {
     const terms = splitTerms(raw);
@@ -99,7 +112,7 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
     if (mode === 'keyword') {
       const seen = new Set(draft.keywordTargets.map((k) => `${k.text.toLowerCase()}|${k.match}`));
       const fresh: KeywordEntry[] = [];
-      staged.forEach((text) => keywordMatches.forEach((match) => {
+      staged.forEach((text) => rules.keywordMatches.filter((m) => keywordMatches.includes(m)).forEach((match) => {
         const key = `${text.toLowerCase()}|${match}`;
         if (seen.has(key)) { duplicates += 1; return; }
         if (fresh.length >= room) { overLimit += 1; return; }
@@ -116,7 +129,7 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
         if (seen.has(key)) { duplicates += 1; return; }
         if (fresh.length >= room) { overLimit += 1; return; }
         seen.add(key);
-        fresh.push({ id: newId(), text, match, enabled: true });
+        fresh.push({ id: newId(), text, match, enabled: true, level: negativeLevel });
       }));
       if (fresh.length) onChange({ negativeKeywords: [...draft.negativeKeywords, ...fresh] });
       report(fresh.length, duplicates, overLimit);
@@ -163,14 +176,15 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
           <div className="ccd-kw-field">
             <label className="ccd-tm-label" htmlFor={`${uid}-mode`}>Add as</label>
             <select id={`${uid}-mode`} className="ccd-tm-select ccd-input" value={mode} onChange={(e) => switchMode(e.target.value as Mode)}>
-              <option value="keyword">{MODES.keyword.label}</option>
-              <option value="negative">{MODES.negative.label}</option>
+              <option value="keyword">{MODES.keyword.label} ({KEYWORD_STATUS[rules.keywords]})</option>
+              <option value="negative">{MODES.negative.label} ({NEGATIVE_STATUS[rules.negatives]})</option>
             </select>
+            <p className={`ccd-kw-rule${locked ? ' is-off' : ''}`}>{mode === 'keyword' ? rules.keywordNote : rules.negativeNote}</p>
           </div>
 
           <div className="ccd-kw-field">
             <input
-              className="ccd-kw-input ccd-input" value={entry} placeholder={def.placeholder} aria-label={def.placeholder} spellCheck={false}
+              className="ccd-kw-input ccd-input" value={entry} placeholder={def.placeholder} aria-label={def.placeholder} spellCheck={false} disabled={locked}
               onChange={(e) => { setEntry(e.target.value); setNotice(null); }}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); stage(entry); } }}
               onPaste={(e) => {
@@ -194,19 +208,30 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
           <div className="ccd-kw-row">
             <span className="ccd-kw-rowlabel">Match type <i aria-hidden>*</i></span>
             <div className="ccd-tm-checks" role="group" aria-label="Match type">
-              {(mode === 'keyword' ? KEYWORD_MATCHES : NEGATIVE_MATCHES).map((m) => (
-                <button key={m.id} type="button" role="checkbox" aria-checked={matches.includes(m.id)} className="ccd-tm-check" onClick={() => toggleMatch(m.id)}>
-                  <Checkbox checked={matches.includes(m.id)} size={16} />{m.label}
+              {(mode === 'keyword' ? keywordOptions : NEGATIVE_MATCHES).map((m) => (
+                <button key={m.id} type="button" role="checkbox" aria-checked={matches.includes(m.id)} className="ccd-tm-check" disabled={locked} onClick={() => toggleMatch(m.id)}>
+                  <Checkbox checked={matches.includes(m.id)} disabled={locked} size={16} />{m.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {mode === 'keyword' && (
+          {/* Keywords take a bid; negatives take a level instead (they never have a bid). One row either way. */}
+          {mode === 'keyword' ? (
             <div className="ccd-kw-row">
               <span className="ccd-kw-rowlabel">Custom bid <i aria-hidden>*</i></span>
-              <NumField value={bid} prefix="$" width={64} label="Custom bid" invalid={!bidOk} onCommit={setBid} />
-              {!bidOk && <span className="ccd-kw-err" role="alert">Minimum bid is ${MIN_KEYWORD_BID.toFixed(2)}</span>}
+              <NumField value={bid} prefix="$" width={64} label="Custom bid" invalid={!bidOk && !locked} disabled={locked} onCommit={setBid} />
+              {!bidOk && !locked && <span className="ccd-kw-err" role="alert">Minimum bid is ${MIN_KEYWORD_BID.toFixed(2)}</span>}
+            </div>
+          ) : (
+            <div className="ccd-kw-row">
+              <label className="ccd-kw-rowlabel" htmlFor={`${uid}-level`}>Level</label>
+              <select
+                id={`${uid}-level`} className="ccd-tm-select ccd-input ccd-kw-level" value={negativeLevel}
+                disabled={locked || rules.negativeLevels.length < 2} onChange={(e) => setLevel(e.target.value as NegativeLevel)}
+              >
+                {(['campaign', 'ad-group'] as NegativeLevel[]).filter((l) => rules.negativeLevels.includes(l)).map((l) => <option key={l} value={l}>{LEVEL_TEXT[l]}</option>)}
+              </select>
             </div>
           )}
 
@@ -243,7 +268,7 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
 
             <div className="ccd-kw-table ccd-scroll">
               <div className={`ccd-kw-th ccd-kw-grid ccd-kw-grid--${tab}`}>
-                <span>Status</span><span>Keyword</span><span>Match type</span>{tab === 'keyword' && <span>Bid</span>}<span>Clear</span>
+                <span>Status</span><span>Keyword</span><span>Match type</span>{tab === 'keyword' ? <span>Bid</span> : <span>Level</span>}<span>Clear</span>
               </div>
               <div className="ccd-kw-body">
                 {tab === 'keyword' && keywordRows.map((k) => (
@@ -260,13 +285,17 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
                     <span><Switch on={k.enabled} label={`${k.text} ${MATCH_TEXT[k.match]} status`} onToggle={() => patchNegative(k.id, { enabled: !k.enabled })} /></span>
                     <span className="ccd-kw-term" title={k.text}>{k.text}</span>
                     <span>{MATCH_TEXT[k.match]}</span>
+                    <span>{LEVEL_TEXT[k.level ?? 'ad-group']}</span>
                     <span><button type="button" className="ccd-kw-del" aria-label={`Remove ${k.text} ${MATCH_TEXT[k.match]}`} onClick={() => onChange({ negativeKeywords: draft.negativeKeywords.filter((x) => x.id !== k.id) })}><TrashIcon /></button></span>
                   </div>
                 ))}
                 {rowsForTab.length === 0 && (
                   <div className="ccd-kw-empty">
                     <strong>{total === 0 ? `No ${MODES[tab].tab.toLowerCase()} added yet` : 'Nothing matches that search'}</strong>
-                    <span>{total === 0 ? 'Enter keywords on the left and choose Add. You can also skip this step.' : 'Clear the search to see everything you added.'}</span>
+                    <span>{total > 0 ? 'Clear the search to see everything you added.'
+                      : off[tab] ? (tab === 'keyword' ? rules.keywordNote : rules.negativeNote)
+                      : tab === 'keyword' ? 'Enter keywords on the left and choose Add. These campaigns need at least one to continue.'
+                      : 'Enter keywords on the left and choose Add. Negatives are optional, so you can also skip them.'}</span>
                   </div>
                 )}
               </div>
