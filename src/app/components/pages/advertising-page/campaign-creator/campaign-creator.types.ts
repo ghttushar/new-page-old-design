@@ -624,6 +624,11 @@ export const NO_BID_MULTIPLIERS: BidMultipliers = {
   platform: { desktop: 0, app: 0, mobile: 0 },
 };
 
+/** Whether the Targeting page can't be left yet: nothing is picked, or Auto is on with no Auto type picked. */
+export function targetingBlocked(s: Pick<CcDraft, 'targetingStrategies' | 'autoTypes'>) {
+  return s.targetingStrategies.length === 0 || (s.targetingStrategies.includes('auto') && s.autoTypes.length === 0);
+}
+
 /**
  * Whether the Objectives page can't be left yet: a budget the campaigns use is missing (Amazon always uses the daily
  * one; Walmart the daily, the total, or both), a total below the daily budget, or an end date before the start.
@@ -794,7 +799,7 @@ export const EMPTY_DRAFT: CcDraft = {
   dailyBudget: 50,
   extraObjectives: NO_EXTRA_OBJECTIVES,
   targetingStrategies: [],
-  autoTypes: ['close-match', 'loose-match'],
+  autoTypes: [],
   structureId: null,
   customPrompt: '',
   customCampaigns: null,

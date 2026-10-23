@@ -47,7 +47,9 @@ const useAdsAccountSubHeader = (
   showAdTypeDropdown: boolean,
   getUrl?: (marketplace: MarketplaceEnum, adType: AdType) => string,
   onChange?: (marketplace: MarketplaceEnum, adType: AdType) => string,
-  dateRange?: IAdsSubHeaderDateRange
+  dateRange?: IAdsSubHeaderDateRange,
+  /** Shows the Marketplace dropdown but locks it, for steps where the account can no longer change. */
+  marketplaceDisabled = false
 ) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -157,7 +159,7 @@ const useAdsAccountSubHeader = (
         ),
         prefixElement: selectedAdvertisingAccount.prefixElement,
         flagElement: selectedAdvertisingAccount.flagElement,
-        disabled: title === PageTitleEnum.RULES_CREATION,
+        disabled: marketplaceDisabled || title === PageTitleEnum.RULES_CREATION,
       },
     ];
     if (showAdTypeDropdown) {
@@ -201,6 +203,7 @@ const useAdsAccountSubHeader = (
     titleTooltip,
     showAdTypeDropdown,
     dateRange,
+    marketplaceDisabled,
   ]);
 
   return selectedAdvertisingAccount;

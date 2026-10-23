@@ -17,8 +17,8 @@ type OnMarketplace = (marketplace: Marketplace) => void;
 const asMarketplace = (m?: string): Marketplace | null => (m === 'amazon' || m === 'walmart' ? m : null);
 
 /** The real accounts: the same Marketplace dropdown and account switching as Campaign Manager. */
-function AccountsHeader({ onMarketplace }: { onMarketplace: OnMarketplace }) {
-  const account = useAdsAccountSubHeader(PageTitleEnum.CAMPAIGN_CREATOR, PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR, false);
+function AccountsHeader({ disabled, onMarketplace }: { disabled: boolean; onMarketplace: OnMarketplace }) {
+  const account = useAdsAccountSubHeader(PageTitleEnum.CAMPAIGN_CREATOR, PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR, false, undefined, undefined, undefined, disabled);
   const marketplace = asMarketplace(account?.marketplace);
   useEffect(() => {
     if (marketplace) onMarketplace(marketplace);
@@ -42,7 +42,7 @@ const MOCK_ACCOUNTS: IDropdownItem<string>[] = [
 ];
 
 /** The same Marketplace dropdown, filled with one Amazon and one Walmart stand-in account. */
-function MockAccountsHeader({ value, onMarketplace }: { value: Marketplace | null; onMarketplace: OnMarketplace }) {
+function MockAccountsHeader({ value, disabled, onMarketplace }: { value: Marketplace | null; disabled: boolean; onMarketplace: OnMarketplace }) {
   const dispatch = useAppDispatch();
   // Starts on the marketplace the creator already has, so coming back to this page keeps the choice.
   const [selected, setSelected] = useState(() => MOCK_ACCOUNTS.find((a) => a.marketplace === value) ?? MOCK_ACCOUNTS[0]);
@@ -60,23 +60,24 @@ function MockAccountsHeader({ value, onMarketplace }: { value: Marketplace | nul
         options: MOCK_ACCOUNTS,
         prefixElement: selected.prefixElement,
         flagElement: selected.flagElement,
+        disabled,
       }],
     }));
     const marketplace = asMarketplace(selected.marketplace);
     if (marketplace) onMarketplace(marketplace);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, selected]);
+  }, [dispatch, selected, disabled]);
 
   return null;
 }
 
 /**
- * The Marketplace dropdown in the page header, as on Campaign Manager. Shown while choosing the ad format; the account
- * picked there decides which marketplace's products the creator works with.
+ * The Marketplace dropdown in the page header, as on Campaign Manager. Shown on every step but only open while choosing
+ * the ad format; the account picked there decides which marketplace's products the creator works with.
  */
-export default function MarketplaceHeader({ value, onMarketplace }: { value: Marketplace | null; onMarketplace: OnMarketplace }) {
+export default function MarketplaceHeader({ value, disabled, onMarketplace }: { value: Marketplace | null; disabled: boolean; onMarketplace: OnMarketplace }) {
   const accounts = useAppSelector(selectAdvertisingAccountOptions);
   return accounts && accounts.length > 0
-    ? <AccountsHeader onMarketplace={onMarketplace} />
-    : <MockAccountsHeader value={value} onMarketplace={onMarketplace} />;
+    ? <AccountsHeader disabled={disabled} onMarketplace={onMarketplace} />
+    : <MockAccountsHeader value={value} disabled={disabled} onMarketplace={onMarketplace} />;
 }

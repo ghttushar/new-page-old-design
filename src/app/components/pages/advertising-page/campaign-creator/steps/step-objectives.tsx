@@ -16,7 +16,7 @@ const icons: Record<string, React.ReactNode> = {
   eye: <><path d="M1.5 8s2.3-4.5 6.5-4.5S14.5 8 14.5 8s-2.3 4.5-6.5 4.5S1.5 8 1.5 8z" /><circle cx="8" cy="8" r="1.9" /></>,
   layout: <><rect x="2" y="2.5" width="12" height="4" rx="1.2" /><rect x="2" y="9" width="5.4" height="4.5" rx="1.2" /><rect x="8.6" y="9" width="5.4" height="4.5" rx="1.2" /></>,
   expand: <><circle cx="8" cy="8" r="2.2" /><path d="M8 1.8v2.4M8 11.8v2.4M1.8 8h2.4M11.8 8h2.4" /></>,
-  multiply: <><path d="M4 4l8 8M12 4l-8 8" /></>,
+  multiply: <><path d="M2 4h3.2M8.4 4H14M2 8h7.6M12.8 8H14M2 12h1.6M6.8 12H14" /><circle cx="6.8" cy="4" r="1.6" /><circle cx="11.2" cy="8" r="1.6" /><circle cx="5.2" cy="12" r="1.6" /></>,
 };
 
 /** Every number field on the page is one of two widths: on its own in a card, or in a list of fields. */
@@ -339,11 +339,11 @@ function MultipliersCard({ draft, onChange, hasAuto, hasManual }: { draft: CcDra
 }
 
 function WalmartObjectives({ draft, onChange, issue }: { draft: CcDraft; onChange: Patch; issue: Issue }) {
-  // Which campaigns this plan (or group) makes decides the Auto-only and Manual-only settings.
-  const strategies = draft.targetingStrategies ?? [];
+  // The campaign choice (Auto, Manual, or both) decides the Auto-only and Manual-only settings: with both, every
+  // setting shows, whatever strategies are ticked on Targeting.
   const mode = draft.campaignMode ?? 'both';
-  const hasAuto = strategies.length ? strategies.includes('auto') : mode !== 'manual';
-  const hasManual = strategies.length ? strategies.some((s) => s !== 'auto') : mode !== 'auto';
+  const hasAuto = mode !== 'manual';
+  const hasManual = mode !== 'auto';
   // Three cards a row, every row full. With Auto, Expanded targeting closes row two and the placements take a row of
   // their own; without it, the placements close row two as a card like the rest.
   return (

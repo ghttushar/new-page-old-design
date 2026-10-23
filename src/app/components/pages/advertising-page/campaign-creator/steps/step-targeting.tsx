@@ -1,7 +1,6 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
-import { useEffect, useMemo } from 'react';
 import {
-  AUTO_TYPE_CATALOG, MARKETPLACE_CAPABILITY, TARGETING_STRATEGY_CATALOG, recommendTargetingStrategies,
+  AUTO_TYPE_CATALOG, MARKETPLACE_CAPABILITY, TARGETING_STRATEGY_CATALOG,
   type AutoTypeId, type CcDraft, type CcProduct, type TargetingStrategyId,
 } from '../campaign-creator.types';
 import { Checkbox, FONT, GOOD, StepHeading, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
@@ -83,20 +82,11 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
   draft: CcDraft; selectedProducts: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
 }) {
   const supported = draft.marketplace ? MARKETPLACE_CAPABILITY[draft.marketplace].targetingStrategies : [];
-  const recommended = useMemo(() => (draft.marketplace ? recommendTargetingStrategies(selectedProducts, draft.marketplace) : []), [selectedProducts, draft.marketplace]);
-
-  // Pre-fill the recommendation once, the first time this step is reached with nothing selected yet.
-  useEffect(() => {
-    if (draft.targetingStrategies.length === 0 && recommended.length > 0) {
-      onChange({ targetingStrategies: recommended });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   function toggle(id: TargetingStrategyId) {
     const set = new Set(draft.targetingStrategies);
     if (set.has(id)) set.delete(id); else set.add(id);
-    onChange({ targetingStrategies: Array.from(set) });
+    // Turning Auto off clears its types too; they are picked again, from nothing, when Auto comes back.
+    onChange(id === 'auto' && !set.has('auto') ? { targetingStrategies: Array.from(set), autoTypes: [] } : { targetingStrategies: Array.from(set) });
   }
 
   const cell = (id: TargetingStrategyId, text: string, lead?: React.ReactNode) => (
@@ -135,24 +125,25 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
           <span>Product targets</span>
         </div>
         <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto', 'Auto campaign')]} productCells={[]} />
-        {hasAuto && (
+        {/* Stays in place when Auto is off, locked, so the page does not jump and the picks come back with Auto. */}
           <div className="ccd-tg-row ccd-tg-row--auto" style={{ ['--tg-accent' as string]: INTENT.auto.color }}>
             <div className="ccd-tg-label">
               <span className="ccd-tg-label__copy">
                 <strong>Auto targeting types</strong>
-                <small>Keep at least one selected.</small>
+                <small>{hasAuto ? (autoTypes.length ? 'Keep at least one selected.' : 'Pick at least one.') : 'Turn on Auto campaign to choose these.'}</small>
               </span>
             </div>
             <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-cells--two">
               {AUTO_TYPE_CATALOG.map((a) => {
                 const on = autoTypes.includes(a.id);
                 const last = on && autoTypes.length === 1;
+                const locked = !hasAuto || last;
                 return (
                   <div
-                    key={a.id} role="checkbox" aria-checked={on} aria-label={a.label} aria-disabled={last} tabIndex={0} className="ccd-tg-tile ccd-tg-tile--stacked"
-                    title={last ? 'At least one type must stay selected' : undefined}
-                    onClick={() => toggleAutoType(a.id)}
-                    onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleAutoType(a.id); } }}
+                    key={a.id} role="checkbox" aria-checked={on} aria-label={a.label} aria-disabled={locked} tabIndex={hasAuto ? 0 : -1} className="ccd-tg-tile ccd-tg-tile--stacked"
+                    title={!hasAuto ? 'Turn on Auto campaign first' : last ? 'At least one type must stay selected' : undefined}
+                    onClick={() => { if (hasAuto) toggleAutoType(a.id); }}
+                    onKeyDown={(e) => { if (hasAuto && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); toggleAutoType(a.id); } }}
                   >
                     <Checkbox checked={on} />
                     <span className="ccd-tg-tile__text">
@@ -164,7 +155,6 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
               })}
             </div>
           </div>
-        )}
         </div>
         </div>
         )}

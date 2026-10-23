@@ -218,7 +218,7 @@ export function StepHeading({ eyebrow, title, aside, group }: {
         </div>
       )}
       <div className="ccd-step-heading__row">
-        <h1 style={{ margin: 0, font: `600 22px/1.25 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}{group ?? <GroupSwitch />}</h1>
+        <h1 style={{ margin: 0, font: `600 20px/1.3 'Inter Tight', Inter, sans-serif`, color: TEXT_PRIMARY }}>{title}{group ?? <GroupSwitch />}</h1>
         {aside && <div className="ccd-step-heading__tools">{aside}</div>}
       </div>
     </header>

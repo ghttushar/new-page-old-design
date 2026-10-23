@@ -1,13 +1,9 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { useAppDispatch } from '@/redux/hooks';
-import { setSubheaderOptions } from '@/redux/slices/advertising/sub-header.slice';
-import { PageTitleEnum } from '@/enums/index.enums';
-import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, strategiesForMode, flattenProducts, productsFor, recommendTargetingStrategies, structureCounts, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, structureCounts, targetingBlocked, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -43,14 +39,9 @@ export default function CampaignCreator() {
 
   const [step, setStep] = useState<CcStepId>('entry');
 
-  // The page header: on the ad format page it carries the Marketplace dropdown (MarketplaceHeader, below);
-  // on every other step it is just the title.
-  const dispatch = useAppDispatch();
+  // The page header carries the Marketplace dropdown (MarketplaceHeader, below) on every step; it only opens on the ad
+  // format page, since every later choice depends on the marketplace.
   const onEntry = step === 'entry';
-  useEffect(() => {
-    if (onEntry) return;
-    dispatch(setSubheaderOptions({ title: PageTitleEnum.CAMPAIGN_CREATOR, titleTooltip: PAGE_TITLE_TOOLTIPS.CAMPAIGN_CREATOR, isDropdownRequired: false, dropdownOptions: [] }));
-  }, [onEntry, dispatch]);
   const [furthestIndex, setFurthestIndex] = useState(0);
   const [draft, setDraft] = useState<CcDraft>(EMPTY_DRAFT);
   const [jivaOpen, setJivaOpen] = useState(false);
@@ -132,36 +123,10 @@ export default function CampaignCreator() {
     }
   }, [draft.productIds, draft.productGroups]);
 
-  // Every group starts Targeting with the recommended routes, so none is left empty just because it was never opened.
-  useEffect(() => {
-    if (step !== 'targeting' || !draft.marketplace) return;
-    setDraft((prev) => {
-      const marketplace = prev.marketplace;
-      if (!marketplace) return prev;
-      const grouped = new Set(prev.productGroups.flatMap((g) => g.productIds));
-      const all = flattenProducts(productsFor(marketplace)).filter((p) => prev.productIds.includes(p.id));
-      let changed = false;
-      const groups = prev.productGroups.map((g) => {
-        if (g.settings.targetingStrategies.length > 0) return g;
-        const recommended = strategiesForMode(recommendTargetingStrategies(all.filter((p) => g.productIds.includes(p.id)), marketplace), prev.campaignMode);
-        if (recommended.length === 0) return g;
-        changed = true;
-        return { ...g, settings: { ...g.settings, targetingStrategies: recommended } };
-      });
-      let base = prev.targetingStrategies;
-      if (prev.productGroups.length > 0 && base.length === 0) {
-        const recommended = strategiesForMode(recommendTargetingStrategies(all.filter((p) => !grouped.has(p.id)), marketplace), prev.campaignMode);
-        if (recommended.length > 0) { base = recommended; changed = true; }
-      }
-      return changed ? { ...prev, productGroups: groups, targetingStrategies: base } : prev;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, draft.productGroups.length]);
-
   // Groups that still need a choice on the page being shown, marked in the dropdown.
   const pendingScopes = new Set(scopes.filter((g) => {
     if (step === 'objectives') return objectivesBlocked(g.settings, draft.marketplace) || Boolean(issue && g.settings.dailyBudget < issue.min);
-    if (step === 'targeting') return g.settings.targetingStrategies.length === 0;
+    if (step === 'targeting') return targetingBlocked(g.settings);
     if (step === 'structure') return !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns);
     return false;
   }).map((g) => g.id));
@@ -257,7 +222,7 @@ export default function CampaignCreator() {
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
     keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue' },
     objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => objectivesBlocked(g.settings, draft.marketplace)) },
-    targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => g.settings.targetingStrategies.length === 0) },
+    targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => targetingBlocked(g.settings)) },
     structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
       back: () => goTo('keywords'),
@@ -343,12 +308,10 @@ export default function CampaignCreator() {
         </footer>
       )}
       </div>
-        {onEntry && (
-          <MarketplaceHeader
-            value={draft.marketplace}
-            onMarketplace={(marketplace) => setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, ...objectiveDefaults(marketplace), adType: prev.adType, marketplace }))}
-          />
-        )}
+        <MarketplaceHeader
+          value={draft.marketplace} disabled={!onEntry}
+          onMarketplace={(marketplace) => setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, ...objectiveDefaults(marketplace), adType: prev.adType, marketplace }))}
+        />
         <CampaignModeDialog
           open={modeOpen} value={draft.campaignMode} onClose={() => setModeOpen(false)}
           onConfirm={(mode) => { setDraft((prev) => ({ ...prev, ...applyCampaignMode(prev, mode) })); setModeOpen(false); advance('products'); }}
