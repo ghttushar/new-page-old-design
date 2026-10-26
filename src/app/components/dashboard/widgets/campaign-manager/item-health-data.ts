@@ -95,3 +95,33 @@ export function totalHealth(items: HealthItem[]): { score: number; counts: Recor
   items.forEach((i) => { const s = healthOf(i); sum += s; counts[bandOf(s)] += 1; });
   return { score: Math.round(sum / items.length), counts };
 }
+
+// ── New opportunities ───────────────────────────────────────────────────────────────────────
+// High quality items that aren't advertised yet: healthy (80+), in stock, and in no campaign. Their last 30 days of
+// organic sales show what advertising them could build on.
+
+export interface OpportunityItem extends HealthItem {
+  /** Units sold over the last 30 days. */
+  units30: number;
+  /** Gross merchandise value over the last 30 days. */
+  gmv30: number;
+}
+
+/** Whether the item is already in a campaign; about half the catalogue is. */
+const isAdvertised = (id: string) => unit(id, 'advertised') > 0.45;
+
+export const OPPORTUNITY_ITEMS: OpportunityItem[] = HEALTH_ITEMS
+  .filter((i) => i.inStock && healthOf(i) >= 80 && !isAdvertised(i.id))
+  .map((i) => {
+    const units30 = between(i.id, 'units-30', 60, 900);
+    const price = between(i.id, 'price', 14, 58) + 0.99;
+    return { ...i, units30, gmv30: Math.round(units30 * price) };
+  });
+
+/** The consolidated figures: how many items, and their average units and GMV per item over the last 30 days. */
+export function opportunityTotals(items: OpportunityItem[] = OPPORTUNITY_ITEMS) {
+  const units = items.reduce((s, i) => s + i.units30, 0);
+  const gmv = items.reduce((s, i) => s + i.gmv30, 0);
+  const count = items.length;
+  return { count, avgUnits: count ? units / count : 0, avgGmv: count ? gmv / count : 0 };
+}

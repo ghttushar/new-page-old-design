@@ -33,7 +33,7 @@ function load(): DashboardState {
 const newId = (kind: string) => `${kind}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 /** The first free spot for a w × h box, reading left to right, top to bottom. */
-function findSlot(layout: Layout[], w: number, h: number, cols: number): { x: number; y: number } {
+export function findSlot(layout: Layout[], w: number, h: number, cols: number): { x: number; y: number } {
   const width = Math.min(w, cols);
   const fits = (x: number, y: number) => layout.every((l) => x + width <= l.x || x >= l.x + l.w || y + h <= l.y || y >= l.y + l.h);
   for (let y = 0; y < 500; y += 1) {

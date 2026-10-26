@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import useModalLock from '../notifications/use-modal-lock';
 import type { DashboardTemplate, WidgetCategory, WidgetDefinition, WidgetInstance, WidgetKind } from './dashboard.types';
 import NuggetArt, { nuggetTint } from './nugget-art';
+import { PRESET_TEMPLATES, type PresetTemplate } from './preset-templates';
 import { CATEGORIES, WIDGETS, WIDGET_ORDER, widgetsIn } from './widget-registry';
 import styles from './dashboard.module.scss';
 
@@ -33,8 +34,66 @@ export function WidgetCard({ def, count, onAdd }: { def: WidgetDefinition; count
       <div className={styles.cardBody}>
         <strong className={styles.cardTitle}>{def.title}</strong>
         <p>{def.summary}</p>
-        <button type="button" className={`${styles.btnSmall} ${styles.cardAdd}`} onClick={() => { onAdd(); setFlash(true); }} aria-label={`Add ${def.title}`}>
-          {flash ? <><CheckIcon size={13} weight="bold" />Added</> : <><PlusIcon size={13} weight="bold" />Add</>}
+        <button type="button" className={`${styles.btnSmall} ${styles.cardAdd}`} onClick={() => { onAdd(); setFlash(true); }} aria-label={`${count > 0 ? 'Add again' : 'Add'} ${def.title}`}>
+          {flash ? <><CheckIcon size={13} weight="bold" />Added</> : <><PlusIcon size={13} weight="bold" />{count > 0 ? 'Add again' : 'Add'}</>}
+        </button>
+      </div>
+    </li>
+  );
+}
+
+/** Each ready-made template's art panel takes one of the nugget tints, so the cards tell apart at a glance. */
+const PRESET_TINT: Record<string, string> = {
+  'preset-leadership': styles.artTintRule,
+  'preset-ppc': styles.artTintRank,
+  'preset-automation': styles.artTintKeywords,
+  'preset-catalog': styles.artTintHealth,
+  'preset-client-success': styles.artTintMail,
+  'preset-growth': styles.artTintGain,
+};
+
+/** A ready-made template as a miniature dashboard: every nugget at its place and size, showing its own drawing. */
+function TemplateArt({ template }: { template: DashboardTemplate }) {
+  const items = template.layouts.lg ?? [];
+  const rows = Math.max(...items.map((l) => l.y + l.h));
+  const kindOf = new Map(template.widgets.map((w) => [w.id, w.kind]));
+  return (
+    <div className={styles.tplBoard} aria-hidden>
+      {items.map((l) => {
+        const kind = kindOf.get(l.i);
+        if (!kind) return null;
+        return (
+          <span
+            key={l.i} className={styles.tplBlock} title={WIDGETS[kind].title}
+            style={{ left: `${(l.x / 12) * 100}%`, top: `${(l.y / rows) * 100}%`, width: `${(l.w / 12) * 100}%`, height: `${(l.h / rows) * 100}%` }}
+          >
+            <i><NuggetArt kind={kind} fill /></i>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A ready-made template, in the same anatomy as a nugget card: the drawing, who it is for, its name, then Apply. */
+function PresetCard({ template, current, onApply }: { template: PresetTemplate; current: boolean; onApply: () => void }) {
+  const TeamIcon = template.icon;
+  return (
+    <li className={`${styles.card} ${styles.tplPreset}`} title={template.widgets.map((w) => WIDGETS[w.kind].title).join(', ')}>
+      <div className={`${styles.cardArt} ${styles.tplArt} ${PRESET_TINT[template.id] ?? ''}`}>
+        <TemplateArt template={template} />
+        {current && <span className={styles.cardOn}><CheckIcon size={11} weight="bold" />Current</span>}
+      </div>
+      <div className={styles.cardBody}>
+        <span className={styles.tplTeam}><span className={styles.tplTeamIcon} aria-hidden><TeamIcon size={13} /></span>{template.team}</span>
+        <strong className={styles.cardTitle}>{template.name}</strong>
+        <p>{template.description}</p>
+        <span className={styles.tplCount}>{template.widgets.length} nuggets</span>
+        <button
+          type="button" className={`${styles.btnSmall} ${styles.cardAdd}`} onClick={onApply} disabled={current}
+          aria-label={current ? `${template.name} is the current dashboard` : `Apply ${template.name}`}
+        >
+          {current ? <><CheckIcon size={13} weight="bold" />Applied</> : <><LayoutIcon size={13} />Apply template</>}
         </button>
       </div>
     </li>
@@ -124,55 +183,65 @@ function TemplatesView({ templates, currentName, editingId, justSavedId, onEditi
 
   return (
     <div className={styles.tplView}>
-      <ul className={styles.tplGrid}>
-        <li className={styles.tplCard}>
-          <LayoutThumb />
-          <div className={styles.tplInfo}>
-            <strong>Blank dashboard</strong>
-            <span>Start again from an empty canvas.</span>
-          </div>
-          <div className={styles.tplActions}>
-            <button type="button" className={styles.btnSmallGhost} onClick={onBlank}>Use</button>
-          </div>
-        </li>
-        <AnimatePresence initial={false}>
-          {templates.map((t) => (
-            <motion.li
-              key={t.id} layout={!reduce}
-              className={`${styles.tplCard}${justSavedId === t.id ? ` ${styles.tplCardNew}` : ''}`}
-              initial={reduce ? false : { opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <LayoutThumb template={t} />
-              <div className={styles.tplInfo}>
-                <TemplateName
-                  template={t} taken={taken} editing={editingId === t.id}
-                  onEdit={(on) => onEditing(on ? t.id : null)} onRename={(name) => onRename(t.id, name)}
-                />
-                <span>
-                  {t.widgets.length} {t.widgets.length === 1 ? 'nugget' : 'nuggets'}, saved {new Date(t.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-                </span>
-              </div>
-              <div className={styles.tplActions}>
-                {confirmDelete === t.id ? (
-                  <>
-                    <button type="button" className={styles.btnSmallDanger} onClick={() => { onDelete(t.id); setConfirmDelete(null); }}>Delete</button>
-                    <button type="button" className={styles.btnSmallGhost} onClick={() => setConfirmDelete(null)}>Keep</button>
-                  </>
-                ) : (
-                  <>
-                    {currentName === t.name ? <span className={styles.cardOn}>Current</span> : (
-                      <button type="button" className={styles.btnSmall} onClick={() => onApply(t)}>Apply</button>
-                    )}
-                    <button type="button" className={styles.iconBtn} aria-label={`Delete ${t.name}`} title="Delete" onClick={() => setConfirmDelete(t.id)}><TrashIcon size={15} /></button>
-                  </>
-                )}
-              </div>
-            </motion.li>
-          ))}
-        </AnimatePresence>
-      </ul>
-      {templates.length === 0 && <p className={styles.tplHint}>Save the current dashboard to reuse its layout. Saved templates appear here.</p>}
+      <section className={styles.tplSection} aria-labelledby="tpl-presets">
+        <h4 id="tpl-presets" className={styles.libSectionTitle}>Ready-made for your teams<span>{PRESET_TEMPLATES.length}</span></h4>
+        <ul className={styles.tplPresetGrid}>
+          {PRESET_TEMPLATES.map((t) => <PresetCard key={t.id} template={t} current={currentName === t.name} onApply={() => onApply(t)} />)}
+        </ul>
+      </section>
+
+      <section className={styles.tplSection} aria-labelledby="tpl-yours">
+        <h4 id="tpl-yours" className={styles.libSectionTitle}>Your templates<span>{templates.length}</span></h4>
+        <ul className={styles.tplGrid}>
+          <li className={styles.tplCard}>
+            <LayoutThumb />
+            <div className={styles.tplInfo}>
+              <strong>Blank dashboard</strong>
+              <span>Start again from an empty canvas.</span>
+            </div>
+            <div className={styles.tplActions}>
+              <button type="button" className={styles.btnSmallGhost} onClick={onBlank}>Use</button>
+            </div>
+          </li>
+          <AnimatePresence initial={false}>
+            {templates.map((t) => (
+              <motion.li
+                key={t.id} layout={!reduce}
+                className={`${styles.tplCard}${justSavedId === t.id ? ` ${styles.tplCardNew}` : ''}`}
+                initial={reduce ? false : { opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <LayoutThumb template={t} />
+                <div className={styles.tplInfo}>
+                  <TemplateName
+                    template={t} taken={taken} editing={editingId === t.id}
+                    onEdit={(on) => onEditing(on ? t.id : null)} onRename={(name) => onRename(t.id, name)}
+                  />
+                  <span>
+                    {t.widgets.length} {t.widgets.length === 1 ? 'nugget' : 'nuggets'}, saved {new Date(t.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+                <div className={styles.tplActions}>
+                  {confirmDelete === t.id ? (
+                    <>
+                      <button type="button" className={styles.btnSmallDanger} onClick={() => { onDelete(t.id); setConfirmDelete(null); }}>Delete</button>
+                      <button type="button" className={styles.btnSmallGhost} onClick={() => setConfirmDelete(null)}>Keep</button>
+                    </>
+                  ) : (
+                    <>
+                      {currentName === t.name ? <span className={styles.cardOn}>Current</span> : (
+                        <button type="button" className={styles.btnSmall} onClick={() => onApply(t)}>Apply</button>
+                      )}
+                      <button type="button" className={styles.iconBtn} aria-label={`Delete ${t.name}`} title="Delete" onClick={() => setConfirmDelete(t.id)}><TrashIcon size={15} /></button>
+                    </>
+                  )}
+                </div>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
+        {templates.length === 0 && <p className={styles.tplHint}>Save the current dashboard to reuse its layout. Saved templates appear here.</p>}
+      </section>
     </div>
   );
 }
@@ -257,7 +326,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
             {railItem('all', 'All nuggets', WIDGET_ORDER.length, SquaresFourIcon)}
             {categories.map((c) => railItem(c.id, c.label, widgetsIn(c.id).length, c.icon))}
             <span className={styles.railLabel}>Layouts</span>
-            {railItem('templates', 'Templates', templates.length + 1, LayoutIcon)}
+            {railItem('templates', 'Templates', PRESET_TEMPLATES.length + templates.length + 1, LayoutIcon)}
           </nav>
         </aside>
 
@@ -267,7 +336,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
               <h3>{q ? `Results for “${query.trim()}”` : view === 'templates' ? 'Templates' : meta ? meta.label : 'All nuggets'}</h3>
               <p>
                 {q ? `${resultCount} ${resultCount === 1 ? 'nugget' : 'nuggets'} found` : view === 'templates'
-                  ? 'Reuse a layout in one click. Click a template’s name to rename it.'
+                  ? 'Start from a layout made for your team, or reuse one you saved. Click a saved template’s name to rename it.'
                   : meta ? meta.description : 'Every nugget you can add, grouped by where its data comes from.'}
               </p>
             </div>
@@ -311,7 +380,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
             {addedNow > 0 && view !== 'templates' && (
               <motion.footer className={styles.libFoot} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
                 <span>{addedNow} {addedNow === 1 ? 'nugget' : 'nuggets'} added to your dashboard</span>
-                <button type="button" className={styles.btnDark} onClick={onClose}>Done</button>
+                <button type="button" className={`${styles.btnPrimary} ${styles.btnDone}`} onClick={onClose}>Done</button>
               </motion.footer>
             )}
           </AnimatePresence>

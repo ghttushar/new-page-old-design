@@ -237,16 +237,8 @@ $ease: cubic-bezier(0.22, 0.8, 0.3, 1);
   }
 }
 
-.btnDark {
-  @extend %btn;
+.btnDone {
   height: 32px;
-  border: 1px solid $ink;
-  background: $ink;
-  color: #fff;
-
-  &:hover {
-    background: #30353f;
-  }
 }
 
 %btnSmall {
@@ -1376,164 +1368,6 @@ $ease: cubic-bezier(0.22, 0.8, 0.3, 1);
   color: $gain;
 }
 
-// ── Empty dashboard: a skeleton of one ──────────────────────────────────────────────────────
-
-.skeleton {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: 40px;
-  gap: 16px;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    .skTile {
-      grid-column: auto !important;
-      grid-row: span 7 !important;
-    }
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.skTile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: hidden;
-  padding: 14px 16px 16px;
-  border: 1px solid $line;
-  border-radius: 12px;
-  background: #fff;
-
-  // A slow light passing over each placeholder, staggered so the tiles don't pulse in sync.
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 50%, transparent 80%);
-    transform: translateX(-100%);
-    animation: skSweep 2.4s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  &:nth-child(2)::after { animation-delay: 0.25s; }
-  &:nth-child(3)::after { animation-delay: 0.5s; }
-  &:nth-child(4)::after { animation-delay: 0.75s; }
-}
-
-@keyframes skSweep {
-  0% { transform: translateX(-100%); }
-  60%,
-  100% { transform: translateX(100%); }
-}
-
-.skLine,
-.skFigure,
-.skBar,
-.skChip,
-.skIcon {
-  display: block;
-  flex: none;
-  background: #eef0f4;
-}
-
-.skLine {
-  height: 9px;
-  border-radius: 5px;
-}
-
-.skHead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-
-  span {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-  }
-
-  .skLine:last-child {
-    background: #f3f4f7;
-  }
-}
-
-.skChip {
-  width: 64px;
-  height: 26px;
-  border-radius: 7px;
-  background: #f3f4f7;
-}
-
-.skFigure {
-  width: 46%;
-  height: 34px;
-  margin-top: 6px;
-  border-radius: 8px;
-}
-
-.skRows {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 8px;
-}
-
-.skSplit {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.skBar {
-  height: 4px;
-  border-radius: 2px;
-  background: #e6e9ef;
-}
-
-.skMsg {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-
-  span {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 7px;
-  }
-}
-
-.skIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: #f1f3f6;
-}
-
-.skFeed {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
-  align-items: center;
-  gap: 18px;
-
-  span {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  > .skLine:first-child {
-    justify-self: end;
-  }
-}
-
 // Add widget on an empty dashboard: it eases in, then a light passes across it every few seconds.
 .btnInvite {
   position: relative;
@@ -1951,6 +1785,9 @@ $ease: cubic-bezier(0.22, 0.8, 0.3, 1);
 .cardArt.artTintCompare { background: linear-gradient(180deg, #f1f6f9 0%, #e6eff5 100%); }
 .cardArt.artTintRank { background: linear-gradient(180deg, #f5f4f9 0%, #ecebf3 100%); }
 .cardArt.artTintHealth { background: linear-gradient(180deg, #f3f7f5 0%, #e9f0ec 100%); }
+.cardArt.artTintPoor { background: linear-gradient(180deg, #faf5f3 0%, #f3ebe8 100%); }
+.cardArt.artTintOpportunity { background: linear-gradient(180deg, #f1f7f7 0%, #e6f0f0 100%); }
+.cardArt.artTintKeywords { background: linear-gradient(180deg, #f4f3fa 0%, #eae8f3 100%); }
 
 .artRiskRing,
 .artRiskRing2,
@@ -2010,6 +1847,12 @@ $ease: cubic-bezier(0.22, 0.8, 0.3, 1);
 .artHealthBar { fill: #5a9b80; }
 .artHealthMid { fill: #d3a24a; }
 .artHealthLow { fill: #c97066; }
+.artPoorFirst { fill: #f6e3e0; }
+.artPoorBar { fill: #c97066; }
+.artPoorBarSoft { fill: #e3b6b0; }
+.artTile { fill: #f6f7fa; }
+.artOppFigure { fill: #5a9b80; }
+.artArrow { fill: none; stroke: #9aa0ab; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 
 .artDash {
   fill: none;
@@ -2098,8 +1941,93 @@ $ease: cubic-bezier(0.22, 0.8, 0.3, 1);
   gap: 24px;
 }
 
+.tplSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
+// A ready-made template: the nugget card's anatomy, with a miniature of the dashboard as its drawing. Each block is
+// one nugget at its place and size, showing its own drawing on a white card.
+.tplPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
+.tplArt {
+  height: 176px;
+  padding: 14px 16px;
+}
+
+.tplBoard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.tplBlock {
+  position: absolute;
+  padding: 3px;
+
+  > i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.05), 0 1px 2px rgba(16, 24, 40, 0.06);
+    transition: transform 320ms $ease, box-shadow 320ms $ease;
+  }
+}
+
+.card:hover .tplBlock > i {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.06), 0 4px 10px -4px rgba(16, 24, 40, 0.14);
+}
+
+.artSvgFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tplPreset .cardBody p {
+  margin-bottom: 0;
+}
+
+.tplTeam {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  color: $faint;
+  font: 500 12px/1.3 Inter, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tplTeamIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #f3f4f7;
+  color: $body;
+}
+
+.tplCount {
+  margin-bottom: 10px;
+  color: $faint;
+  font: 400 12px/1.3 Inter, sans-serif;
+}
 
 .input {
   flex: 1;
@@ -3168,7 +3096,6 @@ $ease: cubic-bezier(0.22, 0.8, 0.3, 1);
   .btnInvite::after,
   .clock i,
   .tplCardNew,
-  .skTile::after,
   .rcBarCol i,
   .rcLiftTrack i {
     animation: none;
@@ -3700,5 +3627,368 @@ $scroll-thumb-hover: rgba(29, 33, 41, 0.34);
   .floating * {
     scrollbar-width: thin;
     scrollbar-color: $scroll-thumb transparent;
+  }
+}
+
+// Poor keywords: the same rows as Top performers. The ranked figure leads; the other one is quieter, and the bars
+// take the risk colour.
+.pkOther {
+  color: $muted !important;
+  font-weight: 500 !important;
+}
+
+.pkBar i {
+  background: $risk-bar;
+  opacity: 1;
+}
+
+.pkValues {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+
+  small {
+    color: $faint;
+    font: 400 11.5px/1.2 Inter, sans-serif;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+// ── Empty dashboard ─────────────────────────────────────────────────────────────────────────
+// A drawing of a board waiting for its first nuggets, a fun fact or pun, and Add nugget in the middle of the page.
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: calc(100dvh - 260px);
+  padding: 24px 16px 48px;
+  text-align: center;
+}
+
+.emptyArt {
+  display: block;
+  width: min(420px, 100%);
+  height: auto;
+}
+
+.emptyBoard {
+  fill: #fff;
+  stroke: $line;
+  stroke-width: 1;
+}
+
+.emptySlot {
+  fill: $canvas;
+  stroke: #d8dce4;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.emptyRingTrack {
+  fill: none;
+  stroke: #eff1f5;
+  stroke-width: 6;
+}
+
+.emptyRing {
+  fill: none;
+  stroke: #8a5bb0;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.emptyCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 46ch;
+}
+
+.emptyFactLabel {
+  color: $faint;
+  font: 600 11px/1 Inter, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.emptyFact {
+  margin: 0;
+  color: $muted;
+  font: 400 15px/1.55 Inter, sans-serif;
+  text-wrap: balance;
+}
+
+.emptyActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.emptyAdd {
+  height: 42px;
+  padding: 0 20px;
+  font-size: 14px;
+  // Its block already rises in; a held CSS transform here would also fight the glide up to the header.
+  animation: none;
+}
+
+.emptyLink {
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: $muted;
+  font: 500 13px/1.3 Inter, sans-serif;
+  cursor: pointer;
+
+  &:hover {
+    color: $ink;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+// ── Campaign Manager: new opportunities ─────────────────────────────────────────────────────
+// Three consolidated figures on one strip, then the items worth advertising, and a link to start.
+
+.op {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.opStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border: 1px solid $line;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.opStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+
+  & + & {
+    border-left: 1px solid $hair;
+  }
+
+  dt {
+    color: $faint;
+    font: 600 11px/1.2 Inter, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    overflow: hidden;
+    color: $ink;
+    font: 650 22px/1.1 $display;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    overflow: hidden;
+    color: $faint;
+    font: 400 11.5px/1.3 Inter, sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.opList {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.opRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 2px;
+  border-bottom: 1px solid $hair;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.opWho {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.opName {
+  overflow: hidden;
+  color: $ink;
+  font: 600 13px/1.3 Inter, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opId {
+  color: $faint;
+  font: 400 11px/1.2 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+.opFigures {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-variant-numeric: tabular-nums;
+
+  strong {
+    color: $ink;
+    font: 600 13px/1.2 Inter, sans-serif;
+  }
+
+  small {
+    color: $faint;
+    font: 400 11.5px/1.2 Inter, sans-serif;
+  }
+}
+
+.opEmpty {
+  margin: 0;
+  padding: 24px 0;
+  color: $faint;
+  font: 400 13px/1.5 Inter, sans-serif;
+  text-align: center;
+}
+
+.opLink {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  color: $primary-color;
+  font: 600 13px/1 Inter, sans-serif;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+// ── Campaign Manager: add new keywords ──────────────────────────────────────────────────────
+// Two routes side by side, each with the same four figures, then one View more for both.
+
+.nk {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+.nkRoutes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+@container (max-width: 420px) {
+  .nkRoutes {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nkRoute {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid $line;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.nkRouteHead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: $ink;
+  font: 650 15px/1.2 $display;
+
+  svg {
+    color: $faint;
+  }
+}
+
+.nkHint {
+  min-height: 34px;
+  margin: 0;
+  color: $faint;
+  font: 400 12px/1.4 Inter, sans-serif;
+}
+
+.nkStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  margin: 4px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid $hair;
+}
+
+.nkStat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+
+  dt {
+    color: $faint;
+    font: 600 11px/1.2 Inter, sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    color: $ink;
+    font: 650 20px/1.1 $display;
+    font-variant-numeric: tabular-nums;
   }
 }

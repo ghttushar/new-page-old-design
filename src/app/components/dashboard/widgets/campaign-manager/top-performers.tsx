@@ -10,7 +10,7 @@ import styles from '../../dashboard.module.scss';
 // What to rank, on which metric, how many and how to show them all sit on the control strip.
 
 export type TopCount = '5' | '10' | '15' | 'all';
-type TopViz = 'table' | 'bars';
+export type TopViz = 'table' | 'bars';
 
 export interface TopConfig { entity: EntityKind; metric: MetricId; top: TopCount; viz: TopViz; range: RangeId }
 
@@ -29,13 +29,13 @@ const ENTITY_OPTIONS = [
   { value: 'keyword' as const, label: 'Keywords', icon: HashIcon },
 ];
 const METRIC_OPTIONS = TOP_METRICS.map((m) => ({ value: m.id, label: m.label }));
-const TOP_OPTIONS = [
+export const TOP_OPTIONS = [
   { value: '5' as const, label: 'Top 5' },
   { value: '10' as const, label: 'Top 10' },
   { value: '15' as const, label: 'Top 15' },
   { value: 'all' as const, label: 'All' },
 ];
-const VIZ_OPTIONS = [
+export const VIZ_OPTIONS = [
   { value: 'table' as const, label: 'Table', icon: TableIcon },
   { value: 'bars' as const, label: 'Bars', icon: ChartBarHorizontalIcon },
 ];

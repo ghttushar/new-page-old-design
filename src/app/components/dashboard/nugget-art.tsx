@@ -196,6 +196,92 @@ function HealthArt() {
   );
 }
 
+/** Poor keywords: a ranked list whose bars are in the risk colour, two figures to each row. */
+function PoorArt() {
+  const rows = [0.92, 0.7, 0.5, 0.32];
+  return (
+    <g className={s.artLift}>
+      <Panel x={30} y={16} w={180} h={104} title={52}>
+        {rows.map((share, i) => {
+          const y = 34 + i * 20;
+          return (
+            <g key={y}>
+              <rect className={i === 0 ? s.artPoorFirst : s.artRankChip} x="39" y={y} width="12" height="12" rx="3" />
+              <rect className={i === 0 ? s.artLineDark : s.artLine} x="57" y={y + 1} width={[44, 36, 48, 32][i]} height="3.5" rx="1.75" />
+              <rect className={s.artRankTrack} x="57" y={y + 8} width="104" height="4" rx="2" />
+              <rect className={i === 0 ? s.artPoorBar : s.artPoorBarSoft} x="57" y={y + 8} width={104 * share} height="4" rx="2" />
+              <rect className={s.artLineDark} x="172" y={y + 1} width="28" height="3.5" rx="1.75" />
+              <rect className={s.artLine} x="178" y={y + 8} width="22" height="3" rx="1.5" />
+            </g>
+          );
+        })}
+      </Panel>
+    </g>
+  );
+}
+
+/** New opportunities: three small figures on top, then items, each with its value and units on the right. */
+function OpportunityArt() {
+  return (
+    <g className={s.artLift}>
+      <Panel x={30} y={16} w={180} h={104} title={46}>
+        {[0, 1, 2].map((i) => {
+          const x = 39 + i * 55;
+          return (
+            <g key={x}>
+              <rect className={s.artTile} x={x} y="28" width="50" height="28" rx="6" />
+              <rect className={s.artLine} x={x + 7} y="34" width="22" height="3" rx="1.5" />
+              <rect className={i === 0 ? s.artOppFigure : s.artFigure} x={x + 7} y="41" width={[18, 26, 32][i]} height="8" rx="2" />
+            </g>
+          );
+        })}
+        {[0, 1, 2].map((i) => {
+          const y = 66 + i * 17;
+          return (
+            <g key={y}>
+              <rect className={i === 0 ? s.artLineDark : s.artLine} x="39" y={y} width={[62, 50, 56][i]} height="3.5" rx="1.75" />
+              <rect className={s.artLine} x="39" y={y + 7} width="34" height="2.5" rx="1.25" />
+              <rect className={s.artLineDark} x="170" y={y} width="30" height="3.5" rx="1.75" />
+              <rect className={s.artLine} x="180" y={y + 7} width="20" height="2.5" rx="1.25" />
+            </g>
+          );
+        })}
+      </Panel>
+    </g>
+  );
+}
+
+/** Add new keywords: two side-by-side routes, each an arrow over a 2 by 2 of figures. */
+function NewKeywordsArt() {
+  return (
+    <g className={s.artLift}>
+      <Panel x={30} y={16} w={180} h={104} title={42}>
+        {[0, 1].map((side) => {
+          const x = 39 + side * 83;
+          return (
+            <g key={x}>
+              <rect className={s.artTile} x={x} y="28" width="79" height="82" rx="7" />
+              <rect className={s.artLineDark} x={x + 8} y="36" width="16" height="4" rx="2" />
+              <path className={s.artArrow} d={`M${x + 28} 38 h10 m-3 -3 l3 3 l-3 3`} />
+              <rect className={s.artLineDark} x={x + 42} y="36" width="18" height="4" rx="2" />
+              {[0, 1, 2, 3].map((i) => {
+                const cx = x + 8 + (i % 2) * 36;
+                const cy = 52 + Math.floor(i / 2) * 26;
+                return (
+                  <g key={i}>
+                    <rect className={s.artLine} x={cx} y={cy} width="22" height="3" rx="1.5" />
+                    <rect className={i === 3 ? s.artOppFigure : s.artFigure} x={cx} y={cy + 7} width={[18, 24, 20, 16][i]} height="8" rx="2" />
+                  </g>
+                );
+              })}
+            </g>
+          );
+        })}
+      </Panel>
+    </g>
+  );
+}
+
 const ART: Record<WidgetKind, { draw: () => JSX.Element; tint: string }> = {
   'value-at-risk': { draw: RiskArt, tint: s.artTintRisk },
   'opportunity-value': { draw: GainArt, tint: s.artTintGain },
@@ -205,16 +291,22 @@ const ART: Record<WidgetKind, { draw: () => JSX.Element; tint: string }> = {
   'rule-compare': { draw: CompareArt, tint: s.artTintCompare },
   'top-performers': { draw: RankArt, tint: s.artTintRank },
   'item-health': { draw: HealthArt, tint: s.artTintHealth },
+  'poor-keywords': { draw: PoorArt, tint: s.artTintPoor },
+  'new-opportunities': { draw: OpportunityArt, tint: s.artTintOpportunity },
+  'new-keywords': { draw: NewKeywordsArt, tint: s.artTintKeywords },
 };
 
 /** The tint class for one nugget's drawing panel. */
 export const nuggetTint = (kind: WidgetKind) => ART[kind].tint;
 
-/** The drawing for one nugget, sized to the width of its library card. */
-export default function NuggetArt({ kind }: { kind: WidgetKind }) {
+/**
+ * The drawing for one nugget, sized to the width of its library card. With `fill`, just the drawing (without the margin
+ * around it) sizes to its box, whatever its shape, as in a template's miniature dashboard.
+ */
+export default function NuggetArt({ kind, fill }: { kind: WidgetKind; fill?: boolean }) {
   const Draw = ART[kind].draw;
   return (
-    <svg viewBox="0 0 240 132" className={s.artSvg} aria-hidden focusable="false">
+    <svg viewBox={fill ? '30 16 180 104' : '0 0 240 132'} className={fill ? s.artSvgFill : s.artSvg} preserveAspectRatio={fill ? 'xMidYMid meet' : undefined} aria-hidden focusable="false">
       <Draw />
     </svg>
   );

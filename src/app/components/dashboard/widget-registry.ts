@@ -10,7 +10,7 @@ import { SIGNALS_WIDGETS } from './widgets/signals';
 export const CATEGORIES: CategoryMeta[] = [
   { id: 'Signals', label: 'Signals', icon: BroadcastIcon, description: 'Alerts, the money they carry, and the messages that come with them.' },
   { id: 'Rules', label: 'Rules', icon: LightningIcon, description: 'What your automation rules change, measured against a baseline or against each other.' },
-  { id: 'Campaign Manager', label: 'Campaign Manager', icon: MegaphoneSimpleIcon, description: 'Your campaigns and keywords ranked on a metric, and the health of the items they advertise.' },
+  { id: 'Campaign Manager', label: 'Campaign Manager', icon: MegaphoneSimpleIcon, description: 'Your campaigns and keywords ranked on a metric, the keywords to review or add, the items worth advertising, and their health.' },
 ];
 
 const ALL: WidgetDefinition[] = [...SIGNALS_WIDGETS, ...RULES_WIDGETS, ...CAMPAIGN_MANAGER_WIDGETS];

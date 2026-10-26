@@ -1,11 +1,11 @@
-import { LayoutIcon, PlusIcon } from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import DashboardGrid from '@/app/components/dashboard/dashboard-grid';
 import DashboardHello from '@/app/components/dashboard/dashboard-hello';
 import styles from '@/app/components/dashboard/dashboard.module.scss';
 import useDashboard, { type Snapshot } from '@/app/components/dashboard/use-dashboard';
-import SkeletonLayout from '@/app/components/dashboard/skeleton-layout';
+import EmptyDashboard from '@/app/components/dashboard/empty-dashboard';
 import WidgetLibrary, { type LibraryView } from '@/app/components/dashboard/widget-library';
 import { WIDGETS } from '@/app/components/dashboard/widget-registry';
 import { PageTitleEnum } from '@/enums/index.enums';
@@ -46,18 +46,18 @@ export function DashboardPage() {
     <div className={styles.page}>
       <div className={styles.head}>
         <DashboardHello />
+        {/* Add nugget lives in the middle of an empty dashboard, and moves up here (the same layoutId) once there is a nugget. */}
         <div className={styles.headActions}>
-          {empty && templates.length > 0 && (
-            <button type="button" className={styles.btnGhost} onClick={() => setLibrary('templates')}><LayoutIcon size={15} />Use a template</button>
+          {!empty && (
+            <motion.button layoutId="add-nugget" type="button" className={styles.btnPrimary} onClick={() => setLibrary('all')}>
+              <PlusIcon size={14} weight="bold" />Add nugget
+            </motion.button>
           )}
-          <button
-            type="button" className={`${styles.btnPrimary}${empty ? ` ${styles.btnInvite}` : ''}`} onClick={() => setLibrary('all')}
-          ><PlusIcon size={14} weight="bold" />Add nugget</button>
         </div>
       </div>
 
       {empty ? (
-        <SkeletonLayout />
+        <EmptyDashboard onAdd={() => setLibrary('all')} onTemplates={() => setLibrary('templates')} hasTemplates />
       ) : (
         <DashboardGrid
           widgets={widgets} layouts={layouts}

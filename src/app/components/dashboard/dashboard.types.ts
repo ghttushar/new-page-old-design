@@ -2,7 +2,7 @@ import type { Icon } from '@phosphor-icons/react';
 import type { ComponentType } from 'react';
 import type { Layouts } from 'react-grid-layout';
 
-export type WidgetKind = 'value-at-risk' | 'opportunity-value' | 'important-messages' | 'while-away' | 'rule-impact' | 'rule-compare' | 'top-performers' | 'item-health';
+export type WidgetKind = 'value-at-risk' | 'opportunity-value' | 'important-messages' | 'while-away' | 'rule-impact' | 'rule-compare' | 'top-performers' | 'item-health' | 'poor-keywords' | 'new-opportunities' | 'new-keywords';
 
 /**
  * The area of Anarix a widget's data comes from. Each area gets its own entry in the widget library, so adding

@@ -1,4 +1,4 @@
-import { RANGE_DAYS, driversFor, metricOf, series, sumDays, type MetricId, type RangeId } from '../rules/data';
+import { RANGE_DAYS, driversFor, metricOf, series, sumDays, type DayTotals, type MetricId, type RangeId } from '../rules/data';
 
 // Campaign Manager sample data: the account's campaigns and keywords, each with seeded daily totals from the same
 // engine as the Rules nuggets, so ROAS, ACOS, spend and sales always agree with each other.
@@ -103,10 +103,53 @@ function driversOf(p: Performer, kind: EntityKind) {
   return { ...d, imp: d.imp * reach, cvr: d.cvr * (0.7 + unit(p.id, 'cvr') * 0.6), cpc: d.cpc * (0.75 + unit(p.id, 'cpc') * 0.5) };
 }
 
+/** Every campaign (or keyword) with its totals over the range, so any metric can be read from them. */
+export function performerTotals(kind: EntityKind, range: RangeId): (Performer & { totals: DayTotals })[] {
+  const days = RANGE_DAYS[range];
+  return PERFORMERS[kind].map((p) => ({ ...p, totals: sumDays(series(`cm|${p.id}`, driversOf(p, kind), days)) }));
+}
+
 /** Every campaign (or keyword) with its value for the metric over the range, best first. */
 export function rankPerformers(kind: EntityKind, metric: MetricId, range: RangeId): RankedRow[] {
-  const days = RANGE_DAYS[range];
-  const rows = PERFORMERS[kind].map((p) => ({ ...p, value: metricOf(sumDays(series(`cm|${p.id}`, driversOf(p, kind), days)), metric) }));
+  const rows = performerTotals(kind, range).map(({ totals, ...p }) => ({ ...p, value: metricOf(totals, metric) }));
   const low = LOWEST_FIRST.includes(metric);
   return rows.sort((x, y) => (low ? x.value - y.value : y.value - x.value));
+}
+
+// ── Add new keywords ────────────────────────────────────────────────────────────────────────
+// Keywords worth adding at campaign or ad group level, found by Targeting Actions: search terms from Auto campaigns
+// to run as Manual keywords, and terms from Manual campaigns to add to other Manual campaigns.
+
+export type HarvestRoute = 'auto-to-manual' | 'manual-to-manual';
+
+export interface HarvestSummary {
+  /** Campaigns the new keywords come from. */
+  campaigns: number;
+  keywords: number;
+  /** The same term suggested for several campaigns counts once. */
+  uniqueKeywords: number;
+  /** The suggested keywords' ROAS over the last 30 days, weighted by spend. */
+  avgRoas: number;
+}
+
+/** What Targeting Actions suggests on each route, worked out from the sample campaigns. */
+export function keywordHarvest(): Record<HarvestRoute, HarvestSummary> {
+  const campaigns = performerTotals('campaign', '30');
+  const summarise = (route: HarvestRoute): HarvestSummary => {
+    const auto = route === 'auto-to-manual';
+    const from = campaigns.filter((c) => c.detail.includes('Auto') === auto && unit(c.id, `${route}|has`) > 0.2);
+    const perCampaign = from.map((c) => (auto ? 9 : 4) + Math.round(unit(c.id, `${route}|count`) * (auto ? 26 : 14)));
+    const keywords = perCampaign.reduce((s, n) => s + n, 0);
+    const spend = from.reduce((s, c) => s + c.totals.spend, 0);
+    const sales = from.reduce((s, c) => s + c.totals.sales, 0);
+    // Suggestions are the terms that already convert, so they run ahead of their campaigns' own ROAS.
+    const lift = auto ? 1.22 : 1.12;
+    return {
+      campaigns: from.length,
+      keywords,
+      uniqueKeywords: Math.round(keywords * (auto ? 0.71 : 0.83)),
+      avgRoas: spend ? (sales / spend) * lift : 0,
+    };
+  };
+  return { 'auto-to-manual': summarise('auto-to-manual'), 'manual-to-manual': summarise('manual-to-manual') };
 }
