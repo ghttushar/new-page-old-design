@@ -3,6 +3,7 @@ import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import styles from './signals-page.module.scss';
 import { SIGNAL_TABS, type SignalTabKey } from '@/constants/signals/tabs.constants';
 import { SIGNAL_TAB_ICONS } from '../../signals/common/signals-icons';
+import SignalsBrief from '../../signals/brief/signals-brief';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
 import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
 import { AskJivaPanel } from '../../signals/alerts/ask-jiva-panel';
@@ -334,6 +335,7 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
 
   const tabContent = () => {
     switch (activeTab) {
+      case 'brief': return <SignalsBrief />;
       case 'alerts': return renderAlerts();
       case 'meetings': return renderMeetings();
       case 'workstation':

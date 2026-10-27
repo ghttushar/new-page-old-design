@@ -8,10 +8,10 @@ import styles from './dashboard.module.scss';
 /**
  * The frame every widget sits in: a drag handle in the top-left corner, an icon tile, the title and a scope line on the
  * left, the widget's own control and a menu on the right. The handle moves the widget; the bottom right corner resizes
- * it. Both show on hover.
+ * it. Both show on hover. A `fixed` frame (as on the Signals brief) has neither, and no menu: just the nugget.
  */
-export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate }: {
-  widget: WidgetInstance; onConfig: (patch: WidgetConfig) => void; onRemove: () => void; onDuplicate: () => void;
+export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate, fixed }: {
+  widget: WidgetInstance; onConfig: (patch: WidgetConfig) => void; onRemove?: () => void; onDuplicate?: () => void; fixed?: boolean;
 }) {
   const def = WIDGETS[widget.kind];
   const moreRef = useRef<HTMLButtonElement>(null);
@@ -21,9 +21,11 @@ export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate }:
   return (
     <article className={styles.widget} aria-label={def.title}>
       <header className={styles.widgetHead}>
-        <span className={`${styles.grip} dash-drag-handle`} title="Drag to move" aria-label={`Move ${def.title}`} role="button" tabIndex={-1}>
-          <DotsSixVerticalIcon size={14} weight="bold" />
-        </span>
+        {!fixed && (
+          <span className={`${styles.grip} dash-drag-handle`} title="Drag to move" aria-label={`Move ${def.title}`} role="button" tabIndex={-1}>
+            <DotsSixVerticalIcon size={14} weight="bold" />
+          </span>
+        )}
         <span className={styles.widgetIcon} aria-hidden><Icon size={16} /></span>
         <div className={styles.widgetHeading}>
           <h3 className={styles.widgetTitle}>{def.title}</h3>
@@ -38,13 +40,15 @@ export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate }:
               onChange={(v) => onConfig({ [def.header!.key]: v })}
             />
           )}
-          <button
-            ref={moreRef} type="button" className={styles.iconBtn}
-            aria-label={`${def.title} options`} aria-haspopup="menu" aria-expanded={menu}
-            onClick={() => setMenu((m) => !m)}
-          >
-            <DotsThreeIcon size={18} weight="bold" />
-          </button>
+          {!fixed && (
+            <button
+              ref={moreRef} type="button" className={styles.iconBtn}
+              aria-label={`${def.title} options`} aria-haspopup="menu" aria-expanded={menu}
+              onClick={() => setMenu((m) => !m)}
+            >
+              <DotsThreeIcon size={18} weight="bold" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -55,8 +59,8 @@ export default function WidgetFrame({ widget, onConfig, onRemove, onDuplicate }:
       {menu && moreRef.current && (
         <Floating anchor={moreRef.current} onClose={() => setMenu(false)} label={`${def.title} options`} align="end" width={180}>
           <ul role="menu" className={styles.menuList}>
-            <li><button type="button" role="menuitem" className={styles.menuItem} onClick={() => { setMenu(false); onDuplicate(); }}><CopySimpleIcon size={15} /><span>Duplicate</span></button></li>
-            <li><button type="button" role="menuitem" className={`${styles.menuItem} ${styles.menuDanger}`} onClick={() => { setMenu(false); onRemove(); }}><TrashIcon size={15} /><span>Remove</span></button></li>
+            <li><button type="button" role="menuitem" className={styles.menuItem} onClick={() => { setMenu(false); onDuplicate?.(); }}><CopySimpleIcon size={15} /><span>Duplicate</span></button></li>
+            <li><button type="button" role="menuitem" className={`${styles.menuItem} ${styles.menuDanger}`} onClick={() => { setMenu(false); onRemove?.(); }}><TrashIcon size={15} /><span>Remove</span></button></li>
           </ul>
         </Floating>
       )}

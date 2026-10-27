@@ -1,0 +1,31 @@
+// Three nuggets across the top and one across the bottom, filling the height of the tab.
+.brief {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  height: 100%;
+  padding: 14px 0 4px;
+  box-sizing: border-box;
+}
+
+.cell,
+.wide {
+  min-width: 0;
+  min-height: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+// On narrow screens the nuggets stack, each tall enough to read.
+@media (max-width: 900px) {
+  .brief {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: 360px;
+    height: auto;
+    overflow-y: auto;
+  }
+}

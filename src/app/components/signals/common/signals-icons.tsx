@@ -52,4 +52,16 @@ export function WorkStationIcon(props: IconProps) {
   );
 }
 
-export const SIGNAL_TAB_ICONS = { alerts: AlertsIcon, meetings: MeetingsIcon, workstation: WorkStationIcon } as const;
+/** Brief: three small tiles over one wide one, the layout of the brief itself. */
+export function BriefIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3.6" y="4" width="4.6" height="6.4" rx="1.2" fill="currentColor" fillOpacity={0.1} />
+      <rect x="9.7" y="4" width="4.6" height="6.4" rx="1.2" fill="currentColor" fillOpacity={0.1} />
+      <rect x="15.8" y="4" width="4.6" height="6.4" rx="1.2" fill="currentColor" fillOpacity={0.1} />
+      <rect x="3.6" y="12.6" width="16.8" height="7.4" rx="1.4" fill="currentColor" fillOpacity={0.1} />
+    </Svg>
+  );
+}
+
+export const SIGNAL_TAB_ICONS = { brief: BriefIcon, alerts: AlertsIcon, meetings: MeetingsIcon, workstation: WorkStationIcon } as const;
