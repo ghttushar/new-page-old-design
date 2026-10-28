@@ -1,0 +1,10 @@
+export { CATALOG_WIDGETS } from './catalog';
+export { INVENTORY_WIDGETS } from './inventory';
+export { PRICING_WIDGETS } from './pricing';
+export { PROFIT_WIDGETS } from './profit';
+export { ADS_WIDGETS } from './ads';
+export { MARKET_WIDGETS } from './market';
+export { REVIEWS_WIDGETS } from './reviews';
+export { HEALTH_WIDGETS } from './health';
+export { AUTOMATION_WIDGETS } from './automation';
+export { WORK_WIDGETS } from './work';

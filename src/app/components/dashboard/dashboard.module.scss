@@ -3992,3 +3992,443 @@ $scroll-thumb-hover: rgba(29, 33, 41, 0.34);
     font-variant-numeric: tabular-nums;
   }
 }
+
+// ── Insight nuggets ─────────────────────────────────────────────────────────────────────────
+// The newer nuggets share one body: a strip of figures, shares as labelled bars, an hour-by-day grid and a ranked list,
+// in any mix, with the link to the page it comes from pinned at the bottom. Colour only carries meaning: good, bad and
+// a warning, plus one quiet series palette for shares.
+
+$warn: #9a6a1f;
+$warn-bar: #d3a24a;
+
+.in {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  container-type: inline-size;
+
+  > .opLink {
+    margin-top: auto;
+  }
+}
+
+.inGood { color: $gain; }
+.inBad { color: $risk; }
+.inWarn { color: $warn; }
+
+// Shares: one labelled bar per part, so nothing depends on matching a colour to a legend.
+.inSplit {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.inSplitLabel {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: $body;
+  font: 500 12.5px/1.3 Inter, sans-serif;
+
+  b {
+    color: $ink;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.inSplitBar {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: $hair;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--seg, #b9bec9);
+    transform-origin: left;
+    transition: transform 420ms $ease;
+  }
+}
+
+.inSegA { --seg: #7d6bb0; }
+.inSegB { --seg: #6f9bb8; }
+.inSegC { --seg: #5f9e93; }
+.inSegD { --seg: #c9a15a; }
+.inSegN { --seg: #b9bec9; }
+.inSegGood { --seg: #{$gain-bar}; }
+.inSegBad { --seg: #{$risk-bar}; }
+.inSegWarn { --seg: #{$warn-bar}; }
+
+// Hour by weekday. Paused hours are hatched rather than coloured, so they read as "off", not as "low".
+.inHeatWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.inHeat {
+  width: 100%;
+  min-width: 360px;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+
+  th {
+    color: $faint;
+    font: 500 10.5px/1 Inter, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  thead th {
+    padding-bottom: 2px;
+    text-align: center;
+  }
+
+  thead th:first-child,
+  tbody th {
+    width: 30px;
+    text-align: left;
+  }
+
+  td {
+    padding: 0;
+
+    i {
+      display: block;
+      height: 24px;
+      border-radius: 4px;
+      background: $gain-bar;
+    }
+  }
+}
+
+.inHeatOff i {
+  background: repeating-linear-gradient(135deg, #eceef2 0 3px, #f7f8fa 3px 6px) !important;
+}
+
+.inHeatLegend {
+  margin: 0;
+  color: $faint;
+  font: 400 11.5px/1.4 Inter, sans-serif;
+}
+
+// The ranked list: the head stays put while the rows scroll.
+.inList {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 72px;
+
+  ul {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+  }
+}
+
+.inHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 6px;
+  border-bottom: 1px solid $hair;
+  color: $faint;
+  font: 600 11px/1.2 Inter, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.inRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 2px;
+  border-bottom: 1px solid $hair;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.inWho {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.inName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: $ink;
+  font: 600 13px/1.3 Inter, sans-serif;
+
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.inTag {
+  flex: none;
+  max-width: 50%;
+  overflow: hidden;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #f1f2f5;
+  color: $muted;
+  font: 600 10.5px/1.3 Inter, sans-serif;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inMeta {
+  overflow: hidden;
+  color: $faint;
+  font: 400 11.5px/1.35 Inter, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inBar {
+  display: block;
+  height: 4px;
+  margin-top: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: $hair;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #a9b1bf;
+    transform-origin: left;
+    transition: transform 420ms $ease;
+  }
+
+  &.inGood i { background: $gain-bar; }
+  &.inBad i { background: $risk-bar; }
+  &.inWarn i { background: $warn-bar; }
+}
+
+.inFigures {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  max-width: 45%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+
+  strong {
+    color: $ink;
+    font: 600 13px/1.2 Inter, sans-serif;
+    white-space: nowrap;
+
+    &.inGood { color: $gain; }
+    &.inBad { color: $risk; }
+    &.inWarn { color: $warn; }
+  }
+
+  small {
+    color: $faint;
+    font: 400 11.5px/1.2 Inter, sans-serif;
+    white-space: nowrap;
+  }
+}
+
+.in .opStat dd {
+  font-size: 20px;
+
+  &.inGood { color: $gain; }
+  &.inBad { color: $risk; }
+  &.inWarn { color: $warn; }
+}
+
+@container (max-width: 380px) {
+  .in .opStat {
+    padding: 10px 10px;
+  }
+
+  .in .opStat dd {
+    font-size: 17px;
+  }
+}
+
+// ── Library: the New tag, the info button and the tooltip ───────────────────────────────────
+
+.newTag {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 3px 6px;
+  border: 1px solid $tint-line;
+  border-radius: 6px;
+  background: $tint;
+  color: $primary-color;
+  font: 600 10.5px/1 Inter, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.cardArt .cardNew {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #fff;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardInfo {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -3px -6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: $faint;
+  cursor: help;
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+
+  &:hover {
+    background: $hover;
+    color: $ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 1px;
+  }
+}
+
+.tip {
+  position: fixed;
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(320px, calc(100vw - 24px));
+  padding: 14px 16px 15px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.06);
+  pointer-events: none;
+  animation: tipIn 160ms $ease both;
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  h5 {
+    margin: 0;
+    color: $faint;
+    font: 600 10.5px/1.2 Inter, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    color: $body;
+    font: 400 12.5px/1.5 Inter, sans-serif;
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.tipHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  strong {
+    color: $ink;
+    font: 600 14px/1.3 Inter, sans-serif;
+  }
+}
+
+.tip .tipMeta {
+  margin-top: -6px;
+  color: $faint;
+  font-size: 11.5px;
+}
+
+@keyframes tipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+// ── Library drawings for the newer nuggets ──────────────────────────────────────────────────
+// Each area has a faint tint for the card and one colour for the drawing's marks.
+
+.artGenAccent { fill: var(--art-accent, #8a5bb0); }
+.artGenSoft { fill: var(--art-soft, #d9cbe6); }
+.artGenNode { fill: var(--art-accent, #8a5bb0); }
+.artGaugeTrack { fill: none; stroke: #eff1f5; stroke-width: 9; stroke-linecap: round; }
+.artGaugeFill { fill: none; stroke: var(--art-accent, #8a5bb0); stroke-width: 9; stroke-linecap: round; }
+.artHeatOff { fill: #eceef2; }
+
+.artAreaSignals { --art-accent: #6f86a8; --art-soft: #cfd8e6; }
+.artAreaRules { --art-accent: #8a5bb0; --art-soft: #d9cbe6; }
+.artAreaAds { --art-accent: #7d6bb0; --art-soft: #d6d0ea; }
+.artAreaCatalog { --art-accent: #5f84b0; --art-soft: #cbd8e8; }
+.artAreaInventory { --art-accent: #4f9a94; --art-soft: #c4e0dd; }
+.artAreaPricing { --art-accent: #bb8740; --art-soft: #ecd8b8; }
+.artAreaProfit { --art-accent: #5a9b80; --art-soft: #c6e0d4; }
+.artAreaMarket { --art-accent: #6d72b8; --art-soft: #d3d5ee; }
+.artAreaReviews { --art-accent: #c07484; --art-soft: #eccfd5; }
+.artAreaHealth { --art-accent: #7a965a; --art-soft: #d5e1c4; }
+
+.cardArt.artAreaSignals { background: linear-gradient(180deg, #f3f5f9 0%, #eaeef5 100%); }
+.cardArt.artAreaRules { background: linear-gradient(180deg, #f7f2fb 0%, #efe6f6 100%); }
+.cardArt.artAreaAds { background: linear-gradient(180deg, #f5f4fa 0%, #ecebf5 100%); }
+.cardArt.artAreaCatalog { background: linear-gradient(180deg, #f2f5f9 0%, #e8eef5 100%); }
+.cardArt.artAreaInventory { background: linear-gradient(180deg, #f0f7f6 0%, #e4f0ee 100%); }
+.cardArt.artAreaPricing { background: linear-gradient(180deg, #faf6ef 0%, #f3ece0 100%); }
+.cardArt.artAreaProfit { background: linear-gradient(180deg, #f2f8f5 0%, #e7f2ec 100%); }
+.cardArt.artAreaMarket { background: linear-gradient(180deg, #f4f4fa 0%, #eaeaf5 100%); }
+.cardArt.artAreaReviews { background: linear-gradient(180deg, #fbf4f5 0%, #f4e9eb 100%); }
+.cardArt.artAreaHealth { background: linear-gradient(180deg, #f5f8f0 0%, #ecf1e3 100%); }

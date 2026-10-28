@@ -1,6 +1,6 @@
-import { CheckIcon, FloppyDiskIcon, LayoutIcon, MagnifyingGlassIcon, PencilSimpleIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon, type Icon } from '@phosphor-icons/react';
+import { CheckIcon, ConfettiIcon, FloppyDiskIcon, InfoIcon, LayoutIcon, MagnifyingGlassIcon, PencilSimpleIcon, PlusIcon, SquaresFourIcon, TrashIcon, XIcon, type Icon } from '@phosphor-icons/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import useModalLock from '../notifications/use-modal-lock';
 import type { DashboardTemplate, WidgetCategory, WidgetDefinition, WidgetInstance, WidgetKind } from './dashboard.types';
@@ -9,35 +9,127 @@ import { PRESET_TEMPLATES, type PresetTemplate } from './preset-templates';
 import { CATEGORIES, WIDGETS, WIDGET_ORDER, widgetsIn } from './widget-registry';
 import styles from './dashboard.module.scss';
 
-/** Which part of the library is open: every widget, one area's widgets, or the templates. */
-export type LibraryView = 'all' | WidgetCategory | 'templates';
+/** Which part of the library is open: every widget, the new ones, one area's widgets, or the templates. */
+export type LibraryView = 'all' | 'new' | WidgetCategory | 'templates';
+
+const NEW_COUNT = WIDGET_ORDER.filter((k) => WIDGETS[k].isNew).length;
+
+/** Closes the library card tooltip that is open, if any. */
+let closeOpenTip: (() => void) | null = null;
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
+ * Beside a library card: what the nugget shows, how it is worked out and the data it reads. It sits to the right of the
+ * card, or to the left when there is no room, and below it on a narrow screen. It never takes the pointer, so moving
+ * across the grid isn't blocked.
+ */
+export function CardTip({ id, def, anchor }: { id: string; def: WidgetDefinition; anchor: DOMRect }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const gap = 10;
+    const edge = 12;
+    let left = anchor.right + gap;
+    let top = anchor.top;
+    if (left + w > window.innerWidth - edge) left = anchor.left - gap - w;
+    if (left < edge) {
+      left = Math.min(Math.max(edge, anchor.left), window.innerWidth - w - edge);
+      top = anchor.bottom + gap + h > window.innerHeight - edge ? anchor.top - gap - h : anchor.bottom + gap;
+    }
+    setPos({ left, top: Math.min(Math.max(edge, top), window.innerHeight - h - edge) });
+  }, [anchor]);
+  return (
+    <div ref={ref} id={id} role="tooltip" className={styles.tip} style={pos ?? { left: -9999, top: 0, visibility: 'hidden' }}>
+      <div className={styles.tipHead}>
+        <strong>{def.title}</strong>
+        {def.isNew && <span className={styles.newTag}>New</span>}
+      </div>
+      {def.availability && <p className={styles.tipMeta}>{def.category} · {def.availability}</p>}
+      {def.description && <section><h5>What it shows</h5><p>{def.description}</p></section>}
+      {def.logic && <section><h5>How it’s worked out</h5><p>{def.logic}</p></section>}
+      <section><h5>Data</h5><p>{def.dataPoints.join(' · ')}</p></section>
+    </div>
+  );
+}
+
+/**
  * One nugget in the library: a simple drawing of its shape, its name and what it shows, and an Add button along the
- * bottom so the buttons line up across a row. What it is built from is in the card's tooltip.
+ * bottom so the buttons line up across a row. Newer nuggets carry a New tag and explain themselves in a tooltip (on
+ * hover, or on the info button for keyboard and touch); the others keep what they're built from in the card's title.
  */
 export function WidgetCard({ def, count, onAdd }: { def: WidgetDefinition; count: number; onAdd: () => void }) {
   const [flash, setFlash] = useState(false);
+  const [tip, setTip] = useState<DOMRect | null>(null);
+  const cardRef = useRef<HTMLLIElement>(null);
+  const timer = useRef<number>();
+  const tipId = useId();
+  const explained = Boolean(def.description || def.logic);
   useEffect(() => {
     if (!flash) return undefined;
     const id = window.setTimeout(() => setFlash(false), 1200);
     return () => window.clearTimeout(id);
   }, [flash]);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  // A fixed tooltip would drift from its card, so scrolling or resizing closes it, and so does a tap anywhere else.
+  useEffect(() => {
+    if (!tip) return undefined;
+    const close = () => setTip(null);
+    closeOpenTip = close;
+    const outside = (e: PointerEvent) => { if (!cardRef.current?.contains(e.target as Node)) close(); };
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    document.addEventListener('pointerdown', outside, true);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      document.removeEventListener('pointerdown', outside, true);
+      if (closeOpenTip === close) closeOpenTip = null;
+    };
+  }, [tip]);
+  const open = () => {
+    if (!cardRef.current) return;
+    // One tooltip at a time: opening this one closes whichever card's is open.
+    if (!tip) closeOpenTip?.();
+    setTip(cardRef.current.getBoundingClientRect());
+  };
+  // Hovering waits a moment, so sweeping the pointer across the grid doesn't flash tooltips; focus and taps open at once.
+  const show = (delay: number) => {
+    window.clearTimeout(timer.current);
+    if (delay === 0) open();
+    else timer.current = window.setTimeout(open, delay);
+  };
+  const hide = () => { window.clearTimeout(timer.current); setTip(null); };
   return (
-    <li className={styles.card} title={`Built from ${def.dataPoints.join(', ')}`}>
+    <li
+      ref={cardRef} className={styles.card} title={explained ? undefined : `Built from ${def.dataPoints.join(', ')}`}
+      onMouseEnter={explained ? () => show(350) : undefined} onMouseLeave={explained ? hide : undefined}
+    >
       <div className={`${styles.cardArt} ${nuggetTint(def.kind)}`}>
         <NuggetArt kind={def.kind} />
         {count > 0 && <span className={styles.cardOn}><CheckIcon size={11} weight="bold" />{count > 1 ? `On dashboard ×${count}` : 'On dashboard'}</span>}
+        {def.isNew && <span className={`${styles.newTag} ${styles.cardNew}`}>New</span>}
       </div>
       <div className={styles.cardBody}>
-        <strong className={styles.cardTitle}>{def.title}</strong>
+        <div className={styles.cardTitleRow}>
+          <strong className={styles.cardTitle}>{def.title}</strong>
+          {explained && (
+            <button
+              type="button" className={styles.cardInfo} aria-label={`About ${def.title}`} aria-describedby={tip ? tipId : undefined}
+              onFocus={() => show(0)} onBlur={hide} onClick={() => show(0)}
+            ><InfoIcon size={15} /></button>
+          )}
+        </div>
         <p>{def.summary}</p>
         <button type="button" className={`${styles.btnSmall} ${styles.cardAdd}`} onClick={() => { onAdd(); setFlash(true); }} aria-label={`${count > 0 ? 'Add again' : 'Add'} ${def.title}`}>
           {flash ? <><CheckIcon size={13} weight="bold" />Added</> : <><PlusIcon size={13} weight="bold" />{count > 0 ? 'Add again' : 'Add'}</>}
         </button>
       </div>
+      {tip && createPortal(<CardTip id={tipId} def={def} anchor={tip} />, document.body)}
     </li>
   );
 }
@@ -76,7 +168,7 @@ function TemplateArt({ template }: { template: DashboardTemplate }) {
 }
 
 /** A ready-made template, in the same anatomy as a nugget card: the drawing, who it is for, its name, then Apply. */
-function PresetCard({ template, current, onApply }: { template: PresetTemplate; current: boolean; onApply: () => void }) {
+export function PresetCard({ template, current, onApply }: { template: PresetTemplate; current: boolean; onApply: () => void }) {
   const TeamIcon = template.icon;
   return (
     <li className={`${styles.card} ${styles.tplPreset}`} title={template.widgets.map((w) => WIDGETS[w.kind].title).join(', ')}>
@@ -285,11 +377,12 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
   }, [widgets]);
 
   const q = query.trim().toLowerCase();
-  const matches = (d: WidgetDefinition) => !q || `${d.title} ${d.summary} ${d.dataPoints.join(' ')} ${d.category}`.toLowerCase().includes(q);
+  const matches = (d: WidgetDefinition) => (q ? `${d.title} ${d.summary} ${d.dataPoints.join(' ')} ${d.category}`.toLowerCase().includes(q) : view !== 'new' || Boolean(d.isNew));
   const categories = CATEGORIES.filter((c) => widgetsIn(c.id).length > 0);
   // Searching always looks across every area.
-  const shownCategories = view === 'all' || q ? categories : categories.filter((c) => c.id === view);
-  const meta = view !== 'all' && view !== 'templates' ? CATEGORIES.find((c) => c.id === view) : null;
+  const grouped = view === 'all' || view === 'new' || Boolean(q);
+  const shownCategories = grouped ? categories : categories.filter((c) => c.id === view);
+  const meta = CATEGORIES.find((c) => c.id === view) ?? null;
   const resultCount = WIDGET_ORDER.filter((k) => matches(WIDGETS[k])).length;
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -324,6 +417,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
           <nav className={styles.railNav} aria-label="Library">
             <span className={styles.railLabel}>Nuggets</span>
             {railItem('all', 'All nuggets', WIDGET_ORDER.length, SquaresFourIcon)}
+            {NEW_COUNT > 0 && railItem('new', 'New nuggets', NEW_COUNT, ConfettiIcon)}
             {categories.map((c) => railItem(c.id, c.label, widgetsIn(c.id).length, c.icon))}
             <span className={styles.railLabel}>Layouts</span>
             {railItem('templates', 'Templates', PRESET_TEMPLATES.length + templates.length + 1, LayoutIcon)}
@@ -333,10 +427,11 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
         <section className={styles.libMain}>
           <header className={styles.libHead}>
             <div>
-              <h3>{q ? `Results for “${query.trim()}”` : view === 'templates' ? 'Templates' : meta ? meta.label : 'All nuggets'}</h3>
+              <h3>{q ? `Results for “${query.trim()}”` : view === 'templates' ? 'Templates' : view === 'new' ? 'New nuggets' : meta ? meta.label : 'All nuggets'}</h3>
               <p>
                 {q ? `${resultCount} ${resultCount === 1 ? 'nugget' : 'nuggets'} found` : view === 'templates'
                   ? 'Start from a layout made for your team, or reuse one you saved. Click a saved template’s name to rename it.'
+                  : view === 'new' ? 'Just added, across every area. Hover a card, or use its info button, to see what it shows and how it’s worked out.'
                   : meta ? meta.description : 'Every nugget you can add, grouped by where its data comes from.'}
               </p>
             </div>
@@ -366,7 +461,7 @@ function LibraryBody({ initialView, widgets, templates, currentName, onAdd, onCl
                 if (defs.length === 0) return null;
                 return (
                   <section key={c.id} className={styles.libSection}>
-                    {(view === 'all' || q) && <h4 className={styles.libSectionTitle}>{c.label}<span>{defs.length}</span></h4>}
+                    {grouped && <h4 className={styles.libSectionTitle}>{c.label}<span>{defs.length}</span></h4>}
                     <ul className={styles.cardGrid}>
                       {defs.map((d) => <WidgetCard key={d.kind} def={d} count={counts.get(d.kind) ?? 0} onAdd={() => add(d.kind)} />)}
                     </ul>

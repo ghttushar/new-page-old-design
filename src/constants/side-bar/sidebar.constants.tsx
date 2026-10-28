@@ -263,7 +263,6 @@ export const SIDEBAR_MENU_ITEMS = (isInternalUser = false): IMenuItem[] => {
       </span>
     ),
     feature: FeaturesEnum.SIGNALS,
-    divider: true,
   });
 
   subMenuItems.unshift({

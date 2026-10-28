@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import type { WidgetKind } from './dashboard.types';
+import type { ArtShape, WidgetCategory, WidgetKind } from './dashboard.types';
+import { WIDGETS } from './widget-registry';
 import styles from './dashboard.module.scss';
 
 // A drawing of each nugget for the library. Each one shows the thing that nugget is about, large: the split of money at
@@ -282,7 +283,180 @@ function NewKeywordsArt() {
   );
 }
 
-const ART: Record<WidgetKind, { draw: () => JSX.Element; tint: string }> = {
+// ── Drawings for the newer nuggets ───────────────────────────────────────────────────────────
+// One drawing per shape of body (a ranked list, a strip of figures, a gauge, a share split, an hour-by-day grid, a feed),
+// varied by the nugget so no two cards in an area look the same. The marks take the area's colour.
+
+/** A stable 0–1 number for a nugget and a slot, so a drawing never changes between renders. */
+function vary(kind: string, slot: number): number {
+  let h = 2166136261;
+  const str = `${slot}|${kind}`;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) / 4294967296;
+}
+const span = (kind: string, slot: number, lo: number, hi: number) => lo + vary(kind, slot) * (hi - lo);
+
+/** A ranked list: a name and a sub-line on each row, a bar under some, a figure on the right. */
+function ListArt({ kind }: { kind: string }) {
+  const bars = vary(kind, 0) > 0.35;
+  return (
+    <Panel x={30} y={16} w={180} h={104} title={span(kind, 1, 34, 58)}>
+      {[0, 1, 2, 3].map((i) => {
+        const y = 33 + i * 20;
+        const share = span(kind, 10 + i, 0.25, 1) * (1 - i * 0.14);
+        const figure = span(kind, 40 + i, 20, 30);
+        return (
+          <g key={y}>
+            <rect className={i === 0 ? s.artLineDark : s.artLine} x="39" y={y} width={span(kind, 20 + i, 36, 70)} height="3.5" rx="1.75" />
+            {bars ? (
+              <>
+                <rect className={s.artRankTrack} x="39" y={y + 8} width="118" height="4" rx="2" />
+                <rect className={i === 0 ? s.artGenAccent : s.artGenSoft} x="39" y={y + 8} width={Math.max(10, 118 * share)} height="4" rx="2" />
+              </>
+            ) : <rect className={s.artLine} x="39" y={y + 8} width={span(kind, 30 + i, 30, 60)} height="2.5" rx="1.25" />}
+            <rect className={i === 0 ? s.artGenAccent : s.artLineDark} x={200 - figure} y={y} width={figure} height="4" rx="2" />
+            <rect className={s.artLine} x="182" y={y + 8} width="18" height="2.5" rx="1.25" />
+          </g>
+        );
+      })}
+    </Panel>
+  );
+}
+
+/** A strip of figures over a short list. */
+function StatsArt({ kind }: { kind: string }) {
+  const hero = Math.floor(vary(kind, 0) * 3);
+  return (
+    <Panel x={30} y={16} w={180} h={104} title={span(kind, 1, 34, 56)}>
+      {[0, 1, 2].map((i) => {
+        const x = 39 + i * 55;
+        return (
+          <g key={x}>
+            <rect className={s.artTile} x={x} y="28" width="50" height="30" rx="6" />
+            <rect className={s.artLine} x={x + 7} y="34" width={span(kind, 10 + i, 16, 30)} height="3" rx="1.5" />
+            <rect className={i === hero ? s.artGenAccent : s.artFigure} x={x + 7} y="42" width={span(kind, 20 + i, 16, 34)} height="9" rx="2" />
+          </g>
+        );
+      })}
+      {[0, 1, 2].map((i) => {
+        const y = 68 + i * 15;
+        return (
+          <g key={y}>
+            <rect className={i === 0 ? s.artLineDark : s.artLine} x="39" y={y} width={span(kind, 30 + i, 44, 76)} height="3.5" rx="1.75" />
+            <rect className={s.artLine} x="39" y={y + 6.5} width={span(kind, 40 + i, 24, 44)} height="2.5" rx="1.25" />
+            <rect className={s.artLineDark} x="172" y={y} width="28" height="3.5" rx="1.75" />
+          </g>
+        );
+      })}
+    </Panel>
+  );
+}
+
+/** A gauge: an arc filled to the reading, the figure inside it, and rows of metrics beside. */
+function GaugeArt({ kind }: { kind: string }) {
+  const level = span(kind, 0, 0.45, 0.85);
+  const at = (t: number) => {
+    const a = Math.PI * (1 - t);
+    return `${74 + 30 * Math.cos(a)} ${96 - 30 * Math.sin(a)}`;
+  };
+  return (
+    <Panel x={30} y={16} w={180} h={104} title={span(kind, 1, 34, 52)}>
+      <path className={s.artGaugeTrack} d={`M${at(0)} A30 30 0 0 1 ${at(1)}`} />
+      <path className={s.artGaugeFill} d={`M${at(0)} A30 30 0 0 1 ${at(level)}`} />
+      <rect className={s.artFigure} x="62" y="84" width="24" height="9" rx="2" />
+      {[0, 1, 2, 3].map((i) => {
+        const y = 36 + i * 18;
+        return (
+          <g key={y}>
+            <rect className={i === 0 ? s.artLineDark : s.artLine} x="118" y={y} width={span(kind, 10 + i, 34, 52)} height="3.5" rx="1.75" />
+            <rect className={s.artRankTrack} x="118" y={y + 7} width="82" height="4" rx="2" />
+            <rect className={i === 1 ? s.artHealthMid : s.artGenSoft} x="118" y={y + 7} width={82 * span(kind, 20 + i, 0.3, 0.9)} height="4" rx="2" />
+          </g>
+        );
+      })}
+    </Panel>
+  );
+}
+
+/** A share split: labelled bars, longest first. */
+function SplitArt({ kind }: { kind: string }) {
+  const shares = [0, 1, 2, 3, 4].map((i) => span(kind, 10 + i, 0.2, 1)).sort((a, b) => b - a);
+  return (
+    <Panel x={30} y={16} w={180} h={104} title={span(kind, 1, 36, 56)}>
+      {shares.map((share, i) => {
+        const y = 31 + i * 16.5;
+        return (
+          <g key={y}>
+            <rect className={i === 0 ? s.artLineDark : s.artLine} x="39" y={y} width={span(kind, 20 + i, 26, 48)} height="3" rx="1.5" />
+            <rect className={s.artLine} x="190" y={y} width="10" height="3" rx="1.5" />
+            <rect className={s.artRankTrack} x="39" y={y + 6} width="161" height="5" rx="2.5" />
+            <rect className={i === 0 ? s.artGenAccent : i === shares.length - 1 ? s.artFigure : s.artGenSoft} x="39" y={y + 6} width={161 * share} height="5" rx="2.5" />
+          </g>
+        );
+      })}
+    </Panel>
+  );
+}
+
+/** An hour-by-day grid, its early hours paused. */
+function HeatArt({ kind }: { kind: string }) {
+  const curve = [0.25, 0.15, 0.2, 0.5, 0.8, 0.9, 0.95, 0.85, 0.9, 1, 1, 0.7];
+  return (
+    <Panel x={30} y={16} w={180} h={104} title={span(kind, 1, 40, 56)}>
+      {[0, 1, 2, 3, 4, 5, 6].map((r) => (
+        <g key={r}>
+          <rect className={s.artLine} x="39" y={33 + r * 11} width="10" height="3" rx="1.5" />
+          {curve.map((c, col) => (
+            <rect
+              key={col} className={col < 3 ? s.artHeatOff : s.artGenAccent} x={54 + col * 12} y={30 + r * 11} width="10" height="9" rx="2"
+              style={col < 3 ? undefined : { opacity: 0.12 + 0.8 * c * span(kind, r * 12 + col, 0.7, 1) }}
+            />
+          ))}
+        </g>
+      ))}
+    </Panel>
+  );
+}
+
+/** A feed: a timeline of entries, each with a tag. */
+function FeedArt({ kind }: { kind: string }) {
+  return (
+    <Panel x={30} y={16} w={180} h={104} title={span(kind, 1, 36, 54)}>
+      <line className={s.artHairStroke} x1="43" y1="34" x2="43" y2="108" />
+      {[0, 1, 2, 3].map((i) => {
+        const y = 33 + i * 19;
+        const name = span(kind, 10 + i, 40, 70);
+        return (
+          <g key={y}>
+            <circle className={i === 0 ? s.artGenNode : s.artNode} cx="43" cy={y + 3} r="3.2" />
+            <rect className={i === 0 ? s.artLineDark : s.artLine} x="54" y={y} width={name} height="3.5" rx="1.75" />
+            <rect className={s.artGenSoft} x={60 + name} y={y - 1} width={span(kind, 20 + i, 16, 26)} height="6" rx="3" />
+            <rect className={s.artLine} x="54" y={y + 7} width={span(kind, 30 + i, 50, 96)} height="2.5" rx="1.25" />
+            <rect className={s.artLineDark} x="180" y={y} width="20" height="3.5" rx="1.75" />
+          </g>
+        );
+      })}
+    </Panel>
+  );
+}
+
+const SHAPES: Record<ArtShape, (p: { kind: string }) => JSX.Element> = { list: ListArt, stats: StatsArt, gauge: GaugeArt, split: SplitArt, heat: HeatArt, feed: FeedArt };
+
+/** Each area's tint and mark colour, for the newer nuggets' drawings. */
+const AREA: Record<WidgetCategory, string> = {
+  Signals: s.artAreaSignals,
+  Rules: s.artAreaRules,
+  'Campaign Manager': s.artAreaAds,
+  Catalog: s.artAreaCatalog,
+  Inventory: s.artAreaInventory,
+  Pricing: s.artAreaPricing,
+  Profitability: s.artAreaProfit,
+  'Market intelligence': s.artAreaMarket,
+  Reviews: s.artAreaReviews,
+  'Account health': s.artAreaHealth,
+};
+
+const ART: Partial<Record<WidgetKind, { draw: () => JSX.Element; tint: string }>> = {
   'value-at-risk': { draw: RiskArt, tint: s.artTintRisk },
   'opportunity-value': { draw: GainArt, tint: s.artTintGain },
   'important-messages': { draw: MessagesArt, tint: s.artTintMail },
@@ -297,17 +471,19 @@ const ART: Record<WidgetKind, { draw: () => JSX.Element; tint: string }> = {
 };
 
 /** The tint class for one nugget's drawing panel. */
-export const nuggetTint = (kind: WidgetKind) => ART[kind].tint;
+export const nuggetTint = (kind: WidgetKind) => ART[kind]?.tint ?? AREA[WIDGETS[kind].category];
 
 /**
  * The drawing for one nugget, sized to the width of its library card. With `fill`, just the drawing (without the margin
  * around it) sizes to its box, whatever its shape, as in a template's miniature dashboard.
  */
 export default function NuggetArt({ kind, fill }: { kind: WidgetKind; fill?: boolean }) {
-  const Draw = ART[kind].draw;
+  const own = ART[kind];
+  const def = WIDGETS[kind];
+  const Shape = SHAPES[def.art ?? 'list'];
   return (
-    <svg viewBox={fill ? '30 16 180 104' : '0 0 240 132'} className={fill ? s.artSvgFill : s.artSvg} preserveAspectRatio={fill ? 'xMidYMid meet' : undefined} aria-hidden focusable="false">
-      <Draw />
+    <svg viewBox={fill ? '30 16 180 104' : '0 0 240 132'} className={`${fill ? s.artSvgFill : s.artSvg} ${own ? '' : AREA[def.category]}`} preserveAspectRatio={fill ? 'xMidYMid meet' : undefined} aria-hidden focusable="false">
+      {own ? <own.draw /> : <g className={s.artLift}><Shape kind={kind} /></g>}
     </svg>
   );
 }

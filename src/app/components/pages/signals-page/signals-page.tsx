@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CaretDown, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { useSearchParams } from 'react-router-dom';
 import styles from './signals-page.module.scss';
 import { SIGNAL_TABS, type SignalTabKey } from '@/constants/signals/tabs.constants';
 import { SIGNAL_TAB_ICONS } from '../../signals/common/signals-icons';
@@ -127,6 +128,16 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
     setAlertPhase('view');
     setAskJivaOpen(false);
   }, []);
+
+  // Links can open a tab directly (?tab=meetings), from the dashboard or from a Brief nugget. The parameter is read once
+  // and cleared, so the tabs stay in charge afterwards.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedTab = searchParams.get('tab');
+  useEffect(() => {
+    if (!linkedTab) return;
+    if (SIGNAL_TABS.some((t) => t.key === linkedTab)) goTab(linkedTab as SignalTabKey);
+    setSearchParams((p) => { p.delete('tab'); return p; }, { replace: true });
+  }, [linkedTab, goTab, setSearchParams]);
 
   const openAlert = useCallback((id: string) => {
     setActiveTab('alerts');

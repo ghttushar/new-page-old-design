@@ -4,11 +4,11 @@ import type { WidgetConfig, WidgetInstance, WidgetKind } from '../../dashboard/d
 import { WIDGETS } from '../../dashboard/widget-registry';
 import styles from './signals-brief.module.scss';
 
-// The Signals brief: the four Signals nuggets from the dashboard, in a fixed layout that fills the tab. Value at risk,
-// Opportunity value and Important messages across the top, While you were away across the bottom. Nothing moves or
-// resizes and there is nothing to add; each nugget keeps its own setting (period, channel, priority).
+// The Signals brief: the Signals nuggets from the dashboard, in a fixed layout that fills the tab. Value at risk,
+// Opportunity value and Important messages across the top; While you were away and Upcoming meetings across the bottom.
+// Nothing moves or resizes and there is nothing to add; each nugget keeps its own setting (period, channel, priority).
 
-const KINDS: WidgetKind[] = ['value-at-risk', 'opportunity-value', 'important-messages', 'while-away'];
+const KINDS: WidgetKind[] = ['value-at-risk', 'opportunity-value', 'important-messages', 'while-away', 'work-meetings'];
 
 export default function SignalsBrief() {
   const [widgets, setWidgets] = useState<WidgetInstance[]>(() =>

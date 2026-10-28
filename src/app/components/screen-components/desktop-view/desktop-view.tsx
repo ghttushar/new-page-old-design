@@ -14,6 +14,7 @@ import { FeatureRoutes, FeaturesEnum } from 'src/enums/auth.enums';
 import styles from '../../../app.module.scss';
 import AdvertisingWrapper from '../../../components/pages/advertising-page/advertising-wrapper';
 import DashboardPage from '../../../components/pages/dashboard-page/dashboard-page';
+import DashboardInventory from '../../../components/pages/dashboard-inventory/dashboard-inventory';
 import DayPartingWrapper from '../../../components/pages/day-parting-wrapper/day-parting-wrapper';
 import HelpPage from '../../../components/pages/help-page/help-page';
 import Home from '../../../components/pages/home/home';
@@ -105,6 +106,10 @@ export default function DesktopView() {
               <Route
                 path="/dashboard"
                 element={<PrivateRoute component={<DashboardPage />} />}
+              />
+              <Route
+                path="/dashboard/inventory"
+                element={<PrivateRoute component={<DashboardInventory />} />}
               />
               <Route
                 path={`/${FeatureRoutes.CATALOG}/*`}

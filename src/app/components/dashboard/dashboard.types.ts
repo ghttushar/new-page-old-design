@@ -2,13 +2,31 @@ import type { Icon } from '@phosphor-icons/react';
 import type { ComponentType } from 'react';
 import type { Layouts } from 'react-grid-layout';
 
-export type WidgetKind = 'value-at-risk' | 'opportunity-value' | 'important-messages' | 'while-away' | 'rule-impact' | 'rule-compare' | 'top-performers' | 'item-health' | 'poor-keywords' | 'new-opportunities' | 'new-keywords';
+export type WidgetKind = 'value-at-risk' | 'opportunity-value' | 'important-messages' | 'while-away' | 'rule-impact' | 'rule-compare' | 'top-performers' | 'item-health' | 'poor-keywords' | 'new-opportunities' | 'new-keywords' | InsightKind;
+
+/** The nuggets built on the shared insight view (widgets/insights): one list of figures and rows per job. */
+export type InsightKind =
+  | 'cat-suppressed' | 'cat-quality' | 'cat-content-gaps' | 'cat-changes' | 'cat-variations' | 'cat-bsr' | 'cat-new-listings' | 'cat-hijackers'
+  | 'inv-cover' | 'inv-oos' | 'inv-aged' | 'inv-inbound' | 'inv-stranded' | 'inv-storage' | 'inv-reorder'
+  | 'price-buybox' | 'price-buybox-lost' | 'price-competitive' | 'price-changes' | 'price-deals'
+  | 'profit-net' | 'profit-least' | 'profit-tacos' | 'profit-fees' | 'profit-refunds' | 'profit-target'
+  | 'ads-budget-pacing' | 'ads-wasted' | 'ads-placement' | 'ads-mix' | 'ads-bid-impact' | 'ads-ntb' | 'ads-daypart'
+  | 'mi-sov' | 'mi-rank' | 'mi-sqp' | 'mi-competitors' | 'mi-basket' | 'mi-repeat'
+  | 'rev-rating' | 'rev-negative' | 'rev-themes' | 'rev-returns' | 'rev-velocity'
+  | 'health-account' | 'health-violations' | 'health-cases'
+  | 'rules-activity' | 'rules-attention'
+  | 'work-tasks' | 'work-meetings' | 'work-alert-categories';
+
+/** The library drawing a nugget without its own art uses, by the shape of what it shows. */
+export type ArtShape = 'list' | 'stats' | 'gauge' | 'split' | 'heat' | 'feed';
 
 /**
  * The area of Anarix a widget's data comes from. Each area gets its own entry in the widget library, so adding
  * widgets from another area (Advertising, Profitability, Catalog...) is one new category plus its widget definitions.
  */
-export type WidgetCategory = 'Signals' | 'Rules' | 'Campaign Manager';
+export type WidgetCategory =
+  | 'Signals' | 'Rules' | 'Campaign Manager' | 'Catalog' | 'Inventory' | 'Pricing' | 'Profitability'
+  | 'Market intelligence' | 'Reviews' | 'Account health';
 
 export interface CategoryMeta {
   id: WidgetCategory;
@@ -64,6 +82,15 @@ export interface WidgetDefinition {
   /** A small glyph for the nugget's header tile. */
   icon: Icon;
   Body: ComponentType<WidgetBodyProps>;
+  /** Shows a "New" tag on the nugget's library card. */
+  isNew?: boolean;
+  /** For the library card's tooltip: what the nugget shows, and how it is worked out. */
+  description?: string;
+  logic?: string;
+  /** Which marketplaces have the data, e.g. "Amazon and Walmart". */
+  availability?: string;
+  /** The library drawing, for nuggets without one of their own. */
+  art?: ArtShape;
 }
 
 export interface DashboardTemplate {
