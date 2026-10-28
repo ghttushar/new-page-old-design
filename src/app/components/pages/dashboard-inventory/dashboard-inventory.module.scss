@@ -33,6 +33,41 @@ $display: 'Inter Tight', Inter, sans-serif;
   }
 }
 
+// Full length: no inner scrolling, every section in the document at its real height.
+.pageFull {
+  height: auto;
+  padding-bottom: 96px;
+
+  .toc,
+  .main {
+    overflow: visible;
+  }
+}
+
+.fullToggle {
+  margin: 10px 0 0;
+  padding: 7px 10px;
+  border: 1px dashed #c9cdd6;
+  border-radius: 8px;
+  background: #fff;
+  color: $muted;
+  font: 600 12px/1.3 Inter, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease-out, color 140ms ease-out;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 1px;
+  }
+}
+
 // ── Contents ────────────────────────────────────────────────────────────────────────────────
 
 .toc {

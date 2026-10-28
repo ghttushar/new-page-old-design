@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { DashboardTemplate, WidgetInstance, WidgetKind } from '@/app/components/dashboard/dashboard.types';
 import ds from '@/app/components/dashboard/dashboard.module.scss';
 import WidgetLibrary, { type LibraryView } from '@/app/components/dashboard/widget-library';
@@ -50,6 +51,11 @@ export default function DashboardInventory() {
   const [widgets, setWidgets] = useState<WidgetInstance[]>(SAMPLE);
   const [templates, setTemplates] = useState<DashboardTemplate[]>(() => [savedTemplate(0, 'Weekly review', SAMPLE)]);
   const [currentName, setCurrentName] = useState('My dashboard');
+  // ?full lays the whole page out at its real height instead of scrolling the content column, so tools that import a
+  // page as it is laid out (html.to.design, full-page screenshots) get every section.
+  const [params, setParams] = useSearchParams();
+  const full = params.has('full');
+  const toggleFull = () => setParams((q) => { if (q.has('full')) q.delete('full'); else q.set('full', ''); return q; }, { replace: true });
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -75,13 +81,16 @@ export default function DashboardInventory() {
   };
 
   return (
-    <div className={s.page}>
+    <div className={`${s.page} ${full ? s.pageFull : ''}`}>
       <nav className={s.toc} aria-label="Contents">
         <span className={s.tocKicker}>Dashboard · screen inventory</span>
         <h1 className={s.tocTitle}>Dashboard</h1>
         {CONTENTS.map(([id, label], i) => (
           <button key={id} type="button" className={s.tocItem} onClick={() => scrollTo(id)}><em>{String(i + 1).padStart(2, '0')}</em>{label}</button>
         ))}
+        <button type="button" className={s.fullToggle} onClick={toggleFull} aria-pressed={full}>
+          {full ? 'Back to scrolling view' : 'Full-length view (for Figma)'}
+        </button>
         <span className={s.tocKicker} style={{ marginTop: 16 }}>UI groups</span>
         {GROUPS.map((g) => (
           <button key={g.id} type="button" className={s.tocItem} onClick={() => scrollTo(`group-${g.id}`)}><em>·</em>{g.name}</button>
