@@ -3,13 +3,15 @@ import type { CcDraft, ProductGroup } from '../campaign-creator.types';
 import { createGroup, moveProducts, renameGroup } from '../product-groups';
 import GroupManager from './group-manager';
 import GroupPicker, { type PickerTarget } from './group-picker';
+import RecommendedGroups, { type Recommendation } from './recommended-groups';
 
-// The picker and the manager, with their open/close state kept here, so opening one redraws only this layer
-// and not the product tables underneath, which can hold thousands of rows.
+// The picker, the manager and the recommended groups, with their open/close state kept here, so opening one redraws
+// only this layer and not the product tables underneath, which can hold thousands of rows.
 
 export interface GroupLayerHandle {
   openPicker: (anchor: DOMRect, target: Omit<PickerTarget, 'anchor'> & { ids: string[]; after?: () => void }) => void;
   openManager: (anchor: DOMRect) => void;
+  openRecommendations: (anchor: DOMRect) => void;
   /** Groups used lately, newest first. */
   recentGroups: () => ProductGroup[];
   remember: (groupId: string) => void;
@@ -23,9 +25,13 @@ const GroupLayer = forwardRef<GroupLayerHandle, {
   /** The group whose products the table is limited to, and a way to change that. */
   viewingId: string | null;
   onView: (groupId: string | null) => void;
-}>(function GroupLayer({ draft, onChange, viewingId, onView }, ref) {
+  /** The suggested groups, kept current by the step, and how one is taken. */
+  recommendations?: Recommendation[];
+  onApplyRecommendation?: (r: Recommendation) => void;
+}>(function GroupLayer({ draft, onChange, viewingId, onView, recommendations = [], onApplyRecommendation }, ref) {
   const [picker, setPicker] = useState<PickerState | null>(null);
   const [manager, setManager] = useState<DOMRect | null>(null);
+  const [suggestions, setSuggestions] = useState<DOMRect | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const groups = draft.productGroups;
   const byId = useMemo(() => new Map(groups.map((g) => [g.id, g])), [groups]);
@@ -35,6 +41,7 @@ const GroupLayer = forwardRef<GroupLayerHandle, {
   useImperativeHandle(ref, () => ({
     openPicker: (anchor, { ids, after, ...target }) => setPicker({ target: { anchor, ...target }, ids, after }),
     openManager: (anchor) => setManager(anchor),
+    openRecommendations: (anchor) => setSuggestions(anchor),
     recentGroups: () => recent.map((id) => byId.get(id)).filter(Boolean).slice(0, 3) as ProductGroup[],
     remember,
   }), [recent, byId]);
@@ -62,6 +69,12 @@ const GroupLayer = forwardRef<GroupLayerHandle, {
           onView={(id) => { onView(id); setManager(null); }}
           onRename={(id, name) => { const r = renameGroup(groups, id, name); if (r.error) return r.error; onChange({ productGroups: r.groups }); return null; }}
           onDelete={(id) => { onChange({ productGroups: groups.filter((g) => g.id !== id) }); if (viewingId === id) onView(null); }}
+        />
+      )}
+      {suggestions && (
+        <RecommendedGroups
+          anchor={suggestions} items={recommendations} onClose={() => setSuggestions(null)}
+          onApply={(r) => onApplyRecommendation?.(r)}
         />
       )}
     </>

@@ -32,25 +32,47 @@ const Thumb = ({ x, y, s }: { x: number; y: number; s: number }) => (
   </g>
 );
 
-/** Where a Sponsored Products ad shows: one promoted result among the normal results. */
+/** A five-point star centred on (cx, cy), for the rating row. */
+const starPoints = (cx: number, cy: number, r: number) => Array.from({ length: 10 }, (_, i) => {
+  const a = -Math.PI / 2 + (i * Math.PI) / 5;
+  const d = i % 2 ? r * 0.45 : r;
+  return `${(cx + d * Math.cos(a)).toFixed(2)},${(cy + d * Math.sin(a)).toFixed(2)}`;
+}).join(' ');
+
+/** An organic result beside the ad: picture, title and price. */
+const ResultTile = ({ x }: { x: number }) => (
+  <g>
+    <rect className="a-row" x={x} y="46" width="60" height="72" rx="8" />
+    <Thumb x={x + 11} y={52} s={38} />
+    <rect className="a-line a-line--dark" x={x + 8} y="96" width="44" height="4" rx="2" />
+    <rect className="a-line" x={x + 8} y="104" width="30" height="3.5" rx="1.75" />
+    <rect className="a-line a-line--dark" x={x + 8} y="111" width="20" height="4" rx="2" />
+  </g>
+);
+
+/**
+ * Where a Sponsored Products ad shows: in the search results, as the first product, tagged Sponsored, with the same
+ * picture, title, rating and buy button as the organic results beside it. Drawn on the same grid as the other formats.
+ */
 const ProductsArt = () => (
   <svg viewBox="0 0 320 136" className="ccd-ad-art__svg" aria-hidden>
     <rect className="a-bar" x="62" y="12" width="196" height="16" rx="8" />
     <circle className="a-mark-fill" cx="74" cy="20" r="3.2" />
     <rect className="a-line" x="84" y="18" width="70" height="4" rx="2" />
+    <rect className="a-card" x="54" y="38" width="212" height="88" rx="10" />
     <g className="a-dim">
-      <rect className="a-row" x="62" y="104" width="196" height="26" rx="7" />
-      <rect className="a-thumb" x="70" y="109" width="16" height="16" rx="4" />
-      <rect className="a-line" x="94" y="112" width="90" height="4" rx="2" /><rect className="a-line" x="94" y="120" width="56" height="3.5" rx="1.75" />
+      <ResultTile x={130} />
+      <ResultTile x={198} />
     </g>
     <g className="a-lift">
-      <rect className="a-card a-card--on" x="54" y="38" width="212" height="58" rx="10" />
-      <Thumb x={64} y={46} s={42} />
-      <rect className="a-line a-line--dark" x="118" y="50" width="104" height="5" rx="2.5" />
-      <rect className="a-line" x="118" y="60" width="132" height="4" rx="2" />
-      <rect className="a-line" x="118" y="68" width="84" height="4" rx="2" />
-      <rect className="a-chip" x="118" y="78" width="46" height="12" rx="6" /><rect className="a-chip-ink" x="125" y="82.6" width="32" height="3.2" rx="1.6" />
-      <rect className="a-btn" x="206" y="76" width="50" height="14" rx="7" />
+      <rect className="a-card a-card--on" x="58" y="42" width="68" height="80" rx="9" />
+      <rect className="a-chip" x="64" y="48" width="30" height="9" rx="4.5" />
+      <rect className="a-chip-ink" x="68" y="51.4" width="22" height="2.2" rx="1.1" />
+      <Thumb x={75} y={58} s={34} />
+      <rect className="a-line a-line--dark" x="64" y="97" width="52" height="4" rx="2" />
+      {[0, 1, 2, 3, 4].map((i) => <polygon key={i} className={i < 4 ? 'a-mark-fill' : 'a-line'} points={starPoints(66.5 + i * 5.5, 105, 2.2)} />)}
+      <rect className="a-btn" x="64" y="110" width="32" height="7" rx="3.5" />
+      <rect className="a-line a-line--dark" x="100" y="111.5" width="18" height="4" rx="2" />
     </g>
   </svg>
 );

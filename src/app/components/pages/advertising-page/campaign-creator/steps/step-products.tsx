@@ -2,7 +2,7 @@
 import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { GroupCell, GroupHint } from './step-product-groups';
 import GroupLayer, { type GroupLayerHandle } from './group-layer';
-import { groupIndex, groupNameIdeas, suggestGroupName } from '../product-groups';
+import { createGroup, groupIndex, groupNameIdeas, moveProducts, suggestGroupName } from '../product-groups';
 import { type CcDraft, type CcProduct, type ProductGroup } from '../campaign-creator.types';
 import {
   BAD, BORDER, BRAND, BRAND_LINE, BRAND_TINT, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, SearchIcon,
@@ -79,7 +79,6 @@ const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeL
 const FunnelIcon = () => <svg width={13} height={13} viewBox="0 0 16 16" aria-hidden {...stroke}><path d="M2 3h12l-4.6 5.4V13l-2.8-1.4V8.4z" /></svg>;
 const TrashIcon = () => <svg width={13} height={13} viewBox="0 0 16 16" aria-hidden {...stroke}><path d="M2.5 4.2h11M6 4.2V2.6h4v1.6M4 4.2l.6 9h6.8l.6-9M6.6 7v4M9.4 7v4" /></svg>;
 const BoxIcon = () => <svg width={20} height={20} viewBox="0 0 16 16" aria-hidden {...stroke}><path d="M8 1.6l5.6 2.8v6.2L8 13.4 2.4 10.6V4.4zM2.6 4.5L8 7.3l5.4-2.8M8 7.3v6" /></svg>;
-const CloseGlyph = ({ size = 10 }: { size?: number }) => <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden {...stroke} strokeWidth={1.8}><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>;
 
 function ToolButton({ children, onClick, disabled, primary, active, expanded, haspopup }: {
   children: React.ReactNode; onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void; disabled?: boolean; primary?: boolean; active?: boolean; expanded?: boolean; haspopup?: boolean;
@@ -87,7 +86,7 @@ function ToolButton({ children, onClick, disabled, primary, active, expanded, ha
   const on = primary && !disabled;
   return (
     <button
-      type="button" className="ccd-btn ccd-ghost" onClick={onClick} disabled={disabled} aria-expanded={expanded} aria-haspopup={haspopup ? 'dialog' : undefined}
+      type="button" className={on ? 'ccd-btn ccd-tool-primary' : 'ccd-btn ccd-ghost'} onClick={onClick} disabled={disabled} aria-expanded={expanded} aria-haspopup={haspopup ? 'dialog' : undefined}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, whiteSpace: 'nowrap',
         cursor: disabled ? 'not-allowed' : 'pointer', font: `500 12.5px/1.2 ${FONT}`,
@@ -128,37 +127,30 @@ function FilterButton({ filters, onChange }: { filters: Filters; onChange: (f: F
   );
 }
 
-/** The "Filters:" strip under a panel header — applied filters as removable chips. */
-function FilterStrip({ filters, onChange }: { filters: Filters; onChange: (f: Filters) => void }) {
-  const chips = activeChips(filters);
+/** The search for a panel. Compact, it sits in the toolbar beside Filter at the height of the tool buttons. */
+function SearchBox({ value, onChange, label, compact }: { value: string; onChange: (v: string) => void; label: string; compact?: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'stretch', border: `1px solid ${BORDER}`, borderRadius: 8, background: '#fff', minHeight: 34, marginBottom: 10 }}>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, padding: '5px 10px' }}>
-        <span style={{ font: `400 11.5px/1 ${FONT}`, color: TEXT_FAINT }}>Filters:</span>
-        {chips.map((c) => (
-          <span key={c.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 4px 3px 9px', borderRadius: 999, background: BRAND_TINT, color: BRAND, font: `500 12px/1.2 ${FONT}` }}>
-            {c.label}
-            <button type="button" aria-label={`Remove ${c.label}`} onClick={() => onChange({ ...filters, [c.key]: 'all' })} style={{ display: 'flex', padding: 3, border: 'none', background: 'none', color: BRAND, cursor: 'pointer', borderRadius: '50%' }}><CloseGlyph /></button>
-          </span>
-        ))}
-      </div>
-      <button
-        type="button" aria-label="Clear all filters" disabled={chips.length === 0} onClick={() => onChange(NO_FILTERS)}
-        style={{ width: 34, flex: 'none', border: 'none', borderLeft: `1px solid ${BORDER}`, background: SURFACE_MUTED, borderRadius: '0 8px 8px 0', color: chips.length ? TEXT_MUTED : '#cfd4dc', cursor: chips.length ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      ><CloseGlyph size={11} /></button>
-    </div>
+    <label style={compact ? { position: 'relative', display: 'block', flex: '0 1 220px', minWidth: 140 } : { position: 'relative', display: 'block', marginBottom: 18 }}>
+      <span style={{ position: 'absolute', left: compact ? 10 : 12, top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}><SearchIcon /></span>
+      <input
+        className="ccd-input" value={value} onChange={(e) => onChange(e.target.value)} placeholder="Search ASIN/Title" aria-label={label}
+        style={{
+          width: '100%', boxSizing: 'border-box', padding: compact ? '0 10px 0 31px' : '10px 12px 10px 34px', height: compact ? 31 : undefined,
+          border: `1px solid ${BORDER}`, borderRadius: 8, font: `400 ${compact ? 12.5 : 13}px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff',
+        }}
+      />
+    </label>
   );
 }
 
-function SearchBox({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+/** The row under a panel's title: search and Filter on the left, the panel's main action on the right. */
+function Toolbar({ children, action }: { children: React.ReactNode; action: React.ReactNode }) {
   return (
-    <label style={{ position: 'relative', display: 'block', marginBottom: 18 }}>
-      <span style={{ position: 'absolute', left: 12, top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}><SearchIcon /></span>
-      <input
-        className="ccd-input" value={value} onChange={(e) => onChange(e.target.value)} placeholder="Search ASIN/Title" aria-label={label}
-        style={{ width: '100%', padding: '10px 12px 10px 34px', border: `1px solid ${BORDER}`, borderRadius: 8, font: `400 13px/1.2 ${FONT}`, color: TEXT_PRIMARY, outline: 'none', background: '#fff' }}
-      />
-    </label>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      {children}
+      <span style={{ flex: 1 }} />
+      {action}
+    </div>
   );
 }
 
@@ -168,10 +160,22 @@ function PanelHead({ title, count, children }: { title: string; count: number; c
       <h2 style={{ margin: 0, font: `600 15px/1.3 ${FONT}`, color: TEXT_PRIMARY }}>
         {title} <span className="ccd-num">({count.toLocaleString()})</span>
       </h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{children}</div>
+      {/* Controls sit at the right edge, also when they wrap under the title. */}
+      <div style={{ display: 'flex', flex: '1 1 auto', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>{children}</div>
     </div>
   );
 }
+
+// ── Grouping recommendations ──────────────────────────────────────────────────────────────────
+// A placeholder for the recommendation engine: suggested groups, each named, with the products that belong in it.
+// Taking one adds every one of its products to Added Products and groups them under that name.
+
+const RECOMMENDED_GROUPS: { name: string; match: RegExp }[] = [
+  { name: 'Protein powders', match: /protein/i },
+  { name: 'Pre & intra workout', match: /bcaa|pre-workout|creatine|electrolyte/i },
+  { name: 'Home gym', match: /resistance|dumbbell|yoga|foam roller|kettlebell/i },
+  { name: 'Daily wellness', match: /multivitamin|omega|melatonin|collagen|fish oil/i },
+];
 
 // ── Table pieces ──────────────────────────────────────────────────────────────────────────────
 
@@ -409,6 +413,29 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
     setStagedRemove(new Set());
   }
 
+  // Each recommended group with the eligible products (and their variations) that fit it; groups with none are left out.
+  // Taking one adds them all and puts them in a group of that name; an existing group of that name takes them instead
+  // of a second one being made.
+  const recommendations = useMemo(() => {
+    const all = products.flatMap((p) => [p, ...(p.children ?? []).map((k) => ({ ...p, ...k }))]).filter((p) => p.eligible);
+    return RECOMMENDED_GROUPS.map((g) => {
+      const fit = all.filter((p) => g.match.test(p.title));
+      return { name: g.name, ids: fit.map((p) => p.id), names: fit.map((p) => p.title), colors: Array.from(new Set(fit.map((p) => p.thumbnailColor))) };
+    }).filter((g) => g.ids.length > 0);
+  }, [products]);
+  const groupNamed = (name: string) => draft.productGroups.find((g) => g.name.toLowerCase() === name.toLowerCase());
+  const isApplied = (r: { name: string; ids: string[] }) => r.ids.every((id) => added.has(id) && groupNamed(r.name)?.productIds.includes(id));
+  const suggestions = recommendations.map((r) => ({ ...r, applied: isApplied(r) }));
+  function applyRecommendation(r: { name: string; ids: string[] }) {
+    const productIds = Array.from(new Set([...draft.productIds, ...r.ids]));
+    const existing = groupNamed(r.name);
+    const productGroups = existing
+      ? moveProducts(draft.productGroups, r.ids, existing.id)
+      : createGroup({ ...draft, productIds }, r.name, r.ids).groups;
+    onChange({ productIds, productGroups });
+    setStaged((prev) => { const n = new Set(prev); r.ids.forEach((id) => n.delete(id)); return n; });
+  }
+
   const allAddedStaged = shownAdded.length > 0 && shownAdded.every((p) => stagedRemove.has(p.id));
 
   return (
@@ -419,14 +446,22 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
       <div className="ccd-product-grid">
         {/* All products */}
         <Panel pad={14} className="ccd-product-panel">
-          <SearchBox value={search} onChange={setSearch} label="Search all products" />
+          {/* Same two rows as Added Products: title with its list button, then search, Filter and the main action. */}
           <PanelHead title="All Products" count={listedCount}>
-            <FilterButton filters={filters} onChange={setFilters} />
-            <ToolButton primary disabled={staged.size === 0} haspopup onClick={(e) => addStagedToGroup(e.currentTarget.getBoundingClientRect())}>
-              Add to a group{staged.size > 0 ? ` (${staged.size})` : ''}
+            <ToolButton disabled={suggestions.length === 0} onClick={(e) => layerRef.current?.openRecommendations(e.currentTarget.getBoundingClientRect())} haspopup>
+              Recommended groups <span className="ccd-gcount ccd-num">{suggestions.length.toLocaleString()}</span>
             </ToolButton>
           </PanelHead>
-          <FilterStrip filters={filters} onChange={setFilters} />
+          <Toolbar
+            action={(
+              <ToolButton primary disabled={staged.size === 0} haspopup onClick={(e) => addStagedToGroup(e.currentTarget.getBoundingClientRect())}>
+                Add to a group{staged.size > 0 ? ` (${staged.size})` : ''}
+              </ToolButton>
+            )}
+          >
+            <SearchBox compact value={search} onChange={setSearch} label="Search all products" />
+            <FilterButton filters={filters} onChange={setFilters} />
+          </Toolbar>
 
           <div className="ccd-scroll" style={{ ...PANEL_TABLE, height: 460 }}>
             <table style={{ width: '100%', minWidth: TABLE_MIN, tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, font: `400 13px/1.4 ${FONT}` }}>
@@ -485,8 +520,9 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                             <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: SURFACE_MUTED }}>
                               <RowCheck checked={!kAdded && staged.has(k.id)} disabled={!kCanAdd} label={`Select ${k.title}`} onToggle={() => toggleSet(setStaged, k.id)} />
                             </td>
-                            <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, paddingLeft: 40, overflow: 'hidden', background: SURFACE_MUTED }}>
-                              <span aria-hidden style={{ position: 'absolute', left: 24, top: 0, bottom: '50%', width: 12, borderLeft: `1.5px solid ${BORDER}`, borderBottom: `1.5px solid ${BORDER}`, borderBottomLeftRadius: 6 }} />
+                            {/* Indented one step under the parent's picture, with a connector from it. */}
+                            <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, paddingLeft: 72, overflow: 'hidden', background: SURFACE_MUTED }}>
+                              <span aria-hidden style={{ position: 'absolute', left: 57, top: 0, bottom: '50%', width: 11, borderLeft: `1.5px solid ${BORDER}`, borderBottom: `1.5px solid ${BORDER}`, borderBottomLeftRadius: 6 }} />
                               <ProductCell title={k.title} color={p.thumbnailColor} sku={k.sku} asin={k.asin} indent />
                             </td>
                             <Metrics inventory={k.inventory} sales={Math.round(k.adSales * 3.1)} adSpend={k.adSpend} adSales={k.adSales} acos={k.acos} seed={k.asin} factor={factor} />
@@ -521,19 +557,22 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
 
         {/* Added products */}
         <Panel pad={14} className="ccd-product-panel ccd-product-panel--selected">
-          <SearchBox value={addedSearch} onChange={setAddedSearch} label="Search added products" />
           <PanelHead title="Added Products" count={selectedProducts.length}>
-            {draft.productGroups.length > 0 && (
-              <ToolButton onClick={(e) => layerRef.current?.openManager(e.currentTarget.getBoundingClientRect())} haspopup>
-                Groups <span className="ccd-gcount ccd-num">{draft.productGroups.length.toLocaleString()}</span>
-              </ToolButton>
-            )}
-            <FilterButton filters={addedFilters} onChange={setAddedFilters} />
-            <ToolButton disabled={selectedProducts.length === 0} onClick={clearAdded}>
-              <TrashIcon /> {stagedRemove.size > 0 ? `Clear (${stagedRemove.size})` : 'Clear All'}
+            {/* Always there, so both cards keep the same rows; disabled until a group exists. */}
+            <ToolButton disabled={draft.productGroups.length === 0} onClick={(e) => layerRef.current?.openManager(e.currentTarget.getBoundingClientRect())} haspopup>
+              Groups <span className="ccd-gcount ccd-num">{draft.productGroups.length.toLocaleString()}</span>
             </ToolButton>
           </PanelHead>
-          <FilterStrip filters={addedFilters} onChange={setAddedFilters} />
+          <Toolbar
+            action={(
+              <ToolButton disabled={selectedProducts.length === 0} onClick={clearAdded}>
+                <TrashIcon /> {stagedRemove.size > 0 ? `Clear (${stagedRemove.size})` : 'Clear All'}
+              </ToolButton>
+            )}
+          >
+            <SearchBox compact value={addedSearch} onChange={setAddedSearch} label="Search added products" />
+            <FilterButton filters={addedFilters} onChange={setAddedFilters} />
+          </Toolbar>
           {viewingGroup && (
             <div className="ccd-gf" role="status">
               Showing the {viewingGroup.productIds.length.toLocaleString()} {viewingGroup.productIds.length === 1 ? 'product' : 'products'} in <strong>{viewingGroup.name}</strong>
@@ -587,7 +626,10 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
       </div>
       </div>
 
-      <GroupLayer ref={layerRef} draft={draft} onChange={onChange} viewingId={viewingGroup ? viewingGroup.id : null} onView={setGroupFilter} />
+      <GroupLayer
+        ref={layerRef} draft={draft} onChange={onChange} viewingId={viewingGroup ? viewingGroup.id : null} onView={setGroupFilter}
+        recommendations={suggestions} onApplyRecommendation={applyRecommendation}
+      />
     </div>
   );
 }

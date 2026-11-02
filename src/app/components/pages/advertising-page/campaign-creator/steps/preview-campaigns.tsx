@@ -1,3 +1,4 @@
+import { GearSixIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { Scope } from '../product-groups';
 import { BIDDING_STRATEGIES, DEFAULT_BIDDING, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
@@ -17,7 +18,7 @@ import { allocateByWeights, allocationGap, allocationMatches, round2, withShares
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const sum = (list: number[]) => list.reduce((s, n) => s + n, 0);
 const PencilIcon = () => <svg width={14} height={14} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2.5 13.5l.7-3 7.6-7.6a1.4 1.4 0 0 1 2 0l.3.3a1.4 1.4 0 0 1 0 2l-7.6 7.6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-const SettingsIcon = () => <svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2 4.5h6.2M11.6 4.5H14M2 11.5h2.4M7.8 11.5H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="9.9" cy="4.5" r="1.7" stroke="currentColor" strokeWidth="1.5" /><circle cx="6.1" cy="11.5" r="1.7" stroke="currentColor" strokeWidth="1.5" /></svg>;
+const SettingsIcon = () => <GearSixIcon size={16} aria-hidden />;
 const NO_PLACEMENT: PlacementAdjust = { top: null, product: null, rest: null };
 
 export default function CampaignsTable({ draft, campaigns, selectedProducts, shownScope, onCommit, onApplyNaming }: {

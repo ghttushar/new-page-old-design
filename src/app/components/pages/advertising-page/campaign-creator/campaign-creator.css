@@ -146,12 +146,19 @@
 .ccd-tg-card { overflow: hidden; border: 1px solid var(--ccd-line-strong); border-radius: 12px; background: var(--ccd-surface); box-shadow: var(--ccd-shadow-card); }
 .ccd-tg-card > .ccd-tg-row + .ccd-tg-row { border-top: 1px solid #eceef3; }
 .ccd-tg-head, .ccd-tg-row { display: grid; grid-template-columns: 220px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-.ccd-tg-head { align-items: center; padding: 12px 16px; border-bottom: 1px solid #eceef3; background: #fafbfd; color: #8a8f99; font: 600 10px/1 Inter, sans-serif; letter-spacing: .09em; text-transform: uppercase; }
-.ccd-tg-row { position: relative; align-items: stretch; padding: 14px 16px; background: transparent; }
+.ccd-tg-head { align-items: start; padding: 12px 16px; border-bottom: 1px solid #eceef3; background: #fafbfd; }
+.ccd-tg-head > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ccd-tg-head strong { color: #3d424b; font: 600 12px/1.2 Inter, sans-serif; }
+.ccd-tg-head small { color: #8a8f99; font: 400 11.5px/1.3 Inter, sans-serif; }
+.ccd-tg-row { position: relative; align-items: stretch; padding: 14px 16px; background: transparent; transition: background-color 160ms ease-out; }
+.ccd-tg-row[data-on] { background: #fcfbfe; }
 .ccd-tg-label { display: flex; align-items: flex-start; gap: 11px; min-width: 0; padding-top: 2px; }
 .ccd-tg-label__icon { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid; border-radius: 10px; }
 .ccd-tg-label__copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.ccd-tg-label__copy strong { color: var(--ccd-ink); font: 650 14px/1.25 'Inter Tight', Inter, sans-serif; }
+.ccd-tg-label__copy strong { display: block; color: var(--ccd-ink); font: 650 14px/1.25 'Inter Tight', Inter, sans-serif; }
+.ccd-tg-label__copy strong em { display: inline-block; margin-left: 7px; vertical-align: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 5px; background: var(--ccd-brand-tint); color: var(--ccd-brand); font: 600 10.5px/1.2 Inter, sans-serif; font-style: normal; }
+.ccd-tg-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 11px 16px; border-top: 1px solid #eceef3; background: #fafbfd; color: #6b7178; font: 400 12.5px/1.45 Inter, sans-serif; }
+.ccd-tg-foot .ccd-num { color: var(--ccd-ink); font-weight: 600; }
 .ccd-tg-label__copy small { color: #7b808a; font: 400 11.5px/1.45 Inter, sans-serif; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .ccd-tg-cells { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
 .ccd-tg-cells--wide { grid-column: 2 / 4; }
@@ -159,13 +166,13 @@
 .ccd-tg-tile { display: flex; align-items: center; gap: 11px; min-height: 46px; box-sizing: border-box; padding: 10px 14px; border: 1px solid #e1e4ec; border-radius: 10px; background: var(--ccd-surface); color: var(--ccd-ink); font: 500 13.5px/1.35 Inter, sans-serif; cursor: pointer; outline: none; transition: border-color 160ms ease-out, background-color 160ms ease-out, box-shadow 200ms ease-out, transform 160ms cubic-bezier(.2,.8,.3,1); }
 .ccd-tg-tile:hover:not([aria-disabled="true"]) { border-color: #c9b6e0; box-shadow: var(--ccd-shadow-pick-hover); transform: translateY(-1px); }
 .ccd-tg-tile:focus-visible { border-color: var(--ccd-brand); }
-.ccd-tg-tile[aria-checked="true"], .ccd-tg-tile[aria-checked="true"]:hover { border-color: var(--ccd-brand); background: var(--ccd-surface); box-shadow: none; transform: none; }
+.ccd-tg-tile[aria-checked="true"], .ccd-tg-tile[aria-checked="true"]:hover { border-color: var(--ccd-brand); background: var(--ccd-brand-tint); box-shadow: none; transform: none; }
 .ccd-tg-tile[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
 .ccd-tg-tile--stacked { align-items: flex-start; }
 .ccd-tg-tile--stacked .ccd-tg-tile__text { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; }
 .ccd-tg-tile--stacked small { color: #7b808a; font: 400 12px/1.45 Inter, sans-serif; }
 .ccd-tg-tile__text { min-width: 0; display: flex; align-items: center; gap: 8px; }
-.ccd-tg-na { flex: none; min-height: 46px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 1px dashed #dcdfe7; border-radius: 10px; background: repeating-linear-gradient(135deg, #fafbfd 0 8px, #f6f7fa 8px 16px); color: #a3a8b2; font: 500 12px/1 Inter, sans-serif; }
+.ccd-tg-na { flex: none; min-height: 46px; box-sizing: border-box; display: flex; align-items: center; padding: 0 14px; border: 1px dashed #e4e6ec; border-radius: 10px; color: #b0b4bc; font: 400 12.5px/1 Inter, sans-serif; }
 .ccd-tg-row--auto { grid-template-columns: 220px minmax(0, 1fr); }
 .ccd-tg-row--auto .ccd-tg-cells--wide { grid-column: 2; }
 .ccd-tg-note { grid-column: 1 / -1; margin: 2px 0 0; padding: 10px 12px; border-radius: 8px; background: #faf8fc; color: var(--ccd-muted, #6b7178); font: 400 12px/1.5 Inter, sans-serif; }
@@ -882,22 +889,16 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 @media (prefers-reduced-motion: reduce) { .ccd-gc, .ccd-gp-create, .ccd-gp-go, .ccd-gp-ideas button, .ccd-gm-view, .ccd-gm-act { transition: none; } }
 
 /* The products tile of the flow summary, as a group dropdown */
-/* The group dropdown written into the page heading: the group's name in brand ink, a dotted underline and a chevron. */
+/* The group dropdown written into the page heading: the group's name in a white button, framed like the other header
+   controls, the same on every step. Baseline, so the name inside the button sits on the same line as the heading's words. */
 .ccd-h-group { white-space: nowrap; }
-.ccd-gs-inline { display: inline-block; max-width: 100%; margin: 0 -2px 0 -4px; vertical-align: bottom; }
-.ccd-gs-trigger { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; padding: 0 2px 0 4px; border: 0; border-radius: 6px; background: transparent; color: var(--ccd-brand); font: inherit; font-weight: 700; text-align: left; cursor: pointer; transition: background-color 140ms ease-out; }
-.ccd-gs-trigger:hover, .ccd-gs-inline.is-open .ccd-gs-trigger { background: #f3f4f7; }
+.ccd-gs-inline { display: inline-block; max-width: 100%; margin: 0 0 0 4px; vertical-align: baseline; }
+.ccd-gs-trigger { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 3px 8px 3px 12px; border: 1px solid #dfe2e9; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .05); color: var(--ccd-brand); font: inherit; font-weight: 700; text-align: left; cursor: pointer; transition: border-color 140ms ease-out, background-color 140ms ease-out; }
+.ccd-gs-trigger:hover { border-color: var(--ccd-brand-line); }
+.ccd-gs-inline.is-open .ccd-gs-trigger { border-color: var(--ccd-brand); }
+.ccd-gs-trigger:active { transform: translateY(1px); }
 .ccd-gs-trigger:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 1px; }
-.ccd-gs-title { flex: none; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: underline dotted; text-decoration-color: color-mix(in srgb, var(--ccd-brand) 45%, transparent); text-decoration-thickness: 2px; text-underline-offset: 5px; }
-.ccd-gs-trigger:hover .ccd-gs-title, .ccd-gs-inline.is-open .ccd-gs-title { text-decoration-color: var(--ccd-brand); }
-/* On Structure the group name is a white button, framed like the other header controls. */
-/* Baseline, so the name inside the button sits on the same line as the heading's words. */
-.ccd-step-structure .ccd-gs-inline { margin: 0 0 0 4px; vertical-align: baseline; }
-.ccd-step-structure .ccd-gs-trigger { gap: 4px; padding: 3px 8px 3px 12px; border: 1px solid #dfe2e9; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .05); transition: border-color 140ms ease-out, background-color 140ms ease-out; }
-.ccd-step-structure .ccd-gs-title { text-decoration: none; }
-.ccd-step-structure .ccd-gs-trigger:hover { border-color: var(--ccd-brand-line); background: #fff; }
-.ccd-step-structure .ccd-gs-inline.is-open .ccd-gs-trigger { border-color: var(--ccd-brand); background: #fff; }
-.ccd-step-structure .ccd-gs-trigger:active { transform: translateY(1px); }
+.ccd-gs-title { flex: none; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ccd-gs-chev { display: flex; flex: none; transition: transform 160ms ease-out; }
 .ccd-gs-inline.is-open .ccd-gs-chev { transform: rotate(180deg); }
 .ccd-gs-menu { position: fixed; z-index: 1400; max-width: calc(100vw - 16px); border: 1px solid #e4e7ee; border-radius: 12px; background: #fff; box-shadow: 0 16px 36px -18px rgba(29, 33, 41, .35); font-family: Inter, sans-serif; overflow: hidden; }
@@ -1018,3 +1019,29 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-jb-cross { background: #c0443d; }
 .ccd-jb-tile.is-issue { border-color: #efc4c0; }
 .ccd-jb-active.is-issue { position: relative; border-color: #d98a84; background: #fffafa; }
+
+/* Products: the Recommended groups menu. Each row is a group: its products as a colour stack, name, a glimpse of
+   the products, and the count. Clicking a row adds the group; an added one goes grey with a tick. */
+.ccd-rg-head { display: flex; flex-direction: column; gap: 3px; padding: 13px 14px 9px; border-bottom: 1px solid #eef0f5; }
+.ccd-rg-head strong { color: #1d2129; font: 650 14px/1.2 Inter, sans-serif; }
+.ccd-rg-head span { color: #7b808a; font: 400 12px/1.3 Inter, sans-serif; }
+.ccd-rg-list { display: flex; flex-direction: column; gap: 2px; max-height: 340px; padding: 6px; overflow-y: auto; }
+.ccd-rg-item { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 9px 10px; border: 0; border-radius: 9px; background: none; color: inherit; text-align: left; cursor: pointer; transition: background-color 120ms ease-out; }
+.ccd-rg-item:hover:not(:disabled) { background: #f4f5f8; }
+.ccd-rg-item:hover:not(:disabled) .ccd-rg-meta { color: #1d2129; }
+.ccd-rg-item:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: -2px; }
+.ccd-rg-item:disabled { cursor: default; }
+.ccd-rg-swatches { position: relative; display: flex; align-items: center; height: 30px; }
+.ccd-rg-swatches i { width: 22px; height: 22px; margin-right: -13px; border: 2px solid #fff; border-radius: 6px; box-shadow: 0 1px 2px rgba(29, 33, 41, .12); }
+.ccd-rg-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ccd-rg-name { overflow: hidden; color: #1d2129; font: 600 13px/1.25 Inter, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.ccd-rg-sub { overflow: hidden; color: #7b808a; font: 400 11.5px/1.35 Inter, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.ccd-rg-meta { display: inline-flex; align-items: center; gap: 4px; color: #7b808a; font: 500 11.5px/1 Inter, sans-serif; white-space: nowrap; transition: color 120ms ease-out; }
+.ccd-rg-item:disabled .ccd-rg-name, .ccd-rg-item:disabled .ccd-rg-meta { color: #9aa0ab; }
+.ccd-rg-item:disabled .ccd-rg-swatches { opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .ccd-rg-item, .ccd-rg-meta { transition: none; } }
+
+/* Products: a filled tool button (Add to a group with products ticked) darkens on hover instead of turning grey. */
+.ccd-tool-primary:hover:not(:disabled) { background: #643a85 !important; border-color: #643a85 !important; }
+.ccd-tool-primary:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
+

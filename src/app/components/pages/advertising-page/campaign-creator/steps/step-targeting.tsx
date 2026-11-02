@@ -26,50 +26,77 @@ const INTENT = {
 
 // ── Matrix pieces ─────────────────────────────────────────────────────────────────────────────
 
-/** A selectable target: a rounded tile that lifts on hover and fills with the brand tint when picked. */
-function Tile({ checked, disabled, label, onToggle, children }: {
-  checked: boolean; disabled?: boolean; label: string; onToggle: () => void; children: React.ReactNode;
+/** What each target is called in the matrix, and what it does in plain words. */
+const TARGET_COPY: Record<TargetingStrategyId, { name: string; hint: string }> = {
+  auto: { name: 'Auto campaign', hint: 'Amazon picks the searches and pages for you' },
+  brand: { name: 'Brand keywords', hint: 'Searches that include your brand name' },
+  competitor: { name: 'Competitor keywords', hint: "Searches for rival brands' names" },
+  broad: { name: 'Broad match', hint: 'Related searches, words in any order' },
+  phrase: { name: 'Phrase match', hint: 'Searches that contain your phrase' },
+  exact: { name: 'Exact match', hint: 'Only your exact search term' },
+  category: { name: 'Product category', hint: 'Every product page in a category' },
+  product: { name: 'Single product', hint: 'Product pages you pick, by ASIN' },
+};
+
+/** A selectable target: its name with a plain-words line under it, tinted when picked. */
+function Tile({ checked, disabled, label, hint, onToggle }: {
+  checked: boolean; disabled?: boolean; label: string; hint?: string; onToggle: () => void;
 }) {
   return (
     <div
       role="checkbox" aria-checked={checked} aria-label={label} aria-disabled={disabled} tabIndex={disabled ? -1 : 0}
       onClick={() => !disabled && onToggle()}
       onKeyDown={(e) => { if (!disabled && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); onToggle(); } }}
-      className="ccd-tg-tile"
+      className="ccd-tg-tile ccd-tg-tile--stacked"
+      title={disabled ? 'Not available on this marketplace' : undefined}
     >
       <Checkbox checked={checked} disabled={disabled} />
-      <span className="ccd-tg-tile__text">{children}</span>
+      <span className="ccd-tg-tile__text">
+        {label}
+        {hint && <small>{hint}</small>}
+      </span>
     </div>
   );
 }
 
-function NotApplicable() {
-  return <div className="ccd-tg-na">Not applicable</div>;
+function NotApplicable({ kind }: { kind: string }) {
+  return <div className="ccd-tg-na">No {kind} targets</div>;
 }
 
-function IntentLabel({ intent, name, info }: { intent: keyof typeof INTENT; name: string; info: string }) {
+/** The column headings, each with a line saying where the ad shows. */
+function TableHead() {
+  return (
+    <div className="ccd-tg-head">
+      <span><strong>Strategy</strong><small>What you want to achieve</small></span>
+      <span><strong>Keyword targets</strong><small>Show the ad when shoppers search</small></span>
+      <span><strong>Product targets</strong><small>Show the ad on product pages</small></span>
+    </div>
+  );
+}
+
+function IntentLabel({ intent, name, info, count }: { intent: keyof typeof INTENT; name: string; info: string; count?: number }) {
   return (
     <div className="ccd-tg-label">
       <span className="ccd-tg-label__copy" title={info}>
-        <strong>{name}</strong>
+        <strong>{name}{count ? <em className="ccd-num">{count} on</em> : null}</strong>
         <small>{info}</small>
       </span>
     </div>
   );
 }
 
-function IntentRow({ intent, name, info, keywordCells, productCells, wide }: {
-  intent: keyof typeof INTENT; name: string; info: string; keywordCells: React.ReactNode[]; productCells: React.ReactNode[]; wide?: boolean;
+function IntentRow({ intent, name, info, keywordCells, productCells, count, wide }: {
+  intent: keyof typeof INTENT; name: string; info: string; keywordCells: React.ReactNode[]; productCells: React.ReactNode[]; count?: number; wide?: boolean;
 }) {
   return (
-    <div className="ccd-tg-row" style={{ ['--tg-accent' as string]: INTENT[intent].color }}>
-      <IntentLabel intent={intent} name={name} info={info} />
+    <div className="ccd-tg-row" data-on={count ? '' : undefined}>
+      <IntentLabel intent={intent} name={name} info={info} count={count} />
       {wide ? (
         <div className="ccd-tg-cells ccd-tg-cells--wide">{keywordCells}</div>
       ) : (
         <>
-          <div className="ccd-tg-cells">{keywordCells.length ? keywordCells : <NotApplicable />}</div>
-          <div className="ccd-tg-cells">{productCells.length ? productCells : <NotApplicable />}</div>
+          <div className="ccd-tg-cells">{keywordCells.length ? keywordCells : <NotApplicable kind="keyword" />}</div>
+          <div className="ccd-tg-cells">{productCells.length ? productCells : <NotApplicable kind="product" />}</div>
         </>
       )}
     </div>
@@ -85,15 +112,20 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
   function toggle(id: TargetingStrategyId) {
     const set = new Set(draft.targetingStrategies);
     if (set.has(id)) set.delete(id); else set.add(id);
-    // Turning Auto off clears its types too; they are picked again, from nothing, when Auto comes back.
-    onChange(id === 'auto' && !set.has('auto') ? { targetingStrategies: Array.from(set), autoTypes: [] } : { targetingStrategies: Array.from(set) });
+    // Turning Auto on picks every Auto type, and turning it off clears them; the shopper can then untick the ones they don't want.
+    if (id === 'auto') onChange({ targetingStrategies: Array.from(set), autoTypes: set.has('auto') ? AUTO_TYPE_CATALOG.map((a) => a.id) : [] });
+    else onChange({ targetingStrategies: Array.from(set) });
   }
 
-  const cell = (id: TargetingStrategyId, text: string, lead?: React.ReactNode) => (
-    <Tile key={id} label={text} checked={draft.targetingStrategies.includes(id)} disabled={!supported.includes(id)} onToggle={() => toggle(id)}>
-      {lead}{text}
-    </Tile>
+  const cell = (id: TargetingStrategyId) => (
+    <Tile
+      key={id} label={TARGET_COPY[id].name} hint={TARGET_COPY[id].hint}
+      checked={draft.targetingStrategies.includes(id)} disabled={!supported.includes(id)} onToggle={() => toggle(id)}
+    />
   );
+  const countOf = (...ids: TargetingStrategyId[]) => ids.filter((id) => draft.targetingStrategies.includes(id)).length;
+  const MANUAL_ORDER: TargetingStrategyId[] = ['brand', 'competitor', 'broad', 'phrase', 'exact', 'category', 'product'];
+  const manualPicked = MANUAL_ORDER.filter((id) => draft.targetingStrategies.includes(id));
 
   // Combination validation (section 6.4).
   const selected = draft.targetingStrategies;
@@ -119,18 +151,13 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Auto</div>
         <div className="ccd-tg-card">
-        <div className="ccd-tg-head" aria-hidden>
-          <span>Strategy</span>
-          <span>Keyword targets</span>
-          <span>Product targets</span>
-        </div>
-        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto', 'Auto campaign')]} productCells={[]} />
-        {/* Stays in place when Auto is off, locked, so the page does not jump and the picks come back with Auto. */}
-          <div className="ccd-tg-row ccd-tg-row--auto" style={{ ['--tg-accent' as string]: INTENT.auto.color }}>
+        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto')]} productCells={[]} count={countOf('auto')} wide />
+        {/* Stays in place when Auto is off, locked, so the page does not jump. */}
+          <div className="ccd-tg-row ccd-tg-row--auto" data-on={hasAuto ? '' : undefined}>
             <div className="ccd-tg-label">
               <span className="ccd-tg-label__copy">
-                <strong>Auto targeting types</strong>
-                <small>{hasAuto ? (autoTypes.length ? 'Keep at least one selected.' : 'Pick at least one.') : 'Turn on Auto campaign to choose these.'}</small>
+                <strong>Auto targeting types{hasAuto && autoTypes.length ? <em className="ccd-num">{autoTypes.length} on</em> : null}</strong>
+                <small>{hasAuto ? 'All picked for you. Untick any you don’t want; keep at least one.' : 'Turn on Auto campaign to choose these.'}</small>
               </span>
             </div>
             <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-cells--two">
@@ -163,37 +190,37 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Manual</div>
         <div className="ccd-tg-card">
-        <div className="ccd-tg-head" aria-hidden>
-          <span>Strategy</span>
-          <span>Keyword targets</span>
-          <span>Product targets</span>
-        </div>
+        <TableHead />
         <IntentRow
           intent="brand" name="Brand" info="Defend your own brand terms and protect your listings from competitors."
-          keywordCells={[cell('brand', 'Brand keywords')]} productCells={[]}
+          keywordCells={[cell('brand')]} productCells={[]} count={countOf('brand')}
         />
         <IntentRow
           intent="competitor" name="Competitor" info="Reach shoppers who are considering competing products and brands."
-          keywordCells={[cell('competitor', 'Core competitor keywords')]} productCells={[]}
+          keywordCells={[cell('competitor')]} productCells={[]} count={countOf('competitor')}
         />
         <IntentRow
           intent="research" name="Research" info="Discover new search terms and products with broader reach."
-          keywordCells={[cell('broad', 'Broad match'), cell('phrase', 'Phrase match')]}
-          productCells={[cell('category', 'Product category')]}
+          keywordCells={[cell('broad'), cell('phrase')]}
+          productCells={[cell('category')]} count={countOf('broad', 'phrase', 'category')}
         />
         <IntentRow
           intent="performance" name="Performance" info="Capture high-intent shoppers with precise, conversion-focused targeting."
-          keywordCells={[cell('exact', 'Exact match')]}
-          productCells={[cell('product', 'Single product')]}
+          keywordCells={[cell('exact')]}
+          productCells={[cell('product')]} count={countOf('exact', 'product')}
         />
-
+        {manualPicked.length > 0 && (
+          <div className="ccd-tg-foot" aria-live="polite">
+            <span className="ccd-num">{manualPicked.length} picked</span>{manualPicked.map((id) => TARGET_COPY[id].name).join(' · ')}
+          </div>
+        )}
         </div>
         </div>
         )}
       </div>
 
       <div style={{ marginTop: 14 }}>
-        {selected.length > 0 && unsupported.length === 0 && !productStyleOnly && (
+        {mode === 'auto' && selected.length > 0 && unsupported.length === 0 && !productStyleOnly && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, font: `500 12.5px/1.5 ${FONT}`, color: GOOD }}>
             <span aria-hidden>✓</span> {selected.length} {selected.length === 1 ? 'strategy' : 'strategies'} selected — supported combination
           </div>
