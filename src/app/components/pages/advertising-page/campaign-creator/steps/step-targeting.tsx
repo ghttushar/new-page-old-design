@@ -74,23 +74,23 @@ function TableHead() {
   );
 }
 
-function IntentLabel({ intent, name, info, count }: { intent: keyof typeof INTENT; name: string; info: string; count?: number }) {
+function IntentLabel({ intent, name, info }: { intent: keyof typeof INTENT; name: string; info: string }) {
   return (
     <div className="ccd-tg-label">
       <span className="ccd-tg-label__copy" title={info}>
-        <strong>{name}{count ? <em className="ccd-num">{count} on</em> : null}</strong>
+        <strong>{name}</strong>
         <small>{info}</small>
       </span>
     </div>
   );
 }
 
-function IntentRow({ intent, name, info, keywordCells, productCells, count, wide }: {
-  intent: keyof typeof INTENT; name: string; info: string; keywordCells: React.ReactNode[]; productCells: React.ReactNode[]; count?: number; wide?: boolean;
+function IntentRow({ intent, name, info, keywordCells, productCells, wide }: {
+  intent: keyof typeof INTENT; name: string; info: string; keywordCells: React.ReactNode[]; productCells: React.ReactNode[]; wide?: boolean;
 }) {
   return (
-    <div className="ccd-tg-row" data-on={count ? '' : undefined}>
-      <IntentLabel intent={intent} name={name} info={info} count={count} />
+    <div className="ccd-tg-row">
+      <IntentLabel intent={intent} name={name} info={info} />
       {wide ? (
         <div className="ccd-tg-cells ccd-tg-cells--wide">{keywordCells}</div>
       ) : (
@@ -123,7 +123,6 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
       checked={draft.targetingStrategies.includes(id)} disabled={!supported.includes(id)} onToggle={() => toggle(id)}
     />
   );
-  const countOf = (...ids: TargetingStrategyId[]) => ids.filter((id) => draft.targetingStrategies.includes(id)).length;
   const MANUAL_ORDER: TargetingStrategyId[] = ['brand', 'competitor', 'broad', 'phrase', 'exact', 'category', 'product'];
   const manualPicked = MANUAL_ORDER.filter((id) => draft.targetingStrategies.includes(id));
 
@@ -151,12 +150,12 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Auto</div>
         <div className="ccd-tg-card">
-        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto')]} productCells={[]} count={countOf('auto')} wide />
+        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto')]} productCells={[]} wide />
         {/* Stays in place when Auto is off, locked, so the page does not jump. */}
-          <div className="ccd-tg-row ccd-tg-row--auto" data-on={hasAuto ? '' : undefined}>
+          <div className="ccd-tg-row ccd-tg-row--auto">
             <div className="ccd-tg-label">
               <span className="ccd-tg-label__copy">
-                <strong>Auto targeting types{hasAuto && autoTypes.length ? <em className="ccd-num">{autoTypes.length} on</em> : null}</strong>
+                <strong>Auto targeting types</strong>
                 <small>{hasAuto ? 'All picked for you. Untick any you don’t want; keep at least one.' : 'Turn on Auto campaign to choose these.'}</small>
               </span>
             </div>
@@ -193,21 +192,21 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <TableHead />
         <IntentRow
           intent="brand" name="Brand" info="Defend your own brand terms and protect your listings from competitors."
-          keywordCells={[cell('brand')]} productCells={[]} count={countOf('brand')}
+          keywordCells={[cell('brand')]} productCells={[]}
         />
         <IntentRow
           intent="competitor" name="Competitor" info="Reach shoppers who are considering competing products and brands."
-          keywordCells={[cell('competitor')]} productCells={[]} count={countOf('competitor')}
+          keywordCells={[cell('competitor')]} productCells={[]}
         />
         <IntentRow
           intent="research" name="Research" info="Discover new search terms and products with broader reach."
           keywordCells={[cell('broad'), cell('phrase')]}
-          productCells={[cell('category')]} count={countOf('broad', 'phrase', 'category')}
+          productCells={[cell('category')]}
         />
         <IntentRow
           intent="performance" name="Performance" info="Capture high-intent shoppers with precise, conversion-focused targeting."
           keywordCells={[cell('exact')]}
-          productCells={[cell('product')]} count={countOf('exact', 'product')}
+          productCells={[cell('product')]}
         />
         {manualPicked.length > 0 && (
           <div className="ccd-tg-foot" aria-live="polite">

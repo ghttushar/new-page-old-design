@@ -105,7 +105,8 @@
 .ccd-ad-art { position: relative; height: 164px; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid #eceef3;
   background: radial-gradient(260px 150px at 50% 0%, rgba(138, 86, 179, .16), transparent 70%), linear-gradient(180deg, #f7f4fb 0%, #f1f3f8 100%); }
 .ccd-ad-art::before { content: ''; position: absolute; inset: 0; opacity: .55; background-image: radial-gradient(rgba(119, 70, 155, .16) 1px, transparent 1.2px); background-size: 16px 16px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 90%); mask-image: linear-gradient(180deg, transparent, #000 90%); }
-.ccd-ad-art__svg { position: relative; width: 100%; height: 100%; padding-top: 14px; box-sizing: border-box; overflow: visible; transition: transform 320ms cubic-bezier(.2,.8,.3,1); }
+/* Pinned to the art box, so it scales to fit the fixed height however wide the card gets, instead of growing with the width and being cropped. */
+.ccd-ad-art__svg { position: absolute; inset: 0; width: 100%; height: 100%; padding-top: 14px; box-sizing: border-box; overflow: visible; transition: transform 320ms cubic-bezier(.2,.8,.3,1); }
 .ccd-ad-art__svg .a-bar { fill: #fff; stroke: #e0e3ec; stroke-width: 1; }
 .ccd-ad-art__svg .a-card { fill: #fff; stroke: #e0e3ec; stroke-width: 1; filter: drop-shadow(0 6px 10px rgba(32, 33, 41, .06)); }
 .ccd-ad-art__svg .a-card--on { stroke: #8a56b3; stroke-width: 1.4; }
@@ -150,13 +151,11 @@
 .ccd-tg-head > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .ccd-tg-head strong { color: #3d424b; font: 600 12px/1.2 Inter, sans-serif; }
 .ccd-tg-head small { color: #8a8f99; font: 400 11.5px/1.3 Inter, sans-serif; }
-.ccd-tg-row { position: relative; align-items: stretch; padding: 14px 16px; background: transparent; transition: background-color 160ms ease-out; }
-.ccd-tg-row[data-on] { background: #fcfbfe; }
+.ccd-tg-row { position: relative; align-items: stretch; padding: 14px 16px; background: transparent; }
 .ccd-tg-label { display: flex; align-items: flex-start; gap: 11px; min-width: 0; padding-top: 2px; }
 .ccd-tg-label__icon { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid; border-radius: 10px; }
 .ccd-tg-label__copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .ccd-tg-label__copy strong { display: block; color: var(--ccd-ink); font: 650 14px/1.25 'Inter Tight', Inter, sans-serif; }
-.ccd-tg-label__copy strong em { display: inline-block; margin-left: 7px; vertical-align: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 5px; background: var(--ccd-brand-tint); color: var(--ccd-brand); font: 600 10.5px/1.2 Inter, sans-serif; font-style: normal; }
 .ccd-tg-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 11px 16px; border-top: 1px solid #eceef3; background: #fafbfd; color: #6b7178; font: 400 12.5px/1.45 Inter, sans-serif; }
 .ccd-tg-foot .ccd-num { color: var(--ccd-ink); font-weight: 600; }
 .ccd-tg-label__copy small { color: #7b808a; font: 400 11.5px/1.45 Inter, sans-serif; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -166,7 +165,7 @@
 .ccd-tg-tile { display: flex; align-items: center; gap: 11px; min-height: 46px; box-sizing: border-box; padding: 10px 14px; border: 1px solid #e1e4ec; border-radius: 10px; background: var(--ccd-surface); color: var(--ccd-ink); font: 500 13.5px/1.35 Inter, sans-serif; cursor: pointer; outline: none; transition: border-color 160ms ease-out, background-color 160ms ease-out, box-shadow 200ms ease-out, transform 160ms cubic-bezier(.2,.8,.3,1); }
 .ccd-tg-tile:hover:not([aria-disabled="true"]) { border-color: #c9b6e0; box-shadow: var(--ccd-shadow-pick-hover); transform: translateY(-1px); }
 .ccd-tg-tile:focus-visible { border-color: var(--ccd-brand); }
-.ccd-tg-tile[aria-checked="true"], .ccd-tg-tile[aria-checked="true"]:hover { border-color: var(--ccd-brand); background: var(--ccd-brand-tint); box-shadow: none; transform: none; }
+.ccd-tg-tile[aria-checked="true"], .ccd-tg-tile[aria-checked="true"]:hover { border-color: var(--ccd-brand); background: var(--ccd-surface); box-shadow: none; transform: none; }
 .ccd-tg-tile[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
 .ccd-tg-tile--stacked { align-items: flex-start; }
 .ccd-tg-tile--stacked .ccd-tg-tile__text { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; }
