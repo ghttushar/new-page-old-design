@@ -680,13 +680,14 @@ export const NO_EXTRA_OBJECTIVES: ExtraObjectives = { roas: null, maxCpc: null, 
 export interface NamingSettings {
   /** Adds the Anarix prefix and AI identifier to campaign names. */
   tagStatus: boolean;
-  campaignTokens: ('parentAsin' | 'campaignType' | 'adType' | 'biddingStrategy' | 'targetType')[];
+  /** The campaign name's parts in order; 'anarix' is the tag prefix, placed wherever the user drags it. */
+  campaignTokens: ('anarix' | 'parentAsin' | 'campaignType' | 'adType' | 'biddingStrategy' | 'targetType')[];
   adGroupTokens: ('adGroupText' | 'targetType')[];
 }
 
 export const DEFAULT_NAMING: NamingSettings = {
   tagStatus: true,
-  campaignTokens: ['parentAsin', 'campaignType', 'targetType'],
+  campaignTokens: ['anarix', 'parentAsin', 'campaignType', 'targetType'],
   adGroupTokens: ['adGroupText', 'targetType'],
 };
 
@@ -713,8 +714,9 @@ export const NO_BID_MULTIPLIERS: BidMultipliers = {
 };
 
 /** Whether the Targeting page can't be left yet: nothing is picked, or Auto is on with no Auto type picked. */
-export function targetingBlocked(s: Pick<CcDraft, 'targetingStrategies' | 'autoTypes'>) {
-  return s.targetingStrategies.length === 0 || (s.targetingStrategies.includes('auto') && s.autoTypes.length === 0);
+export function targetingBlocked(s: Pick<CcDraft, 'targetingStrategies' | 'autoTypes'>, marketplace?: Marketplace | null) {
+  // Walmart has no Auto targeting types to pick (its Auto row holds Expanded targeting instead), so only Amazon needs one.
+  return s.targetingStrategies.length === 0 || (s.targetingStrategies.includes('auto') && marketplace !== 'walmart' && s.autoTypes.length === 0);
 }
 
 /**

@@ -126,7 +126,7 @@ export default function CampaignCreator() {
   // Groups that still need a choice on the page being shown, marked in the dropdown.
   const pendingScopes = new Set(scopes.filter((g) => {
     if (step === 'objectives') return objectivesBlocked(g.settings, draft.marketplace) || Boolean(issue && g.settings.dailyBudget < issue.min);
-    if (step === 'targeting') return targetingBlocked(g.settings);
+    if (step === 'targeting') return targetingBlocked(g.settings, draft.marketplace);
     if (step === 'structure') return !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns);
     return false;
   }).map((g) => g.id));
@@ -222,7 +222,7 @@ export default function CampaignCreator() {
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
     keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue', disabled: gateScopes.some((g) => keywordsBlocked(g.settings, draft.marketplace)) },
     objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => objectivesBlocked(g.settings, draft.marketplace)) },
-    targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => targetingBlocked(g.settings)) },
+    targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => targetingBlocked(g.settings, draft.marketplace)) },
     structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
       back: () => goTo('keywords'),

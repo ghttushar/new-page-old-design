@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_NAMING, type CcCampaign, type CcProduct, type NamingSettings } from '../campaign-creator.types';
-import { AD_GROUP_TOKENS, CAMPAIGN_TOKENS, TAG_PREFIX, TAG_SUFFIX, adGroupPreview, campaignPreview } from './naming';
+import { AD_GROUP_TOKENS, CAMPAIGN_TOKENS, TAG_PREFIX, TAG_SUFFIX, TAG_TOKEN, adGroupPreview, campaignPreview, withTag } from './naming';
 
 // Naming settings: choose, order and preview the parts that make up campaign and ad group names.
 
@@ -32,11 +32,13 @@ function TokenRow({ tokens, defs, onChange, tagged, label }: {
 
   return (
     <div className="ccd-nm-row" role="group" aria-label={label}>
-      {label === 'Campaign name parts' && <>{tag(TAG_PREFIX)}{sep}</>}
-      {tokens.map((id, i) => (
+      {tokens.map((id, i) => {
+        // The Anarix mark moves like any part but has no cross: the tag switch above turns it off.
+        const isTag = id === TAG_TOKEN;
+        return (
         <span key={id} className="ccd-nm-item">
           <span
-            className={`ccd-nm-chip${dragFrom === i ? ' is-dragging' : ''}${over === i && dragFrom !== null && dragFrom !== i ? ' is-over' : ''}`}
+            className={`ccd-nm-chip${isTag ? ` ccd-nm-chip--tag ccd-nm-chip--movable${tagged ? '' : ' is-off'}` : ''}${dragFrom === i ? ' is-dragging' : ''}${over === i && dragFrom !== null && dragFrom !== i ? ' is-over' : ''}`}
             draggable tabIndex={0}
             onDragStart={(e) => { setDragFrom(i); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); }}
             onDragOver={(e) => { e.preventDefault(); setOver(i); }}
@@ -47,17 +49,20 @@ function TokenRow({ tokens, defs, onChange, tagged, label }: {
               if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); move(i, i - 1); }
               if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); move(i, i + 1); }
             }}
-            aria-label={`${labelOf(id)}. Drag, or press Alt and an arrow key, to reorder.`}
+            aria-label={`${isTag ? TAG_PREFIX : labelOf(id)}. Drag, or press Alt and an arrow key, to reorder.`}
           >
             <span className="ccd-nm-grip"><Grip /></span>
-            {labelOf(id)}
-            <button type="button" className="ccd-nm-x" aria-label={`Remove ${labelOf(id)}`} onClick={() => onChange(tokens.filter((t) => t !== id))}>
-              <svg width={9} height={9} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-            </button>
+            {isTag ? TAG_PREFIX : labelOf(id)}
+            {!isTag && (
+              <button type="button" className="ccd-nm-x" aria-label={`Remove ${labelOf(id)}`} onClick={() => onChange(tokens.filter((t) => t !== id))}>
+                <svg width={9} height={9} viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+              </button>
+            )}
           </span>
           {(i < tokens.length - 1 || label === 'Campaign name parts') && sep}
         </span>
-      ))}
+        );
+      })}
       {label === 'Campaign name parts' && tag(TAG_SUFFIX)}
       <span className="ccd-nm-add">
         <button type="button" className="ccd-nm-plus" aria-label="Add a name part" aria-haspopup="true" aria-expanded={menu} disabled={unused.length === 0} onClick={() => setMenu((m) => !m)}>
@@ -83,8 +88,9 @@ export default function NamingPopup({ settings, campaigns, products, onApply, on
 }) {
   const example = campaigns[0];
   const uid = useId();
-  const [work, setWork] = useState<NamingSettings>(settings);
-  const dirty = JSON.stringify(work) !== JSON.stringify(settings);
+  const [start] = useState<NamingSettings>(() => ({ ...settings, campaignTokens: withTag(settings.campaignTokens) }));
+  const [work, setWork] = useState<NamingSettings>(start);
+  const dirty = JSON.stringify(work) !== JSON.stringify(start);
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const dirtyRef = useRef(dirty);

@@ -539,6 +539,8 @@ select.ccd-tm-cell { padding-right: 2px; cursor: pointer; }
 .ccd-nm-chip.is-over { border-color: var(--ccd-brand); }
 .ccd-nm-chip--tag { padding: 0 12px; background: #f1f2f6; color: #5b6170; cursor: default; }
 .ccd-nm-chip--tag.is-off { opacity: .45; text-decoration: line-through; }
+/* The Anarix mark: grey like the fixed AI tag, but with a grip and a grab cursor since it can be moved. */
+.ccd-nm-chip--movable { padding: 0 12px 0 6px; cursor: grab; }
 .ccd-nm-grip { display: inline-flex; color: #aeb3be; }
 .ccd-nm-x { width: 20px; height: 20px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #8a909b; cursor: pointer; }
 .ccd-nm-add { position: relative; display: inline-flex; }

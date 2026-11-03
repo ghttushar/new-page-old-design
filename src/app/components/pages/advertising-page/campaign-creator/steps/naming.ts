@@ -21,6 +21,11 @@ export const AD_GROUP_TOKENS: { id: AdGroupToken; label: string }[] = [
 /** The marks that say a name was made by Anarix; the "Campaign name tag status" switch turns both on or off. */
 export const TAG_PREFIX = 'Anarix';
 export const TAG_SUFFIX = 'AI';
+/** The Anarix mark as a name part: it moves like the others but can't be removed, only switched off. */
+export const TAG_TOKEN: CampaignToken = 'anarix';
+
+/** Campaign parts with the Anarix mark in them, at the front for templates saved before it could move. */
+export const withTag = (tokens: CampaignToken[]): CampaignToken[] => (tokens.includes(TAG_TOKEN) ? tokens : [TAG_TOKEN, ...tokens]);
 
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 const SEPARATOR = '_';
@@ -48,8 +53,9 @@ function partsFor(c: CcCampaign, products: CcProduct[]): Parts {
 }
 
 function build(tokens: string[], values: Record<string, string>, tag: boolean, tagged: boolean): string {
-  const body = tokens.map((t) => values[t]).filter(Boolean);
-  return [...(tagged && tag ? [TAG_PREFIX] : []), ...body, ...(tagged && tag ? [TAG_SUFFIX] : [])].join(SEPARATOR);
+  const parts = tagged ? withTag(tokens as CampaignToken[]) : tokens;
+  const body = parts.map((t) => (t === TAG_TOKEN ? (tag ? TAG_PREFIX : '') : values[t])).filter(Boolean);
+  return [...body, ...(tagged && tag ? [TAG_SUFFIX] : [])].join(SEPARATOR);
 }
 
 const campaignValues = (p: Parts): Record<string, string> => ({ parentAsin: p.parentAsin, campaignType: p.campaignType, adType: p.adType, biddingStrategy: p.biddingStrategy, targetType: p.targetType });

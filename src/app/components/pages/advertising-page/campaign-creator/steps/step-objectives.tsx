@@ -284,20 +284,6 @@ function WalmartBudgetCard({ draft, onChange, issue }: { draft: CcDraft; onChang
   );
 }
 
-function ExpandedTargetingCard({ draft, onChange }: { draft: CcDraft; onChange: Patch }) {
-  const et = draft.expandedTargeting;
-  const options: [keyof typeof et, string][] = [['brandTerms', 'Brand Term Targeting'], ['complementary', 'Complementary Product Targeting']];
-  return (
-    <GoalCard icon="expand" title="Expanded Targeting" hint="Extra reach for the Auto campaigns, on top of their own targeting.">
-      <div className="ccd-option-list">
-        {options.map(([key, text]) => (
-          <OptionRow key={key} kind="check" checked={et[key]} label={text} onToggle={() => onChange({ expandedTargeting: { ...et, [key]: !et[key] } })} />
-        ))}
-      </div>
-    </GoalCard>
-  );
-}
-
 /** As its own card, a list of switches; across the page (`wide`), the same switches side by side. */
 function InclusionsCard({ draft, onChange, hasManual, wide }: { draft: CcDraft; onChange: Patch; hasAuto: boolean; hasManual: boolean; wide?: boolean }) {
   const pi = draft.placementInclusion;
@@ -358,8 +344,8 @@ function WalmartObjectives({ draft, onChange, issue }: { draft: CcDraft; onChang
   const mode = draft.campaignMode ?? 'both';
   const hasAuto = mode !== 'manual';
   const hasManual = mode !== 'auto';
-  // Three cards a row, every row full. With Auto, Expanded targeting closes row two and the placements take a row of
-  // their own; without it, the placements close row two as a card like the rest.
+  // Three cards a row, every row full; the placements close row two. Expanded targeting lives on Targeting, in the Auto
+  // table, so it is set next to the Auto campaign it widens.
   return (
     <div className="ccd-goal-grid">
       <StartDateCard draft={draft} onChange={onChange} />
@@ -368,11 +354,8 @@ function WalmartObjectives({ draft, onChange, issue }: { draft: CcDraft; onChang
 
       <WalmartBudgetCard draft={draft} onChange={onChange} issue={issue} />
       <AcosCard draft={draft} onChange={onChange} />
-      {hasAuto
-        ? <ExpandedTargetingCard draft={draft} onChange={onChange} />
-        : <InclusionsCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} />}
+      <InclusionsCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} />
 
-      {hasAuto && <InclusionsCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} wide />}
       <MultipliersCard draft={draft} onChange={onChange} hasAuto={hasAuto} hasManual={hasManual} />
     </div>
   );

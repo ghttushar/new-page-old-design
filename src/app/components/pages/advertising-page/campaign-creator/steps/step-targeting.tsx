@@ -28,7 +28,7 @@ const INTENT = {
 
 /** What each target is called in the matrix, and what it does in plain words. */
 const TARGET_COPY: Record<TargetingStrategyId, { name: string; hint: string }> = {
-  auto: { name: 'Auto campaign', hint: 'Amazon picks the searches and pages for you' },
+  auto: { name: 'Auto campaign', hint: 'The marketplace picks the searches and pages for you' },
   brand: { name: 'Brand keywords', hint: 'Searches that include your brand name' },
   competitor: { name: 'Competitor keywords', hint: "Searches for rival brands' names" },
   broad: { name: 'Broad match', hint: 'Related searches, words in any order' },
@@ -37,6 +37,12 @@ const TARGET_COPY: Record<TargetingStrategyId, { name: string; hint: string }> =
   category: { name: 'Product category', hint: 'Every product page in a category' },
   product: { name: 'Single product', hint: 'Product pages you pick, by ASIN' },
 };
+
+/** Walmart's expanded targeting, shown in the Auto table where Amazon has its Auto targeting types. */
+const EXPANDED_OPTIONS: ['brandTerms' | 'complementary', string, string][] = [
+  ['brandTerms', 'Brand Term Targeting', 'Searches that include your brand terms'],
+  ['complementary', 'Complementary Product Targeting', 'Pages of products bought alongside yours'],
+];
 
 /** A selectable target: its name with a plain-words line under it, tinted when picked. */
 function Tile({ checked, disabled, label, hint, onToggle }: {
@@ -112,10 +118,13 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
   function toggle(id: TargetingStrategyId) {
     const set = new Set(draft.targetingStrategies);
     if (set.has(id)) set.delete(id); else set.add(id);
-    // Turning Auto on picks every Auto type, and turning it off clears them; the shopper can then untick the ones they don't want.
-    if (id === 'auto') onChange({ targetingStrategies: Array.from(set), autoTypes: set.has('auto') ? AUTO_TYPE_CATALOG.map((a) => a.id) : [] });
+    // Turning Auto on picks every Auto type (on Walmart, both kinds of expanded targeting), and turning it off clears the
+    // types; the shopper can then untick the ones they don't want.
+    if (id === 'auto' && isWalmart) onChange({ targetingStrategies: Array.from(set), ...(set.has('auto') ? { expandedTargeting: { brandTerms: true, complementary: true } } : {}) });
+    else if (id === 'auto') onChange({ targetingStrategies: Array.from(set), autoTypes: set.has('auto') ? AUTO_TYPE_CATALOG.map((a) => a.id) : [] });
     else onChange({ targetingStrategies: Array.from(set) });
   }
+  const isWalmart = draft.marketplace === 'walmart';
 
   const cell = (id: TargetingStrategyId) => (
     <Tile
@@ -151,7 +160,26 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <div className="ccd-tg-title">Auto</div>
         <div className="ccd-tg-card">
         <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto')]} productCells={[]} wide />
-        {/* Stays in place when Auto is off, locked, so the page does not jump. */}
+        {/* Stays in place when Auto is off, locked, so the page does not jump. Walmart has no Auto types: its row is the
+            expanded targeting that widens the Auto campaigns instead. */}
+        {isWalmart ? (
+          <div className="ccd-tg-row ccd-tg-row--auto">
+            <div className="ccd-tg-label">
+              <span className="ccd-tg-label__copy">
+                <strong>Expanded Targeting</strong>
+                <small>{hasAuto ? 'Extra reach for the Auto campaigns, on top of their own targeting.' : 'Turn on Auto campaign to choose these.'}</small>
+              </span>
+            </div>
+            <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-cells--two">
+              {EXPANDED_OPTIONS.map(([key, name, hint]) => (
+                <Tile
+                  key={key} label={name} hint={hint} checked={draft.expandedTargeting[key]} disabled={!hasAuto}
+                  onToggle={() => onChange({ expandedTargeting: { ...draft.expandedTargeting, [key]: !draft.expandedTargeting[key] } })}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
           <div className="ccd-tg-row ccd-tg-row--auto">
             <div className="ccd-tg-label">
               <span className="ccd-tg-label__copy">
@@ -181,6 +209,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
               })}
             </div>
           </div>
+        )}
         </div>
         </div>
         )}

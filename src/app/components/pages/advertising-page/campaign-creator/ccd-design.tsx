@@ -5,6 +5,16 @@ import { BORDER, BRAND, CheckIcon, FONT, GOOD, HAIR, TEXT_FAINT, TEXT_MUTED, TEX
 export { CampaignSummaryProvider } from './campaign-summary-context';
 
 /** Signals' page tint — what every card sits on. */
+/** The line under Targeting in the summary: Amazon counts its Auto types; Walmart, which has none, its expanded targeting. */
+function autoSub(draft: CcDraft): string | undefined {
+  if (!draft.targetingStrategies.includes('auto')) return undefined;
+  if (draft.marketplace === 'walmart') {
+    const n = Number(draft.expandedTargeting.brandTerms) + Number(draft.expandedTargeting.complementary);
+    return n ? `${n} expanded targeting` : 'No expanded targeting';
+  }
+  return `${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}`;
+}
+
 export const PAGE_TINT = '#f3f5fa';
 export const DISPLAY = "'Inter Tight', Inter, sans-serif";
 
@@ -47,7 +57,7 @@ export function summaryFor(step: CcStepId, draft: CcDraft, selectedProducts: CcP
   }
   if (step === 'structure') {
     const names = draft.targetingStrategies.map((s) => TARGETING_STRATEGY_CATALOG[s].label.replace('Keyword — ', ''));
-    items.push({ id: 'targeting', label: 'Targeting', value: names.length ? names.join(', ') : 'None yet', sub: draft.targetingStrategies.includes('auto') ? `${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}` : undefined });
+    items.push({ id: 'targeting', label: 'Targeting', value: names.length ? names.join(', ') : 'None yet', sub: autoSub(draft) });
   }
   return items;
 }
@@ -68,7 +78,7 @@ function liveRows(step: CcStepId, draft: CcDraft, selectedProducts: CcProduct[])
     { id: 'entry', label: 'Ad type', set: passed('entry'), value: 'Sponsored Products', sub: 'Amazon' },
     { id: 'products', label: 'Products', set: passed('products'), value: `${n} product${n === 1 ? '' : 's'}`, sub: selectedProducts.slice(0, 2).map((p) => p.name ?? p.title).filter(Boolean).join(', ') || undefined },
     { id: 'objectives', label: 'Goals', set: passed('objectives'), value: budgetSummary(draft), sub: [draft.targetAcos != null ? `${draft.targetAcos}% target ACOS` : 'No ACOS target', ...(extras ? [`+${extras} more`] : [])].join(' · ') },
-    { id: 'targeting', label: 'Targeting', set: passed('targeting'), value: names.length ? names.join(', ') : 'None', sub: draft.targetingStrategies.includes('auto') ? `${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}` : undefined },
+    { id: 'targeting', label: 'Targeting', set: passed('targeting'), value: names.length ? names.join(', ') : 'None', sub: autoSub(draft) },
     { id: 'structure', label: 'Structure', set: passed('structure'), value: structure ? structure.name : draft.structureId === 'custom' ? 'Custom' : '—', sub: structure?.tagline },
   ] as { id: CcStepId; label: string; set: boolean; value: string; sub?: string }[];
 }
