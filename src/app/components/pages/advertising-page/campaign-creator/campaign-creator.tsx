@@ -162,7 +162,7 @@ export default function CampaignCreator() {
   // The rejected setting is open while any group still breaks it.
   const issueOpen = Boolean(issue && issue.field === 'dailyBudget' && gateScopes.some((g) => g.settings.dailyBudget < issue.min));
 
-  const totalCampaigns = totalCampaignsFor(gateScopes);
+  const totalCampaigns = totalCampaignsFor(gateScopes, draft.marketplace);
   const limitCheck = totalCampaigns !== null ? validateCampaignLimit(totalCampaigns, campaignLimit) : { ok: true };
 
   const heading = (id: CcStepId) => setDir(STEP_ORDER.indexOf(id) >= STEP_ORDER.indexOf(step) ? 'fwd' : 'back');

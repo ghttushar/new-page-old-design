@@ -1,6 +1,6 @@
 import {
-  GROUP_FIELDS, structureCounts,
-  type CcDraft, type CcProduct, type CcStepId, type GroupField, type GroupSettings, type ProductGroup,
+  GROUP_FIELDS, splitManualTypes, structureCounts, structureVariantFor,
+  type CcDraft, type CcProduct, type CcStepId, type GroupField, type GroupSettings, type Marketplace, type ProductGroup,
 } from './campaign-creator.types';
 
 // Product groups: on the Products step the products are split into groups; every later step then
@@ -117,14 +117,15 @@ export function applyScopedPatch(draft: CcDraft, scopeId: string, patch: Partial
 }
 
 /** Campaigns the account would need for all scopes together, for the account limit check. */
-export function totalCampaignsFor(scopes: Pick<Scope, 'settings' | 'products'>[]): number | null {
+export function totalCampaignsFor(scopes: Pick<Scope, 'settings' | 'products'>[], marketplace?: Marketplace | null): number | null {
   let total = 0;
   for (const sc of scopes) {
     const id = sc.settings.structureId;
     if (!id) return null;
     if (id === 'custom') { total += sc.settings.customCampaigns?.length ?? 0; continue; }
-    const manual = sc.settings.targetingStrategies.filter((t) => t !== 'auto').length;
-    total += structureCounts(id, sc.products.length, sc.settings.targetingStrategies.includes('auto'), manual, sc.settings.autoTypes.length).totalCampaigns;
+    const { keyword, product } = splitManualTypes(sc.settings.targetingStrategies);
+    const variant = structureVariantFor(marketplace, sc.settings.structureVariant);
+    total += structureCounts(id, sc.products.length, sc.settings.targetingStrategies.includes('auto'), { keyword: keyword.length, product: product.length }, sc.settings.autoTypes.length, variant).totalCampaigns;
   }
   return total;
 }
@@ -209,8 +210,8 @@ export function groupNameIdeas(chosen: CcProduct[], groups: ProductGroup[]): str
 export const PAGE_FIELDS: Partial<Record<CcStepId, GroupField[]>> = {
   keywords: ['keywordTargets', 'negativeKeywords', 'productTargets', 'negativeProducts'],
   objectives: ['targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate', 'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode', 'budgetType', 'totalBudget', 'budgetRollover', 'expandedTargeting', 'bidMultipliers'],
-  targeting: ['targetingStrategies', 'autoTypes'],
-  structure: ['structureId', 'customPrompt', 'customCampaigns'],
+  targeting: ['targetingStrategies', 'autoTypes', 'manualOn', 'manualStrategies'],
+  structure: ['structureId', 'structureVariant', 'customPrompt', 'customCampaigns'],
 };
 
 /**

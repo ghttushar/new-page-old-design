@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   AUTO_TYPE_CATALOG, MODE_STRUCTURES, STRUCTURE_CATALOG, accountCampaignLimits, structureTagline, formatCurrency, generateCampaigns, structureCounts, recommendStructure, validateCampaignLimit,
-  type CampaignMode, type CcCampaign, type CcDraft, type CcProduct, type StructureId, type TargetingStrategyId,
+  splitManualTypes, structureVariantFor, structuresFor, variantsFor,
+  type CampaignMode, type CcCampaign, type CcDraft, type CcProduct, type StructureId, type StructureVariant, type TargetingStrategyId,
 } from '../campaign-creator.types';
 import { StructureMap, groupCampaigns } from './structure-map';
 import { Panel } from '../ccd-design';
@@ -75,6 +76,36 @@ function StructureOption({ id, number, name, tagline, meta, recommended, committ
   );
 }
 
+/**
+ * The viewed structure's variations, opened under its card: how its Manual campaigns split into ad groups. A sibling
+ * of the card's radio rather than inside it, so each list stays its own radio group.
+ */
+function VariantList({ structureId, marketplace, name, value, disabled, onPick }: {
+  structureId: StructureId; marketplace: CcDraft['marketplace']; name: string; value: StructureVariant; disabled: boolean; onPick: (v: StructureVariant) => void;
+}) {
+  return (
+    <div className="ccd-sv ccd-enter" role="radiogroup" aria-label={`${name} variations`}>
+      {variantsFor(structureId, marketplace).map((v) => {
+        const on = value === v.id;
+        return (
+          <div
+            key={v.id} role="radio" aria-checked={on} aria-disabled={disabled} tabIndex={disabled ? -1 : 0}
+            className={`ccd-sv__opt${on ? ' is-on' : ''}`}
+            onClick={() => !disabled && onPick(v.id)}
+            onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onPick(v.id); } }}
+          >
+            <Radio checked={on} disabled={disabled} />
+            <span className="ccd-sv__copy">
+              <strong>{v.label}</strong>
+              <span>{v.hint}</span>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** §7.6 — account campaign usage, plus how many campaigns the active structure would add. */
 function LimitMeter({ used, limit, available, estimated }: { used: number; limit: number; available: number; estimated: number }) {
   const over = estimated > available;
@@ -111,10 +142,10 @@ function UnavailablePanel({ total, available, alternatives, onPick, onJiva }: {
 // §7.3 — structure comparison. Auto / manual wording follows the requirements table.
 const COMPARE_COPY: Record<StructureId, { auto: string; manual: string }> = {
   consolidated: { auto: '1', manual: '1' },
-  'targeting-type': { auto: '1', manual: 'Multiple by targeting type' },
-  'product-targeting': { auto: 'Multiple per product', manual: 'Multiple per product' },
-  'product-single-auto': { auto: '1 per product', manual: 'Multiple per product' },
-  'product-multi-auto': { auto: 'Multiple per product', manual: 'Multiple per product' },
+  'targeting-type': { auto: '1', manual: 'Per match type, plus 1 for products' },
+  'product-targeting': { auto: '1 shared, an ad group per product', manual: 'Per product, as in Targeting-Type' },
+  'product-single-auto': { auto: '1 per product', manual: 'Per product, as in Targeting-Type' },
+  'product-multi-auto': { auto: '1 per Auto type, per product', manual: 'Per product, as in Targeting-Type' },
   custom: { auto: 'User-defined', manual: 'User-defined' },
 };
 
@@ -233,12 +264,19 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   const autoTypesCount = Math.max(draft.autoTypes.length, 1);
   const autoLabels = draft.autoTypes.map((id) => AUTO_TYPE_CATALOG.find((a) => a.id === id)?.label ?? id);
   const limits = accountCampaignLimits(draft.marketplace ?? 'amazon');
-  const countsFor = (id: StructureId) => structureCounts(id, productCount, hasAuto, manualTypesCount, autoTypesCount);
   const mode: CampaignMode = draft.campaignMode ?? 'both';
-  const catalog = STRUCTURE_CATALOG.filter((st) => MODE_STRUCTURES[mode].includes(st.id));
-  // A recommendation the type can't use becomes its closest fit.
+  // The variation the campaigns are built with; shown only when there are Manual campaigns to split.
+  const variant = structureVariantFor(draft.marketplace, draft.structureVariant);
+  const showVariants = mode !== 'auto';
+  const split = splitManualTypes(draft.targetingStrategies);
+  const manualSplit = { keyword: split.keyword.length, product: split.product.length };
+  // A structure other than the chosen one is counted with its default variation, as it would be picked.
+  const countsFor = (id: StructureId) => structureCounts(id, productCount, hasAuto, manualSplit, autoTypesCount, id === draft.structureId ? variant : 'match');
+  const allowed = structuresFor(mode, draft.marketplace);
+  const catalog = STRUCTURE_CATALOG.filter((st) => allowed.includes(st.id));
+  // A recommendation the type (or marketplace) can't use becomes its closest fit.
   const fitToMode = (id: StructureId): StructureId => {
-    if (MODE_STRUCTURES[mode].includes(id)) return id;
+    if (allowed.includes(id)) return id;
     if (mode === 'auto') return id === 'product-targeting' ? 'product-single-auto' : 'consolidated';
     return id === 'product-single-auto' || id === 'product-multi-auto' ? 'product-targeting' : 'consolidated';
   };
@@ -249,8 +287,9 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCount, manualTypesCount, draft.dailyBudget, campaignLimit, mode]);
 
-  function selectStructure(id: StructureId) {
-    onChange({ structureId: id, customCampaigns: id === 'custom' ? draft.customCampaigns : null });
+  // A new structure starts on its default variation, Match type only.
+  function selectStructure(id: StructureId, structureVariant: StructureVariant = id === draft.structureId ? draft.structureVariant ?? 'match' : 'match') {
+    onChange({ structureId: id, structureVariant, customCampaigns: id === 'custom' ? draft.customCampaigns : null });
   }
 
   // Pre-select the recommendation the first time this step is reached with nothing chosen yet.
@@ -273,9 +312,9 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   const viewedCampaigns = useMemo(
     () => (activeId === 'custom'
       ? draft.customCampaigns
-      : generateCampaigns(activeId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes)),
+      : generateCampaigns(activeId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes, activeId === draft.structureId ? variant : 'match')),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeId, draft.customCampaigns, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.autoTypes.join(',')],
+    [activeId, draft.structureId, variant, draft.customCampaigns, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.autoTypes.join(',')],
   );
   const alternatives = catalog
     .filter((s) => s.id !== 'custom' && s.id !== activeId && activeCounts
@@ -299,9 +338,11 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             const check = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
             const disabled = !isCustom && !check.ok;
             const meta = isCustom ? 'Built with Jiva' : '';
+            const open = showVariants && !isCustom && activeId === s.id;
             return (
+              // Open, the card and its variations share one frame; the card stays its own radio inside it.
+              <div key={s.id} className={`ccd-so-group${open ? ' is-open' : ''}${draft.structureId === s.id ? ' is-selected' : ''}`}>
               <StructureOption
-                key={s.id}
                 id={s.id}
                 number={i + 1}
                 name={s.name}
@@ -320,6 +361,14 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
                   if (!disabled) selectStructure(s.id);
                 }}
               />
+              {open && (
+                <VariantList
+                  structureId={s.id} marketplace={draft.marketplace} name={s.name} disabled={disabled}
+                  value={draft.structureId === s.id ? variant : 'match'}
+                  onPick={(v) => { setViewId(s.id); selectStructure(s.id, v); }}
+                />
+              )}
+              </div>
             );
           })}
           </div>

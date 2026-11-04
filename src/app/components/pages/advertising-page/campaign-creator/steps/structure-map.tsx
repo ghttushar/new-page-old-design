@@ -25,8 +25,8 @@ export function groupCampaigns(campaigns: CcCampaign[], products: CcProduct[]) {
 
 const KEYWORD_TYPES = new Set(['brand', 'competitor', 'broad', 'phrase', 'exact']);
 /** Always listed in this order, so the same target kind sits in the same place in every column. */
-const TARGET_ORDER = ['broad', 'phrase', 'exact', 'brand', 'competitor', 'category', 'product'];
-const TARGET_LABEL = { broad: 'Broad', phrase: 'Phrase', exact: 'Exact', brand: 'Brand', competitor: 'Competitor', category: 'Category', product: 'Product targeting' };
+const TARGET_ORDER = ['broad', 'phrase', 'exact', 'brand', 'competitor', 'category', 'product', 'asin-expanded'];
+const TARGET_LABEL = { broad: 'Broad', phrase: 'Phrase', exact: 'Exact', brand: 'Brand', competitor: 'Competitor', category: 'Category', product: 'ASIN Exact', 'asin-expanded': 'ASIN Expanded' };
 
 /**
  * What a campaign holds, named the way the structure spec (7.2) names it: "Auto campaign" / "Manual — Exact", its ad
@@ -36,18 +36,25 @@ function describe(campaign: CcCampaign) {
   const kinds = new Set();
   campaign.adGroups.forEach((group) => group.targets.forEach((target) => kinds.add(target.matchType)));
   const types = TARGET_ORDER.filter((type) => kinds.has(type));
+  // Several ad groups read as a count, with their names under it ("Branded · Competitor · Generic"); a shared Auto's
+  // ad groups are one per product, said that way rather than listed.
+  const n = campaign.adGroups.length;
+  const many = n > 1;
+  const groupNames = many ? campaign.adGroups.map((g) => g.name.replace(/ Ad Group$/, '')).join(' · ') : undefined;
   if (campaign.kind === 'auto') {
     const autoType = campaign.targetingLabel.split(' · ')[1];
     return {
-      title: autoType ? `Auto — ${autoType}` : 'Auto campaign',
-      adGroup: 'Auto ad group',
+      title: autoType ? `Auto — ${autoType}` : many ? 'Shared Auto campaign' : 'Auto campaign',
+      adGroup: many ? `${n} ad groups` : 'Auto ad group',
+      adGroupNames: many ? 'One per product' : undefined,
       targets: [{ type: 'auto', label: autoType ?? 'Automatic targeting', tone: 'auto' }],
     };
   }
   return {
     // One manual campaign holding every type (Consolidated) is just "Manual campaign"; otherwise it is named by its type.
-    title: types.length === 1 ? `Manual — ${TARGET_LABEL[types[0]]}` : 'Manual campaign',
-    adGroup: types.length === 1 ? 'Ad group' : 'Manual ad group',
+    title: campaign.targetingLabel === 'Product targeting' ? 'Manual — Product targeting' : types.length === 1 ? `Manual — ${TARGET_LABEL[types[0]]}` : 'Manual campaign',
+    adGroup: many ? `${n} ad groups` : types.length === 1 ? 'Ad group' : 'Manual ad group',
+    adGroupNames: groupNames,
     targets: types.map((type) => ({ type, label: TARGET_LABEL[type], tone: KEYWORD_TYPES.has(type) ? 'kw' : 'pr' })),
   };
 }
@@ -130,6 +137,7 @@ function CampaignColumn({ campaign, col, row, pos }: { campaign: CcCampaign; col
         <i className="ccd-tr-link" />
         <span className="ccd-tr-ag"><GroupGlyph /></span>
         <small>{info.adGroup}</small>
+        {info.adGroupNames && <small className="ccd-tr-agnames" title={info.adGroupNames}>{info.adGroupNames}</small>}
       </div>
       <div className="ccd-tr-cell ccd-tr-cell--targets" style={{ gridColumn: col, gridRow: row + 3 }}>
         <i className="ccd-tr-link" />
@@ -148,13 +156,16 @@ function CampaignColumn({ campaign, col, row, pos }: { campaign: CcCampaign; col
 export function StructureMap({ structureId, campaigns, products }: { structureId: StructureId; campaigns: CcCampaign[]; products: CcProduct[] }) {
   if (campaigns.length === 0) return null;
   const groups = groupCampaigns(campaigns, products);
-  const perProduct = groups[0].productScoped;
-  const productCount = perProduct ? groups.length : products.length;
+  const productGroups = groups.filter((g) => g.productScoped);
+  // Campaigns for all products: the whole tree, or (Shared Auto + Product Manual) a branch beside the products.
+  const sharedCampaigns = groups.find((g) => !g.productScoped)?.campaigns ?? [];
+  const perProduct = productGroups.length > 0;
+  const productCount = perProduct ? productGroups.length : products.length;
   const rootLabel = perProduct || productCount === 1 ? `${productCount} ${productCount === 1 ? 'product' : 'products'}` : `All ${productCount} products`;
 
   // Campaigns shared by every product hang straight off the root.
   if (!perProduct) {
-    const shared = groups[0].campaigns;
+    const shared = sharedCampaigns;
     const n = shared.length;
     return (
       <div className="ccd-tree-map" data-structure={structureId} aria-label="Campaign hierarchy">
@@ -174,11 +185,13 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
 
   // Per product: a product layer under the root, each product with its own campaigns. Two products are drawn (one when
   // each has several campaigns) and the rest are summed up in a "+N more" node.
-  const shownCount = groups[0].campaigns.length <= 2 ? 2 : 1;
-  const shown = groups.slice(0, shownCount);
-  const more = groups.length - shown.length;
-  const branches = shown.length + (more > 0 ? 1 : 0);
+  // A shared campaign hangs straight off the root, as a branch of its own before the products.
+  const shownCount = productGroups[0].campaigns.length <= 2 ? 2 : 1;
+  const shown = productGroups.slice(0, shownCount);
+  const more = productGroups.length - shown.length;
+  const branches = sharedCampaigns.length + shown.length + (more > 0 ? 1 : 0);
   let col = 1;
+  const sharedPlaced = sharedCampaigns.map((campaign) => ({ campaign, col: col++ }));
   const placed = shown.map((group) => { const start = col; col += group.campaigns.length; return { group, start }; });
   const moreCol = col;
   const columns = col - 1 + (more > 0 ? 1 : 0);
@@ -192,12 +205,14 @@ export function StructureMap({ structureId, campaigns, products }: { structureId
             <i className="ccd-tr-link" />
           </div>
 
+          {sharedPlaced.map(({ campaign, col: c }, i) => <CampaignColumn key={campaign.id} campaign={campaign} col={c} row={2} pos={busPos(i, branches)} />)}
+
           {placed.map(({ group, start }, bi) => {
             const n = group.campaigns.length;
             const span = `${start} / span ${n}`;
             return (
               <Fragment key={group.key}>
-                <div className={`ccd-tr-bus ccd-tr-bus--${busPos(bi, branches)}`} style={{ gridColumn: span, gridRow: 2 }} />
+                <div className={`ccd-tr-bus ccd-tr-bus--${busPos(bi + sharedCampaigns.length, branches)}`} style={{ gridColumn: span, gridRow: 2 }} />
                 <div className="ccd-tr-cell" style={{ gridColumn: span, gridRow: 3 }}>
                   <span className="ccd-tr-prod" title={group.title}><ProductGlyph /><span>{group.title}</span></span>
                   {/* Names in a catalog often start the same, so the SKU tells the two apart. */}

@@ -1,20 +1,27 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import { AnimatePresence, motion } from 'motion/react';
-import { STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, budgetSummary, type CcDraft, type CcProduct, type CcStepId } from './campaign-creator.types';
+import { MANUAL_STRATEGY_CATALOG, STRUCTURE_CATALOG, TARGETING_STRATEGY_CATALOG, budgetSummary, type CcDraft, type CcProduct, type CcStepId } from './campaign-creator.types';
 import { BORDER, BRAND, CheckIcon, FONT, GOOD, HAIR, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY } from './campaign-creator-ui';
 export { CampaignSummaryProvider } from './campaign-summary-context';
 
-/** Signals' page tint — what every card sits on. */
-/** The line under Targeting in the summary: Amazon counts its Auto types; Walmart, which has none, its expanded targeting. */
-function autoSub(draft: CcDraft): string | undefined {
-  if (!draft.targetingStrategies.includes('auto')) return undefined;
-  if (draft.marketplace === 'walmart') {
-    const n = Number(draft.expandedTargeting.brandTerms) + Number(draft.expandedTargeting.complementary);
-    return n ? `${n} expanded targeting` : 'No expanded targeting';
+/**
+ * The line under Targeting in the summary: the Auto count (Amazon's Auto types; Walmart, which has none, its expanded
+ * targeting), then the Manual strategies when any are picked.
+ */
+function targetingSub(draft: CcDraft): string | undefined {
+  const parts: string[] = [];
+  if (draft.targetingStrategies.includes('auto')) {
+    if (draft.marketplace === 'walmart') {
+      const n = Number(draft.expandedTargeting.brandTerms) + Number(draft.expandedTargeting.complementary);
+      parts.push(n ? `${n} expanded targeting` : 'No expanded targeting');
+    } else parts.push(`${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}`);
   }
-  return `${draft.autoTypes.length} Auto type${draft.autoTypes.length === 1 ? '' : 's'}`;
+  const strategies = MANUAL_STRATEGY_CATALOG.filter((s) => (draft.manualStrategies ?? []).includes(s.id)).map((s) => s.label);
+  if (strategies.length) parts.push(strategies.join(', '));
+  return parts.length ? parts.join(' · ') : undefined;
 }
 
+/** Signals' page tint — what every card sits on. */
 export const PAGE_TINT = '#f3f5fa';
 export const DISPLAY = "'Inter Tight', Inter, sans-serif";
 
@@ -56,8 +63,8 @@ export function summaryFor(step: CcStepId, draft: CcDraft, selectedProducts: CcP
     });
   }
   if (step === 'structure') {
-    const names = draft.targetingStrategies.map((s) => TARGETING_STRATEGY_CATALOG[s].label.replace('Keyword — ', ''));
-    items.push({ id: 'targeting', label: 'Targeting', value: names.length ? names.join(', ') : 'None yet', sub: autoSub(draft) });
+    const names = draft.targetingStrategies.map((s) => TARGETING_STRATEGY_CATALOG[s].label);
+    items.push({ id: 'targeting', label: 'Targeting', value: names.length ? names.join(', ') : 'None yet', sub: targetingSub(draft) });
   }
   return items;
 }
@@ -72,13 +79,13 @@ function liveRows(step: CcStepId, draft: CcDraft, selectedProducts: CcProduct[])
   const passed = (id: CcStepId) => ORDER.indexOf(id) < ci;
   const n = selectedProducts.length;
   const extras = Object.values(draft.extraObjectives).filter((v) => v !== null).length;
-  const names = draft.targetingStrategies.map((s) => TARGETING_STRATEGY_CATALOG[s].label.replace('Keyword — ', ''));
+  const names = draft.targetingStrategies.map((s) => TARGETING_STRATEGY_CATALOG[s].label);
   const structure = STRUCTURE_CATALOG.find((s) => s.id === draft.structureId);
   return [
     { id: 'entry', label: 'Ad type', set: passed('entry'), value: 'Sponsored Products', sub: 'Amazon' },
     { id: 'products', label: 'Products', set: passed('products'), value: `${n} product${n === 1 ? '' : 's'}`, sub: selectedProducts.slice(0, 2).map((p) => p.name ?? p.title).filter(Boolean).join(', ') || undefined },
     { id: 'objectives', label: 'Goals', set: passed('objectives'), value: budgetSummary(draft), sub: [draft.targetAcos != null ? `${draft.targetAcos}% target ACOS` : 'No ACOS target', ...(extras ? [`+${extras} more`] : [])].join(' · ') },
-    { id: 'targeting', label: 'Targeting', set: passed('targeting'), value: names.length ? names.join(', ') : 'None', sub: autoSub(draft) },
+    { id: 'targeting', label: 'Targeting', set: passed('targeting'), value: names.length ? names.join(', ') : 'None', sub: targetingSub(draft) },
     { id: 'structure', label: 'Structure', set: passed('structure'), value: structure ? structure.name : draft.structureId === 'custom' ? 'Custom' : '—', sub: structure?.tagline },
   ] as { id: CcStepId; label: string; set: boolean; value: string; sub?: string }[];
 }

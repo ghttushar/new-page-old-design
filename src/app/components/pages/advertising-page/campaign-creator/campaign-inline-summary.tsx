@@ -29,10 +29,6 @@ function ProductStack({ products }: { products: ReturnType<typeof useCampaignSum
   );
 }
 
-/** Which kind of shopper intent each targeting route serves — its colour in the icon. */
-const ROUTE_COLOR = { auto: '#7b828f', brand: '#c26a1a', competitor: '#4b5bb5', research: '#2f8ae8', performance: '#6fa83a' };
-const ROUTE_INTENT = { auto: 'auto', brand: 'brand', competitor: 'competitor', broad: 'research', phrase: 'research', category: 'research', exact: 'performance', product: 'performance' };
-
 /** Three bars that rise and fill with the daily budget: more budget, more bars lit. */
 function BudgetStack({ budget }: { budget: number }) {
   const lit = budget <= 0 ? 0 : budget < 100 ? 1 : budget < 500 ? 2 : 3;
@@ -97,42 +93,35 @@ function AdFormatMark() {
 }
 
 /**
- * The targeting choices as a miniature of the targeting table itself: an Auto bar on top, then a
- * keyword column and a product column for each strategy. A cell fills in its strategy's colour when that
- * target type is ticked, so the icon reads as "which strategies, on which kind of target".
+ * The targeting choices as a miniature of the Targeting tables: an Auto bar on top, then the Manual table's two rows,
+ * keyword targeting (Broad, Phrase, Exact) and product targeting (ASIN Exact, ASIN Expanded, Category). A cell fills in
+ * when its option is ticked.
  */
-function RouteDots({ routes }: { routes: string[] }) {
+function RouteDots({ routes, keywordsOnly }: { routes: string[]; keywordsOnly?: boolean }) {
   const on = new Set(routes);
-  const has = (...ids: string[]) => ids.some((id) => on.has(id));
-  const KW = { x: 2, w: 26 };
-  const PR = { x: 30, w: 26 };
   const rows = [
-    { y: 8.4, color: ROUTE_COLOR.brand, kw: [has('brand')], pr: null },
-    { y: 16.1, color: ROUTE_COLOR.competitor, kw: [has('competitor')], pr: null },
-    { y: 23.8, color: ROUTE_COLOR.research, kw: [has('broad'), has('phrase')], pr: [has('category')] },
-    { y: 31.5, color: ROUTE_COLOR.performance, kw: [has('exact')], pr: [has('product')] },
+    { y: 14, ids: ['broad', 'phrase', 'exact'] },
+    // Walmart has no product targeting, so no product row.
+    ...(keywordsOnly ? [] : [{ y: 26, ids: ['product', 'asin-expanded', 'category'] }]),
   ];
+  const LIT = '#77469b';
   const UNLIT = '#e9ebf1';
-  const Cell = ({ x, y, w, lit, color, i }: { x: number; y: number; w: number; lit: boolean; color: string; i: number }) => (
-    <motion.rect
-      x={x} y={y} width={w} height={5.6} rx={2.2}
-      initial={false} animate={{ fill: lit ? color : UNLIT }} transition={{ duration: 0.28, delay: i * 0.03 }}
-    />
-  );
+  const W = (54 - 4) / 3;
   let n = 0;
   return (
     <span className="ccd-dyn" aria-hidden>
       <svg width="58" height="40" viewBox="0 0 58 40" fill="none">
-        <motion.rect x="2" y="0.6" width="54" height="5.6" rx="2.8" initial={false} animate={{ fill: has('auto') ? ROUTE_COLOR.auto : UNLIT }} transition={{ duration: 0.28 }} />
-        {rows.map((r) => {
-          const kwW = r.kw.length === 2 ? (KW.w - 2) / 2 : KW.w;
-          return (
-            <g key={r.y}>
-              {r.kw.map((lit, k) => <Cell key={'k' + k} x={KW.x + k * (kwW + 2)} y={r.y} w={kwW} lit={lit} color={r.color} i={n++} />)}
-              {r.pr ? <Cell x={PR.x} y={r.y} w={PR.w} lit={r.pr[0]} color={r.color} i={n++} /> : <rect x={PR.x} y={r.y} width={PR.w} height={5.6} rx={2.2} fill="#f6f7fa" stroke="#eceef3" strokeWidth="0.8" strokeDasharray="1.6 1.6" />}
-            </g>
-          );
-        })}
+        <motion.rect x="2" y="2" width="54" height="7" rx="3.5" initial={false} animate={{ fill: on.has('auto') ? '#7b828f' : UNLIT }} transition={{ duration: 0.28 }} />
+        {rows.map((r) => (
+          <g key={r.y}>
+            {r.ids.map((id, k) => (
+              <motion.rect
+                key={id} x={2 + k * (W + 2)} y={r.y} width={W} height={9} rx={2.6}
+                initial={false} animate={{ fill: on.has(id) ? LIT : UNLIT }} transition={{ duration: 0.28, delay: n++ * 0.03 }}
+              />
+            ))}
+          </g>
+        ))}
       </svg>
     </span>
   );
@@ -214,7 +203,7 @@ export function JourneyBar() {
     products: <ProductStack products={selectedProducts} />,
     keywords: <KeywordsMark count={kwTotal} />,
     objectives: <BudgetStack budget={draft.dailyBudget} />,
-    targeting: <RouteDots routes={draft.targetingStrategies} />,
+    targeting: <RouteDots routes={draft.targetingStrategies} keywordsOnly={draft.marketplace === 'walmart'} />,
     structure: <StructureNodes structureId={draft.structureId} />,
     preview: <PreviewMark />,
   };

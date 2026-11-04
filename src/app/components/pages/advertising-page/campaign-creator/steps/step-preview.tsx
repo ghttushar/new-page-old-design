@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ScopeSwitch from '../scope-switch';
 import { HeadingGroup } from '../campaign-inline-summary';
-import { MIN_KEYWORD_BID, generateCampaigns, keywordRules, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
+import { MANUAL_STRATEGY_CATALOG, MIN_KEYWORD_BID, generateCampaigns, structureVariantFor, keywordRules, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
 import { StepHeading } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
 import RulesSection from './preview-rules';
@@ -10,7 +10,7 @@ import { decorateCampaigns } from './preview-cells';
 import { withShares } from './budget-math';
 import { UNGROUPED_COLOR, pickSettings, type Scope } from '../product-groups';
 
-const PRODUCT_MATCHES = ['product', 'category'];
+const PRODUCT_MATCHES = ['product', 'asin-expanded', 'category'];
 
 /**
  * Puts the lists from the Keywords step into the generated campaigns:
@@ -32,11 +32,15 @@ function withKeywords(campaigns: CcCampaign[], draft: CcDraft): CcCampaign[] {
       const haveNegative = new Set(ag.negatives.map((n) => `${n.kind}|${n.text.toLowerCase()}|${n.matchType ?? ''}`));
       const targetsProducts = ag.targets.some((t) => PRODUCT_MATCHES.includes(t.matchType));
       const targetsKeywords = ag.targets.length === 0 || ag.targets.some((t) => !PRODUCT_MATCHES.includes(t.matchType));
+      // An ad group built for one match type (a Broad ad group, or a Broad campaign's) only takes entries of that type.
+      // ASIN Expanded takes the ASIN entries, as ASIN Exact does.
+      const kwTypes = new Set(ag.targets.filter((t) => !PRODUCT_MATCHES.includes(t.matchType)).map((t) => t.matchType));
+      const prTypes = new Set(ag.targets.filter((t) => PRODUCT_MATCHES.includes(t.matchType)).map((t) => (t.matchType === 'asin-expanded' ? 'product' : t.matchType)));
       const keywordTargets = c.kind === 'manual' && targetsKeywords
-        ? keywords.filter((k) => !haveTarget.has(`${k.text.toLowerCase()}|${k.match}`)).map((k) => ({ id: `${ag.id}-${k.id}`, label: k.text, matchType: k.match, bid: Math.max(k.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
+        ? keywords.filter((k) => (kwTypes.size !== 1 || kwTypes.has(k.match)) && !haveTarget.has(`${k.text.toLowerCase()}|${k.match}`)).map((k) => ({ id: `${ag.id}-${k.id}`, label: k.text, matchType: k.match, bid: Math.max(k.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
         : [];
       const productTargets = c.kind === 'manual' && targetsProducts
-        ? products.filter((p) => !haveTarget.has(`${p.text.toLowerCase()}|${p.match}`)).map((p) => ({ id: `${ag.id}-${p.id}`, label: p.text, matchType: p.match, bid: Math.max(p.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
+        ? products.filter((p) => (prTypes.size !== 1 || prTypes.has(p.match)) && !haveTarget.has(`${p.text.toLowerCase()}|${p.match}`)).map((p) => ({ id: `${ag.id}-${p.id}`, label: p.text, matchType: p.match, bid: Math.max(p.bid, MIN_KEYWORD_BID), source: 'Custom input' as const }))
         : [];
       const takesNegatives = !(c.kind === 'auto' && rules.negatives === 'manual-only');
       const addedKeywords = (takesNegatives ? negatives : [])
@@ -69,7 +73,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
 
   // Everything the campaigns are built from. If it hasn't changed since last time, the user's edits stay.
   const sourceKey = JSON.stringify(scopes.map((sc) => [
-    sc.id, sc.draft.structureId, sc.products.map((p) => p.id), sc.draft.targetingStrategies, sc.draft.autoTypes, sc.draft.dailyBudget,
+    sc.id, sc.draft.structureId, sc.draft.structureVariant, sc.products.map((p) => p.id), sc.draft.targetingStrategies, sc.draft.autoTypes, sc.draft.dailyBudget,
     sc.draft.structureId === 'custom' ? sc.draft.customCampaigns ?? null : '',
     sc.draft.biddingStrategy, sc.draft.placementAdjust,
     sc.draft.keywordTargets.filter((k) => k.enabled), sc.draft.negativeKeywords.filter((n) => n.enabled),
@@ -84,7 +88,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
       if (!id) return [];
       const made = id === 'custom'
         ? (sc.draft.customCampaigns ?? [])
-        : generateCampaigns(id, sc.products, sc.draft.targetingStrategies, sc.draft.dailyBudget, sc.draft.autoTypes);
+        : generateCampaigns(id, sc.products, sc.draft.targetingStrategies, sc.draft.dailyBudget, sc.draft.autoTypes, structureVariantFor(sharedDraft.marketplace, sc.draft.structureVariant));
       const decorated = decorateCampaigns(withKeywords(made, sc.draft), sc.products, draft.naming, { biddingStrategy: sc.draft.biddingStrategy, placement: sc.draft.placementAdjust });
       if (!grouped) return decorated;
       // Ids repeat from one group to the next, so each carries its group's id.
@@ -117,6 +121,9 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
     ['Daily budget', formatCurrency(draft.dailyBudget)],
     ['Target ACOS', acosValues.length > 1 ? 'Varies by group' : acosValues[0] != null ? `${acosValues[0]}%` : 'Not set'],
   ];
+  // The Manual strategies are a tag on the plan: shown once any group has one, as one list or "Varies by group".
+  const strategyLists = Array.from(new Set(scopes.map((sc) => MANUAL_STRATEGY_CATALOG.filter((s) => (sc.draft.manualStrategies ?? []).includes(s.id)).map((s) => s.label).join(', '))));
+  const strategyLine = !strategyLists.some(Boolean) ? null : strategyLists.length > 1 ? 'Varies by group' : strategyLists[0];
 
   return (
     <div>
@@ -127,6 +134,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
           <dl className="ccd-pv-sum">
             {figures.map(([k, v]) => <div key={k} className="ccd-pv-stat"><dt>{k}</dt><dd className="ccd-num">{v}</dd></div>)}
           </dl>
+          {strategyLine && <p className="ccd-pv-tagline"><span>Strategy</span>{strategyLine}</p>}
         </Panel>
 
         <CampaignsTable draft={draft} campaigns={campaigns} selectedProducts={selectedProducts} shownScope={shownScope} onCommit={commit} onApplyNaming={(naming, next) => onChange({ naming, generatedCampaigns: next })} />

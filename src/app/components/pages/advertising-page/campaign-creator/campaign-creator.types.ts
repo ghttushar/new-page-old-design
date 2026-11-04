@@ -21,12 +21,25 @@ export type TargetingStrategyId =
   | 'phrase'
   | 'broad'
   | 'product'
+  | 'asin-expanded'
   | 'competitor'
   | 'brand'
   | 'category';
 
+/**
+ * The Manual targeting the Targeting page offers. 'brand' and 'competitor' stay in the type so older plans still read,
+ * but they are now strategies (see MANUAL_STRATEGY_CATALOG), not targeting types.
+ */
 export const MANUAL_TARGETING_IDS: TargetingStrategyId[] = [
-  'exact', 'phrase', 'broad', 'product', 'competitor', 'brand', 'category',
+  'broad', 'phrase', 'exact', 'product', 'asin-expanded', 'category',
+];
+
+/** Who the Manual campaigns aim at. Optional, and a tag only: it doesn't change which campaigns are made. */
+export type ManualStrategyId = 'branded' | 'competitor' | 'generic';
+export const MANUAL_STRATEGY_CATALOG: { id: ManualStrategyId; label: string; hint: string }[] = [
+  { id: 'branded', label: 'Branded', hint: "Your own brand's searches and products" },
+  { id: 'competitor', label: 'Competitor', hint: "Rival brands' searches and products" },
+  { id: 'generic', label: 'Generic', hint: 'Category searches with no brand in them' },
 ];
 
 export interface TargetingStrategyDef {
@@ -37,13 +50,14 @@ export interface TargetingStrategyDef {
 
 export const TARGETING_STRATEGY_CATALOG: Record<TargetingStrategyId, TargetingStrategyDef> = {
   auto: { id: 'auto', label: 'Automatic', description: 'The marketplace automatically discovers relevant search terms and products.' },
-  exact: { id: 'exact', label: 'Keyword — Exact', description: 'Targets highly specific search queries.' },
-  phrase: { id: 'phrase', label: 'Keyword — Phrase', description: 'Targets search queries containing the selected phrase.' },
-  broad: { id: 'broad', label: 'Keyword — Broad', description: 'Targets broader variations of the selected keyword.' },
-  product: { id: 'product', label: 'Product Targeting', description: 'Targets specific products or categories.' },
+  exact: { id: 'exact', label: 'Exact', description: 'Targets highly specific search queries.' },
+  phrase: { id: 'phrase', label: 'Phrase', description: 'Targets search queries containing the selected phrase.' },
+  broad: { id: 'broad', label: 'Broad', description: 'Targets broader variations of the selected keyword.' },
+  product: { id: 'product', label: 'ASIN Exact', description: 'Targets the exact product pages you pick.' },
+  'asin-expanded': { id: 'asin-expanded', label: 'ASIN Expanded', description: 'Targets the products you pick and ones like them.' },
   competitor: { id: 'competitor', label: 'Competitor Targeting', description: 'Targets competitor products and brands.' },
   brand: { id: 'brand', label: 'Brand Targeting', description: 'Targets searches associated with your brand.' },
-  category: { id: 'category', label: 'Category Targeting', description: 'Targets products within relevant categories.' },
+  category: { id: 'category', label: 'Category', description: 'Targets products within relevant categories.' },
 };
 
 // Section 13 — Amazon vs Walmart share the same UX; capabilities differ per marketplace.
@@ -53,7 +67,7 @@ export const MARKETPLACE_CAPABILITY: Record<Marketplace, MarketplaceCapability> 
     adTypes: [
       { id: 'sponsored-products', label: 'Sponsored Products', available: true },
     ],
-    targetingStrategies: ['auto', 'exact', 'phrase', 'broad', 'product', 'competitor', 'brand', 'category'],
+    targetingStrategies: ['auto', 'exact', 'phrase', 'broad', 'product', 'asin-expanded', 'competitor', 'brand', 'category'],
     minDailyBudget: 10,
     maxTargetAcos: 90,
     campaignLimit: 1000,
@@ -63,7 +77,7 @@ export const MARKETPLACE_CAPABILITY: Record<Marketplace, MarketplaceCapability> 
     adTypes: [
       { id: 'sponsored-products', label: 'Sponsored Products', available: true },
     ],
-    targetingStrategies: ['auto', 'exact', 'phrase', 'broad', 'product', 'competitor', 'brand', 'category'],
+    targetingStrategies: ['auto', 'exact', 'phrase', 'broad', 'competitor', 'brand'],  // No product targeting on Walmart.
     minDailyBudget: 15,
     maxTargetAcos: 75,
     campaignLimit: 500,
@@ -205,32 +219,32 @@ export interface StructureDef {
 
 export const STRUCTURE_CATALOG: StructureDef[] = [
   {
-    id: 'consolidated', number: 1, name: 'Consolidated', tagline: 'One Auto + one Manual, total',
-    description: 'All selected targeting lives in one Auto campaign and one Manual campaign, in a single ad group each.',
+    id: 'consolidated', number: 1, name: 'Consolidated', tagline: '1 Auto + 1 Manual, all products',
+    description: 'One Auto campaign with one ad group, and one Manual campaign, both for all products.',
     useCase: 'Fewer campaigns, simplified management, consolidated budgets.',
     granularity: 'Low', productSeparation: false,
   },
   {
-    id: 'targeting-type', number: 2, name: 'Targeting-Type', tagline: 'One Auto + Manual campaigns by type',
-    description: 'One Auto campaign, plus a separate Manual campaign for every selected targeting type.',
+    id: 'targeting-type', number: 2, name: 'Targeting-Type', tagline: '1 Auto + a Manual per match type, and one for products',
+    description: 'One Auto campaign, plus a Manual campaign for each keyword match type and one for product targeting, all products.',
     useCase: 'Manage keyword match types and product targeting independently, without splitting by product.',
     granularity: 'Medium', productSeparation: false,
   },
   {
-    id: 'product-targeting', number: 3, name: 'Product + Targeting', tagline: 'Campaigns split by product and type',
-    description: 'Every selected product gets its own Auto campaign and its own set of Manual campaigns, one per targeting type.',
+    id: 'product-targeting', number: 3, name: 'Shared Auto + Product Manual', tagline: '1 shared Auto + Manual per product',
+    description: 'One Auto campaign shared by every product, with an ad group per product, and each product’s own Manual campaigns as in Targeting-Type.',
+    useCase: 'Product-level Manual control while Auto stays in one campaign.',
+    granularity: 'High', productSeparation: true,
+  },
+  {
+    id: 'product-single-auto', number: 4, name: 'Product Auto + Product Manual', tagline: 'Per product: 1 Auto + Manual as in Targeting-Type',
+    description: 'Each product gets its own Auto campaign with one ad group, and its own Manual campaigns as in Targeting-Type.',
     useCase: 'Full product-level budget control, performance reporting and bid management.',
     granularity: 'High', productSeparation: true,
   },
   {
-    id: 'product-single-auto', number: 4, name: 'Product + Single Auto', tagline: 'One Auto per product, Manual split by type',
-    description: 'Each product gets exactly one consolidated Auto campaign, while Manual campaigns stay split by targeting type.',
-    useCase: 'Product-level control while keeping each product’s Auto targeting in one place.',
-    granularity: 'High', productSeparation: true,
-  },
-  {
-    id: 'product-multi-auto', number: 5, name: 'Product + Multiple Auto', tagline: 'Maximum predefined separation',
-    description: 'The most granular option — Auto and Manual campaigns are both split per product and per targeting type.',
+    id: 'product-multi-auto', number: 5, name: 'Product Multi-Auto + Product Manual', tagline: 'Per product: an Auto per Auto type + Manual',
+    description: 'Each product gets one Auto campaign per selected Auto type (one ad group each), and its own Manual campaigns as in Targeting-Type.',
     useCase: 'Users who need maximum campaign-level control and granular optimization.',
     granularity: 'Very High', productSeparation: true,
   },
@@ -241,6 +255,53 @@ export const STRUCTURE_CATALOG: StructureDef[] = [
     granularity: 'Custom', productSeparation: false,
   },
 ];
+
+/**
+ * How a structure's Manual campaigns split into ad groups. On Amazon, Consolidated lists them as a, b, c = Match type,
+ * Targeting, Strategy, and the per-type structures (2–5) as Match type, Strategy, Targeting. Walmart has keyword
+ * targeting only, so Targeting only isn't offered there.
+ */
+export type StructureVariant = 'match' | 'targeting' | 'strategy';
+type VariantDef = { id: StructureVariant; label: string; hint: string };
+export const STRUCTURE_VARIANTS: Record<'consolidated' | 'split' | 'walmartConsolidated' | 'walmartSplit', VariantDef[]> = {
+  consolidated: [
+    { id: 'match', label: 'Match type only', hint: 'An ad group per match type in the Manual campaign' },
+    { id: 'targeting', label: 'Targeting only', hint: 'Keyword targets in one ad group, product targets in another' },
+    { id: 'strategy', label: 'Strategy only', hint: 'Branded, Competitor and Generic ad groups' },
+  ],
+  split: [
+    { id: 'match', label: 'Match type only', hint: 'The product campaign splits into its match types; keyword campaigns keep one ad group' },
+    { id: 'strategy', label: 'Strategy only', hint: 'Branded, Competitor and Generic ad groups in every Manual campaign' },
+    { id: 'targeting', label: 'Targeting only', hint: 'One ad group per campaign; keyword and product targeting are already apart' },
+  ],
+  walmartConsolidated: [
+    { id: 'match', label: 'Match type only', hint: 'An ad group per match type in the Manual campaign' },
+    { id: 'strategy', label: 'Strategy only', hint: 'Branded, Competitor and Generic ad groups' },
+  ],
+  walmartSplit: [
+    { id: 'match', label: 'Match type only', hint: 'Each match-type campaign has one ad group' },
+    { id: 'strategy', label: 'Strategy only', hint: 'Branded, Competitor and Generic ad groups in every Manual campaign' },
+  ],
+};
+export const variantsFor = (id: StructureId, marketplace?: Marketplace | null): VariantDef[] => {
+  const consolidated = id === 'consolidated';
+  if (marketplace === 'walmart') return STRUCTURE_VARIANTS[consolidated ? 'walmartConsolidated' : 'walmartSplit'];
+  return STRUCTURE_VARIANTS[consolidated ? 'consolidated' : 'split'];
+};
+/** The variation a plan's campaigns are built with, Match type by default; Walmart, which doesn't offer Targeting only, falls back to it. */
+export const structureVariantFor = (marketplace: Marketplace | null | undefined, variant: StructureVariant | undefined): StructureVariant =>
+  (marketplace === 'walmart' && variant === 'targeting' ? 'match' : variant ?? 'match');
+
+/** The structures a plan can pick: those its campaign type can use, without Product Multi-Auto on Walmart. */
+export const structuresFor = (mode: CampaignMode, marketplace: Marketplace | null | undefined): StructureId[] =>
+  MODE_STRUCTURES[mode].filter((id) => !(marketplace === 'walmart' && id === 'product-multi-auto'));
+
+const KEYWORD_TYPE_IDS: TargetingStrategyId[] = ['broad', 'phrase', 'exact', 'brand', 'competitor'];
+/** The Manual targeting split into keyword and product kinds, in the order the Targeting page lists them. */
+export function splitManualTypes(strategies: TargetingStrategyId[]): { keyword: TargetingStrategyId[]; product: TargetingStrategyId[] } {
+  const manual = strategies.filter((s) => s !== 'auto');
+  return { keyword: manual.filter((s) => KEYWORD_TYPE_IDS.includes(s)), product: manual.filter((s) => !KEYWORD_TYPE_IDS.includes(s)) };
+}
 
 export interface StructureCounts {
   autoCampaigns: number;
@@ -267,45 +328,57 @@ export function accountCampaignLimits(marketplace: Marketplace): { limit: number
   return { limit, used, available: Math.max(limit - used, 0) };
 }
 
-/** Section 7.4 — Campaign Count Calculation. `manualTypesCount` excludes 'auto'. */
+/**
+ * The Manual campaigns and ad groups for one set of products: Consolidated puts every type in one campaign; the others
+ * make a campaign per keyword match type plus one for product targeting. The variation splits each campaign into ad
+ * groups; none (a Jiva custom proposal) keeps one ad group per campaign.
+ */
+function manualShape(keyword: number, product: number, variant: StructureVariant | null | undefined, consolidated: boolean) {
+  if (keyword + product === 0) return { campaigns: 0, adGroups: 0 };
+  // Without a variation every type keeps a campaign of its own, as before.
+  const campaigns = consolidated ? 1 : variant == null ? keyword + product : keyword + (product > 0 ? 1 : 0);
+  if (variant === 'strategy') return { campaigns, adGroups: campaigns * MANUAL_STRATEGY_CATALOG.length };
+  if (variant === 'match') return { campaigns, adGroups: keyword + product };
+  if (variant === 'targeting' && consolidated) return { campaigns, adGroups: Number(keyword > 0) + Number(product > 0) };
+  return { campaigns, adGroups: campaigns };
+}
+
+/**
+ * Section 7.4 — Campaign Count Calculation. `manual` is the Manual targeting split into keyword and product types; a
+ * plain number counts them all as keyword types.
+ */
 export function structureCounts(
   structureId: StructureId,
   productCount: number,
   hasAuto: boolean,
-  manualTypesCount: number,
+  manual: number | { keyword: number; product: number },
   autoTypesCount = 1,
+  variant: StructureVariant | null = null,
 ): StructureCounts {
   const p = Math.max(productCount, 0);
-  const m = Math.max(manualTypesCount, 0);
+  const { keyword, product } = typeof manual === 'number' ? { keyword: Math.max(manual, 0), product: 0 } : manual;
+  const m = keyword + product;
   const auto = hasAuto ? 1 : 0;
+  const make = (autoCampaigns: number, autoAdGroups: number, perProduct: boolean, targets: number): StructureCounts => {
+    const shape = manualShape(keyword, product, variant, structureId === 'consolidated');
+    const times = perProduct ? p : 1;
+    const manualCampaigns = shape.campaigns * times;
+    return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoAdGroups + shape.adGroups * times, targets };
+  };
 
   switch (structureId) {
-    case 'consolidated': {
-      const autoCampaigns = auto;
-      const manualCampaigns = m > 0 ? 1 : 0;
-      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: m + auto };
-    }
-    case 'targeting-type': {
-      const autoCampaigns = auto;
-      const manualCampaigns = m;
-      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: m + auto };
-    }
-    case 'product-targeting': {
-      const autoCampaigns = auto * p;
-      const manualCampaigns = m * p;
-      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
-    }
-    case 'product-single-auto': {
-      const autoCampaigns = auto * p;
-      const manualCampaigns = m * p;
-      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (m + auto) * p };
-    }
+    case 'consolidated':
+    case 'targeting-type':
+      return make(auto, auto, false, m + auto);
+    // One Auto shared by every product, with an ad group per product (without a variation, an Auto per product).
+    case 'product-targeting':
+      return make(variant == null ? auto * p : auto, auto * p, true, (m + auto) * p);
+    case 'product-single-auto':
+      return make(auto * p, auto * p, true, (m + auto) * p);
     case 'product-multi-auto': {
       // One Auto campaign per selected Auto type, per product (spec §7.2, Structure 5).
       const types = Math.max(autoTypesCount, 1);
-      const autoCampaigns = auto * p * types;
-      const manualCampaigns = m * p;
-      return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups: autoCampaigns + manualCampaigns, targets: (auto * types + m) * p };
+      return make(auto * p * types, auto * p * types, true, (auto * types + m) * p);
     }
     case 'custom':
     default:
@@ -485,7 +558,8 @@ function bidFor(product: CcProduct): number {
 }
 
 function manualTarget(product: CcProduct, matchType: TargetingStrategyId, idx: number): CcTarget {
-  const label = matchType === 'product'
+  // ASIN Expanded is read like ASIN Exact for now: same kind of target, until it gets targets of its own.
+  const label = matchType === 'product' || matchType === 'asin-expanded'
     ? `${product.asin} — competitor ASINs`
     : matchType === 'competitor' ? `${product.brand} competitors`
     : matchType === 'brand' ? `${product.brand} branded terms`
@@ -502,10 +576,13 @@ export function generateCampaigns(
   strategies: TargetingStrategyId[],
   dailyBudget: number,
   autoTypes: AutoTypeId[] = ['close-match'],
+  /** How Manual campaigns split into ad groups. None (a Jiva custom proposal) keeps one ad group per campaign. */
+  variant: StructureVariant | null = null,
 ): CcCampaign[] {
   const hasAuto = strategies.includes('auto');
   const manualTypes = strategies.filter((s) => s !== 'auto');
   if (products.length === 0 || (!hasAuto && manualTypes.length === 0)) return [];
+  const { keyword: keywordTypes, product: productTypes } = splitManualTypes(strategies);
 
   const campaigns: CcCampaign[] = [];
   const push = (c: Omit<CcCampaign, 'budgetAllocationPct'>) => campaigns.push({ ...c, budgetAllocationPct: 0 });
@@ -514,33 +591,59 @@ export function generateCampaigns(
   const autoAdGroup = (products: CcProduct[], idPrefix: string, name = 'Auto Ad Group'): CcAdGroup => ({
     id: `${idPrefix}-ag`, name, productIds: products.map((p) => p.id), targets: [], negatives: seedNegatives(idPrefix),
   });
-  const manualAdGroup = (products: CcProduct[], types: TargetingStrategyId[], idPrefix: string): CcAdGroup => ({
-    id: `${idPrefix}-ag`, name: 'Manual Ad Group', productIds: products.map((p) => p.id),
-    targets: types.flatMap((t) => products.flatMap((p, i) => [manualTarget(p, t, i)])),
+  const adGroup = (products: CcProduct[], types: TargetingStrategyId[], idPrefix: string, name = 'Manual Ad Group'): CcAdGroup => ({
+    id: `${idPrefix}-ag`, name, productIds: products.map((p) => p.id),
+    targets: types.flatMap((t) => products.flatMap((p, i) => [{ ...manualTarget(p, t, i), id: `${idPrefix}-${manualTarget(p, t, i).id}` }])),
     negatives: seedNegatives(idPrefix),
   });
+  const label = (t: TargetingStrategyId) => TARGETING_STRATEGY_CATALOG[t].label;
+  /** A Manual campaign's ad groups, split the way the structure's variation says. */
+  const manualAdGroups = (products: CcProduct[], types: TargetingStrategyId[], idPrefix: string, consolidated: boolean): CcAdGroup[] => {
+    if (variant === 'strategy') return MANUAL_STRATEGY_CATALOG.map((s) => adGroup(products, types, `${idPrefix}-${s.id}`, `${s.label} Ad Group`));
+    if (variant === 'match') return types.map((t) => adGroup(products, [t], `${idPrefix}-${t}`, `${label(t)} Ad Group`));
+    if (variant === 'targeting' && consolidated) {
+      const { keyword, product } = splitManualTypes(types);
+      return [
+        ...(keyword.length ? [adGroup(products, keyword, `${idPrefix}-kt`, 'Keyword Targeting Ad Group')] : []),
+        ...(product.length ? [adGroup(products, product, `${idPrefix}-pt`, 'Product Targeting Ad Group')] : []),
+      ];
+    }
+    return [adGroup(products, types, idPrefix)];
+  };
+  /**
+   * The Manual campaigns of Targeting-Type, for all products or one: a campaign per keyword match type, and one for
+   * product targeting. Without a variation, every type keeps its own campaign as before.
+   */
+  const splitManual = (scope: CcProduct[], idPrefix: string, namePrefix: string) => {
+    const productIds = scope.map((p) => p.id);
+    const perType = variant == null ? manualTypes : keywordTypes;
+    perType.forEach((t) => push({ id: `${idPrefix}-${t}`, name: `${namePrefix} — ${label(t)}`, kind: 'manual', targetingLabel: label(t), productIds, adGroups: manualAdGroups(scope, [t], `${idPrefix}-${t}`, false), dailyBudget: 0 }));
+    if (variant != null && productTypes.length) {
+      push({ id: `${idPrefix}-pt`, name: `${namePrefix} — Product targeting`, kind: 'manual', targetingLabel: 'Product targeting', productIds, adGroups: manualAdGroups(scope, productTypes, `${idPrefix}-pt`, false), dailyBudget: 0 });
+    }
+  };
   const autoTypeLabel = (id: AutoTypeId) => AUTO_TYPE_CATALOG.find((a) => a.id === id)?.label ?? id;
+  const allIds = products.map((p) => p.id);
 
   if (structureId === 'consolidated') {
-    if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: products.map((p) => p.id), adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
-    if (manualTypes.length) push({ id: 'c-manual', name: 'Manual Campaign', kind: 'manual', targetingLabel: manualTypes.map((t) => TARGETING_STRATEGY_CATALOG[t].label).join(' + '), productIds: products.map((p) => p.id), adGroups: [manualAdGroup(products, manualTypes, 'c-manual')], dailyBudget: 0 });
+    if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: allIds, adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
+    if (manualTypes.length) push({ id: 'c-manual', name: 'Manual Campaign', kind: 'manual', targetingLabel: manualTypes.map(label).join(' + '), productIds: allIds, adGroups: manualAdGroups(products, manualTypes, 'c-manual', true), dailyBudget: 0 });
   } else if (structureId === 'targeting-type') {
-    if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: products.map((p) => p.id), adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
-    manualTypes.forEach((t) => {
-      const label = TARGETING_STRATEGY_CATALOG[t].label;
-      push({ id: `c-manual-${t}`, name: `Manual Campaign — ${label}`, kind: 'manual', targetingLabel: label, productIds: products.map((p) => p.id), adGroups: [manualAdGroup(products, [t], `c-manual-${t}`)], dailyBudget: 0 });
-    });
+    if (hasAuto) push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: allIds, adGroups: [autoAdGroup(products, 'c-auto')], dailyBudget: 0 });
+    splitManual(products, 'c-manual', 'Manual Campaign');
   } else if (structureId === 'product-targeting' || structureId === 'product-single-auto' || structureId === 'product-multi-auto') {
+    // Structure 3 (Amazon): one Auto campaign shared by every product, with an ad group per product.
+    const sharedAuto = structureId === 'product-targeting' && variant != null;
+    if (hasAuto && sharedAuto) {
+      push({ id: 'c-auto', name: 'Auto Campaign', kind: 'auto', targetingLabel: 'Automatic', productIds: allIds, adGroups: products.map((p) => autoAdGroup([p], `c-auto-${p.id}`, `Auto Ad Group — ${p.sku ?? p.asin}`)), dailyBudget: 0 });
+    }
     products.forEach((product) => {
       if (hasAuto && structureId === 'product-multi-auto') {
         (autoTypes.length ? autoTypes : ['close-match' as AutoTypeId]).forEach((at) => {
           push({ id: `c-${product.id}-auto-${at}`, name: `${product.title} — Auto (${autoTypeLabel(at)})`, kind: 'auto', targetingLabel: `Automatic · ${autoTypeLabel(at)}`, productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto-${at}`, `Auto Ad Group — ${autoTypeLabel(at)}`)], dailyBudget: 0 });
         });
-      } else if (hasAuto) push({ id: `c-${product.id}-auto`, name: `${product.title} — Auto`, kind: 'auto', targetingLabel: 'Automatic', productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto`)], dailyBudget: 0 });
-      manualTypes.forEach((t) => {
-        const label = TARGETING_STRATEGY_CATALOG[t].label;
-        push({ id: `c-${product.id}-${t}`, name: `${product.title} — ${label}`, kind: 'manual', targetingLabel: label, productIds: [product.id], adGroups: [manualAdGroup([product], [t], `c-${product.id}-${t}`)], dailyBudget: 0 });
-      });
+      } else if (hasAuto && !sharedAuto) push({ id: `c-${product.id}-auto`, name: `${product.title} — Auto`, kind: 'auto', targetingLabel: 'Automatic', productIds: [product.id], adGroups: [autoAdGroup([product], `c-${product.id}-auto`)], dailyBudget: 0 });
+      splitManual([product], `c-${product.id}`, product.title);
     });
   }
 
@@ -595,7 +698,7 @@ export const NEGATIVE_KEYWORD_LIMIT = 10000;
 export const MIN_KEYWORD_BID = 0.02;
 
 const KEYWORD_STRATEGIES: TargetingStrategyId[] = ['exact', 'phrase', 'broad', 'brand', 'competitor'];
-const PRODUCT_STRATEGIES: TargetingStrategyId[] = ['product', 'category'];
+const PRODUCT_STRATEGIES: TargetingStrategyId[] = ['product', 'asin-expanded', 'category'];
 
 /**
  * What the Keywords step allows for a plan (or group), from its marketplace, its targeting and its bidding:
@@ -713,10 +816,16 @@ export const NO_BID_MULTIPLIERS: BidMultipliers = {
   platform: { desktop: 0, app: 0, mobile: 0 },
 };
 
-/** Whether the Targeting page can't be left yet: nothing is picked, or Auto is on with no Auto type picked. */
-export function targetingBlocked(s: Pick<CcDraft, 'targetingStrategies' | 'autoTypes'>, marketplace?: Marketplace | null) {
+/**
+ * Whether the Targeting page can't be left yet: nothing is picked, Auto is on with no Auto type picked, or the Manual
+ * campaign is switched on with no Manual targeting picked.
+ */
+export function targetingBlocked(s: Pick<CcDraft, 'targetingStrategies' | 'autoTypes'> & Partial<Pick<CcDraft, 'manualOn'>>, marketplace?: Marketplace | null) {
+  const manualPicked = s.targetingStrategies.some((t) => t !== 'auto');
   // Walmart has no Auto targeting types to pick (its Auto row holds Expanded targeting instead), so only Amazon needs one.
-  return s.targetingStrategies.length === 0 || (s.targetingStrategies.includes('auto') && marketplace !== 'walmart' && s.autoTypes.length === 0);
+  return s.targetingStrategies.length === 0
+    || (s.targetingStrategies.includes('auto') && marketplace !== 'walmart' && s.autoTypes.length === 0)
+    || (Boolean(s.manualOn) && !manualPicked);
 }
 
 /**
@@ -779,8 +888,8 @@ export function structureTagline(def: StructureDef, mode: CampaignMode): string 
   }
   if (mode === 'manual') {
     if (def.id === 'consolidated') return 'One Manual campaign for everything';
-    if (def.id === 'targeting-type') return 'One Manual campaign per targeting type';
-    if (def.id === 'product-targeting') return 'Manual campaigns split by product and type';
+    if (def.id === 'targeting-type') return 'A Manual per match type, and one for products';
+    if (def.id === 'product-targeting') return 'Manual campaigns per product, as in Targeting-Type';
   }
   return def.tagline;
 }
@@ -798,9 +907,13 @@ export function strategiesForMode(list: TargetingStrategyId[], mode: CampaignMod
  */
 export function applyCampaignMode(draft: CcDraft, mode: CampaignMode): Partial<CcDraft> {
   const changed = draft.campaignMode !== mode;
-  const fit = <T extends Pick<CcDraft, 'targetingStrategies' | 'structureId' | 'customCampaigns' | 'customPrompt'>>(s: T): Pick<CcDraft, 'targetingStrategies' | 'structureId' | 'customCampaigns' | 'customPrompt'> => ({
+  type Fitted = Pick<CcDraft, 'targetingStrategies' | 'structureId' | 'customCampaigns' | 'customPrompt' | 'manualOn' | 'manualStrategies'>;
+  const fit = <T extends Pick<CcDraft, 'targetingStrategies' | 'structureId' | 'customCampaigns' | 'customPrompt'> & Partial<Pick<CcDraft, 'manualOn' | 'manualStrategies'>>>(s: T): Fitted => ({
     // Untouched targeting stays empty, so Targeting can fill in its recommendation for the type.
     targetingStrategies: s.targetingStrategies.length === 0 ? [] : strategiesForMode(s.targetingStrategies, mode),
+    // Auto alone has no Manual campaign: its switch goes off and its strategies go with it.
+    manualOn: mode === 'auto' ? false : Boolean(s.manualOn),
+    manualStrategies: mode === 'auto' ? [] : s.manualStrategies ?? [],
     structureId: s.structureId && MODE_STRUCTURES[mode].includes(s.structureId) && !(changed && s.structureId === 'custom') ? s.structureId : null,
     customCampaigns: changed ? null : s.customCampaigns,
     customPrompt: changed ? '' : s.customPrompt,
@@ -826,7 +939,13 @@ export interface CcDraft {
   targetingStrategies: TargetingStrategyId[];
   /** Auto targeting types — drives how many Auto campaigns Structure 5 creates per product. */
   autoTypes: AutoTypeId[];
+  /** The Manual campaign switch on Targeting. Its targeting and strategies can only be picked while it's on. */
+  manualOn: boolean;
+  /** Optional tags for the Manual campaigns; they don't change which campaigns are made. */
+  manualStrategies: ManualStrategyId[];
   structureId: StructureId | null;
+  /** How the chosen structure splits its Manual campaigns into ad groups (Amazon). Resets when the structure changes. */
+  structureVariant: StructureVariant;
   customPrompt: string;
   customCampaigns: CcCampaign[] | null;
   /** Snapshot taken when the Preview step is reached — lets the user edit per-campaign budget
@@ -870,7 +989,7 @@ export const GROUP_FIELDS = [
   'keywordTargets', 'negativeKeywords', 'productTargets', 'negativeProducts', 'targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate',
   'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode',
   'budgetType', 'totalBudget', 'budgetRollover', 'expandedTargeting', 'bidMultipliers',
-  'targetingStrategies', 'autoTypes', 'structureId', 'customPrompt', 'customCampaigns',
+  'targetingStrategies', 'autoTypes', 'manualOn', 'manualStrategies', 'structureId', 'structureVariant', 'customPrompt', 'customCampaigns',
 ] as const;
 export type GroupField = (typeof GROUP_FIELDS)[number];
 export type GroupSettings = Pick<CcDraft, GroupField>;
@@ -893,7 +1012,10 @@ export const EMPTY_DRAFT: CcDraft = {
   extraObjectives: NO_EXTRA_OBJECTIVES,
   targetingStrategies: [],
   autoTypes: [],
+  manualOn: false,
+  manualStrategies: [],
   structureId: null,
+  structureVariant: 'match',
   customPrompt: '',
   customCampaigns: null,
   generatedCampaigns: null,

@@ -78,6 +78,25 @@
 .ccd-root [role="radio"].ccd-pick.ccd-structure-option { position:relative;min-height:0;padding:3px 10px !important;border:1px solid #e0e2e7;border-radius:7px !important;background:var(--ccd-surface);cursor:pointer;transition:border-color 160ms,box-shadow 180ms,background 180ms; }.ccd-structure-option:hover { border-color:var(--ccd-brand-line);background:#fcfafd;box-shadow:0 8px 18px -16px var(--ccd-brand); }.ccd-structure-option.is-selected { border-color:var(--ccd-brand);background:var(--ccd-surface);box-shadow:none; }.ccd-structure-option.is-viewing:not(.is-selected){border-color:#cbb8dd;background:#fcfafd}.ccd-structure-option.is-disabled{opacity:.62;cursor:not-allowed;}.ccd-structure-option__head { display:flex;align-items:center;height:15px;gap:6px;color:#989ca6;font:700 8px/1 Inter,sans-serif; }.ccd-structure-option__head > small { padding:2px 5px;border-radius:4px;background:#e9f4f0;color:#2f7d65;font:700 7px/1 Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em; }.ccd-structure-option__head > span:last-child { margin-left:auto; }.ccd-structure-option__copy { min-width:0;margin-top:2px; }.ccd-structure-option__copy strong,.ccd-structure-option__copy span { display:block; }.ccd-structure-option__copy strong { color:var(--ccd-ink);font:700 12px/1.15 'Inter Tight',Inter,sans-serif; }.ccd-structure-option__copy span { margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#777c86;font:400 9.5px/1.25 Inter,sans-serif; }.ccd-structure-option__facts { margin-top:3px;padding-top:3px;border-top:1px solid color-mix(in oklab,var(--ccd-line-strong) 72%,transparent);color:#656a74;font:600 8px/1 Inter,sans-serif; }.ccd-structure-option__unavailable{position:absolute;right:34px;top:6px;color:#a75d58;font:600 8px/1 Inter,sans-serif;}
 .ccd-root .ccd-structure-options { gap: 8px; padding-top: 12px; border-top: 1px solid #eceef2; }
 .ccd-root [role="radio"].ccd-pick.ccd-structure-option { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; column-gap: 12px; align-items: start; padding: 11px 12px !important; min-height: 0; text-align: left; }
+/* The viewed structure's variations, opened inside its card and indented to its text. */
+.ccd-sv { display: flex; flex-direction: column; margin: -2px 0 4px 42px; padding: 0 12px; border: 1px solid #eceef2; border-radius: 9px; background: #fafbfc; }
+/* Open, the card and its variations share one frame: the group takes the card's border, and the card inside drops its own. */
+.ccd-so-group.is-open { border: 1px solid #cbb8dd; border-radius: 7px; background: var(--ccd-surface); }
+.ccd-so-group.is-open.is-selected { border-color: var(--ccd-brand); }
+.ccd-root .ccd-so-group.is-open [role="radio"].ccd-pick.ccd-structure-option,
+.ccd-root .ccd-so-group.is-open [role="radio"].ccd-pick.ccd-structure-option:hover { border-color: transparent; background: transparent; box-shadow: none; }
+.ccd-so-group.is-open .ccd-sv { margin: 0 14px 6px 54px; padding: 0; border: 0; border-top: 1px solid #eceef2; border-radius: 0; background: transparent; }
+.ccd-sv__opt { display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 10px; align-items: start; padding: 11px 0; border: 0; border-radius: 0; background: transparent; cursor: pointer; outline: none; }
+/* A thin bar between options; no box around each one, the radio shows the pick. */
+.ccd-sv__opt + .ccd-sv__opt { border-top: 1px solid #f0f1f4; }
+.ccd-sv__opt:hover:not([aria-disabled="true"]) .ccd-sv__copy strong { color: var(--ccd-brand); }
+.ccd-sv__opt:focus-visible .ccd-sv__copy strong { color: var(--ccd-brand); text-decoration: underline; text-underline-offset: 3px; }
+.ccd-sv__opt[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.ccd-sv__opt > span:first-child { margin-top: 1px; }
+.ccd-sv__copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ccd-sv__copy strong { display: flex; align-items: center; gap: 6px; transition: color 140ms ease-out; color: var(--ccd-ink); font: 600 12.5px/1.3 'Inter Tight', Inter, sans-serif; }
+.ccd-sv__copy > span { color: #7b808a; font: 400 11.5px/1.4 Inter, sans-serif; }
+@media (prefers-reduced-motion: reduce) { .ccd-sv__copy strong { transition: none; } }
 .ccd-so__num { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: #f1f2f6; color: #7a808c; font: 700 11px/1 'Inter Tight', Inter, sans-serif; letter-spacing: .02em; transition: background-color 160ms, color 160ms, box-shadow 160ms; }
 .ccd-structure-option.is-selected .ccd-so__num { background: var(--ccd-surface); color: var(--ccd-brand); }
 .ccd-so__copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -146,11 +165,7 @@
 .ccd-tg { display: flex; flex-direction: column; gap: 10px; }
 .ccd-tg-card { overflow: hidden; border: 1px solid var(--ccd-line-strong); border-radius: 12px; background: var(--ccd-surface); box-shadow: var(--ccd-shadow-card); }
 .ccd-tg-card > .ccd-tg-row + .ccd-tg-row { border-top: 1px solid #eceef3; }
-.ccd-tg-head, .ccd-tg-row { display: grid; grid-template-columns: 220px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-.ccd-tg-head { align-items: start; padding: 12px 16px; border-bottom: 1px solid #eceef3; background: #fafbfd; }
-.ccd-tg-head > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.ccd-tg-head strong { color: #3d424b; font: 600 12px/1.2 Inter, sans-serif; }
-.ccd-tg-head small { color: #8a8f99; font: 400 11.5px/1.3 Inter, sans-serif; }
+.ccd-tg-row { display: grid; grid-template-columns: 220px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .ccd-tg-row { position: relative; align-items: stretch; padding: 14px 16px; background: transparent; }
 .ccd-tg-label { display: flex; align-items: flex-start; gap: 11px; min-width: 0; padding-top: 2px; }
 .ccd-tg-label__icon { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid; border-radius: 10px; }
@@ -171,10 +186,24 @@
 .ccd-tg-tile--stacked .ccd-tg-tile__text { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; }
 .ccd-tg-tile--stacked small { color: #7b808a; font: 400 12px/1.45 Inter, sans-serif; }
 .ccd-tg-tile__text { min-width: 0; display: flex; align-items: center; gap: 8px; }
-.ccd-tg-na { flex: none; min-height: 46px; box-sizing: border-box; display: flex; align-items: center; padding: 0 14px; border: 1px dashed #e4e6ec; border-radius: 10px; color: #b0b4bc; font: 400 12.5px/1 Inter, sans-serif; }
 .ccd-tg-row--auto { grid-template-columns: 220px minmax(0, 1fr); }
 .ccd-tg-row--auto .ccd-tg-cells--wide { grid-column: 2; }
 .ccd-tg-note { grid-column: 1 / -1; margin: 2px 0 0; padding: 10px 12px; border-radius: 8px; background: #faf8fc; color: var(--ccd-muted, #6b7178); font: 400 12px/1.5 Inter, sans-serif; }
+/* The Manual table: the Manual switch in a first column spanning both rows, then a Keyword row and a Product row, each
+   a label and three options. The first column is as wide as the Auto table's, so the two line up. */
+.ccd-tg-mx { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+.ccd-tg-mx__switch { grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 14px 16px; border-right: 1px solid #eceef3; }
+/* The Auto / Manual campaign names read as the tables' headings; the line under them keeps its own quiet style. */
+.ccd-tg-mx__switch .ccd-tg-tile__text { color: var(--ccd-ink); font: 650 14px/1.25 'Inter Tight', Inter, sans-serif; }
+.ccd-tg-mx__row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: stretch; padding: 14px 16px; }
+.ccd-tg-mx__row + .ccd-tg-mx__row { border-top: 1px solid #eceef3; }
+/* A row with no label of its own: its options take the full width beside the switch. */
+.ccd-tg-mx__row--bare { grid-template-columns: minmax(0, 1fr); }
+.ccd-tg-mx__cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ccd-tg-mx__cells--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* On and unchangeable, because the campaign type already decided it: checked, not greyed. */
+.ccd-tg-tile--fixed[aria-disabled="true"] { opacity: 1; cursor: default; }
+.ccd-tg-title__opt { margin-left: 6px; color: #a3a8b2; font-weight: 500; letter-spacing: 0; text-transform: none; }
 @media (prefers-reduced-motion: reduce) { .ccd-tg-tile { transition: none; } .ccd-tg-tile:hover { transform: none !important; } }
 
 @media (max-width: 1100px) {
@@ -183,10 +212,11 @@
   .ccd-structure-workspace { grid-template-columns:280px minmax(0,1fr); }
 }
 @media (max-width: 760px) {
-  .ccd-tg-head { display: none; }
   .ccd-tg-row, .ccd-tg-row--auto { grid-template-columns: 1fr; }
   .ccd-tg-cells--wide, .ccd-tg-row--auto .ccd-tg-cells--wide { grid-column: 1; }
   .ccd-tg-cells--two { grid-template-columns: 1fr; }
+  .ccd-tg-mx, .ccd-tg-mx__row, .ccd-tg-mx__cells { grid-template-columns: 1fr; }
+  .ccd-tg-mx__switch { grid-row: auto; border-right: 0; border-bottom: 1px solid #eceef3; }
   .ccd-workspace, .ccd-focus { padding: 24px 16px 32px; }
   .ccd-setup { overflow-x:auto; }
   .ccd-footer { padding: 10px 16px; grid-template-columns: 1fr 1fr; }
@@ -265,6 +295,8 @@
 /* Each campaign is named under its shape, and each ad group under its square, as the spec's tree names them. */
 .ccd-tr-cell--camp > strong { max-width: 128px; text-wrap: balance; }
 .ccd-tr-cell > .ccd-tr-ag + small { margin-top: 4px; }
+/* The names of a campaign's ad groups, under their count. */
+.ccd-tr-cell > small.ccd-tr-agnames { max-width: 132px; margin-top: 2px; color: #a3a8b2; font-weight: 400; text-wrap: balance; }
 .ccd-tr-pill--auto { background: #eef4ff; color: #2f6fed; border: 1px solid #d6e3fd; }
 .ccd-tr-prod + small { margin-bottom: 4px; }
 .ccd-tr-list { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -342,6 +374,9 @@
 .ccd-pv-sum { margin: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .ccd-pv-stat { min-width: 0; padding: 2px 0 2px 24px; border-left: 1px solid #eef0f5; }
 .ccd-pv-stat:first-child { padding-left: 0; border-left: 0; }
+/* A tag on the plan rather than a figure, so a quiet line under the numbers. */
+.ccd-pv-tagline { display: flex; align-items: baseline; gap: 10px; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid #eef0f5; color: var(--ccd-ink); font: 600 13px/1.4 Inter, sans-serif; }
+.ccd-pv-tagline span { color: #7b808a; font-weight: 500; font-size: 12px; }
 .ccd-pv-stat dt { margin: 0; color: #7b808a; font: 500 12px/1.3 Inter, sans-serif; }
 .ccd-pv-stat dd { margin: 8px 0 0; color: var(--ccd-ink); font: 650 30px/1 'Inter Tight', Inter, sans-serif; letter-spacing: -0.025em; white-space: nowrap; }
 @container (max-width: 760px) {

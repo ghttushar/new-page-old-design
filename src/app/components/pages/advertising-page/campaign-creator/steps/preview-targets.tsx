@@ -55,7 +55,7 @@ const KINDS: Record<Kind, KindDef> = {
 };
 
 const KEYWORD_MATCH = ['exact', 'phrase', 'broad', 'brand', 'competitor'];
-const PRODUCT_MATCH = ['product', 'category'];
+const PRODUCT_MATCH = ['product', 'asin-expanded', 'category'];
 
 /** One line of the table, whichever kind it belongs to. */
 interface Row { id: string; text: string; match: string; bid: number | null; source: TargetSource | null }

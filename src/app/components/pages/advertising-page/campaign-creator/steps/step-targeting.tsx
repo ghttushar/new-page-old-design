@@ -1,42 +1,31 @@
 // @ts-nocheck -- ported verbatim from the source repo, which uses looser TS settings
 import {
-  AUTO_TYPE_CATALOG, MARKETPLACE_CAPABILITY, TARGETING_STRATEGY_CATALOG,
-  type AutoTypeId, type CcDraft, type CcProduct, type TargetingStrategyId,
+  AUTO_TYPE_CATALOG, MANUAL_STRATEGY_CATALOG, MARKETPLACE_CAPABILITY,
+  type AutoTypeId, type CcDraft, type CcProduct, type ManualStrategyId, type TargetingStrategyId,
 } from '../campaign-creator.types';
 import { Checkbox, FONT, GOOD, StepHeading, TEXT_MUTED, TEXT_PRIMARY } from '../campaign-creator-ui';
 
-// ── Intent icons ──────────────────────────────────────────────────────────────────────────────
-
-const ico = (children: React.ReactNode, color: string) => (
-  <svg width={17} height={17} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{children}</svg>
-);
-const AutoIcon = ({ color }: { color: string }) => ico(<><path d="M8 2.2a5.8 5.8 0 1 0 5.8 5.8" /><path d="M8 5.2a2.8 2.8 0 1 0 2.8 2.8" /></>, color);
-const CompetitorIcon = ({ color }: { color: string }) => ico(<><circle cx="8" cy="8" r="5.2" /><circle cx="8" cy="8" r="1.6" /><path d="M8 1v3M8 12v3M1 8h3M12 8h3" /></>, color);
-const ResearchIcon = ({ color }: { color: string }) => ico(<><circle cx="7" cy="7" r="4.4" /><path d="M10.4 10.4L14 14" /></>, color);
-const PerformanceIcon = ({ color }: { color: string }) => ico(<><path d="M2 11.5a6 6 0 1 1 12 0" /><path d="M8 11.5l2.6-3.4" /></>, color);
-const BrandIcon = ({ color }: { color: string }) => ico(<><path d="M8 1.8l5 1.9v4c0 3.2-2.1 5.2-5 6.5-2.9-1.3-5-3.3-5-6.5v-4z" /><path d="M5.8 8l1.6 1.6L10.4 6.4" /></>, color);
-
-const INTENT = {
-  auto: { color: '#6b7178', icon: AutoIcon },
-  brand: { color: '#c26a1a', icon: BrandIcon },
-  competitor: { color: '#4b5bb5', icon: CompetitorIcon },
-  research: { color: '#2f8ae8', icon: ResearchIcon },
-  performance: { color: '#6fa83a', icon: PerformanceIcon },
-};
-
-// ── Matrix pieces ─────────────────────────────────────────────────────────────────────────────
+// ── Table pieces ─────────────────────────────────────────────────────────────────────────────
 
 /** What each target is called in the matrix, and what it does in plain words. */
 const TARGET_COPY: Record<TargetingStrategyId, { name: string; hint: string }> = {
   auto: { name: 'Auto campaign', hint: 'The marketplace picks the searches and pages for you' },
   brand: { name: 'Brand keywords', hint: 'Searches that include your brand name' },
   competitor: { name: 'Competitor keywords', hint: "Searches for rival brands' names" },
-  broad: { name: 'Broad match', hint: 'Related searches, words in any order' },
-  phrase: { name: 'Phrase match', hint: 'Searches that contain your phrase' },
-  exact: { name: 'Exact match', hint: 'Only your exact search term' },
-  category: { name: 'Product category', hint: 'Every product page in a category' },
-  product: { name: 'Single product', hint: 'Product pages you pick, by ASIN' },
+  broad: { name: 'Broad', hint: 'Related searches, words in any order' },
+  phrase: { name: 'Phrase', hint: 'Searches that contain your phrase' },
+  exact: { name: 'Exact', hint: 'Only your exact search term' },
+  product: { name: 'ASIN Exact', hint: 'Only the product pages you pick' },
+  'asin-expanded': { name: 'ASIN Expanded', hint: 'The pages you pick and ones like them' },
+  category: { name: 'Category', hint: 'Every product page in a category' },
 };
+
+/** The Manual table's two rows: what kind of target, where it shows the ad, and its options. */
+const MANUAL_ROWS: { name: string; hint: string; ids: TargetingStrategyId[] }[] = [
+  { name: 'Keyword targeting', hint: 'Show the ad when shoppers search', ids: ['broad', 'phrase', 'exact'] },
+  { name: 'Product targeting', hint: 'Show the ad on product pages', ids: ['product', 'asin-expanded', 'category'] },
+];
+const MANUAL_IDS = MANUAL_ROWS.flatMap((r) => r.ids);
 
 /** Walmart's expanded targeting, shown in the Auto table where Amazon has its Auto targeting types. */
 const EXPANDED_OPTIONS: ['brandTerms' | 'complementary', string, string][] = [
@@ -44,17 +33,21 @@ const EXPANDED_OPTIONS: ['brandTerms' | 'complementary', string, string][] = [
   ['complementary', 'Complementary Product Targeting', 'Pages of products bought alongside yours'],
 ];
 
-/** A selectable target: its name with a plain-words line under it, tinted when picked. */
-function Tile({ checked, disabled, label, hint, onToggle }: {
-  checked: boolean; disabled?: boolean; label: string; hint?: string; onToggle: () => void;
+/**
+ * A selectable target: its name with a plain-words line under it; picked, it gets a brand border. `fixed` shows it on
+ * and unchangeable without greying it, for a choice the campaign type already made.
+ */
+function Tile({ checked, disabled, fixed, label, hint, title, onToggle }: {
+  checked: boolean; disabled?: boolean; fixed?: boolean; label: string; hint?: string; title?: string; onToggle: () => void;
 }) {
+  const locked = disabled || fixed;
   return (
     <div
-      role="checkbox" aria-checked={checked} aria-label={label} aria-disabled={disabled} tabIndex={disabled ? -1 : 0}
-      onClick={() => !disabled && onToggle()}
-      onKeyDown={(e) => { if (!disabled && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); onToggle(); } }}
-      className="ccd-tg-tile ccd-tg-tile--stacked"
-      title={disabled ? 'Not available on this marketplace' : undefined}
+      role="checkbox" aria-checked={checked} aria-label={label} aria-disabled={locked} tabIndex={locked ? -1 : 0}
+      onClick={() => !locked && onToggle()}
+      onKeyDown={(e) => { if (!locked && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); onToggle(); } }}
+      className={`ccd-tg-tile ccd-tg-tile--stacked${fixed ? ' ccd-tg-tile--fixed' : ''}`}
+      title={title ?? (disabled ? 'Not available on this marketplace' : undefined)}
     >
       <Checkbox checked={checked} disabled={disabled} />
       <span className="ccd-tg-tile__text">
@@ -65,46 +58,13 @@ function Tile({ checked, disabled, label, hint, onToggle }: {
   );
 }
 
-function NotApplicable({ kind }: { kind: string }) {
-  return <div className="ccd-tg-na">No {kind} targets</div>;
-}
-
-/** The column headings, each with a line saying where the ad shows. */
-function TableHead() {
-  return (
-    <div className="ccd-tg-head">
-      <span><strong>Strategy</strong><small>What you want to achieve</small></span>
-      <span><strong>Keyword targets</strong><small>Show the ad when shoppers search</small></span>
-      <span><strong>Product targets</strong><small>Show the ad on product pages</small></span>
-    </div>
-  );
-}
-
-function IntentLabel({ intent, name, info }: { intent: keyof typeof INTENT; name: string; info: string }) {
+function RowLabel({ name, info }: { name: string; info: string }) {
   return (
     <div className="ccd-tg-label">
       <span className="ccd-tg-label__copy" title={info}>
         <strong>{name}</strong>
         <small>{info}</small>
       </span>
-    </div>
-  );
-}
-
-function IntentRow({ intent, name, info, keywordCells, productCells, wide }: {
-  intent: keyof typeof INTENT; name: string; info: string; keywordCells: React.ReactNode[]; productCells: React.ReactNode[]; wide?: boolean;
-}) {
-  return (
-    <div className="ccd-tg-row">
-      <IntentLabel intent={intent} name={name} info={info} />
-      {wide ? (
-        <div className="ccd-tg-cells ccd-tg-cells--wide">{keywordCells}</div>
-      ) : (
-        <>
-          <div className="ccd-tg-cells">{keywordCells.length ? keywordCells : <NotApplicable kind="keyword" />}</div>
-          <div className="ccd-tg-cells">{productCells.length ? productCells : <NotApplicable kind="product" />}</div>
-        </>
-      )}
     </div>
   );
 }
@@ -132,8 +92,9 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
       checked={draft.targetingStrategies.includes(id)} disabled={!supported.includes(id)} onToggle={() => toggle(id)}
     />
   );
-  const MANUAL_ORDER: TargetingStrategyId[] = ['brand', 'competitor', 'broad', 'phrase', 'exact', 'category', 'product'];
-  const manualPicked = MANUAL_ORDER.filter((id) => draft.targetingStrategies.includes(id));
+  // Walmart has no product targeting, so its Manual table is the keyword row alone.
+  const manualRows = MANUAL_ROWS.filter((row) => row.ids.some((id) => supported.includes(id)));
+  const manualPicked = manualRows.flatMap((r) => r.ids).filter((id) => draft.targetingStrategies.includes(id));
 
   // Combination validation (section 6.4).
   const selected = draft.targetingStrategies;
@@ -150,6 +111,30 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
     onChange({ autoTypes: AUTO_TYPE_CATALOG.map((a) => a.id).filter((x) => set.has(x)) });
   }
 
+  // The Manual campaign switch. With Manual as the only campaign type it is always on; otherwise turning it off clears
+  // its targeting and strategies, so nothing hidden behind the lock is still picked.
+  const manualFixed = mode === 'manual';
+  const manualOn = manualFixed || Boolean(draft.manualOn) || manualPicked.length > 0;
+  function toggleManual() {
+    if (manualFixed) return;
+    if (manualOn) onChange({ manualOn: false, manualStrategies: [], targetingStrategies: selected.filter((s) => !MANUAL_IDS.includes(s) && s !== 'brand' && s !== 'competitor') });
+    else onChange({ manualOn: true });
+  }
+  const strategies = draft.manualStrategies ?? [];
+  function toggleStrategy(id: ManualStrategyId) {
+    const set = new Set(strategies);
+    if (set.has(id)) set.delete(id); else set.add(id);
+    onChange({ manualStrategies: MANUAL_STRATEGY_CATALOG.map((s) => s.id).filter((x) => set.has(x)) });
+  }
+  const lockedTitle = 'Turn on Manual campaign first';
+  const manualCell = (id: TargetingStrategyId) => (
+    <Tile
+      key={id} label={TARGET_COPY[id].name} hint={TARGET_COPY[id].hint}
+      checked={selected.includes(id)} disabled={!manualOn || !supported.includes(id)}
+      title={!manualOn ? lockedTitle : undefined} onToggle={() => toggle(id)}
+    />
+  );
+
   return (
     <div>
       <StepHeading title="Pick how shoppers find you" />
@@ -159,18 +144,17 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Auto</div>
         <div className="ccd-tg-card">
-        <IntentRow intent="auto" name="Auto" info={TARGETING_STRATEGY_CATALOG.auto.description} keywordCells={[cell('auto')]} productCells={[]} wide />
-        {/* Stays in place when Auto is off, locked, so the page does not jump. Walmart has no Auto types: its row is the
+        {/* Laid out like the Manual table: the Auto switch in the first column, its options in the row beside it. The row
+            stays in place when Auto is off, locked, so the page does not jump. Walmart has no Auto types: its row is the
             expanded targeting that widens the Auto campaigns instead. */}
+        <div className="ccd-tg-mx" role="group" aria-label="Auto targeting">
+          <div className="ccd-tg-mx__switch">
+            {cell('auto')}
+          </div>
         {isWalmart ? (
-          <div className="ccd-tg-row ccd-tg-row--auto">
-            <div className="ccd-tg-label">
-              <span className="ccd-tg-label__copy">
-                <strong>Expanded Targeting</strong>
-                <small>{hasAuto ? 'Extra reach for the Auto campaigns, on top of their own targeting.' : 'Turn on Auto campaign to choose these.'}</small>
-              </span>
-            </div>
-            <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-cells--two">
+          <div className="ccd-tg-mx__row">
+            <RowLabel name="Expanded Targeting" info={hasAuto ? 'Extra reach for the Auto campaigns, on top of their own targeting.' : 'Turn on Auto campaign to choose these.'} />
+            <div className="ccd-tg-mx__cells ccd-tg-mx__cells--two">
               {EXPANDED_OPTIONS.map(([key, name, hint]) => (
                 <Tile
                   key={key} label={name} hint={hint} checked={draft.expandedTargeting[key]} disabled={!hasAuto}
@@ -180,14 +164,8 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
             </div>
           </div>
         ) : (
-          <div className="ccd-tg-row ccd-tg-row--auto">
-            <div className="ccd-tg-label">
-              <span className="ccd-tg-label__copy">
-                <strong>Auto targeting types</strong>
-                <small>{hasAuto ? 'All picked for you. Untick any you don’t want; keep at least one.' : 'Turn on Auto campaign to choose these.'}</small>
-              </span>
-            </div>
-            <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-cells--two">
+          <div className="ccd-tg-mx__row ccd-tg-mx__row--bare" role="group" aria-label="Auto targeting types">
+            <div className="ccd-tg-mx__cells ccd-tg-mx__cells--two">
               {AUTO_TYPE_CATALOG.map((a) => {
                 const on = autoTypes.includes(a.id);
                 const last = on && autoTypes.length === 1;
@@ -212,36 +190,52 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
         )}
         </div>
         </div>
+        </div>
         )}
 
         {mode !== 'auto' && (
         <div className="ccd-tg-group">
         <div className="ccd-tg-title">Manual</div>
         <div className="ccd-tg-card">
-        <TableHead />
-        <IntentRow
-          intent="brand" name="Brand" info="Defend your own brand terms and protect your listings from competitors."
-          keywordCells={[cell('brand')]} productCells={[]}
-        />
-        <IntentRow
-          intent="competitor" name="Competitor" info="Reach shoppers who are considering competing products and brands."
-          keywordCells={[cell('competitor')]} productCells={[]}
-        />
-        <IntentRow
-          intent="research" name="Research" info="Discover new search terms and products with broader reach."
-          keywordCells={[cell('broad'), cell('phrase')]}
-          productCells={[cell('category')]}
-        />
-        <IntentRow
-          intent="performance" name="Performance" info="Capture high-intent shoppers with precise, conversion-focused targeting."
-          keywordCells={[cell('exact')]}
-          productCells={[cell('product')]}
-        />
-        {manualPicked.length > 0 && (
-          <div className="ccd-tg-foot" aria-live="polite">
-            <span className="ccd-num">{manualPicked.length} picked</span>{manualPicked.map((id) => TARGET_COPY[id].name).join(' · ')}
+          {/* The Manual switch spans both rows; each row is a kind of target with its three options. */}
+          <div className="ccd-tg-mx" role="group" aria-label="Manual targeting">
+            <div className="ccd-tg-mx__switch">
+              <Tile
+                label="Manual campaign" hint="You pick the targets below" checked={manualOn} fixed={manualFixed}
+                title={manualFixed ? 'Manual is the campaign type you chose' : undefined} onToggle={toggleManual}
+              />
+            </div>
+            {manualRows.map((row) => (
+              <div key={row.name} className="ccd-tg-mx__row">
+                <RowLabel name={row.name} info={row.hint} />
+                <div className="ccd-tg-mx__cells">{row.ids.map(manualCell)}</div>
+              </div>
+            ))}
           </div>
+          {manualPicked.length > 0 && (
+            <div className="ccd-tg-foot" aria-live="polite">
+              <span className="ccd-num">{manualPicked.length} picked</span>{manualPicked.map((id) => TARGET_COPY[id].name).join(' · ')}
+            </div>
+          )}
+        </div>
+        </div>
         )}
+
+        {mode !== 'auto' && (
+        <div className="ccd-tg-group">
+        <div className="ccd-tg-title">Strategy <span className="ccd-tg-title__opt">Optional</span></div>
+        <div className="ccd-tg-card">
+          <div className="ccd-tg-row ccd-tg-row--auto">
+            <RowLabel name="Strategy" info={manualOn ? 'Who the Manual campaigns aim at. A tag only; it doesn’t add campaigns.' : 'Turn on Manual campaign to choose these.'} />
+            <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-mx__cells">
+              {MANUAL_STRATEGY_CATALOG.map((s) => (
+                <Tile
+                  key={s.id} label={s.label} hint={s.hint} checked={strategies.includes(s.id)} disabled={!manualOn}
+                  title={!manualOn ? lockedTitle : undefined} onToggle={() => toggleStrategy(s.id)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
         </div>
         )}

@@ -29,7 +29,7 @@ export const campaignLabel = (c: CcCampaign): string => c.name;
 /** Match types, written the way a person reads them. */
 export const MATCH_LABEL: Record<string, string> = {
   exact: 'Exact', phrase: 'Phrase', broad: 'Broad', brand: 'Brand', competitor: 'Competitor',
-  category: 'Category', product: 'Product (ASIN)', auto: 'Automatic',
+  category: 'Category', product: 'ASIN Exact', 'asin-expanded': 'ASIN Expanded', auto: 'Automatic',
   'negative-phrase': 'Negative phrase', 'negative-exact': 'Negative exact', 'negative-asin': 'Negative ASIN',
 };
 
