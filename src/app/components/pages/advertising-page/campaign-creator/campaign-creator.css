@@ -71,7 +71,7 @@
 .ccd-goal-story strong { color: var(--ccd-ink); font: 650 11px/1 Inter, sans-serif; }.ccd-goal-story small { color: #9297a2; font: 500 9px/1 Inter, sans-serif; }.ccd-goal-story i { height: 1px; margin: 0 18px; background: linear-gradient(90deg,var(--ccd-brand-line),#dfe2e8); }
 .ccd-intent-path { display: grid; grid-template-columns: auto 1fr auto 1fr auto minmax(120px,auto); align-items: center; gap: 12px; margin: -4px 0 18px; padding: 12px 16px; border: 1px solid var(--ccd-line-strong); border-radius: 8px; background: #fff; color: #555a64; font: 650 11px/1 Inter, sans-serif; }.ccd-intent-path i { height: 1px; background: linear-gradient(90deg,#c9b6df,var(--ccd-brand)); }.ccd-intent-path strong { justify-self: end; padding: 6px 9px; border-radius: 6px; background: var(--ccd-brand-tint); color: var(--ccd-brand); font-size: 10px; }
 .ccd-targeting-canvas, .ccd-structure-studio, .ccd-preview-editor { border-radius: 8px !important; box-shadow: 0 12px 34px -30px #202129 !important; }
-.ccd-structure-workspace { display:grid;grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:16px;align-items:stretch; }
+.ccd-structure-workspace { display:grid;grid-template-columns:minmax(400px,440px) minmax(0,1fr);gap:16px;align-items:stretch; }
 .ccd-structure-library { min-width:0;min-height:594px;padding:14px;overflow:hidden;border:1px solid var(--ccd-line-strong);border-radius:8px;background:var(--ccd-surface);box-shadow:0 12px 34px -30px var(--ccd-ink); }
 .ccd-structure-catalog-head { display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;margin-bottom:12px;padding-bottom:0; }.ccd-structure-catalog-head > div { min-width:0;display:flex;flex-direction:column;gap:4px; }.ccd-structure-catalog-head small,.ccd-structure-detail__intro > div > small,.ccd-structure-card__head small { color:var(--ccd-brand);font:700 9px/1 Inter,sans-serif;letter-spacing:.1em; }.ccd-structure-catalog-head strong { color:var(--ccd-ink);font:700 16px/1.2 'Inter Tight',Inter,sans-serif; }.ccd-structure-catalog-head > span { flex:none;color:#8b909a;font:500 10px/1 Inter,sans-serif; }
 .ccd-structure-options { display:flex;flex-direction:column;gap:4px; }
@@ -238,7 +238,7 @@
 @media (max-width: 1100px) {
   .ccd-product-grid { grid-template-columns: 1fr; }
   .ccd-goal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ccd-structure-workspace { grid-template-columns:280px minmax(0,1fr); }
+  .ccd-structure-workspace { grid-template-columns:360px minmax(0,1fr); }
 }
 @media (max-width: 760px) {
   .ccd-tg-row, .ccd-tg-row--auto { grid-template-columns: 1fr; }
@@ -1119,3 +1119,131 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-combo-notes { list-style: none; margin: 12px 0 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #eceef2; }
 .ccd-combo-notes li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: baseline; color: #6f747e; font: 400 11.5px/1.45 Inter, sans-serif; }
 .ccd-combo-notes b { padding: 1px 5px; border-radius: 4px; background: #f3f0f7; color: var(--ccd-brand); font: 600 10px/1.4 Inter, sans-serif; letter-spacing: .03em; }
+
+/* ── Visual clean-up: Targeting tables ─────────────────────────────────────────────────────────
+   The first column names the campaign (no control), options are soft fills until picked, and a pick gets the brand
+   border on white. */
+.ccd-tg-card { border-color: #e6e8ee; border-radius: 14px; box-shadow: 0 1px 2px rgba(29, 33, 41, .04), 0 12px 30px -26px rgba(29, 33, 41, .4); }
+.ccd-tg-mx { grid-template-columns: 210px minmax(0, 1fr); }
+.ccd-tg-mx__switch { justify-content: flex-start; padding: 18px; border-right: 1px solid #efedf3; background: #fbfafd; }
+.ccd-tg-camp { display: flex; flex-direction: column; gap: 4px; }
+.ccd-tg-camp strong { color: var(--ccd-ink); font: 650 15px/1.25 'Inter Tight', Inter, sans-serif; }
+.ccd-tg-camp small { color: #7b808a; font: 400 12px/1.45 Inter, sans-serif; text-wrap: pretty; }
+.ccd-tg-mx__row { grid-template-columns: 150px minmax(0, 1fr); gap: 14px; padding: 16px 18px; }
+.ccd-tg-mx__row--bare { grid-template-columns: minmax(0, 1fr); }
+.ccd-tg-mx__row + .ccd-tg-mx__row { border-top-color: #f0f1f4; }
+.ccd-tg-mx__cells { gap: 10px; }
+.ccd-tg-label { padding-top: 7px; }
+.ccd-tg-label__copy strong { font: 600 13px/1.3 'Inter Tight', Inter, sans-serif; }
+.ccd-tg-label__copy small { font-size: 11.5px; }
+.ccd-tg-tile { min-height: 0; gap: 10px; padding: 10px 12px; border-color: transparent; background: #f7f8fa; box-shadow: none; }
+.ccd-tg-tile:hover:not([aria-disabled="true"]) { border-color: transparent; background: #f3eef9; box-shadow: none; transform: none; }
+.ccd-tg-tile[aria-checked="true"], .ccd-tg-tile[aria-checked="true"]:hover { border-color: var(--ccd-brand); background: #fff; }
+.ccd-tg-tile:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
+.ccd-tg-tile .ccd-tg-tile__text { font: 600 13.5px/1.3 Inter, sans-serif; }
+.ccd-tg-tile--stacked small { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 3; -webkit-box-orient: vertical; font: 400 11.5px/1.4 Inter, sans-serif; }
+.ccd-tg-row { padding: 16px 18px; }
+.ccd-tg-row--auto { grid-template-columns: 210px minmax(0, 1fr); gap: 14px; }
+.ccd-tg-row.is-off .ccd-tg-cells, .ccd-tg-mx.is-off .ccd-tg-mx__cells { opacity: .5; }
+.ccd-tg-row.is-off .ccd-tg-tile[aria-disabled="true"], .ccd-tg-mx.is-off .ccd-tg-tile[aria-disabled="true"] { opacity: 1; }
+.ccd-tg-group + .ccd-tg-group { margin-top: 24px; }
+
+/* ── Visual clean-up: Structure left column ─────────────────────────────────────────────────── */
+.ccd-structure-catalog-head--row { align-items: center; }
+.ccd-structure-catalog-head--row .ccd-apply-all { margin: 0; white-space: nowrap; color: #4d535e; }
+.ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain { grid-template-columns: minmax(0, 1fr) auto; padding: 12px 14px !important; border-color: #e6e8ee; border-radius: 10px !important; }
+.ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain:hover:not(.is-disabled) { border-color: #cbb8dd; }
+.ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain.is-selected { border-color: var(--ccd-brand); background: #fff; }
+.ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain.is-disabled { background: #fafbfc; cursor: not-allowed; }
+.ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain.is-disabled .ccd-so__copy { opacity: .6; }
+.ccd-structure-option--plain .ccd-so__copy > strong { overflow: visible; display: flex; align-items: center; gap: 0; font-size: 14px; }
+.ccd-structure-option--plain .ccd-so__copy > span { font-size: 12px; }
+.ccd-so__soon { margin-left: 8px; padding: 2px 7px; border-radius: 999px; background: #eef0f4; color: #6b7178; font: 600 10px/1.4 Inter, sans-serif; font-style: normal; letter-spacing: .02em; }
+
+/* The Performance enhancer: a header, then soft blocks for Split products, Manual and Auto. */
+.ccd-pe { gap: 10px; margin-top: 18px; padding-top: 16px; }
+.ccd-pe__head strong { font-size: 15px; }
+.ccd-pe__intro { margin: -6px 0 2px; color: #7b808a; font: 400 12px/1.45 Inter, sans-serif; }
+.ccd-pe__block { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border: 1px solid #eef0f4; border-radius: 10px; background: #fafbfd; }
+.ccd-pe__block-head { display: flex; align-items: center; gap: 9px; }
+.ccd-pe__block-head strong { color: var(--ccd-ink); font: 650 13.5px/1.3 'Inter Tight', Inter, sans-serif; }
+.ccd-tr-shape.ccd-pe__badge { flex: none; }
+.ccd-tr-shape--auto.ccd-pe__badge { width: 20px; height: 20px; border-width: 1.5px; }
+.ccd-tr-shape--manual.ccd-pe__badge { width: 14px; height: 14px; margin: 3px; border-width: 1.5px; border-radius: 3px; }
+.ccd-pe__badge b { font-size: 9px; }
+.ccd-pe__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ccd-pe__field > label { font-size: 12px; color: #4d535e; }
+.ccd-pe__select { background-color: #fff; }
+.ccd-pe__result { margin: 0; padding: 8px 10px; border-radius: 8px; background: #fff; border: 1px solid #eef0f4; color: #3d434b; font: 500 12px/1.45 Inter, sans-serif; text-wrap: pretty; }
+.ccd-pe__note { display: flex; align-items: flex-start; gap: 6px; margin: -2px 0 0; color: #9aa0ab; font: 400 11px/1.45 Inter, sans-serif; }
+.ccd-pe__note svg { flex: none; margin-top: 2px; }
+.ccd-pe__choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ccd-pe__choice { display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 8px; align-items: start; padding: 10px; border: 1px solid #e6e8ee; border-radius: 8px; background: #fff; cursor: pointer; outline: none; transition: border-color 140ms ease-out; }
+.ccd-pe__choice:hover:not([aria-disabled="true"]) { border-color: #cbb8dd; }
+.ccd-pe__choice.is-on { border-color: var(--ccd-brand); }
+.ccd-pe__choice:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
+.ccd-pe__choice[aria-disabled="true"] { background: #fafbfc; cursor: not-allowed; }
+.ccd-pe__choice[aria-disabled="true"] > span:last-child { opacity: .6; }
+.ccd-pe__choice > span:last-child { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ccd-pe__choice strong { color: var(--ccd-ink); font: 600 12.5px/1.3 'Inter Tight', Inter, sans-serif; }
+.ccd-pe__choice small { color: #7b808a; font: 400 11.5px/1.35 Inter, sans-serif; }
+.ccd-pe__error { margin: 0; }
+
+@media (max-width: 1100px) {
+  .ccd-pe__grid, .ccd-pe__choices { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .ccd-tg-mx, .ccd-tg-mx__row, .ccd-tg-mx__cells, .ccd-tg-row--auto { grid-template-columns: 1fr; }
+  .ccd-tg-mx__switch { border-right: 0; border-bottom: 1px solid #efedf3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ccd-pe__choice { transition: none; }
+}
+
+/* ── Structure page fits one screen ──────────────────────────────────────────────────────────────
+   On a desktop-sized window the page itself doesn't scroll: the heading, both columns and the footer stay in view.
+   If the window is too short for every Performance enhancer block, only the left column scrolls inside itself.
+   Narrow or very short windows keep normal page scrolling so nothing is out of reach. */
+@media (min-width: 1101px) and (min-height: 640px) {
+  main.ccd-scroll.is-fit { overflow-y: hidden !important; }
+  .ccd-workspace--fit { height: 100%; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 16px; }
+  .ccd-workspace--fit > .ccd-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .ccd-workspace--fit .ccd-step-structure { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .ccd-workspace--fit .ccd-step-heading { flex: none; margin-bottom: 14px; }
+  .ccd-workspace--fit .ccd-structure-workspace { flex: 1; min-height: 0; align-items: stretch; }
+  .ccd-workspace--fit .ccd-structure-library { height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #d9dce3 transparent; }
+  .ccd-workspace--fit .ccd-structure-studio { height: 100%; min-height: 0; }
+  .ccd-workspace--fit .ccd-structure-card__body { min-height: 0; overflow: auto; scrollbar-width: thin; }
+  /* A little tighter, so the left column usually fits without scrolling at all. */
+  .ccd-workspace--fit .ccd-structure-catalog-head { margin-bottom: 10px; }
+  .ccd-workspace--fit .ccd-structure-options { gap: 6px; padding-top: 10px; }
+  .ccd-root .ccd-workspace--fit [role="radio"].ccd-pick.ccd-structure-option--plain { padding: 9px 12px !important; }
+  .ccd-workspace--fit .ccd-pe { gap: 8px; margin-top: 14px; padding-top: 12px; }
+  .ccd-workspace--fit .ccd-pe__intro { margin-top: -5px; }
+  .ccd-workspace--fit .ccd-pe__block { gap: 8px; padding: 10px 12px; }
+}
+
+/* Consolidated / Standard / Custom as one segmented control, the chosen structure explained under it. */
+.ccd-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid #e6e8ee; border-radius: 10px; background: #f5f6f8; }
+.ccd-seg__opt { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid transparent; border-radius: 7px; color: #4d535e; font: 600 13px/1.2 'Inter Tight', Inter, sans-serif; cursor: pointer; outline: none; transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out; }
+.ccd-seg__opt:hover:not(.is-locked):not(.is-on) { background: #fff; color: var(--ccd-ink); }
+.ccd-seg__opt.is-on { border-color: var(--ccd-brand); background: #fff; color: var(--ccd-brand); box-shadow: 0 1px 2px rgba(29, 33, 41, .06); }
+.ccd-seg__opt:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
+.ccd-seg__opt.is-locked { color: #a3a8b2; cursor: not-allowed; }
+.ccd-seg__opt em { padding: 1px 6px; border-radius: 999px; background: #e8eaee; color: #7b808a; font: 600 9.5px/1.4 Inter, sans-serif; font-style: normal; }
+.ccd-seg__desc { margin: 8px 2px 0; color: #6b7178; font: 400 12px/1.45 Inter, sans-serif; text-wrap: pretty; }
+@media (prefers-reduced-motion: reduce) { .ccd-seg__opt { transition: none; } }
+
+/* The Auto block's split switch on its header row, and a lighter Manual summary and Auto choices. */
+.ccd-pe__head-ctl { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+.ccd-pe__head-ctl .ccd-pe__label { font-size: 12px; color: #4d535e; }
+.ccd-pe__block > .ccd-pe__hint { margin: -4px 0 0; }
+.ccd-pe__result { padding: 0; border: 0; background: none; color: #4d535e; }
+.ccd-pe__choice { padding: 8px 10px; }
+@media (min-width: 1101px) and (min-height: 640px) {
+  .ccd-workspace--fit .ccd-pe { margin-top: 12px; padding-top: 10px; }
+  .ccd-workspace--fit .ccd-structure-library { padding: 12px 14px; }
+  .ccd-workspace--fit .ccd-pe__block { padding: 9px 12px; }
+  .ccd-workspace--fit { padding-bottom: 12px; }
+  .ccd-workspace--fit .ccd-seg__desc { margin-top: 6px; }
+}

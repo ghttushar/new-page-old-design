@@ -271,8 +271,8 @@ export default function CampaignCreator() {
       )}
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <main ref={mainRef} className="ccd-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-          <div className={framed || step === 'entry' || step === 'activity' ? 'ccd-workspace' : 'ccd-focus'} style={{ maxWidth: framed || step === 'entry' || step === 'activity' ? 1560 : focusWidth + 64 }}>
+        <main ref={mainRef} className={`ccd-scroll${step === 'structure' ? ' is-fit' : ''}`} style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+          <div className={`${framed || step === 'entry' || step === 'activity' ? 'ccd-workspace' : 'ccd-focus'}${step === 'structure' ? ' ccd-workspace--fit' : ''}`} style={{ maxWidth: framed || step === 'entry' || step === 'activity' ? 1560 : focusWidth + 64 }}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={step}

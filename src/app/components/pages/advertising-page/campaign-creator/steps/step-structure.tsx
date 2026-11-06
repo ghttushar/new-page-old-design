@@ -52,20 +52,22 @@ function DiagramLegend() {
   );
 }
 
-function StructureOption({ id, number, name, tagline, meta, recommended, committed, viewing, disabled, disabledNote = 'Over account limit', info, onClick }: {
-  id: StructureId; number: number; name: string; tagline: string; meta: string; recommended: boolean; committed: boolean; viewing: boolean; disabled: boolean; disabledNote?: string; info?: string; onClick: () => void;
+function StructureOption({ id, number, name, tagline, meta, recommended, committed, viewing, disabled, disabledNote = 'Over account limit', info, plain, soon, onClick }: {
+  id: StructureId; number: number; name: string; tagline: string; meta: string; recommended: boolean; committed: boolean; viewing: boolean; disabled: boolean; disabledNote?: string; info?: string;
+  /** Three-structure layout: no number chip, and a "Coming soon" pill instead of the meta line for a locked option. */
+  plain?: boolean; soon?: boolean; onClick: () => void;
 }) {
   return (
     <div
-      role="radio" aria-checked={committed} aria-disabled={disabled} tabIndex={0} className={`ccd-pick ccd-structure-option${committed ? ' is-selected' : ''}${viewing ? ' is-viewing' : ''}${disabled ? ' is-disabled' : ''}`}
+      role="radio" aria-checked={committed} aria-disabled={disabled} tabIndex={disabled && plain ? -1 : 0} className={`ccd-pick ccd-structure-option${plain ? ' ccd-structure-option--plain' : ''}${committed ? ' is-selected' : ''}${viewing ? ' is-viewing' : ''}${disabled ? ' is-disabled' : ''}`}
       onClick={onClick}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
     >
-      <span className="ccd-so__num">0{number}</span>
+      {!plain && <span className="ccd-so__num">0{number}</span>}
       <div className="ccd-so__copy">
-        <strong>{name}{info && <span className="ccd-tm-info ccd-so__tip" title={info} role="img" aria-label={info}><InfoIcon size={12} color="#8a909b" /></span>}</strong>
+        <strong>{name}{info && <span className="ccd-tm-info ccd-so__tip" title={info} role="img" aria-label={info}><InfoIcon size={12} color="#8a909b" /></span>}{soon && <em className="ccd-so__soon">Coming soon</em>}</strong>
         <span>{tagline}</span>
-        {(meta || disabled) && (
+        {!plain && (meta || disabled) && (
           <div className="ccd-so__facts">
             {meta && <span>{meta}</span>}
             {disabled && disabledNote && <span className="is-warn">{disabledNote}</span>}
@@ -351,16 +353,40 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
 
       <div className="ccd-structure-workspace">
         <aside className={`ccd-structure-library${amazon ? ' ccd-structure-library--splits' : ''}`}>
-          {groupCount > 1 && onApplyAll && (
-            <button type="button" role="checkbox" aria-checked={applyAll} className="ccd-apply-all" onClick={() => onApplyAll(!applyAll)}>
-              <Checkbox checked={applyAll} size={15} />
-              <span>Apply to all groups</span>
-              <span className="ccd-tm-info" title="Copies the changes you make here to every product group." role="img" aria-label="Copies the changes you make here to every product group."><InfoIcon size={12} color="#8a909b" /></span>
-            </button>
-          )}
-          <div className="ccd-structure-catalog-head">
+          <div className="ccd-structure-catalog-head ccd-structure-catalog-head--row">
             <div><strong>Choose your structure</strong></div>
+            {groupCount > 1 && onApplyAll && (
+              <button type="button" role="checkbox" aria-checked={applyAll} className="ccd-apply-all" onClick={() => onApplyAll(!applyAll)}>
+                <Checkbox checked={applyAll} size={15} />
+                <span>Apply to all groups</span>
+                <span className="ccd-tm-info" title="Copies the changes you make here to every product group." role="img" aria-label="Copies the changes you make here to every product group."><InfoIcon size={12} color="#8a909b" /></span>
+              </button>
+            )}
           </div>
+          {/* Consolidated / Standard / Custom as one compact segmented control, with the chosen one explained under it,
+              so the whole left column fits one screen. */}
+          {amazon && (
+            <>
+              <div role="radiogroup" aria-label="Campaign structure" className="ccd-seg">
+                {catalog.map((s) => {
+                  const locked = s.id === 'custom' && customLocked(draft.marketplace);
+                  const on = draft.structureId === s.id;
+                  const pick = () => { if (locked) return; setViewId(s.id); setView('graphic'); onJivaChange(false); selectStructure(s.id); };
+                  return (
+                    <div
+                      key={s.id} role="radio" aria-checked={on} aria-disabled={locked} tabIndex={locked ? -1 : 0} title={STRUCTURE_TIPS[s.id]}
+                      className={`ccd-seg__opt${on ? ' is-on' : ''}${locked ? ' is-locked' : ''}`}
+                      onClick={pick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } }}
+                    >
+                      <span>{s.name}</span>{locked && <em>Soon</em>}
+                    </div>
+                  );
+                })}
+              </div>
+              {draft.structureId && STRUCTURE_TIPS[draft.structureId] && <p className="ccd-seg__desc">{STRUCTURE_TIPS[draft.structureId]}</p>}
+            </>
+          )}
+          {!amazon && (
           <div role="radiogroup" aria-label="Campaign structure" className="ccd-structure-options">
           {catalog.map((s, i) => {
             const isCustom = s.id === 'custom';
@@ -386,6 +412,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
                 viewing={activeId === s.id}
                 disabled={disabled}
                 disabledNote={locked ? 'Not available yet' : undefined}
+                plain={amazon} soon={locked}
                 onClick={() => {
                   if (locked) return;
                   setViewId(s.id);
@@ -407,6 +434,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             );
           })}
           </div>
+          )}
           {amazon ? (
             draft.structureId && draft.structureId !== 'custom' && <PerformanceEnhancer draft={draft} productCount={productCount} onChange={onChange} />
           ) : (
