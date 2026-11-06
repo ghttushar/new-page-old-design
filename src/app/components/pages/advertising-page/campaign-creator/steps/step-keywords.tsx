@@ -1,9 +1,9 @@
 import { useId, useMemo, useState } from 'react';
 import {
-  ASIN_PATTERN, KEYWORD_LIMIT, MIN_KEYWORD_BID, NEGATIVE_KEYWORD_LIMIT, NEGATIVE_PRODUCT_LIMIT, PRODUCT_TARGET_LIMIT, keywordRules,
+  ASIN_PATTERN, KEYWORD_LIMIT, MIN_KEYWORD_BID, NEGATIVE_KEYWORD_LIMIT, NEGATIVE_PRODUCT_LIMIT, PRODUCT_TARGET_LIMIT, keywordComboIssue, keywordRules,
   type CcDraft, type KeywordMatch, type NegativeMatch, type ProductTargetMatch,
 } from '../campaign-creator.types';
-import { Checkbox, InfoIcon, Radio, SearchIcon, StepHeading } from '../campaign-creator-ui';
+import { Checkbox, InfoIcon, Note, Radio, SearchIcon, StepHeading } from '../campaign-creator-ui';
 import { NumField } from './preview-cells';
 
 // Keywords step: add keyword targets and negative keywords in one place, then check each list on its own tab.
@@ -192,6 +192,7 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
   const tabDef = MODES[tab];
   const rowName = (k: ListRow) => `${k.text}${k.match ? ` ${MATCH_TEXT[k.match]}` : ''}`;
   const heading = draft.marketplace === 'walmart' ? 'Add keywords' : 'Add keywords & product targets';
+  const comboIssue = keywordComboIssue(draft);
 
   // Nothing on this step applies to the plan (e.g. Walmart Automatic campaigns with Dynamic bidding).
   if (modes.length === 0) {
@@ -211,6 +212,8 @@ export default function StepKeywords({ draft, onChange }: { draft: CcDraft; onCh
   return (
     <div>
       <StepHeading title={heading} />
+      {/* Walmart: an ad group can hold at most 1,000 keyword and match-type combinations. */}
+      {comboIssue && <div style={{ marginBottom: 14 }}><Note tone="warn">{comboIssue}</Note></div>}
 
       <div className="ccd-kw">
         {/* Left: what to add */}

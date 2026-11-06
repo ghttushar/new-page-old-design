@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ScopeSwitch from '../scope-switch';
 import { HeadingGroup } from '../campaign-inline-summary';
-import { MANUAL_STRATEGY_CATALOG, MIN_KEYWORD_BID, generateCampaigns, structureVariantFor, keywordRules, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
+import { MANUAL_STRATEGY_CATALOG, MIN_KEYWORD_BID, campaignsForPlan, keywordRules, totalAdGroups, totalTargets, formatCurrency, type CcCampaign, type CcDraft, type CcProduct } from '../campaign-creator.types';
 import { StepHeading } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
 import RulesSection from './preview-rules';
@@ -73,7 +73,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
 
   // Everything the campaigns are built from. If it hasn't changed since last time, the user's edits stay.
   const sourceKey = JSON.stringify(scopes.map((sc) => [
-    sc.id, sc.draft.structureId, sc.draft.structureVariant, sc.products.map((p) => p.id), sc.draft.targetingStrategies, sc.draft.autoTypes, sc.draft.dailyBudget,
+    sc.id, sc.draft.structureId, sc.draft.structureVariant, sc.draft.splits ?? null, sc.draft.manualStrategies ?? [], sc.products.map((p) => p.id), sc.draft.targetingStrategies, sc.draft.autoTypes, sc.draft.dailyBudget,
     sc.draft.structureId === 'custom' ? sc.draft.customCampaigns ?? null : '',
     sc.draft.biddingStrategy, sc.draft.placementAdjust,
     sc.draft.keywordTargets.filter((k) => k.enabled), sc.draft.negativeKeywords.filter((n) => n.enabled),
@@ -86,9 +86,7 @@ export default function StepPreview({ draft: sharedDraft, selectedProducts, scop
     const built = scopes.flatMap((sc) => {
       const id = sc.draft.structureId;
       if (!id) return [];
-      const made = id === 'custom'
-        ? (sc.draft.customCampaigns ?? [])
-        : generateCampaigns(id, sc.products, sc.draft.targetingStrategies, sc.draft.dailyBudget, sc.draft.autoTypes, structureVariantFor(sharedDraft.marketplace, sc.draft.structureVariant));
+      const made = campaignsForPlan(sc.draft, sc.products, sharedDraft.marketplace);
       const decorated = decorateCampaigns(withKeywords(made, sc.draft), sc.products, draft.naming, { biddingStrategy: sc.draft.biddingStrategy, placement: sc.draft.placementAdjust });
       if (!grouped) return decorated;
       // Ids repeat from one group to the next, so each carries its group's id.

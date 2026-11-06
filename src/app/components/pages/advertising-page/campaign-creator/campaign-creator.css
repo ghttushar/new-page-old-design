@@ -97,6 +97,35 @@
 .ccd-sv__copy strong { display: flex; align-items: center; gap: 6px; transition: color 140ms ease-out; color: var(--ccd-ink); font: 600 12.5px/1.3 'Inter Tight', Inter, sans-serif; }
 .ccd-sv__copy > span { color: #7b808a; font: 400 11.5px/1.4 Inter, sans-serif; }
 @media (prefers-reduced-motion: reduce) { .ccd-sv__copy strong { transition: none; } }
+/* Amazon: the Performance enhancer under the structures. One section, Manual and Auto subsections, no boxes inside. */
+.ccd-structure-library--splits { overflow: visible; }
+.ccd-pe { margin-top: 16px; padding-top: 14px; border-top: 1px solid #eceef2; display: flex; flex-direction: column; gap: 12px; }
+.ccd-pe__head { display: flex; align-items: center; gap: 6px; }
+.ccd-pe__head strong { color: var(--ccd-ink); font: 650 14px/1.3 'Inter Tight', Inter, sans-serif; }
+.ccd-pe__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; }
+.ccd-pe__row .ccd-nm-toggle { margin-top: 1px; flex: none; }
+.ccd-pe__copy { min-width: 0; }
+.ccd-pe__label, .ccd-pe__field > label { display: inline-flex; align-items: center; gap: 6px; color: var(--ccd-ink); font: 600 12.5px/1.3 'Inter Tight', Inter, sans-serif; }
+.ccd-pe__hint { margin: 3px 0 0; color: #7b808a; font: 400 11.5px/1.4 Inter, sans-serif; text-wrap: pretty; }
+.ccd-pe__note { margin: 2px 0 0; color: #9aa0ab; font: 400 11px/1.4 Inter, sans-serif; }
+.ccd-pe__error { display: flex; gap: 7px; align-items: flex-start; margin: 0; padding: 9px 11px; border-radius: 7px; background: #fdf3f2; color: #8f3a35; font: 400 12px/1.45 Inter, sans-serif; }
+.ccd-pe__error svg { flex: none; margin-top: 2px; }
+.ccd-pe__sub { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid #f0f1f4; }
+.ccd-pe__sub h4 { margin: 0; color: #5b6170; font: 600 10.5px/1.2 Inter, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.ccd-pe__field { display: flex; flex-direction: column; gap: 6px; }
+.ccd-pe__field .ccd-pe__hint { margin-top: 0; }
+.ccd-pe__select { height: 34px; font-size: 13px; }
+.ccd-pe__select:focus-visible { border-color: var(--ccd-brand); }
+.ccd-pe__radios { display: flex; flex-direction: column; margin-top: -4px; }
+.ccd-pe__radio { display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 10px; align-items: start; padding: 9px 0; cursor: pointer; outline: none; }
+.ccd-pe__radio + .ccd-pe__radio { border-top: 1px solid #f0f1f4; }
+.ccd-pe__radio[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.ccd-pe__radio > span:last-child { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ccd-pe__radio strong { color: var(--ccd-ink); font: 600 12.5px/1.3 'Inter Tight', Inter, sans-serif; transition: color 140ms ease-out; }
+.ccd-pe__radio small { color: #7b808a; font: 400 11.5px/1.4 Inter, sans-serif; }
+.ccd-pe__radio:hover:not([aria-disabled="true"]) strong, .ccd-pe__radio:focus-visible strong { color: var(--ccd-brand); }
+.ccd-structure-detail__intro p.ccd-structure-detail__count { margin-top: 5px; color: #5b6170; font: 500 12px/1.3 Inter, sans-serif; }
+@media (prefers-reduced-motion: reduce) { .ccd-pe__radio strong { transition: none; } }
 .ccd-so__num { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: #f1f2f6; color: #7a808c; font: 700 11px/1 'Inter Tight', Inter, sans-serif; letter-spacing: .02em; transition: background-color 160ms, color 160ms, box-shadow 160ms; }
 .ccd-structure-option.is-selected .ccd-so__num { background: var(--ccd-surface); color: var(--ccd-brand); }
 .ccd-so__copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -1081,3 +1110,12 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-tool-primary:hover:not(:disabled) { background: #643a85 !important; border-color: #643a85 !important; }
 .ccd-tool-primary:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
 
+/* Spec v9: an opted-out Walmart Auto option, the structure tooltips, "Apply to all groups" and the combination notes. */
+.ccd-tr-pill--off { background: #f6f7f9; color: #8a909b; border: 1px dashed #d9dce3; }
+.ccd-so__tip { margin-left: 6px; vertical-align: -1px; }
+.ccd-so__copy strong .ccd-so__tip { display: inline-flex; }
+.ccd-apply-all { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 0; border: 0; background: none; color: var(--ccd-ink); font: 500 12.5px/1.3 Inter, sans-serif; cursor: pointer; }
+.ccd-apply-all:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 3px; border-radius: 4px; }
+.ccd-combo-notes { list-style: none; margin: 12px 0 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #eceef2; }
+.ccd-combo-notes li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: baseline; color: #6f747e; font: 400 11.5px/1.45 Inter, sans-serif; }
+.ccd-combo-notes b { padding: 1px 5px; border-radius: 4px; background: #f3f0f7; color: var(--ccd-brand); font: 600 10px/1.4 Inter, sans-serif; letter-spacing: .03em; }

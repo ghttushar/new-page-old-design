@@ -30,7 +30,7 @@ const MANUAL_IDS = MANUAL_ROWS.flatMap((r) => r.ids);
 /** Walmart's expanded targeting, shown in the Auto table where Amazon has its Auto targeting types. */
 const EXPANDED_OPTIONS: ['brandTerms' | 'complementary', string, string][] = [
   ['brandTerms', 'Brand Term Targeting', 'Searches that include your brand terms'],
-  ['complementary', 'Complementary Product Targeting', 'Pages of products bought alongside yours'],
+  ['complementary', 'Complementary Product Targeting', 'Searches for products bought alongside yours (Beta)'],
 ];
 
 /**
@@ -80,7 +80,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
     if (set.has(id)) set.delete(id); else set.add(id);
     // Turning Auto on picks every Auto type (on Walmart, both kinds of expanded targeting), and turning it off clears the
     // types; the shopper can then untick the ones they don't want.
-    if (id === 'auto' && isWalmart) onChange({ targetingStrategies: Array.from(set), ...(set.has('auto') ? { expandedTargeting: { brandTerms: true, complementary: true } } : {}) });
+    if (id === 'auto' && isWalmart) onChange({ targetingStrategies: Array.from(set), expandedTargeting: { brandTerms: set.has('auto'), complementary: set.has('auto') } });
     else if (id === 'auto') onChange({ targetingStrategies: Array.from(set), autoTypes: set.has('auto') ? AUTO_TYPE_CATALOG.map((a) => a.id) : [] });
     else onChange({ targetingStrategies: Array.from(set) });
   }
@@ -230,7 +230,7 @@ export default function StepTargeting({ draft, selectedProducts, onChange }: {
             <div className="ccd-tg-cells ccd-tg-cells--wide ccd-tg-mx__cells">
               {MANUAL_STRATEGY_CATALOG.map((s) => (
                 <Tile
-                  key={s.id} label={s.label} hint={s.hint} checked={strategies.includes(s.id)} disabled={!manualOn}
+                  key={s.id} label={s.label} hint={isWalmart ? s.walmartHint : s.hint} checked={strategies.includes(s.id)} disabled={!manualOn}
                   title={!manualOn ? lockedTitle : undefined} onToggle={() => toggleStrategy(s.id)}
                 />
               ))}

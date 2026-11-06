@@ -36,10 +36,11 @@ export const MANUAL_TARGETING_IDS: TargetingStrategyId[] = [
 
 /** Who the Manual campaigns aim at. Optional, and a tag only: it doesn't change which campaigns are made. */
 export type ManualStrategyId = 'branded' | 'competitor' | 'generic';
-export const MANUAL_STRATEGY_CATALOG: { id: ManualStrategyId; label: string; hint: string }[] = [
-  { id: 'branded', label: 'Branded', hint: "Your own brand's searches and products" },
-  { id: 'competitor', label: 'Competitor', hint: "Rival brands' searches and products" },
-  { id: 'generic', label: 'Generic', hint: 'Category searches with no brand in them' },
+/** Descriptions from the spec (v9, section 4.4), with each platform's limits written in. */
+export const MANUAL_STRATEGY_CATALOG: { id: ManualStrategyId; label: string; hint: string; walmartHint: string }[] = [
+  { id: 'branded', label: 'Branded', hint: 'Defends your own brand terms. Works best with Exact. Product targets: ASIN Exact (own ASINs).', walmartHint: 'Defends your own brand terms. Runs as Exact match only.' },
+  { id: 'competitor', label: 'Competitor', hint: 'Targets competitor brands and products. Works best with Exact, then Phrase. Product targets: competitor ASINs or categories.', walmartHint: 'Targets competitor brand terms. Runs as Exact match only.' },
+  { id: 'generic', label: 'Generic', hint: 'Reaches new shoppers with non-brand category terms. Product targets: ASIN Expanded or Category.', walmartHint: 'Reaches new shoppers with non-brand category terms. Any selected match type.' },
 ];
 
 export interface TargetingStrategyDef {
@@ -204,6 +205,8 @@ export type StructureId =
   | 'product-targeting'
   | 'product-single-auto'
   | 'product-multi-auto'
+  /** Amazon: more campaigns than Consolidated, shaped by the Performance enhancer splits. */
+  | 'standard'
   | 'custom';
 
 export interface StructureDef {
@@ -219,10 +222,16 @@ export interface StructureDef {
 
 export const STRUCTURE_CATALOG: StructureDef[] = [
   {
-    id: 'consolidated', number: 1, name: 'Consolidated', tagline: '1 Auto + 1 Manual, all products',
+    id: 'consolidated', number: 1, name: 'Consolidated', tagline: '1 Auto campaign and 1 Manual campaign',
     description: 'One Auto campaign with one ad group, and one Manual campaign, both for all products.',
     useCase: 'Fewer campaigns, simplified management, consolidated budgets.',
     granularity: 'Low', productSeparation: false,
+  },
+  {
+    id: 'standard', number: 2, name: 'Standard', tagline: 'More campaigns, shaped by the splits below',
+    description: 'Campaigns and ad groups split the way the Performance enhancer says.',
+    useCase: 'Separate budgets and bids by match type, targeting type or strategy.',
+    granularity: 'High', productSeparation: false,
   },
   {
     id: 'targeting-type', number: 2, name: 'Targeting-Type', tagline: '1 Auto + a Manual per match type, and one for products',
@@ -292,9 +301,214 @@ export const variantsFor = (id: StructureId, marketplace?: Marketplace | null): 
 export const structureVariantFor = (marketplace: Marketplace | null | undefined, variant: StructureVariant | undefined): StructureVariant =>
   (marketplace === 'walmart' && variant === 'targeting' ? 'match' : variant ?? 'match');
 
-/** The structures a plan can pick: those its campaign type can use, without Product Multi-Auto on Walmart. */
+/**
+ * The structures a plan can pick: Consolidated, Standard and Custom on both marketplaces, their campaigns shaped by the
+ * Performance enhancer splits. (The numbered structures and their variations stay in the code for older plans and for
+ * Jiva's custom proposals, which build from them.)
+ */
+export const SPLIT_STRUCTURES: StructureId[] = ['consolidated', 'standard', 'custom'];
+export const usesSplits = (_marketplace?: Marketplace | null) => true;
 export const structuresFor = (mode: CampaignMode, marketplace: Marketplace | null | undefined): StructureId[] =>
-  MODE_STRUCTURES[mode].filter((id) => !(marketplace === 'walmart' && id === 'product-multi-auto'));
+  usesSplits(marketplace) ? SPLIT_STRUCTURES : MODE_STRUCTURES[mode].filter((id) => id !== 'product-multi-auto' && id !== 'standard');
+/** Custom (an AI prompt) is shown but can't be picked in this iteration. */
+export const customLocked = (_marketplace?: Marketplace | null) => true;
+
+// ── Performance enhancer splits (Amazon and Walmart) ──────────────────────────────────────────
+
+/** What a Manual split divides by: match types (MT), targeting types (TT: keyword vs product; Amazon only) or strategy types (ST). */
+export type SplitBy = 'match' | 'targeting' | 'strategy';
+export const SPLIT_BY_LABEL: Record<SplitBy, string> = { match: 'Match types', targeting: 'Targeting types', strategy: 'Strategy types' };
+
+/** The Performance enhancer as the user set it. What applies can be narrower: see `splitOptions`. */
+export interface StructureSplits {
+  /** Yes: the whole structure is made once per product (item). No: every ad group holds all the group's products. */
+  products: boolean;
+  /** Standard only. */
+  manualCampaigns: SplitBy;
+  manualAdGroups: SplitBy;
+  /** No: one Auto campaign with one ad group for every ticked Auto match type (Walmart: Auto option). */
+  autoByMatch: boolean;
+  /** When split by match type: an ad group per type in one campaign, or (Standard only) a campaign per type. */
+  autoSplit: 'adGroups' | 'campaigns';
+}
+export const DEFAULT_SPLITS: StructureSplits = { products: false, manualCampaigns: 'match', manualAdGroups: 'match', autoByMatch: false, autoSplit: 'adGroups' };
+/** Each marketplace's guide: products (Amazon) or items (Walmart) one ad group can hold. */
+export const MAX_PRODUCTS_PER_AD_GROUP: Record<Marketplace, number> = { amazon: 1000, walmart: 2000 };
+/** Walmart: at most 1,000 keyword and match-type combinations in one ad group. */
+export const MAX_KEYWORD_COMBOS_PER_AD_GROUP = 1000;
+/** Walmart's Auto options. They act as its Auto match types; both are optional. */
+export const WALMART_AUTO_OPTIONS: { key: keyof ExpandedTargeting; label: string }[] = [
+  { key: 'brandTerms', label: 'Brand Term Targeting' },
+  { key: 'complementary', label: 'Complementary Product Targeting' },
+];
+
+export interface SplitOption { id: SplitBy; label: string; disabled: boolean; reason?: string }
+export interface EffectiveSplits {
+  products: boolean;
+  /** Null in Consolidated, which keeps one Manual campaign. */
+  manualCampaigns: SplitBy | null;
+  manualAdGroups: SplitBy;
+  autoByMatch: boolean;
+  /** Null when Auto isn't split by match type. */
+  autoSplit: 'adGroups' | 'campaigns' | null;
+}
+export type SplitSource = {
+  structureId: StructureId | null; targetingStrategies: TargetingStrategyId[]; manualStrategies?: ManualStrategyId[]; autoTypes: AutoTypeId[];
+  splits?: StructureSplits; expandedTargeting?: ExpandedTargeting; marketplace?: Marketplace | null;
+};
+
+/** The Auto match types a plan splits by: Amazon's ticked Auto types, or Walmart's ticked Auto options. */
+export function autoMatchTypes(s: SplitSource): { key: string; label: string }[] {
+  if (s.marketplace === 'walmart') return WALMART_AUTO_OPTIONS.filter((o) => s.expandedTargeting?.[o.key]).map((o) => ({ key: o.key, label: o.label }));
+  return (s.autoTypes.length ? s.autoTypes : (['close-match'] as AutoTypeId[])).map((id) => ({ key: id, label: AUTO_TYPE_CATALOG.find((a) => a.id === id)?.label ?? id }));
+}
+
+/**
+ * The split options a plan can use and the splits that apply (Tables 3 and 4). Strategy types appear only once a
+ * strategy is ticked. Keyword and product targets never share an ad group, so splitting ad groups by strategy is off
+ * when campaigns are already split by strategy, and in Consolidated when both keyword and product targets are ticked.
+ * Walmart has keyword targeting only, so it never offers Targeting types, and its Auto splits only once an Auto option
+ * is ticked. A pick that can't apply falls back to match types; nothing here changes what's ticked on Targeting.
+ */
+export function splitOptions(s: SplitSource): { campaigns: SplitOption[]; adGroups: SplitOption[]; effective: EffectiveSplits } {
+  const standard = s.structureId === 'standard';
+  const walmart = s.marketplace === 'walmart';
+  const want = { ...DEFAULT_SPLITS, ...s.splits };
+  const { keyword, product } = splitManualTypes(s.targetingStrategies);
+  const hasStrategy = (s.manualStrategies ?? []).length > 0;
+  const opt = (id: SplitBy, disabled: boolean, reason?: string): SplitOption => ({ id, label: SPLIT_BY_LABEL[id], disabled, reason: disabled ? reason : undefined });
+  const offInConsolidated = 'Consolidated keeps one Manual campaign';
+  const campaigns = [
+    opt('match', !standard, offInConsolidated),
+    ...(walmart ? [] : [opt('targeting', !standard, offInConsolidated)]),
+    ...(hasStrategy ? [opt('strategy', !standard, offInConsolidated)] : []),
+  ];
+  const campaign: SplitBy | null = !standard ? null : campaigns.some((o) => o.id === want.manualCampaigns) ? want.manualCampaigns : 'match';
+  const adGroups = [
+    opt('match', false),
+    // Table 3: a match-type campaign is already one subcategory, so splitting it by targeting type makes no sense.
+    ...(walmart ? [] : [opt('targeting', campaign === 'match', 'Each campaign already holds one match type')]),
+    ...(hasStrategy ? [opt('strategy', campaign === 'strategy' || (!standard && keyword.length > 0 && product.length > 0),
+      campaign === 'strategy' ? 'Campaigns are already split by strategy' : 'Keyword and product targets can’t share an ad group')] : []),
+  ];
+  const adGroup = adGroups.some((o) => o.id === want.manualAdGroups && !o.disabled) ? want.manualAdGroups : 'match';
+  // Walmart's Auto splits by its ticked Auto options, so with none ticked there's nothing to split.
+  const autoByMatch = want.autoByMatch && (!walmart || autoMatchTypes(s).length > 0);
+  return {
+    campaigns, adGroups,
+    effective: {
+      products: want.products, manualCampaigns: campaign, manualAdGroups: adGroup, autoByMatch,
+      autoSplit: !autoByMatch ? null : want.autoSplit === 'campaigns' && standard ? 'campaigns' : 'adGroups',
+    },
+  };
+}
+
+/** The Manual targeting in the Targeting page's order: Broad, Phrase, Exact, then ASIN Exact, ASIN Expanded, Category. */
+const MANUAL_ORDER: TargetingStrategyId[] = ['broad', 'phrase', 'exact', 'brand', 'competitor', 'product', 'asin-expanded', 'category'];
+type AgPlan = { key: string; name: string; types: TargetingStrategyId[] };
+/** `expandedTargeting`: a Walmart Auto campaign made for one Auto option keeps it and opts out of the other. */
+type CampaignPlan = { key: string; kind: 'auto' | 'manual'; label: string; adGroups: AgPlan[]; expandedTargeting?: ExpandedTargeting };
+
+/** One copy of a structure: its Auto and Manual campaigns and their ad groups, before products are put in. */
+function splitShape(s: SplitSource): CampaignPlan[] {
+  const eff = splitOptions(s).effective;
+  const label = (t: TargetingStrategyId) => TARGETING_STRATEGY_CATALOG[t].label;
+  const manual = MANUAL_ORDER.filter((t) => s.targetingStrategies.includes(t));
+  const strategies = MANUAL_STRATEGY_CATALOG.filter((x) => (s.manualStrategies ?? []).includes(x.id));
+  const plans: CampaignPlan[] = [];
+
+  if (s.targetingStrategies.includes('auto')) {
+    // Walmart's Auto options are campaign settings, so its ad groups split by them only to organise items and reporting.
+    const types = autoMatchTypes(s);
+    const perType = (t: { key: string; label: string }): AgPlan => ({ key: t.key, name: `${t.label} Ad Group`, types: [] });
+    // Walmart sends explicit option values on every Auto campaign (an unticked option is its opt-out). A campaign split
+    // out for one option keeps only that one; every campaign still runs the base automatic targeting, so they overlap.
+    const walmartOptions = (only?: string): ExpandedTargeting | undefined => (s.marketplace !== 'walmart' ? undefined : only
+      ? { brandTerms: only === 'brandTerms', complementary: only === 'complementary' }
+      : { brandTerms: Boolean(s.expandedTargeting?.brandTerms), complementary: Boolean(s.expandedTargeting?.complementary) });
+    if (eff.autoSplit === 'campaigns') types.forEach((t) => plans.push({ key: `auto-${t.key}`, kind: 'auto', label: `Automatic · ${t.label}`, adGroups: [perType(t)], expandedTargeting: walmartOptions(t.key) }));
+    else plans.push({ key: 'auto', kind: 'auto', label: 'Automatic', adGroups: eff.autoSplit === 'adGroups' ? types.map(perType) : [{ key: 'all', name: 'Auto Ad Group', types: [] }], expandedTargeting: walmartOptions() });
+  }
+
+  if (manual.length) {
+    const byTargeting = (types: TargetingStrategyId[]) => {
+      const split = splitManualTypes(types);
+      return [
+        ...(split.keyword.length ? [{ key: 'kt', label: 'Keyword targeting', types: split.keyword }] : []),
+        ...(split.product.length ? [{ key: 'pt', label: 'Product targeting', types: split.product }] : []),
+      ];
+    };
+    const buckets = eff.manualCampaigns === null ? [{ key: 'manual', label: manual.map(label).join(' + '), types: manual }]
+      : eff.manualCampaigns === 'match' ? manual.map((t) => ({ key: t, label: label(t), types: [t] }))
+      : eff.manualCampaigns === 'targeting' ? byTargeting(manual)
+      : strategies.map((x) => ({ key: x.id, label: x.label, types: manual }));
+    buckets.forEach((b) => {
+      // A strategy ad group in a split campaign carries the campaign's name first, as Table 3 and examples A4/A6 name
+      // them ("Exact - Branded", "KT - Branded"); match-type and targeting-type ad groups keep their own (A5, A7, A8).
+      const named = (part: string) => `${eff.manualCampaigns !== null && eff.manualAdGroups === 'strategy' ? `${b.label} - ` : ''}${part} Ad Group`;
+      const adGroups: AgPlan[] = eff.manualAdGroups === 'match' ? b.types.map((t) => ({ key: t, name: named(label(t)), types: [t] }))
+        : eff.manualAdGroups === 'targeting' ? byTargeting(b.types).map((x) => ({ key: x.key, name: named(x.label), types: x.types }))
+        : strategies.map((x) => ({ key: x.id, name: named(x.label), types: b.types }));
+      plans.push({ key: `m-${b.key}`, kind: 'manual', label: b.label, adGroups });
+    });
+  }
+  return plans;
+}
+
+/** Campaign and ad group counts for a split plan: one structure, or one per product when products are split. */
+export function splitCounts(s: SplitSource, productCount: number): StructureCounts {
+  const shape = splitShape(s);
+  const times = splitOptions(s).effective.products ? Math.max(productCount, 0) : 1;
+  const autoCampaigns = shape.filter((c) => c.kind === 'auto').length * times;
+  const manualCampaigns = shape.filter((c) => c.kind === 'manual').length * times;
+  const adGroups = shape.reduce((n, c) => n + c.adGroups.length, 0) * times;
+  const targets = shape.reduce((n, c) => n + c.adGroups.reduce((m, g) => m + Math.max(g.types.length, 1), 0), 0) * times;
+  return { autoCampaigns, manualCampaigns, totalCampaigns: autoCampaigns + manualCampaigns, adGroups, targets };
+}
+
+/** Why the plan can't be made as split, or null: without Split products, one ad group holds every product, up to the marketplace's cap. */
+export function splitProductsIssue(s: SplitSource, productCount: number): string | null {
+  const walmart = s.marketplace === 'walmart';
+  const max = MAX_PRODUCTS_PER_AD_GROUP[walmart ? 'walmart' : 'amazon'];
+  if (s.structureId === 'custom' || splitOptions(s).effective.products || productCount <= max) return null;
+  const noun = walmart ? 'items' : 'products';
+  return `An ad group can hold at most ${max.toLocaleString()} ${noun}, and this group has ${productCount.toLocaleString()}. Turn on Split ${noun}, or split them into smaller groups.`;
+}
+
+/**
+ * Section 4.3 combination notes: shown in the structure preview, never hiding anything, for ad groups or campaigns that
+ * pair Branded or Competitor with Phrase or Broad. Only when the plan actually splits by strategy; keyword selection
+ * decides later whether such keywords stay.
+ */
+export function combinationNotes(s: SplitSource): { id: string; text: string }[] {
+  const eff = splitOptions(s).effective;
+  if (eff.manualCampaigns !== 'strategy' && eff.manualAdGroups !== 'strategy') return [];
+  const loose = (['phrase', 'broad'] as TargetingStrategyId[]).filter((t) => s.targetingStrategies.includes(t)).map((t) => TARGETING_STRATEGY_CATALOG[t].label);
+  if (!loose.length) return [];
+  const picked = (id: ManualStrategyId) => (s.manualStrategies ?? []).includes(id);
+  const types = loose.join(' or ');
+  if (s.marketplace === 'walmart') {
+    return [
+      ...(picked('branded') ? [{ id: 'W1', text: `Branded with ${types}: probably not kept. Walmart runs brand terms in Manual as Exact only (the own-brand part is unconfirmed).` }] : []),
+      ...(picked('competitor') ? [{ id: 'W2', text: `Competitor with ${types}: not expected. Brand term targeting works only on Exact keywords.` }] : []),
+    ];
+  }
+  const which = [picked('branded') && 'Branded', picked('competitor') && 'Competitor'].filter(Boolean) as string[];
+  return which.length ? [{ id: 'A4', text: `${which.join(' or ')} with ${types}: allowed. Exact is advised for Branded, and Exact then Phrase for Competitor.` }] : [];
+}
+
+/**
+ * Walmart: why the keywords don't fit, or null. An ad group takes the keywords of its match type (or all of them when
+ * it holds several), and can hold at most 1,000 keyword and match-type combinations.
+ */
+export function keywordComboIssue(s: SplitSource & { keywordTargets?: { match: string; enabled: boolean }[] }): string | null {
+  if (s.marketplace !== 'walmart' || !s.structureId || s.structureId === 'custom') return null;
+  const entries = (s.keywordTargets ?? []).filter((k) => k.enabled);
+  if (entries.length <= MAX_KEYWORD_COMBOS_PER_AD_GROUP) return null;
+  const most = Math.max(0, ...splitShape(s).filter((c) => c.kind === 'manual').flatMap((c) => c.adGroups).map((g) => entries.filter((k) => g.types.includes(k.match as TargetingStrategyId)).length));
+  if (most <= MAX_KEYWORD_COMBOS_PER_AD_GROUP) return null;
+  return `One ad group would hold ${most.toLocaleString()} keyword and match-type combinations; Walmart allows ${MAX_KEYWORD_COMBOS_PER_AD_GROUP.toLocaleString()}. Remove some keywords, or split ad groups by match type on Structure.`;
+}
 
 const KEYWORD_TYPE_IDS: TargetingStrategyId[] = ['broad', 'phrase', 'exact', 'brand', 'competitor'];
 /** The Manual targeting split into keyword and product kinds, in the order the Targeting page lists them. */
@@ -476,6 +690,8 @@ export interface CcCampaign {
   possibleDuplicate?: boolean;
   /** The product group this campaign was built for, when the plan has groups. */
   groupName?: string;
+  /** Walmart: an Auto campaign split by Auto option keeps its own option and opts out of the other. */
+  expandedTargeting?: ExpandedTargeting;
 }
 
 // ── Rules (Section 8.7) — existing account Rules that new campaigns can be assigned to ──────────
@@ -647,6 +863,11 @@ export function generateCampaigns(
     });
   }
 
+  return finishCampaigns(campaigns, products, dailyBudget);
+}
+
+/** Flags possible duplicates and spreads the daily budget evenly across the campaigns. */
+function finishCampaigns(campaigns: CcCampaign[], products: CcProduct[], dailyBudget: number): CcCampaign[] {
   campaigns.forEach((c) => { c.possibleDuplicate = c.productIds.some((id) => products.find((p) => p.id === id)?.hasExistingCampaign); });
 
   // Even budget split across campaigns, rounded to the cent, remainder on the first campaign.
@@ -659,6 +880,63 @@ export function generateCampaigns(
   });
 
   return campaigns;
+}
+
+/**
+ * The campaigns for one set of products: Consolidated or Standard, shaped by the Performance enhancer splits. With
+ * Split products the whole structure is made once per product; without it every ad group holds all the products.
+ */
+export function generateSplitCampaigns(s: SplitSource, products: CcProduct[], dailyBudget: number): CcCampaign[] {
+  const shape = splitShape(s);
+  if (products.length === 0 || shape.length === 0) return [];
+  const perProduct = splitOptions(s).effective.products;
+  const consolidated = s.structureId !== 'standard';
+  const campaigns: CcCampaign[] = [];
+  const seedNegatives = (idPrefix: string): CcNegative[] => [{ id: `${idPrefix}-neg-1`, text: 'free sample', kind: 'keyword', matchType: 'negative-exact' }];
+  (perProduct ? products.map((p) => [p]) : [products]).forEach((scope) => {
+    const one = perProduct ? scope[0] : null;
+    const scopeKey = one ? `c-${one.id}` : 'c';
+    const productIds = scope.map((p) => p.id);
+    shape.forEach((plan) => {
+      const id = `${scopeKey}-${plan.key}`;
+      const base = plan.kind === 'auto' ? 'Auto Campaign' : 'Manual Campaign';
+      const suffix = plan.kind === 'auto' ? plan.label.split(' · ')[1] : consolidated ? undefined : plan.label;
+      const name = [one?.title, one ? base.replace(' Campaign', '') : base, suffix].filter(Boolean).join(' — ');
+      campaigns.push({
+        id, name, kind: plan.kind, targetingLabel: plan.label, productIds, dailyBudget: 0, budgetAllocationPct: 0,
+        ...(plan.expandedTargeting ? { expandedTargeting: plan.expandedTargeting } : {}),
+        adGroups: plan.adGroups.map((g) => ({
+          id: `${id}-${g.key}-ag`, name: g.name, productIds,
+          targets: g.types.flatMap((t) => scope.map((p, i) => { const tg = manualTarget(p, t, i); return { ...tg, id: `${id}-${g.key}-${tg.id}` }; })),
+          negatives: seedNegatives(`${id}-${g.key}`),
+        })),
+      });
+    });
+  });
+  return finishCampaigns(campaigns, products, dailyBudget);
+}
+
+/** A plan's settings, as a product group or the shared draft keeps them. */
+type PlanSettings = SplitSource & { dailyBudget: number; customCampaigns?: CcCampaign[] | null; structureVariant?: StructureVariant };
+
+/** The campaigns a plan's structure makes for its products, on either marketplace. */
+export function campaignsForPlan(s: PlanSettings, products: CcProduct[], marketplace: Marketplace | null | undefined): CcCampaign[] {
+  if (!s.structureId) return [];
+  if (s.structureId === 'custom') return s.customCampaigns ?? [];
+  if (usesSplits(marketplace)) return generateSplitCampaigns({ ...s, marketplace }, products, s.dailyBudget);
+  return generateCampaigns(s.structureId, products, s.targetingStrategies, s.dailyBudget, s.autoTypes, structureVariantFor(marketplace, s.structureVariant));
+}
+
+/** How many campaigns and ad groups a plan's structure makes, on either marketplace. */
+export function countsForPlan(s: PlanSettings, productCount: number, marketplace: Marketplace | null | undefined): StructureCounts {
+  if (s.structureId === 'custom') {
+    const custom = s.customCampaigns ?? [];
+    return { autoCampaigns: custom.filter((c) => c.kind === 'auto').length, manualCampaigns: custom.filter((c) => c.kind === 'manual').length, totalCampaigns: custom.length, adGroups: totalAdGroups(custom), targets: totalTargets(custom) };
+  }
+  if (!s.structureId) return { autoCampaigns: 0, manualCampaigns: 0, totalCampaigns: 0, adGroups: 0, targets: 0 };
+  if (usesSplits(marketplace)) return splitCounts({ ...s, marketplace }, productCount);
+  const { keyword, product } = splitManualTypes(s.targetingStrategies);
+  return structureCounts(s.structureId, productCount, s.targetingStrategies.includes('auto'), { keyword: keyword.length, product: product.length }, s.autoTypes.length, structureVariantFor(marketplace, s.structureVariant));
 }
 
 export function totalAdGroups(campaigns: CcCampaign[]): number {
@@ -767,11 +1045,15 @@ export function keywordRules(s: Pick<CcDraft, 'targetingStrategies' | 'biddingSt
 
 /** Whether the Keywords page can't be left yet: a list the plan requires has nothing switched on. */
 export function keywordsBlocked(
-  s: Pick<CcDraft, 'targetingStrategies' | 'biddingStrategy' | 'keywordTargets' | 'productTargets'>, marketplace: Marketplace | null,
+  s: Pick<CcDraft, 'targetingStrategies' | 'biddingStrategy' | 'keywordTargets' | 'productTargets'>
+    & Partial<Pick<CcDraft, 'structureId' | 'splits' | 'manualStrategies' | 'expandedTargeting' | 'autoTypes'>>,
+  marketplace: Marketplace | null,
 ) {
   const rules = keywordRules(s, marketplace);
   return (rules.keywords === 'required' && !s.keywordTargets.some((k) => k.enabled))
-    || (rules.products === 'required' && !(s.productTargets ?? []).some((p) => p.enabled));
+    || (rules.products === 'required' && !(s.productTargets ?? []).some((p) => p.enabled))
+    // Walmart: no ad group may hold more than 1,000 keyword and match-type combinations.
+    || Boolean(keywordComboIssue({ ...s, structureId: s.structureId ?? null, autoTypes: s.autoTypes ?? [], marketplace }));
 }
 
 /** Objectives beyond Target ACOS and Daily budget — all optional. */
@@ -874,9 +1156,9 @@ export const CAMPAIGN_MODES: { id: CampaignMode; label: string; description: str
 
 /** The structures that make sense for each campaign type. Auto-only drops the ones that only split Manual campaigns, and the other way round. */
 export const MODE_STRUCTURES: Record<CampaignMode, StructureId[]> = {
-  auto: ['consolidated', 'product-single-auto', 'product-multi-auto', 'custom'],
-  manual: ['consolidated', 'targeting-type', 'product-targeting', 'custom'],
-  both: ['consolidated', 'targeting-type', 'product-targeting', 'product-single-auto', 'product-multi-auto', 'custom'],
+  auto: ['consolidated', 'standard', 'product-single-auto', 'product-multi-auto', 'custom'],
+  manual: ['consolidated', 'standard', 'targeting-type', 'product-targeting', 'custom'],
+  both: ['consolidated', 'standard', 'targeting-type', 'product-targeting', 'product-single-auto', 'product-multi-auto', 'custom'],
 };
 
 /** A structure's one-line description, worded for the campaign type. */
@@ -946,6 +1228,8 @@ export interface CcDraft {
   structureId: StructureId | null;
   /** How the chosen structure splits its Manual campaigns into ad groups (Amazon). Resets when the structure changes. */
   structureVariant: StructureVariant;
+  /** Amazon: the Performance enhancer under the structure. */
+  splits: StructureSplits;
   customPrompt: string;
   customCampaigns: CcCampaign[] | null;
   /** Snapshot taken when the Preview step is reached — lets the user edit per-campaign budget
@@ -989,7 +1273,7 @@ export const GROUP_FIELDS = [
   'keywordTargets', 'negativeKeywords', 'productTargets', 'negativeProducts', 'targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate',
   'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode',
   'budgetType', 'totalBudget', 'budgetRollover', 'expandedTargeting', 'bidMultipliers',
-  'targetingStrategies', 'autoTypes', 'manualOn', 'manualStrategies', 'structureId', 'structureVariant', 'customPrompt', 'customCampaigns',
+  'targetingStrategies', 'autoTypes', 'manualOn', 'manualStrategies', 'structureId', 'structureVariant', 'splits', 'customPrompt', 'customCampaigns',
 ] as const;
 export type GroupField = (typeof GROUP_FIELDS)[number];
 export type GroupSettings = Pick<CcDraft, GroupField>;
@@ -1016,6 +1300,7 @@ export const EMPTY_DRAFT: CcDraft = {
   manualStrategies: [],
   structureId: null,
   structureVariant: 'match',
+  splits: DEFAULT_SPLITS,
   customPrompt: '',
   customCampaigns: null,
   generatedCampaigns: null,

@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, structureCounts, targetingBlocked, keywordsBlocked, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, splitProductsIssue, targetingBlocked, keywordsBlocked, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -17,7 +17,7 @@ import StepTargeting from './steps/step-targeting';
 import StepStructure from './steps/step-structure';
 import JivaStructurePanel from './steps/jiva-structure-panel';
 import StepPreview from './steps/step-preview';
-import { DEFAULT_SCOPE_ID, applyPageToGroups, applyScopedPatch, buildScopes, pickSettings, placeUngrouped, pruneGroups, totalCampaignsFor } from './product-groups';
+import { DEFAULT_SCOPE_ID, applyPageToGroups, applyPatchToAllGroups, applyScopedPatch, buildScopes, pickSettings, placeUngrouped, pruneGroups, totalCampaignsFor } from './product-groups';
 import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
 import CampaignModeDialog from './steps/campaign-mode-dialog';
@@ -127,7 +127,7 @@ export default function CampaignCreator() {
   const pendingScopes = new Set(scopes.filter((g) => {
     if (step === 'objectives') return objectivesBlocked(g.settings, draft.marketplace) || Boolean(issue && g.settings.dailyBudget < issue.min);
     if (step === 'targeting') return targetingBlocked(g.settings, draft.marketplace);
-    if (step === 'structure') return !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns);
+    if (step === 'structure') return !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns) || Boolean(splitProductsIssue({ ...g.settings, marketplace: draft.marketplace }, g.products.length));
     return false;
   }).map((g) => g.id));
 
@@ -158,6 +158,21 @@ export default function CampaignCreator() {
     if (before) setDraft((prev) => ({ ...prev, ...before }));
     setAppliedCount(null);
   };
+
+  // "Apply to all groups" on Structure (spec v9 §4.1): ticking it copies this group's structure to every group, and while
+  // it stays ticked every structure change goes to all of them. With one group there's nothing to apply it to.
+  const [applyAllStructure, setApplyAllStructure] = useState(false);
+  const groupIds = draft.productGroups.map((g) => g.id).join(',');
+  useEffect(() => { setApplyAllStructure(false); }, [groupIds]);
+  const setApplyAll = (on: boolean) => {
+    setApplyAllStructure(on);
+    if (!on || !activeScopeId) return;
+    const result = applyPageToGroups(draft, activeScopeId, 'structure', new Set(scopes.map((s) => s.id)));
+    if (result) setDraft((prev) => ({ ...prev, ...result.patch }));
+  };
+  const structureUpdate = (patch: Partial<CcDraft>) => (applyAllStructure && scopes.length > 1
+    ? setDraft((prev) => ({ ...prev, ...applyPatchToAllGroups(prev, patch) }))
+    : viewUpdate(patch));
 
   // The rejected setting is open while any group still breaks it.
   const issueOpen = Boolean(issue && issue.field === 'dailyBudget' && gateScopes.some((g) => g.settings.dailyBudget < issue.min));
@@ -208,7 +223,7 @@ export default function CampaignCreator() {
   }
 
 
-  const structureBlocked = gateScopes.some((g) => !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns)) || !limitCheck.ok;
+  const structureBlocked = gateScopes.some((g) => !g.settings.structureId || (g.settings.structureId === 'custom' && !g.settings.customCampaigns) || Boolean(splitProductsIssue({ ...g.settings, marketplace: draft.marketplace }, g.products.length))) || !limitCheck.ok;
 
   // Preview guards the Create button: nothing to create, or budgets that don't add up to the daily budget (spec §8.4).
   const previewCampaigns = draft.generatedCampaigns ?? [];
@@ -277,7 +292,7 @@ export default function CampaignCreator() {
                 {step === 'objectives' && <StepObjectives key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} issue={issueOpen ? issue : null} />}
                 {step === 'targeting' && <StepTargeting key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
                 {step === 'structure' && (
-                  <StepStructure key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={viewUpdate} onJivaChange={setJivaOpen} />
+                  <StepStructure key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={structureUpdate} onJivaChange={setJivaOpen} groupCount={scopes.length} applyAll={applyAllStructure} onApplyAll={setApplyAll} />
                 )}
                 {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} scopes={scopes} onChange={update} />}
                 {step === 'creating' && <Panel pad={40} className="ccd-hero"><StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => { setDir('fwd'); setStep('result'); }} /></Panel>}

@@ -2,13 +2,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   AUTO_TYPE_CATALOG, MODE_STRUCTURES, STRUCTURE_CATALOG, accountCampaignLimits, structureTagline, formatCurrency, generateCampaigns, structureCounts, recommendStructure, validateCampaignLimit,
-  splitManualTypes, structureVariantFor, structuresFor, variantsFor,
+  splitManualTypes, structureVariantFor, structuresFor, variantsFor, usesSplits, customLocked, campaignsForPlan, countsForPlan, combinationNotes,
   type CampaignMode, type CcCampaign, type CcDraft, type CcProduct, type StructureId, type StructureVariant, type TargetingStrategyId,
 } from '../campaign-creator.types';
 import { StructureMap, groupCampaigns } from './structure-map';
+import PerformanceEnhancer from './structure-splits';
 import { Panel } from '../ccd-design';
 import {
-  BAD, BORDER, BRAND, BRAND_TINT, CheckIcon, FONT, HAIR, Radio, SparkleGlyph, StepHeading,
+  BAD, BORDER, BRAND, BRAND_TINT, CheckIcon, Checkbox, FONT, HAIR, InfoIcon, Radio, SparkleGlyph, StepHeading,
   SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, WARN, WarningIcon,
 } from '../campaign-creator-ui';
 
@@ -51,8 +52,8 @@ function DiagramLegend() {
   );
 }
 
-function StructureOption({ id, number, name, tagline, meta, recommended, committed, viewing, disabled, onClick }: {
-  id: StructureId; number: number; name: string; tagline: string; meta: string; recommended: boolean; committed: boolean; viewing: boolean; disabled: boolean; onClick: () => void;
+function StructureOption({ id, number, name, tagline, meta, recommended, committed, viewing, disabled, disabledNote = 'Over account limit', info, onClick }: {
+  id: StructureId; number: number; name: string; tagline: string; meta: string; recommended: boolean; committed: boolean; viewing: boolean; disabled: boolean; disabledNote?: string; info?: string; onClick: () => void;
 }) {
   return (
     <div
@@ -62,12 +63,12 @@ function StructureOption({ id, number, name, tagline, meta, recommended, committ
     >
       <span className="ccd-so__num">0{number}</span>
       <div className="ccd-so__copy">
-        <strong>{name}</strong>
+        <strong>{name}{info && <span className="ccd-tm-info ccd-so__tip" title={info} role="img" aria-label={info}><InfoIcon size={12} color="#8a909b" /></span>}</strong>
         <span>{tagline}</span>
         {(meta || disabled) && (
           <div className="ccd-so__facts">
             {meta && <span>{meta}</span>}
-            {disabled && <span className="is-warn">Over account limit</span>}
+            {disabled && disabledNote && <span className="is-warn">{disabledNote}</span>}
           </div>
         )}
       </div>
@@ -138,6 +139,13 @@ function UnavailablePanel({ total, available, alternatives, onPick, onJiva }: {
     </div>
   );
 }
+
+/** Spec v9 §4.4 tooltips. */
+const STRUCTURE_TIPS: Partial<Record<StructureId, string>> = {
+  consolidated: 'One Auto and one Manual campaign. Split ad groups to keep targets organised.',
+  standard: 'Separate campaigns for each split you choose, for finer bids and reporting.',
+  custom: 'Describe your own structure in plain language. Coming soon.',
+};
 
 // §7.3 — structure comparison. Auto / manual wording follows the requirements table.
 const COMPARE_COPY: Record<StructureId, { auto: string; manual: string }> = {
@@ -248,10 +256,12 @@ function StructureCard({ view, onView, title, empty, legend, graphic, written, c
   );
 }
 
-export default function StepStructure({ draft, selectedProducts, campaignLimit, jivaOpen, onChange, onJivaChange }: {
+export default function StepStructure({ draft, selectedProducts, campaignLimit, jivaOpen, onChange, onJivaChange, groupCount = 0, applyAll = false, onApplyAll }: {
   draft: CcDraft; selectedProducts: CcProduct[]; campaignLimit: number; onChange: (patch: Partial<CcDraft>) => void;
   jivaOpen: boolean;
   onJivaChange: (open: boolean) => void;
+  /** Product groups in the plan, and the "Apply to all groups" checkbox above the structure block (spec v9 §4.1). */
+  groupCount?: number; applyAll?: boolean; onApplyAll?: (on: boolean) => void;
 }) {
   const [viewId, setViewId] = useState<StructureId | null>(null);
   const [whyFor, setWhyFor] = useState<StructureId | null>(null);
@@ -267,11 +277,16 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   const mode: CampaignMode = draft.campaignMode ?? 'both';
   // The variation the campaigns are built with; shown only when there are Manual campaigns to split.
   const variant = structureVariantFor(draft.marketplace, draft.structureVariant);
-  const showVariants = mode !== 'auto';
+  // Both marketplaces shape their campaigns with the Performance enhancer; the numbered structures and variations below
+  // are only reached by older plans.
+  const amazon = usesSplits(draft.marketplace);
+  const showVariants = mode !== 'auto' && !amazon;
   const split = splitManualTypes(draft.targetingStrategies);
   const manualSplit = { keyword: split.keyword.length, product: split.product.length };
   // A structure other than the chosen one is counted with its default variation, as it would be picked.
-  const countsFor = (id: StructureId) => structureCounts(id, productCount, hasAuto, manualSplit, autoTypesCount, id === draft.structureId ? variant : 'match');
+  const countsFor = (id: StructureId) => (amazon
+    ? countsForPlan({ ...draft, structureId: id }, productCount, draft.marketplace)
+    : structureCounts(id, productCount, hasAuto, manualSplit, autoTypesCount, id === draft.structureId ? variant : 'match'));
   const allowed = structuresFor(mode, draft.marketplace);
   const catalog = STRUCTURE_CATALOG.filter((st) => allowed.includes(st.id));
   // A recommendation the type (or marketplace) can't use becomes its closest fit.
@@ -282,6 +297,8 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   };
 
   const recommendation = useMemo(() => {
+    // Consolidated is the default.
+    if (amazon) return { structureId: 'consolidated' as StructureId, reason: '' };
     const r = recommendStructure(productCount, manualTypesCount, draft.dailyBudget, campaignLimit);
     return { ...r, structureId: fitToMode(r.structureId) };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -294,7 +311,10 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
 
   // Pre-select the recommendation the first time this step is reached with nothing chosen yet.
   useEffect(() => {
-    if (!draft.structureId && validateCampaignLimit(countsFor(recommendation.structureId).totalCampaigns, campaignLimit).ok) {
+    // A structure this marketplace doesn't offer (one picked before switching, or Amazon's locked Custom) goes back to the default.
+    const unusable = draft.structureId && (!allowed.includes(draft.structureId) || (draft.structureId === 'custom' && customLocked(draft.marketplace)));
+    if (amazon && (!draft.structureId || unusable)) { selectStructure('consolidated'); return; }
+    if ((!draft.structureId || unusable) && validateCampaignLimit(countsFor(recommendation.structureId).totalCampaigns, campaignLimit).ok) {
       selectStructure(recommendation.structureId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -312,10 +332,13 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
   const viewedCampaigns = useMemo(
     () => (activeId === 'custom'
       ? draft.customCampaigns
-      : generateCampaigns(activeId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes, activeId === draft.structureId ? variant : 'match')),
+      : amazon
+        ? campaignsForPlan({ ...draft, structureId: activeId }, selectedProducts, draft.marketplace)
+        : generateCampaigns(activeId, selectedProducts, draft.targetingStrategies, draft.dailyBudget, draft.autoTypes, activeId === draft.structureId ? variant : 'match')),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeId, draft.structureId, variant, draft.customCampaigns, draft.productIds.join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.autoTypes.join(',')],
+    [activeId, draft.structureId, variant, amazon, JSON.stringify(draft.splits ?? null), (draft.manualStrategies ?? []).join(','), draft.customCampaigns, selectedProducts.map((p) => p.id).join(','), draft.targetingStrategies.join(','), draft.dailyBudget, draft.autoTypes.join(',')],
   );
+  const notes = activeId === 'custom' ? [] : combinationNotes({ ...draft, structureId: activeId });
   const alternatives = catalog
     .filter((s) => s.id !== 'custom' && s.id !== activeId && activeCounts
       && countsFor(s.id).totalCampaigns < activeCounts.totalCampaigns && validateCampaignLimit(countsFor(s.id).totalCampaigns, campaignLimit).ok)
@@ -327,7 +350,14 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
       <StepHeading title="Choose how campaigns are organised" />
 
       <div className="ccd-structure-workspace">
-        <aside className="ccd-structure-library">
+        <aside className={`ccd-structure-library${amazon ? ' ccd-structure-library--splits' : ''}`}>
+          {groupCount > 1 && onApplyAll && (
+            <button type="button" role="checkbox" aria-checked={applyAll} className="ccd-apply-all" onClick={() => onApplyAll(!applyAll)}>
+              <Checkbox checked={applyAll} size={15} />
+              <span>Apply to all groups</span>
+              <span className="ccd-tm-info" title="Copies the changes you make here to every product group." role="img" aria-label="Copies the changes you make here to every product group."><InfoIcon size={12} color="#8a909b" /></span>
+            </button>
+          )}
           <div className="ccd-structure-catalog-head">
             <div><strong>Choose your structure</strong></div>
           </div>
@@ -336,8 +366,10 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             const isCustom = s.id === 'custom';
             const counts = isCustom ? null : countsFor(s.id);
             const check = counts ? validateCampaignLimit(counts.totalCampaigns, campaignLimit) : { ok: true };
-            const disabled = !isCustom && !check.ok;
-            const meta = isCustom ? 'Built with Jiva' : '';
+            // Custom is shown but locked; a structure over the limit stays pickable, as the splits change its count.
+            const locked = isCustom && customLocked(draft.marketplace);
+            const disabled = locked || (!amazon && !isCustom && !check.ok);
+            const meta = isCustom ? (locked ? 'AI prompt' : 'Built with Jiva') : '';
             const open = showVariants && !isCustom && activeId === s.id;
             return (
               // Open, the card and its variations share one frame; the card stays its own radio inside it.
@@ -347,12 +379,15 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
                 number={i + 1}
                 name={s.name}
                 tagline={structureTagline(s, mode)}
+                info={STRUCTURE_TIPS[s.id]}
                 meta={meta}
                 recommended={recommendation.structureId === s.id}
                 committed={draft.structureId === s.id}
                 viewing={activeId === s.id}
                 disabled={disabled}
+                disabledNote={locked ? 'Not available yet' : undefined}
                 onClick={() => {
+                  if (locked) return;
                   setViewId(s.id);
                   setView('graphic');
                   if (isCustom) { onJivaChange(true); return; }
@@ -372,21 +407,40 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
             );
           })}
           </div>
-          <div className="ccd-structure-compare-row">
-            <button
-              type="button" className={`ccd-structure-compare-link${view === 'compare' ? ' is-active' : ''}`} aria-pressed={view === 'compare'}
-              onClick={() => { setView('compare'); onJivaChange(false); }}
-            >Compare structures</button>
-          </div>
+          {amazon ? (
+            draft.structureId && draft.structureId !== 'custom' && <PerformanceEnhancer draft={draft} productCount={productCount} onChange={onChange} />
+          ) : (
+            <div className="ccd-structure-compare-row">
+              <button
+                type="button" className={`ccd-structure-compare-link${view === 'compare' ? ' is-active' : ''}`} aria-pressed={view === 'compare'}
+                onClick={() => { setView('compare'); onJivaChange(false); }}
+              >Compare structures</button>
+            </div>
+          )}
         </aside>
 
         <Panel pad={0} className="ccd-structure-studio">
           <section aria-live="polite" key={activeId} className="ccd-enter ccd-structure-detail">
           {view !== 'compare' && (
           <>
-          <div className="ccd-structure-detail__intro"><div><h2>{activeDef.name}</h2></div></div>
+          <div className="ccd-structure-detail__intro">
+            <div>
+              <h2>{activeDef.name}</h2>
+              {amazon && activeCounts && (
+                <p className="ccd-structure-detail__count ccd-num">
+                  {activeCounts.totalCampaigns.toLocaleString()} campaign{activeCounts.totalCampaigns === 1 ? '' : 's'} · {activeCounts.adGroups.toLocaleString()} ad group{activeCounts.adGroups === 1 ? '' : 's'}
+                </p>
+              )}
+            </div>
+          </div>
 
-          {activeCounts && !activeCheck.ok && (
+          {amazon && activeCounts && !activeCheck.ok && (
+            <p className="ccd-pe__error" role="alert" style={{ marginTop: 12 }}>
+              <WarningIcon size={12} />
+              This would create {activeCounts.totalCampaigns.toLocaleString()} campaigns; the account has {campaignLimit.toLocaleString()} available. Turn off Split products or split by fewer types.
+            </p>
+          )}
+          {!amazon && activeCounts && !activeCheck.ok && (
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: `600 12.5px/1.4 ${FONT}`, color: BAD }}>
                 <WarningIcon size={12} color={BAD} /> Unavailable: over the account campaign limit
@@ -394,7 +448,7 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
               <TextButton onClick={() => setWhyFor(whyFor === activeId ? null : activeId)}>Why is this unavailable?</TextButton>
             </div>
           )}
-          {activeCounts && !activeCheck.ok && whyFor === activeId && (
+          {!amazon && activeCounts && !activeCheck.ok && whyFor === activeId && (
             <UnavailablePanel
               total={activeCounts.totalCampaigns}
               available={campaignLimit}
@@ -434,6 +488,13 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
               count={catalog.length}
                 compare={<CompareTable activeId={activeId} estimateFor={(id) => countsFor(id).totalCampaigns} limit={campaignLimit} catalog={catalog} mode={mode} />}
             />
+          )}
+
+          {/* Spec v9 §4.3: combinations that pair a brand strategy with a looser match type stay, with a note. */}
+          {activeId !== 'custom' && notes.length > 0 && (
+            <ul className="ccd-combo-notes" aria-label="Combination notes">
+              {notes.map((n) => <li key={n.id}><b>{n.id}</b><span>{n.text}</span></li>)}
+            </ul>
           )}
 
           </section>

@@ -26,6 +26,12 @@ export function groupCampaigns(campaigns: CcCampaign[], products: CcProduct[]) {
 const KEYWORD_TYPES = new Set(['brand', 'competitor', 'broad', 'phrase', 'exact']);
 /** Always listed in this order, so the same target kind sits in the same place in every column. */
 const TARGET_ORDER = ['broad', 'phrase', 'exact', 'brand', 'competitor', 'category', 'product', 'asin-expanded'];
+const WALMART_OPTIONS = [
+  ['brandTerms', 'Brand Term Targeting', 'Brand Term opted out'],
+  ['complementary', 'Complementary Product Targeting', 'Complementary opted out'],
+] as const;
+/** Manual campaigns named for what they split by rather than for one match type. */
+const NAMED_MANUAL = new Set(['Product targeting', 'Keyword targeting', 'Branded', 'Competitor', 'Generic']);
 const TARGET_LABEL = { broad: 'Broad', phrase: 'Phrase', exact: 'Exact', brand: 'Brand', competitor: 'Competitor', category: 'Category', product: 'ASIN Exact', 'asin-expanded': 'ASIN Expanded' };
 
 /**
@@ -40,19 +46,27 @@ function describe(campaign: CcCampaign) {
   // ad groups are one per product, said that way rather than listed.
   const n = campaign.adGroups.length;
   const many = n > 1;
+  // A shared Auto (Walmart) has an ad group per product; an Amazon Auto split by match type has one per Auto type.
+  const perProduct = many && campaign.adGroups.every((g) => g.name.startsWith('Auto Ad Group — '));
   const groupNames = many ? campaign.adGroups.map((g) => g.name.replace(/ Ad Group$/, '')).join(' · ') : undefined;
   if (campaign.kind === 'auto') {
     const autoType = campaign.targetingLabel.split(' · ')[1];
     return {
-      title: autoType ? `Auto — ${autoType}` : many ? 'Shared Auto campaign' : 'Auto campaign',
+      title: autoType ? `Auto — ${autoType}` : perProduct ? 'Shared Auto campaign' : 'Auto campaign',
       adGroup: many ? `${n} ad groups` : 'Auto ad group',
-      adGroupNames: many ? 'One per product' : undefined,
-      targets: [{ type: 'auto', label: autoType ?? 'Automatic targeting', tone: 'auto' }],
+      adGroupNames: !many ? undefined : perProduct ? 'One per product' : groupNames,
+      // Walmart: every Auto campaign states its options; one that isn't ticked is sent as its opt-out (spec v9, W1/W8).
+      targets: campaign.expandedTargeting
+        ? [
+          ...(!campaign.expandedTargeting.brandTerms && !campaign.expandedTargeting.complementary ? [{ type: 'base', label: 'Base automatic targeting', tone: 'auto' }] : []),
+          ...WALMART_OPTIONS.map(([key, on, off]) => (campaign.expandedTargeting[key] ? { type: key, label: on, tone: 'auto' } : { type: key, label: off, tone: 'off' })),
+        ]
+        : [{ type: 'auto', label: autoType ?? 'Automatic targeting', tone: 'auto' }],
     };
   }
   return {
     // One manual campaign holding every type (Consolidated) is just "Manual campaign"; otherwise it is named by its type.
-    title: campaign.targetingLabel === 'Product targeting' ? 'Manual — Product targeting' : types.length === 1 ? `Manual — ${TARGET_LABEL[types[0]]}` : 'Manual campaign',
+    title: NAMED_MANUAL.has(campaign.targetingLabel) ? `Manual — ${campaign.targetingLabel}` : types.length === 1 ? `Manual — ${TARGET_LABEL[types[0]]}` : 'Manual campaign',
     adGroup: many ? `${n} ad groups` : types.length === 1 ? 'Ad group' : 'Manual ad group',
     adGroupNames: groupNames,
     targets: types.map((type) => ({ type, label: TARGET_LABEL[type], tone: KEYWORD_TYPES.has(type) ? 'kw' : 'pr' })),
@@ -144,7 +158,7 @@ function CampaignColumn({ campaign, col, row, pos }: { campaign: CcCampaign; col
         <div className="ccd-tr-list">
           {info.targets.map((target) => (
             <span key={target.type} className={`ccd-tr-pill ccd-tr-pill--${target.tone}`}>
-              {target.tone === 'auto' ? <AutoGlyph /> : target.tone === 'kw' ? <KeywordGlyph /> : <ProductGlyph />}{target.label}
+              {target.tone === 'auto' || target.tone === 'off' ? <AutoGlyph /> : target.tone === 'kw' ? <KeywordGlyph /> : <ProductGlyph />}{target.label}
             </span>
           ))}
         </div>
