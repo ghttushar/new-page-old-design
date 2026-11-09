@@ -116,17 +116,6 @@ export function applyScopedPatch(draft: CcDraft, scopeId: string, patch: Partial
   } as Partial<CcDraft>;
 }
 
-/** Sends one change to every group at once ("Apply to all groups"), or to the shared draft when there are no groups. */
-export function applyPatchToAllGroups(draft: CcDraft, patch: Partial<CcDraft>): Partial<CcDraft> {
-  if (draft.productGroups.length === 0) return patch;
-  let next: CcDraft = draft;
-  for (const g of draft.productGroups) next = { ...next, ...applyScopedPatch(next, g.id, patch) } as CcDraft;
-  const { productGroups, ...rest } = next;
-  // The shared fields the patch carried (anything outside a group's own settings) come along once.
-  const shared = Object.fromEntries(Object.keys(patch).filter((k) => k in rest && !(GROUP_FIELDS as readonly string[]).includes(k)).map((k) => [k, (rest as Record<string, unknown>)[k]]));
-  return { ...shared, productGroups } as Partial<CcDraft>;
-}
-
 /** Campaigns the account would need for all scopes together, for the account limit check. */
 export function totalCampaignsFor(scopes: Pick<Scope, 'settings' | 'products'>[], marketplace?: Marketplace | null): number | null {
   let total = 0;
@@ -216,7 +205,6 @@ export function groupNameIdeas(chosen: CcProduct[], groups: ProductGroup[]): str
 
 /** The settings each page sets, so copying one page across groups leaves the others alone. */
 export const PAGE_FIELDS: Partial<Record<CcStepId, GroupField[]>> = {
-  keywords: ['keywordTargets', 'negativeKeywords', 'productTargets', 'negativeProducts'],
   objectives: ['targetAcos', 'dailyBudget', 'extraObjectives', 'startDate', 'endDate', 'biddingStrategy', 'placementAdjust', 'placementInclusion', 'totalBudgetMode', 'budgetType', 'totalBudget', 'budgetRollover', 'expandedTargeting', 'bidMultipliers'],
   targeting: ['targetingStrategies', 'autoTypes', 'manualOn', 'manualStrategies'],
   structure: ['structureId', 'structureVariant', 'splits', 'customPrompt', 'customCampaigns'],

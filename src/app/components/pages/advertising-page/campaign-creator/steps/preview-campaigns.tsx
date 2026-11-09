@@ -1,10 +1,10 @@
 import { GearSixIcon } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Scope } from '../product-groups';
 import { BIDDING_STRATEGIES, DEFAULT_BIDDING, formatCurrency, type BiddingStrategy, type CcCampaign, type CcDraft, type CcProduct, type NamingSettings, type PlacementAdjust } from '../campaign-creator.types';
 import { DEFAULT_NAMING } from '../campaign-creator.types';
 import { Panel } from '../ccd-design';
-import { TextButton } from '../campaign-creator-ui';
+import { RowCheck, TextButton } from '../campaign-creator-ui';
 import { CounterInput, MATCH_LABEL, NumField, PlacementCell, campaignLabel, typesOf } from './preview-cells';
 import { rulesForCampaign } from './preview-rules';
 import { TargetingPopup } from './preview-targets';
@@ -21,10 +21,14 @@ const PencilIcon = () => <svg width={14} height={14} viewBox="0 0 16 16" fill="n
 const SettingsIcon = () => <GearSixIcon size={16} aria-hidden />;
 const NO_PLACEMENT: PlacementAdjust = { top: null, product: null, rest: null };
 
-export default function CampaignsTable({ draft, campaigns, selectedProducts, shownScope, onCommit, onApplyNaming }: {
+export default function CampaignsTable({ draft, campaigns, selectedProducts, shownScope, onCommit, onApplyNaming, selection, action }: {
   /** The group whose campaigns the table shows (picked at the top of the page); left out when there are no groups. */
   draft: CcDraft; campaigns: CcCampaign[]; selectedProducts: CcProduct[]; shownScope?: Scope; onCommit: (next: CcCampaign[]) => void;
   onApplyNaming: (naming: NamingSettings, next: CcCampaign[]) => void;
+  /** Keywords: a checkbox per campaign, picking the campaigns targets are added to. */
+  selection?: { ids: Set<string>; onChange: (update: (ids: Set<string>) => Set<string>) => void };
+  /** Keywords: shown in place of the Naming settings gear. */
+  action?: ReactNode;
 }) {
   const overall = draft.dailyBudget;
   // Bid adjustments by placement are an Amazon setting; Walmart sets bid multipliers on Objectives instead.
@@ -52,12 +56,31 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
   const adGroupTotal = sum(visible.map((c) => c.adGroups.length));
   const shownAllocated = round2(sum(visible.map((c) => c.dailyBudget)));
 
+  // Keywords: select-all ticks the campaigns shown (the group picked at the top), leaving other groups' picks alone.
+  const allPicked = Boolean(selection) && visible.length > 0 && visible.every((c) => selection!.ids.has(c.id));
+  const toggleAll = () => {
+    if (!selection) return;
+    selection.onChange((ids) => {
+      const next = new Set(ids);
+      visible.forEach((c) => (allPicked ? next.delete(c.id) : next.add(c.id)));
+      return next;
+    });
+  };
+  const togglePick = (id: string) => {
+    if (!selection) return;
+    selection.onChange((ids) => {
+      const next = new Set(ids);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <Panel
       title="Campaigns" pad="4px 20px 18px"
       aside={
         <span className="ccd-ctab-tools">
-          <button type="button" className="ccd-ctab-gear" aria-label="Naming settings" aria-haspopup="dialog" onClick={() => setNamingOpen(true)}><SettingsIcon /></button>
+          {action ?? <button type="button" className="ccd-ctab-gear" aria-label="Naming settings" aria-haspopup="dialog" onClick={() => setNamingOpen(true)}><SettingsIcon /></button>}
         </span>
       }
     >
@@ -78,10 +101,10 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
       <div className="ccd-scroll ccd-ctab-scroll">
         <table className="ccd-ctab">
           <colgroup>
-            <col style={{ width: 270 }} /><col style={{ width: 84 }} /><col style={{ width: 170 }} /><col style={{ width: 196 }} />{amazon && <col style={{ width: 210 }} />}<col style={{ width: 210 }} /><col style={{ width: 210 }} />
+            {selection && <col style={{ width: 48 }} />}<col style={{ width: 270 }} /><col style={{ width: 84 }} /><col style={{ width: 170 }} /><col style={{ width: 196 }} />{amazon && <col style={{ width: 210 }} />}<col style={{ width: 210 }} /><col style={{ width: 210 }} />
           </colgroup>
           <thead>
-            <tr><th>Campaign</th><th>Ad type</th><th>Budget</th><th>Bidding strategy</th>{amazon && <th>Adjust bids by placement</th>}<th>Ad group name</th><th>Targeting type</th></tr>
+            <tr>{selection && <th className="ccd-ctab-check"><RowCheck checked={allPicked} label={allPicked ? 'Untick all campaigns' : 'Tick all campaigns'} onToggle={toggleAll} /></th>}<th>Campaign</th><th>Ad type</th><th>Budget</th><th>Bidding strategy</th>{amazon && <th>Adjust bids by placement</th>}<th>Ad group name</th><th>Targeting type</th></tr>
           </thead>
           <tbody>
             {visible.map((c) => {
@@ -91,7 +114,8 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
               const share = overall > 0 ? Math.round((c.dailyBudget / overall) * 1000) / 10 : 0;
               const targetType = c.kind === 'auto' ? 'Automatic' : typesOf(c).map((t) => MATCH_LABEL[t]).join(', ') || 'None yet';
               return (
-                <tr key={c.id}>
+                <tr key={c.id} className={selection?.ids.has(c.id) ? 'is-picked' : undefined}>
+                  {selection && <td className="ccd-ctab-check"><RowCheck checked={selection.ids.has(c.id)} label={`Tick ${campaignLabel(c)}`} onToggle={() => togglePick(c.id)} /></td>}
                   <td>
                     <span className="ccd-ctab-two">
                       <CounterInput value={c.name} max={255} label="Campaign name" onChange={(v) => patchCampaign(c.id, { name: v })} />
@@ -130,7 +154,7 @@ export default function CampaignsTable({ draft, campaigns, selectedProducts, sho
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={2}>Total <span className="ccd-ctab-sub ccd-ctab-sub--inline">{plural(visible.length, 'campaign')} · {plural(adGroupTotal, 'ad group')}</span></td>
+              {selection && <td />}<td colSpan={2}>Total <span className="ccd-ctab-sub ccd-ctab-sub--inline">{plural(visible.length, 'campaign')} · {plural(adGroupTotal, 'ad group')}</span></td>
               <td className={`ccd-num${ok ? '' : ' is-off'}`}>{formatCurrency(shownAllocated)}</td>
               <td colSpan={4} />
             </tr>

@@ -5,7 +5,7 @@ import GroupLayer, { type GroupLayerHandle } from './group-layer';
 import { createGroup, groupIndex, groupNameIdeas, moveProducts, suggestGroupName } from '../product-groups';
 import { type CcDraft, type CcProduct, type ProductGroup } from '../campaign-creator.types';
 import {
-  BAD, BORDER, BRAND, BRAND_LINE, BRAND_TINT, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, SearchIcon,
+  BAD, BORDER, BRAND, BRAND_LINE, BRAND_TINT, Checkbox, ChevronRightIcon, FONT, GOOD, HAIR, RowCheck, SearchIcon,
   StepHeading, SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY,
 } from '../campaign-creator-ui';
 import { Panel } from '../ccd-design';
@@ -188,19 +188,6 @@ const TH: React.CSSProperties = {
 const TD: React.CSSProperties = { padding: '10px 12px', borderBottom: `1px solid ${HAIR}`, verticalAlign: 'middle' };
 const CHECK_COL: React.CSSProperties = { width: 46, padding: '10px 0 10px 14px' };
 
-function RowCheck({ checked, disabled, label, onToggle }: { checked: boolean; disabled?: boolean; label: string; onToggle: () => void }) {
-  return (
-    <span
-      role="checkbox" aria-checked={checked} aria-label={label} aria-disabled={disabled} tabIndex={disabled ? -1 : 0}
-      onClick={(e) => { e.stopPropagation(); if (!disabled) onToggle(); }}
-      onKeyDown={(e) => { if (!disabled && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); e.stopPropagation(); onToggle(); } }}
-      style={{ display: 'inline-flex', borderRadius: 6, cursor: disabled ? 'not-allowed' : 'pointer' }}
-    >
-      <Checkbox checked={checked} disabled={disabled} />
-    </span>
-  );
-}
-
 /** Name on the first line; "SKU | ASIN | status" beneath it. Ineligible products say why. */
 function ProductCell({ title, color, sku, asin, reason, eligible = true, indent, hideStatus }: {
   title: string; color: string; sku: string; asin: string; eligible?: boolean; reason?: string; indent?: boolean; hideStatus?: boolean;
@@ -371,7 +358,7 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
 
   // Everything in the left list a user can still add: eligible rows, plus the variations of expanded parents, not already added.
   const addableIds = useMemo(
-    () => filtered.filter((p) => p.eligible).flatMap((p) => [p.id, ...(expanded.has(p.id) ? (p.children ?? []).map((k) => k.id) : [])]).filter((id) => !added.has(id)),
+    () => filtered.filter((p) => p.eligible).flatMap((p) => [p.id, ...(p.children ?? []).map((k) => k.id)]).filter((id) => !added.has(id)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filtered, expanded, draft.productIds],
   );
@@ -382,6 +369,26 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
     setter((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   }
   function toggleExpanded(id: string) { toggleSet(setExpanded, id); }
+  // Ticking a parent ticks every variation that can still be added; ticking its last variation ticks the parent too,
+  // and unticking any variation unticks the parent.
+  function toggleParent(p: CcProduct) {
+    const kids = (p.children ?? []).filter((k) => !added.has(k.id)).map((k) => k.id);
+    setStaged((prev) => {
+      const next = new Set(prev);
+      const on = !prev.has(p.id);
+      [p.id, ...kids].forEach((id) => (on ? next.add(id) : next.delete(id)));
+      return next;
+    });
+  }
+  function toggleChild(p: CcProduct, id: string) {
+    const kids = (p.children ?? []).filter((k) => !added.has(k.id)).map((k) => k.id);
+    setStaged((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      if (kids.every((k) => next.has(k)) && !added.has(p.id)) next.add(p.id); else next.delete(p.id);
+      return next;
+    });
+  }
   function toggleAdded(id: string) {
     const set = new Set(draft.productIds);
     if (set.has(id)) set.delete(id); else set.add(id);
@@ -494,9 +501,9 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                   const canAdd = p.eligible && !isAdded;
                   return (
                     <Fragment key={p.id}>
-                      <tr className="ccd-row" onClick={() => canAdd && toggleSet(setStaged, p.id)} style={{ cursor: canAdd ? 'pointer' : 'default', opacity: p.eligible && !isAdded ? 1 : 0.6 }}>
+                      <tr className="ccd-row" onClick={() => canAdd && toggleParent(p)} style={{ cursor: canAdd ? 'pointer' : 'default', opacity: p.eligible && !isAdded ? 1 : 0.6 }}>
                         <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: '#fff' }}>
-                          <RowCheck checked={!isAdded && staged.has(p.id)} disabled={!canAdd} label={`Select ${p.title}`} onToggle={() => toggleSet(setStaged, p.id)} />
+                          <RowCheck checked={!isAdded && staged.has(p.id)} disabled={!canAdd} label={`Select ${p.title}`} onToggle={() => toggleParent(p)} />
                         </td>
                         <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, overflow: 'hidden', background: '#fff' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
@@ -516,9 +523,9 @@ export default function StepProducts({ draft, products, selectedProducts, onChan
                         const kAdded = added.has(k.id);
                         const kCanAdd = p.eligible && !kAdded;
                         return (
-                          <tr key={k.id} className="ccd-row" onClick={() => kCanAdd && toggleSet(setStaged, k.id)} style={{ cursor: kCanAdd ? 'pointer' : 'default', background: SURFACE_MUTED, opacity: kAdded ? 0.6 : 1 }}>
+                          <tr key={k.id} className="ccd-row" onClick={() => kCanAdd && toggleChild(p, k.id)} style={{ cursor: kCanAdd ? 'pointer' : 'default', background: SURFACE_MUTED, opacity: kAdded ? 0.6 : 1 }}>
                             <td className="ccd-sticky" style={{ ...TD, ...CHECK_COL, ...STICKY_CHECK, background: SURFACE_MUTED }}>
-                              <RowCheck checked={!kAdded && staged.has(k.id)} disabled={!kCanAdd} label={`Select ${k.title}`} onToggle={() => toggleSet(setStaged, k.id)} />
+                              <RowCheck checked={!kAdded && staged.has(k.id)} disabled={!kCanAdd} label={`Select ${k.title}`} onToggle={() => toggleChild(p, k.id)} />
                             </td>
                             {/* Indented one step under the parent's picture, with a connector from it. */}
                             <td className="ccd-sticky" style={{ ...TD, ...STICKY_PRODUCT, paddingLeft: 72, overflow: 'hidden', background: SURFACE_MUTED }}>

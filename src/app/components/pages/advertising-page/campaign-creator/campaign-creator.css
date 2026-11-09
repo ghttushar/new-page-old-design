@@ -1064,11 +1064,11 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 @media (prefers-reduced-motion: reduce) { .ccd-cm-option, .ccd-cm-radio i, .ccd-cm-icon { transition: none; } }
 
 /* Creation activity: the button on the ad format page, the status tabs and the runs table */
-.ccd-act-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 1px solid #e4e7ee; border-radius: 10px; background: #fff; color: #2d2f36; font: 600 13px/1 Inter, sans-serif; white-space: nowrap; cursor: pointer; transition: border-color 140ms ease-out, background-color 140ms ease-out; }
+.ccd-act-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 1px solid #e4e7ee; border-radius: 10px; background: #fff; color: #2d2f36; font: 600 13px/1 Inter, sans-serif; white-space: nowrap; cursor: pointer; transition: border-color 140ms ease-out, background-color 140ms ease-out, transform 120ms ease-out; }
+.ccd-act-btn:active { transform: scale(0.98); }
 .ccd-act-btn:hover { border-color: #cfd3dc; background: #f9fafc; }
 .ccd-act-btn:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
 .ccd-act-btn svg { color: #646b76; }
-.ccd-act-dot { position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; background: var(--ccd-brand); }
 .ccd-act-panel { min-height: 120px; }
 .ccd-act-empty { margin: 0; padding: 36px 0; color: #9aa0ab; font: 400 13.5px/1.5 Inter, sans-serif; text-align: center; }
 .ccd-act-made { display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 0; list-style: none; color: #646b76; font: 400 12.5px/1.35 Inter, sans-serif; }
@@ -1114,8 +1114,6 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 .ccd-tr-pill--off { background: #f6f7f9; color: #8a909b; border: 1px dashed #d9dce3; }
 .ccd-so__tip { margin-left: 6px; vertical-align: -1px; }
 .ccd-so__copy strong .ccd-so__tip { display: inline-flex; }
-.ccd-apply-all { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 0; border: 0; background: none; color: var(--ccd-ink); font: 500 12.5px/1.3 Inter, sans-serif; cursor: pointer; }
-.ccd-apply-all:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 3px; border-radius: 4px; }
 .ccd-combo-notes { list-style: none; margin: 12px 0 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #eceef2; }
 .ccd-combo-notes li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: baseline; color: #6f747e; font: 400 11.5px/1.45 Inter, sans-serif; }
 .ccd-combo-notes b { padding: 1px 5px; border-radius: 4px; background: #f3f0f7; color: var(--ccd-brand); font: 600 10px/1.4 Inter, sans-serif; letter-spacing: .03em; }
@@ -1150,7 +1148,6 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
 
 /* ── Visual clean-up: Structure left column ─────────────────────────────────────────────────── */
 .ccd-structure-catalog-head--row { align-items: center; }
-.ccd-structure-catalog-head--row .ccd-apply-all { margin: 0; white-space: nowrap; color: #4d535e; }
 .ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain { grid-template-columns: minmax(0, 1fr) auto; padding: 12px 14px !important; border-color: #e6e8ee; border-radius: 10px !important; }
 .ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain:hover:not(.is-disabled) { border-color: #cbb8dd; }
 .ccd-root [role="radio"].ccd-pick.ccd-structure-option--plain.is-selected { border-color: var(--ccd-brand); background: #fff; }
@@ -1247,3 +1244,49 @@ button.ccd-option-row:focus-visible { outline: 2px solid var(--ccd-brand); outli
   .ccd-workspace--fit { padding-bottom: 12px; }
   .ccd-workspace--fit .ccd-seg__desc { margin-top: 6px; }
 }
+
+/* Keywords: the campaigns table gets a check column and an Add keywords button where Review has the Naming gear. */
+.ccd-ctab .ccd-ctab-check { padding-left: 14px; padding-right: 0; }
+.ccd-ctab thead .ccd-ctab-check { vertical-align: middle; }
+.ccd-ctab tbody tr.is-picked td { background: #faf7fd; }
+.ccd-ctab tbody tr td { transition: background-color 140ms ease-out; }
+.ccd-kwp-add { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--ccd-brand); color: #fff; font: 600 13px/1 Inter, sans-serif; white-space: nowrap; cursor: pointer; transition: background-color 140ms ease-out, transform 120ms ease-out, opacity 140ms ease-out; }
+.ccd-kwp-add:hover:not(:disabled) { background: #653a86; }
+.ccd-kwp-add:active:not(:disabled) { transform: scale(0.97); }
+.ccd-kwp-add:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 2px; }
+.ccd-kwp-add:disabled { background: #e6e1ec; color: #9a92a6; cursor: not-allowed; }
+.ccd-kwp-notice { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding: 10px 12px 10px 14px; border: 1px solid #e3d8f0; border-radius: 10px; background: #f7f2fc; color: #4b2a6a; font: 500 13px/1.45 Inter, sans-serif; }
+.ccd-kwp-notice button { flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #6b5a80; font: 400 18px/1 Inter, sans-serif; cursor: pointer; }
+.ccd-kwp-notice button:hover { background: #ece3f6; }
+
+/* The Add keywords popup: the two-pane keyword UI inside the standard dialog. */
+.ccd-tm.ccd-kwm { width: min(1240px, 100%); height: min(760px, 100%); }
+.ccd-kwm .ccd-tm-head > div:first-child { min-width: 0; flex: 1; }
+.ccd-kwm .ccd-tm-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ccd-kw.ccd-kwm-body { flex: 1; min-height: 0; padding: 22px 32px 26px; border: 0; border-radius: 0; overflow: auto; }
+.ccd-kwm-body .ccd-kw-right { min-height: 0; }
+.ccd-kwm-body .ccd-kw-table { max-height: none; flex: 1; min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .ccd-kwp-add, .ccd-ctab tbody tr td { transition: none; } }
+
+/* Step bar: a step already reached, ahead of the one open, stays one click away. */
+.ccd-jb-tile--ahead { opacity: .82; }
+.ccd-jb-tile--ahead:hover:not(:disabled) { opacity: 1; }
+
+/* Warning before an earlier change undoes the steps after it. */
+.ccd-cm.ccd-rp { width: min(500px, 100%); }
+.ccd-rp-body { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 4px; }
+.ccd-rp-icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 10px; background: #fdf3e6; color: #b5671d; }
+.ccd-rp-body h2 { margin: 2px 0 0; color: #1d2129; font: 650 19px/1.3 'Inter Tight', Inter, sans-serif; letter-spacing: -0.015em; }
+.ccd-rp-body p { margin: 8px 0 0; color: #565c66; font: 400 13.5px/1.55 Inter, sans-serif; text-wrap: pretty; }
+.ccd-rp .ccd-cm-foot { padding: 20px 28px 24px; }
+
+/* Rules on Review: the whole header toggles it, and its state shows while folded. */
+.ccd-rl-head-btn { display: inline-flex; align-items: baseline; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
+.ccd-rl-head-btn:focus-visible { outline: 2px solid var(--ccd-brand); outline-offset: 3px; border-radius: 4px; }
+.ccd-rl-status { margin-left: 8px; padding-left: 10px; border-left: 1px solid #e4e7ee; color: #9a6418; font: 500 12.5px/1.2 Inter, sans-serif; letter-spacing: 0; }
+.ccd-rl-status.is-on { color: #2f7d65; }
+.ccd-rl-wrap { border-radius: 16px; }
+.ccd-rl-flash { animation: ccd-rl-flash 1.4s ease-out both; }
+@keyframes ccd-rl-flash { 0%, 45% { box-shadow: 0 0 0 3px rgba(119, 70, 155, .45); } 100% { box-shadow: 0 0 0 3px rgba(119, 70, 155, 0); } }
+.ccd-rp-icon.ccd-rp-icon--brand { background: var(--ccd-brand-tint); color: var(--ccd-brand); }
+@media (prefers-reduced-motion: reduce) { .ccd-rl-flash { animation: none; box-shadow: 0 0 0 3px rgba(119, 70, 155, .35); } }

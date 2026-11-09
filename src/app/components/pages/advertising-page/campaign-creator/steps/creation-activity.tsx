@@ -8,10 +8,9 @@ export function ActivityButton({ processing, failed, onClick }: { processing: nu
   const pending = processing + failed;
   const label = pending > 0 ? `Creation activity: ${processing} in process, ${failed} failed` : 'Creation activity';
   return (
-    <button type="button" className="ccd-act-btn" onClick={onClick} aria-label={label} title={pending > 0 ? label.replace('Creation activity: ', '') : undefined}>
-      <ClockCounterClockwiseIcon size={16} />
+    <button type="button" className="ccd-act-btn" onClick={onClick} aria-label={label}>
+      <ClockCounterClockwiseIcon size={17} />
       <span>Creation activity</span>
-      {pending > 0 && <i className="ccd-act-dot" aria-hidden />}
     </button>
   );
 }

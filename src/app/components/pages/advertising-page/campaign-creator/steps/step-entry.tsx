@@ -160,12 +160,13 @@ function formatsFor(marketplace: CcDraft['marketplace']): Format[] {
   ];
 }
 
-export default function StepEntry({ draft, onChange }: {
-  draft: CcDraft; onChange: (patch: Partial<CcDraft>) => void;
+export default function StepEntry({ draft, onChange, aside }: {
+  /** The heading's right side: the Creation activity button. */
+  draft: CcDraft; onChange: (patch: Partial<CcDraft>) => void; aside?: React.ReactNode;
 }) {
   return (
     <div>
-      <StepHeading title="Choose an ad format" />
+      <StepHeading title="Choose an ad format" aside={aside} />
       <div role="radiogroup" aria-label="Ad type" className="ccd-ad-grid">
         {formatsFor(draft.marketplace).map((f) => {
           const selected = f.ready && draft.adType === 'sponsored-products';

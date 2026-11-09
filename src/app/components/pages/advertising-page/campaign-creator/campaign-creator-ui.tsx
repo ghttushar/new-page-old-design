@@ -150,6 +150,20 @@ export function Checkbox({ checked, disabled, size = 17 }: { checked: boolean; d
   );
 }
 
+/** A table row's checkbox (Products, Keywords): a focusable checkbox that doesn't trigger the row's own click. */
+export function RowCheck({ checked, disabled, label, onToggle }: { checked: boolean; disabled?: boolean; label: string; onToggle: () => void }) {
+  return (
+    <span
+      role="checkbox" aria-checked={checked} aria-label={label} aria-disabled={disabled} tabIndex={disabled ? -1 : 0}
+      onClick={(e) => { e.stopPropagation(); if (!disabled) onToggle(); }}
+      onKeyDown={(e) => { if (!disabled && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); e.stopPropagation(); onToggle(); } }}
+      style={{ display: 'inline-flex', borderRadius: 6, cursor: disabled ? 'not-allowed' : 'pointer' }}
+    >
+      <Checkbox checked={checked} disabled={disabled} />
+    </span>
+  );
+}
+
 export function Radio({ checked, disabled }: { checked: boolean; disabled?: boolean }) {
   return (
     <span

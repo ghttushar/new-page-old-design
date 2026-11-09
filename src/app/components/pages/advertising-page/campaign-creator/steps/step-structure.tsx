@@ -9,7 +9,7 @@ import { StructureMap, groupCampaigns } from './structure-map';
 import PerformanceEnhancer from './structure-splits';
 import { Panel } from '../ccd-design';
 import {
-  BAD, BORDER, BRAND, BRAND_TINT, CheckIcon, Checkbox, FONT, HAIR, InfoIcon, Radio, SparkleGlyph, StepHeading,
+  BAD, BORDER, BRAND, BRAND_TINT, CheckIcon, FONT, HAIR, InfoIcon, Radio, SparkleGlyph, StepHeading,
   SURFACE_MUTED, TextButton, TEXT_FAINT, TEXT_MUTED, TEXT_PRIMARY, WARN, WarningIcon,
 } from '../campaign-creator-ui';
 
@@ -258,12 +258,10 @@ function StructureCard({ view, onView, title, empty, legend, graphic, written, c
   );
 }
 
-export default function StepStructure({ draft, selectedProducts, campaignLimit, jivaOpen, onChange, onJivaChange, groupCount = 0, applyAll = false, onApplyAll }: {
+export default function StepStructure({ draft, selectedProducts, campaignLimit, jivaOpen, onChange, onJivaChange }: {
   draft: CcDraft; selectedProducts: CcProduct[]; campaignLimit: number; onChange: (patch: Partial<CcDraft>) => void;
   jivaOpen: boolean;
   onJivaChange: (open: boolean) => void;
-  /** Product groups in the plan, and the "Apply to all groups" checkbox above the structure block (spec v9 §4.1). */
-  groupCount?: number; applyAll?: boolean; onApplyAll?: (on: boolean) => void;
 }) {
   const [viewId, setViewId] = useState<StructureId | null>(null);
   const [whyFor, setWhyFor] = useState<StructureId | null>(null);
@@ -355,13 +353,6 @@ export default function StepStructure({ draft, selectedProducts, campaignLimit, 
         <aside className={`ccd-structure-library${amazon ? ' ccd-structure-library--splits' : ''}`}>
           <div className="ccd-structure-catalog-head ccd-structure-catalog-head--row">
             <div><strong>Choose your structure</strong></div>
-            {groupCount > 1 && onApplyAll && (
-              <button type="button" role="checkbox" aria-checked={applyAll} className="ccd-apply-all" onClick={() => onApplyAll(!applyAll)}>
-                <Checkbox checked={applyAll} size={15} />
-                <span>Apply to all groups</span>
-                <span className="ccd-tm-info" title="Copies the changes you make here to every product group." role="img" aria-label="Copies the changes you make here to every product group."><InfoIcon size={12} color="#8a909b" /></span>
-              </button>
-            )}
           </div>
           {/* Consolidated / Standard / Custom as one compact segmented control, with the chosen one explained under it,
               so the whole left column fits one screen. */}

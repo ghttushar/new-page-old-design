@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import './campaign-creator.css';
 import {
-  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, splitProductsIssue, targetingBlocked, keywordsBlocked, validateCampaignLimit,
+  EMPTY_DRAFT, STEP_ORDER, accountCampaignLimits, objectiveDefaults, objectivesBlocked, applyCampaignMode, flattenProducts, productsFor, splitProductsIssue, targetingBlocked, validateCampaignLimit,
   type CcDraft, type CcStepId,
 } from './campaign-creator.types';
 import { ArrowRightIcon, CcGlobalStyles, GhostButton, HAIR, PrimaryButton } from './campaign-creator-ui';
@@ -17,10 +17,13 @@ import StepTargeting from './steps/step-targeting';
 import StepStructure from './steps/step-structure';
 import JivaStructurePanel from './steps/jiva-structure-panel';
 import StepPreview from './steps/step-preview';
-import { DEFAULT_SCOPE_ID, applyPageToGroups, applyPatchToAllGroups, applyScopedPatch, buildScopes, pickSettings, placeUngrouped, pruneGroups, totalCampaignsFor } from './product-groups';
+import { walmartComboIssue } from './steps/plan-campaigns';
+import { DEFAULT_SCOPE_ID, applyPageToGroups, applyScopedPatch, buildScopes, pickSettings, placeUngrouped, pruneGroups, totalCampaignsFor } from './product-groups';
 import { allocationMatches } from './steps/budget-math';
 import StepCreating from './steps/step-creating';
 import CampaignModeDialog from './steps/campaign-mode-dialog';
+import ResetProgressDialog from './steps/reset-progress-dialog';
+import NoRulesDialog from './steps/no-rules-dialog';
 import MarketplaceHeader from './marketplace-header';
 import StepResult from './steps/step-result';
 import CreationActivity, { ActivityButton } from './steps/creation-activity';
@@ -34,6 +37,9 @@ const NUMBERED_STEPS: { id: CcStepId; label: string }[] = [
   { id: 'keywords', label: 'Keywords' },
   { id: 'preview', label: 'Preview' },
 ];
+
+/** Campaign-building output, not setup: changing these never undoes later steps. */
+const OUTPUT_KEYS = new Set(['generatedCampaigns', 'generatedKey', 'naming']);
 
 export default function CampaignCreator() {
 
@@ -92,7 +98,31 @@ export default function CampaignCreator() {
   const mainRef = useRef<HTMLElement>(null);
   useEffect(() => { mainRef.current?.scrollTo({ top: 0 }); }, [step]);
 
-  const update = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...patch }));
+  const rawUpdate = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...patch }));
+
+  // Going back and changing an earlier step: the steps after it have to be gone through again, so ask first. A held
+  // change is applied only once the user agrees; "Keep my progress" drops it and remounts the page so its inputs re-read
+  // the draft. Keywords only feeds Review, and a marketplace fix-and-retry jumps straight to its step, so neither asks.
+  const [pendingChange, setPendingChange] = useState<{ apply: () => void } | null>(null);
+  const [resetNonce, setResetNonce] = useState(0);
+  const currentIdx = step === 'entry' ? -1 : NUMBERED_STEPS.findIndex((s) => s.id === step);
+  const guardOn = furthestIndex > Math.max(currentIdx, 0) && (step === 'entry' || currentIdx >= 0) && step !== 'keywords' && step !== 'preview' && !issue;
+  const changesSetup = (patch: Partial<CcDraft>, base: CcDraft) => Object.keys(patch).some((k) => !OUTPUT_KEYS.has(k) && JSON.stringify(patch[k]) !== JSON.stringify(base[k]));
+  const guard = (apply: () => void, patch: Partial<CcDraft>, base: CcDraft) => {
+    if (guardOn && changesSetup(patch, base)) setPendingChange({ apply });
+    else apply();
+  };
+  const keepProgress = () => { setPendingChange(null); setResetNonce((n) => n + 1); };
+  const redoLaterSteps = () => {
+    const held = pendingChange;
+    setPendingChange(null);
+    held?.apply();
+    setFurthestIndex(Math.max(currentIdx, 0));
+    setDraft((prev) => ({ ...prev, generatedCampaigns: undefined, generatedKey: undefined }));
+  };
+  // Products stays reachable after any reset, so it is never one of the steps to redo.
+  const laterSteps = NUMBERED_STEPS.slice(Math.max(currentIdx + 1, 1), furthestIndex + 1).map((s) => s.label);
+  const update = (patch: Partial<CcDraft>) => guard(() => rawUpdate(patch), patch, draft);
 
   const products = useMemo(() => (draft.marketplace ? productsFor(draft.marketplace) : []), [draft.marketplace]);
   const selectedProducts = useMemo(() => flattenProducts(products).filter((p) => draft.productIds.includes(p.id)), [products, draft.productIds]);
@@ -106,7 +136,8 @@ export default function CampaignCreator() {
   const viewDraft = activeScope ? activeScope.draft : draft;
   const viewProducts = activeScope ? activeScope.products : selectedProducts;
   const activeScopeId = activeScope?.id ?? null;
-  const viewUpdate = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...(activeScopeId ? applyScopedPatch(prev, activeScopeId, patch) : patch) }));
+  const rawViewUpdate = (patch: Partial<CcDraft>) => setDraft((prev) => ({ ...prev, ...(activeScopeId ? applyScopedPatch(prev, activeScopeId, patch) : patch) }));
+  const viewUpdate = (patch: Partial<CcDraft>) => guard(() => rawViewUpdate(patch), patch, viewDraft);
   const gateScopes = scopes.length ? scopes : [{ id: 'all', name: '', products: selectedProducts, settings: pickSettings(draft) }];
 
   // A product that is no longer selected leaves its group, and an empty group goes away.
@@ -131,8 +162,8 @@ export default function CampaignCreator() {
     return false;
   }).map((g) => g.id));
 
-  // A group is done on a page once it has what the page asks for. Keywords are optional, so there it means some were added.
-  const notDone = step === 'keywords' ? new Set(scopes.filter((g) => keywordsBlocked(g.settings, draft.marketplace)).map((g) => g.id)) : pendingScopes;
+  // A group is done on a page once it has what the page asks for. Nothing on Keywords is required.
+  const notDone = pendingScopes;
   const completedScopes = scopes.length - notDone.size;
 
   // Copy this page's setup from the group being set up to the groups ticked in the dropdown, with one step of undo.
@@ -148,9 +179,11 @@ export default function CampaignCreator() {
     if (!activeScopeId) return;
     const result = applyPageToGroups(draft, activeScopeId, step, new Set(ids));
     if (!result) return;
-    undoApplyRef.current = result.undo;
-    setDraft((prev) => ({ ...prev, ...result.patch }));
-    setAppliedCount(result.count);
+    guard(() => {
+      undoApplyRef.current = result.undo;
+      setDraft((prev) => ({ ...prev, ...result.patch }));
+      setAppliedCount(result.count);
+    }, result.patch, draft);
   };
   const undoApply = () => {
     const before = undoApplyRef.current;
@@ -159,20 +192,6 @@ export default function CampaignCreator() {
     setAppliedCount(null);
   };
 
-  // "Apply to all groups" on Structure (spec v9 §4.1): ticking it copies this group's structure to every group, and while
-  // it stays ticked every structure change goes to all of them. With one group there's nothing to apply it to.
-  const [applyAllStructure, setApplyAllStructure] = useState(false);
-  const groupIds = draft.productGroups.map((g) => g.id).join(',');
-  useEffect(() => { setApplyAllStructure(false); }, [groupIds]);
-  const setApplyAll = (on: boolean) => {
-    setApplyAllStructure(on);
-    if (!on || !activeScopeId) return;
-    const result = applyPageToGroups(draft, activeScopeId, 'structure', new Set(scopes.map((s) => s.id)));
-    if (result) setDraft((prev) => ({ ...prev, ...result.patch }));
-  };
-  const structureUpdate = (patch: Partial<CcDraft>) => (applyAllStructure && scopes.length > 1
-    ? setDraft((prev) => ({ ...prev, ...applyPatchToAllGroups(prev, patch) }))
-    : viewUpdate(patch));
 
   // The rejected setting is open while any group still breaks it.
   const issueOpen = Boolean(issue && issue.field === 'dailyBudget' && gateScopes.some((g) => g.settings.dailyBudget < issue.min));
@@ -231,21 +250,29 @@ export default function CampaignCreator() {
   const planBudget = gateScopes.reduce((sum, g) => sum + g.settings.dailyBudget, 0);
   const previewBudgetOk = allocationMatches(previewCampaigns, planBudget);
 
+  // Creating with no campaign attached to a Rule asks first, as the Rules section is easy to miss on a long Review page.
+  // "Attach a Rule" bumps rulesFocus, which opens the section and scrolls to it.
+  const [noRulesOpen, setNoRulesOpen] = useState(false);
+  const [rulesFocus, setRulesFocus] = useState(0);
+  const anyRule = Object.values(draft.ruleAssignments ?? {}).some((ids) => ids.length > 0);
+  function createCampaigns() {
+    setNoRulesOpen(false);
+    // A fixed run goes through this time, so it leaves the failed list.
+    if (issue) { setRuns((prev) => prev.map((r) => (r.id === issue.runId ? { ...r, status: 'done' } : r))); setIssue(null); }
+    setDir('fwd'); setStep('creating');
+  }
+
   const footers: Partial<Record<CcStepId, { back?: () => void; backLabel?: string; next?: () => void; nextLabel?: string; disabled?: boolean }>> = {
     entry: { next: () => setModeOpen(true), nextLabel: 'Get started', disabled: !draft.adType },
     activity: { back: () => goTo('entry'), backLabel: 'Create campaign' },
     products: { back: () => goTo('entry'), next: () => advance('targeting'), nextLabel: 'Continue', disabled: draft.productIds.length === 0 },
-    keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue', disabled: gateScopes.some((g) => keywordsBlocked(g.settings, draft.marketplace)) },
+    keywords: { back: () => goTo('objectives'), next: () => advance('preview'), nextLabel: 'Continue', disabled: Boolean(walmartComboIssue(previewCampaigns, draft.marketplace)) },
     objectives: { back: () => goTo('structure'), next: () => advance('keywords'), nextLabel: 'Continue', disabled: issueOpen || gateScopes.some((g) => objectivesBlocked(g.settings, draft.marketplace)) },
     targeting: { back: () => goTo('products'), next: () => advance('structure'), nextLabel: 'Continue', disabled: gateScopes.some((g) => targetingBlocked(g.settings, draft.marketplace)) },
     structure: { back: () => goTo('targeting'), next: () => advance('objectives'), nextLabel: 'Continue', disabled: structureBlocked },
     preview: {
       back: () => goTo('keywords'),
-      next: () => {
-        // A fixed run goes through this time, so it leaves the failed list.
-        if (issue) { setRuns((prev) => prev.map((r) => (r.id === issue.runId ? { ...r, status: 'done' } : r))); setIssue(null); }
-        setDir('fwd'); setStep('creating');
-      },
+      next: () => (anyRule ? createCampaigns() : setNoRulesOpen(true)),
       nextLabel: previewCount > 0 ? `Create ${previewCount} campaign${previewCount === 1 ? '' : 's'}` : 'Create campaigns',
       disabled: previewCount === 0 || !previewBudgetOk,
     },
@@ -284,17 +311,25 @@ export default function CampaignCreator() {
                 style={{ flex: 1, minWidth: 0 }}
               >
                 {step === 'entry' && (
-                  <StepEntry draft={draft} onChange={update} />
+                  <StepEntry
+                    key={resetNonce} draft={draft} onChange={update}
+                    aside={(
+                      <ActivityButton
+                        processing={runs.filter((r) => r.status === 'processing').length} failed={runs.filter((r) => r.status === 'failed').length}
+                        onClick={() => { setFinishedId(null); goTo('activity'); }}
+                      />
+                    )}
+                  />
                 )}
                 {step === 'activity' && <CreationActivity runs={runs} finished={runs.find((r) => r.id === finishedId) ?? null} onRetry={retryRun} />}
-                {step === 'products' && <StepProducts draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
-                {step === 'keywords' && <StepKeywords key={activeScopeId} draft={viewDraft} onChange={viewUpdate} />}
-                {step === 'objectives' && <StepObjectives key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} issue={issueOpen ? issue : null} />}
-                {step === 'targeting' && <StepTargeting key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
+                {step === 'products' && <StepProducts key={resetNonce} draft={draft} products={products} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'keywords' && <StepKeywords key={activeScopeId} draft={draft} scopes={scopes} activeScope={activeScope ?? undefined} selectedProducts={selectedProducts} onChange={update} />}
+                {step === 'objectives' && <StepObjectives key={`${activeScopeId}-${resetNonce}`} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} issue={issueOpen ? issue : null} />}
+                {step === 'targeting' && <StepTargeting key={`${activeScopeId}-${resetNonce}`} draft={viewDraft} selectedProducts={viewProducts} onChange={viewUpdate} />}
                 {step === 'structure' && (
-                  <StepStructure key={activeScopeId} draft={viewDraft} selectedProducts={viewProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={structureUpdate} onJivaChange={setJivaOpen} groupCount={scopes.length} applyAll={applyAllStructure} onApplyAll={setApplyAll} />
+                  <StepStructure key={`${activeScopeId}-${resetNonce}`} draft={viewDraft} selectedProducts={viewProducts} campaignLimit={campaignLimit} jivaOpen={jivaOpen} onChange={viewUpdate} onJivaChange={setJivaOpen} />
                 )}
-                {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} scopes={scopes} onChange={update} />}
+                {step === 'preview' && <StepPreview draft={draft} selectedProducts={selectedProducts} scopes={scopes} onChange={update} rulesFocus={rulesFocus} />}
                 {step === 'creating' && <Panel pad={40} className="ccd-hero"><StepCreating draft={draft} selectedProducts={selectedProducts} onDone={() => { setDir('fwd'); setStep('result'); }} /></Panel>}
                 {step === 'result' && <Panel pad={40} className="ccd-hero"><StepResult draft={draft} selectedProducts={selectedProducts} /></Panel>}
 
@@ -306,16 +341,11 @@ export default function CampaignCreator() {
       {footer && step !== 'creating' && (
         <footer className="ccd-footer">
           <div>
-            {step === 'entry' ? (
-              <ActivityButton
-                processing={runs.filter((r) => r.status === 'processing').length} failed={runs.filter((r) => r.status === 'failed').length}
-                onClick={() => { setFinishedId(null); goTo('activity'); }}
-              />
-            ) : footer.back && <GhostButton onClick={footer.back}>{footer.backLabel ?? 'Back'}</GhostButton>}
+            {footer.back && <GhostButton onClick={footer.back}>{footer.backLabel ?? 'Back'}</GhostButton>}
           </div>
           <div />
           <div className="ccd-footer__end">
-            {scopes.length > 0 && ['keywords', 'objectives', 'targeting', 'structure'].includes(step) && (
+            {scopes.length > 0 && ['objectives', 'targeting', 'structure'].includes(step) && (
               <span className={`ccd-footer__groups${completedScopes === scopes.length ? ' is-done' : ''}`}><small>Groups completed</small><strong>{completedScopes} of {scopes.length}</strong></span>
             )}
             {footer.next && <PrimaryButton onClick={footer.next} disabled={footer.disabled}>{footer.nextLabel} {step !== 'result' && <ArrowRightIcon size={14} />}</PrimaryButton>}
@@ -325,11 +355,22 @@ export default function CampaignCreator() {
       </div>
         <MarketplaceHeader
           value={draft.marketplace} disabled={!onEntry}
-          onMarketplace={(marketplace) => setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, ...objectiveDefaults(marketplace), adType: prev.adType, marketplace }))}
+          onMarketplace={(marketplace) => guard(() => {
+            setDraft((prev) => (prev.marketplace === marketplace ? prev : { ...EMPTY_DRAFT, ...objectiveDefaults(marketplace), adType: prev.adType, marketplace }));
+            if (marketplace !== draft.marketplace) setFurthestIndex(0);
+          }, { marketplace }, draft)}
         />
         <CampaignModeDialog
           open={modeOpen} value={draft.campaignMode} onClose={() => setModeOpen(false)}
-          onConfirm={(mode) => { setDraft((prev) => ({ ...prev, ...applyCampaignMode(prev, mode) })); setModeOpen(false); advance('products'); }}
+          onConfirm={(mode) => guard(() => { setDraft((prev) => ({ ...prev, ...applyCampaignMode(prev, mode) })); setModeOpen(false); advance('products'); }, applyCampaignMode(draft, mode), draft)}
+        />
+        <NoRulesDialog
+          open={noRulesOpen && step === 'preview'} campaignCount={previewCount}
+          onAttach={() => { setNoRulesOpen(false); setRulesFocus((n) => n + 1); }} onCreate={createCampaigns} onClose={() => setNoRulesOpen(false)}
+        />
+        <ResetProgressDialog
+          open={Boolean(pendingChange)} stepName={currentIdx < 0 ? 'Ad format' : NUMBERED_STEPS[currentIdx]?.label ?? ''} laterSteps={laterSteps}
+          onKeep={keepProgress} onChange={redoLaterSteps}
         />
         <AnimatePresence>
           {step === 'structure' && jivaOpen && (

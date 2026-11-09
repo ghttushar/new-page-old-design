@@ -249,8 +249,10 @@ function RuleRow({ rule, attached, total, onAttach }: {
 
 // ── The section ──────────────────────────────────────────────────────────────────────────────
 
-export default function RulesSection({ draft, campaigns, onChange }: {
+export default function RulesSection({ draft, campaigns, onChange, focusSignal = 0 }: {
   draft: CcDraft; campaigns: CcCampaign[]; selectedProducts?: CcProduct[]; onChange: (patch: Partial<CcDraft>) => void;
+  /** Bumped by "Attach a Rule" in the Create prompt: the section opens, scrolls into view and flashes once. */
+  focusSignal?: number;
 }) {
   const marketplace = draft.marketplace ?? 'amazon';
   const [query, setQuery] = useState('');
@@ -261,6 +263,16 @@ export default function RulesSection({ draft, campaigns, onChange }: {
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
   // Rules are optional, so the section starts folded away.
   const [expanded, setExpanded] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!focusSignal) return undefined;
+    setExpanded(true);
+    setFlash(true);
+    const scroll = window.setTimeout(() => wrapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    const stop = window.setTimeout(() => setFlash(false), 1400);
+    return () => { window.clearTimeout(scroll); window.clearTimeout(stop); };
+  }, [focusSignal]);
 
   const visible = useMemo(() => MOCK_RULES.filter((r) => {
     if (ruleIncompatibility(r, marketplace) !== null) return false;
@@ -278,10 +290,22 @@ export default function RulesSection({ draft, campaigns, onChange }: {
   const clearFilters = () => { setQuery(''); setTypeFilter('all'); setStatusFilter('all'); setScopeFilter('all'); };
   const setAssignment = (ruleId: string, ids: string[]) => onChange({ ruleAssignments: { ...draft.ruleAssignments, [ruleId]: ids } });
   const open = popover ? MOCK_RULES.find((r) => r.id === popover.ruleId) : undefined;
+  // Said in the header even while folded away, so the state of Rules is visible without opening it.
+  const shownIds = new Set(campaigns.map((c) => c.id));
+  const coveredCount = new Set(attachedRules.flatMap((r) => campaignsForRule(draft, r.id)).filter((id) => shownIds.has(id))).size;
+  const status = attachedRules.length === 0
+    ? 'No Rules attached'
+    : `${attachedRules.length} Rule${attachedRules.length === 1 ? '' : 's'} attached · ${coveredCount} of ${campaigns.length} campaign${campaigns.length === 1 ? '' : 's'}`;
 
   return (
+    <div ref={wrapRef} className={`ccd-rl-wrap${flash ? ' ccd-rl-flash' : ''}`}>
     <Panel
-      title={<>Rules <span className="ccd-rl-optional">(Optional)</span></>}
+      title={(
+        <button type="button" className="ccd-rl-head-btn" aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>
+          Rules <span className="ccd-rl-optional">(Optional)</span>
+          <span className={`ccd-rl-status${attachedRules.length ? ' is-on' : ''}`}>{status}</span>
+        </button>
+      )}
       pad={expanded ? 20 : 0}
       aside={
         <button type="button" className={`ccd-rl-toggle${expanded ? ' is-open' : ''}`} aria-expanded={expanded} aria-label={expanded ? 'Hide rules' : 'Show rules'} onClick={() => setExpanded((v) => !v)}>
@@ -366,5 +390,6 @@ export default function RulesSection({ draft, campaigns, onChange }: {
       )}
       </>)}
     </Panel>
+    </div>
   );
 }

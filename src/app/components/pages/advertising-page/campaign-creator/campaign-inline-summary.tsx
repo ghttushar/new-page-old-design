@@ -190,8 +190,11 @@ export function JourneyBar() {
   if (!context || !context.steps || !context.steps.some((st) => st.id === context.step)) return null;
   const { step, draft, selectedProducts, totalProducts, groupCount = 0, onJump, steps, furthestIndex, issueStep } = context;
   const structure = STRUCTURE_CATALOG.find((item) => item.id === draft.structureId);
-  const keywordCount = draft.keywordTargets?.length ?? 0;
-  const negativeCount = draft.negativeKeywords?.length ?? 0;
+  // What was added on Keywords lives in the campaigns: targets typed in there, and negatives whose ids come from its
+  // popup ("kw-…"), as opposed to the ones a structure builds in.
+  const adGroups = (draft.generatedCampaigns ?? []).flatMap((c) => c.adGroups);
+  const keywordCount = adGroups.reduce((n, ag) => n + ag.targets.filter((t) => t.source === 'Custom input').length, 0);
+  const negativeCount = adGroups.reduce((n, ag) => n + ag.negatives.filter((x) => x.id.includes('-kw-')).length, 0);
   const kwTotal = keywordCount + negativeCount;
   // On Amazon the step also takes product targets, so it is named for both.
   const keywordsName = draft.marketplace === 'walmart' ? 'Keywords' : 'Keywords & product targets';
@@ -249,7 +252,15 @@ export function JourneyBar() {
                   {hasIssue && <Cross />}
                 </div>
               )}
-              {i > current && (
+              {/* A step already reached stays one click away, so going back never costs the progress made after it. */}
+              {i > current && reachable && (
+                <button type="button" className="ccd-jb-tile ccd-jb-tile--ahead" onClick={() => onJump(item.id)} aria-label={`${item.id === 'keywords' ? keywordsName : item.label}. Go forward to this step`}>
+                  {graphic[item.id]}
+                  <span className="ccd-jb-copy ccd-jb-copy--name"><strong>{item.id === 'keywords' ? keywordsName : item.label}</strong></span>
+                  {i - 1 < furthestIndex && <Tick />}
+                </button>
+              )}
+              {i > current && !reachable && (
                 <div className="ccd-jb-chip"><span className="ccd-jb-node">{i}</span><span>{item.id === 'keywords' ? keywordsName : item.label}</span></div>
               )}
             </li>
@@ -273,7 +284,7 @@ export function GroupSwitch() {
   const { step, scopes, activeScopeId, pendingScopes, onScopeChange, onApplyToGroups, appliedCount, onUndoApply } = context;
   return (
     <HeadingGroup>
-      <ScopeSwitch scopes={scopes} activeId={activeScopeId ?? scopes[0].id} pending={pendingScopes ?? new Set()} onChange={onScopeChange} onApply={step === 'products' ? undefined : onApplyToGroups} appliedCount={appliedCount ?? null} onUndo={onUndoApply} />
+      <ScopeSwitch scopes={scopes} activeId={activeScopeId ?? scopes[0].id} pending={pendingScopes ?? new Set()} onChange={onScopeChange} onApply={step === 'products' || step === 'keywords' ? undefined : onApplyToGroups} appliedCount={appliedCount ?? null} onUndo={onUndoApply} />
     </HeadingGroup>
   );
 }
