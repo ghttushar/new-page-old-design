@@ -8,6 +8,7 @@ import SignalsBrief from '../../signals/brief/signals-brief';
 import { AlertListPanel } from '../../signals/alerts/alert-list-panel';
 import { AlertDetailPanel } from '../../signals/alerts/alert-detail-panel';
 import { AskJivaPanel } from '../../signals/alerts/ask-jiva-panel';
+import { pendingItems, type ItemBatch } from '../../signals/alerts/item-batches';
 import { MeetingListPanel } from '../../signals/meetings/meeting-list-panel';
 import { MeetingDetailPanel } from '../../signals/meetings/meeting-detail-panel';
 import { MeetingMOM } from '../../signals/meetings/meeting-mom';
@@ -44,6 +45,12 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
   const [alertPhase, setAlertPhase] = useState<'view' | 'executing' | 'report' | 'genReview'>('view');
   const [execProgress, setExecProgress] = useState(0);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
+  // An alert's items can be actioned in batches: some ASINs with one action, the rest with another. A batch on only some
+  // of the pending items runs on the same screen (inlineRun) and leaves the alert open; the batch that covers the last
+  // pending items runs the full Execute flow and resolves the alert.
+  const [itemLog, setItemLog] = useState<Record<string, ItemBatch[]>>({});
+  const [inlineRun, setInlineRun] = useState<{ alertId: string; batch: ItemBatch; progress: number } | null>(null);
+  const inlineTimerRef = useRef<number | null>(null);
   const [loggedActions, setLoggedActions] = useState<LoggedActionItem[]>([]);
   // Today's list opens with a representative mix of states instead of every card looking identical —
   // 2nd card (a2) already read, 3rd (a3) in progress, 4th (a5) resolved, 5th (a6) explicitly needs
@@ -154,11 +161,36 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
 
   const executeTimerRef = useRef<number | null>(null);
 
-  const handleExecute = useCallback(() => {
-    markInProgress(selectedAlertId);
+  const handleExecute = useCallback((keys: string[], label: string) => {
+    const alert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId);
+    if (!alert || !selectedAlertId) return;
+    const id = selectedAlertId;
+    const batch: ItemBatch = { id: `b-${Date.now()}`, label, keys };
+    const pendingCount = pendingItems(alert, itemLog[id]).length;
+    markInProgress(id);
+    if (keys.length < pendingCount) {
+      // Some items only: run here, then leave the rest open for a different action.
+      if (inlineTimerRef.current !== null) window.clearInterval(inlineTimerRef.current);
+      // Back to the alert (from a generated draft's review, say), where the run shows.
+      setAlertPhase('view');
+      setInlineRun({ alertId: id, batch, progress: 0 });
+      const t = window.setInterval(() => {
+        setInlineRun((run) => {
+          if (!run || run.batch.id !== batch.id) { window.clearInterval(t); return run; }
+          const progress = Math.min(100, run.progress + 20);
+          if (progress < 100) return { ...run, progress };
+          window.clearInterval(t);
+          inlineTimerRef.current = null;
+          setItemLog((prev) => ({ ...prev, [id]: [...(prev[id] ?? []), batch] }));
+          return null;
+        });
+      }, 650);
+      inlineTimerRef.current = t;
+      return;
+    }
+    setItemLog((prev) => ({ ...prev, [id]: [...(prev[id] ?? []), batch] }));
     setAlertPhase('executing');
     setExecProgress(0);
-    const id = selectedAlertId;
     const timer = window.setInterval(() => {
       setExecProgress((prev) => {
         const next = Math.min(100, prev + 20);
@@ -171,7 +203,37 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
       });
     }, 650);
     executeTimerRef.current = timer;
-  }, [selectedAlertId, markInProgress, markResolved]);
+  }, [selectedAlertId, itemLog, markInProgress, markResolved]);
+
+  /** Takes back one batch on an alert (or stops the one still running). With nothing actioned left, the alert reopens. */
+  const handleUndoBatch = useCallback((alertId: string, batchId: string) => {
+    if (inlineRun && inlineRun.batch.id === batchId) {
+      if (inlineTimerRef.current !== null) { window.clearInterval(inlineTimerRef.current); inlineTimerRef.current = null; }
+      setInlineRun(null);
+    }
+    const left = (itemLog[alertId] ?? []).filter((b) => b.id !== batchId);
+    setItemLog((prev) => ({ ...prev, [alertId]: left }));
+    if (left.length === 0) {
+      setAlertStatusMap((prev) => {
+        if (!(alertId in prev)) return prev;
+        const next = { ...prev };
+        delete next[alertId];
+        return next;
+      });
+    }
+  }, [inlineRun, itemLog]);
+
+  /** Dismiss: items still pending are logged as dismissed, so the record shows what happened to every ASIN. */
+  const handleDismiss = useCallback(() => {
+    const alert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId);
+    if (!alert || !selectedAlertId) return;
+    const id = selectedAlertId;
+    const rest = pendingItems(alert, itemLog[id]);
+    if ((itemLog[id] ?? []).length > 0 && rest.length > 0) {
+      setItemLog((prev) => ({ ...prev, [id]: [...(prev[id] ?? []), { id: `b-${Date.now()}`, label: 'Dismissed', keys: rest.map((it) => it.sku), dismissed: true }] }));
+    }
+    markResolved(id);
+  }, [selectedAlertId, itemLog, markResolved]);
 
   const handleUndoExecute = useCallback(() => {
     if (executeTimerRef.current !== null) {
@@ -180,13 +242,17 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
     }
     setAlertPhase('view');
     setExecProgress(0);
+    // The batch that was running comes back off the log; earlier batches stay.
+    const left = selectedAlertId ? (itemLog[selectedAlertId] ?? []).slice(0, -1) : [];
+    if (selectedAlertId) setItemLog((prev) => ({ ...prev, [selectedAlertId]: left }));
     setAlertStatusMap((prev) => {
       if (!selectedAlertId || !(selectedAlertId in prev)) return prev;
       const next = { ...prev };
-      delete next[selectedAlertId];
+      if (left.length > 0) next[selectedAlertId] = 'in_progress';
+      else delete next[selectedAlertId];
       return next;
     });
-  }, [selectedAlertId]);
+  }, [selectedAlertId, itemLog]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -203,22 +269,29 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
     return () => window.removeEventListener('keydown', onKey);
   }, [calendarOpen, selectedAlertId, selectedMeetingId]);
 
+  // "7 of 14 actioned" on list rows for alerts worked through in batches.
+  const actionedCounts: Record<string, number> = Object.fromEntries(Object.entries(itemLog)
+    .map(([id, batches]) => [id, batches.filter((b) => !b.dismissed).reduce((n, b) => n + b.keys.length, 0)] as const)
+    .filter(([, n]) => n > 0));
+
   const renderAlerts = () => {
     const detailPanel = (
       <AlertDetailPanel
         alert={selectedAlert}
         phase={alertPhase}
         execProgress={execProgress}
-        onExecute={handleExecute}
+        onExecuteItems={handleExecute}
+        batches={selectedAlertId ? itemLog[selectedAlertId] ?? [] : []}
+        inlineRun={inlineRun && inlineRun.alertId === selectedAlertId ? { batch: inlineRun.batch, progress: inlineRun.progress } : null}
+        onUndoBatch={(batchId) => selectedAlertId && handleUndoBatch(selectedAlertId, batchId)}
         onViewReport={() => setAlertPhase('report')}
         onBackToAlerts={() => setAlertPhase('view')}
         onGenReview={() => setAlertPhase('genReview')}
-        onApproveGenReview={handleExecute}
         onOpenItems={() => setItemsModalOpen(true)}
         itemsModalOpen={itemsModalOpen}
         onCloseItems={() => setItemsModalOpen(false)}
         onLogAction={logAction}
-        onDismiss={() => markResolved(selectedAlertId)}
+        onDismiss={handleDismiss}
         onUndoExecute={handleUndoExecute}
         isFirstAlert={!!selectedAlertId && selectedAlertId === firstAlertId}
         onOpenAskJiva={() => { setAskJivaOpen(true); setGlobalJivaOpen(false); }}
@@ -259,6 +332,7 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
                         <AlertListPanel
                           selectedAlertId={selectedAlertId}
                           alertStatusMap={alertStatusMap}
+                          actionedCounts={actionedCounts}
                           readAlertIds={readAlertIds}
                           onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); markAlertRead(id); }}
                           onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); markAlertRead(id); }}
@@ -280,6 +354,7 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
                 <AlertListPanel
                   selectedAlertId={selectedAlertId}
                   alertStatusMap={alertStatusMap}
+                  actionedCounts={actionedCounts}
                   readAlertIds={readAlertIds}
                   onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); markAlertRead(id); }}
                   onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); markAlertRead(id); }}

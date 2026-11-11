@@ -12,6 +12,8 @@ import rowStyles from './alert-row.module.scss';
 interface Props {
   selectedAlertId: string | null;
   alertStatusMap: Record<string, AlertStatus>;
+  /** Items already actioned per alert worked through in batches ("7 of 14 actioned"). */
+  actionedCounts?: Record<string, number>;
   /** Alerts the user has opened at least once — undots the row. */
   readAlertIds: Set<string>;
   onSelectAlert: (id: string) => void;
@@ -29,7 +31,7 @@ interface Props {
   applyCategoryFilter?: { category: string; nonce: number } | null;
 }
 
-export function AlertListPanel({ selectedAlertId, alertStatusMap, readAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, width, applyCategoryFilter = null }: Props) {
+export function AlertListPanel({ selectedAlertId, alertStatusMap, actionedCounts = {}, readAlertIds, onSelectAlert, onOpenItemsForAlert, onFilteredChange, initialFilterOpen = false, initialYesterdayCollapsed = false, width, applyCategoryFilter = null }: Props) {
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(initialFilterOpen);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -172,7 +174,7 @@ export function AlertListPanel({ selectedAlertId, alertStatusMap, readAlertIds, 
             </div>
             {todayAlerts.map((al) => (
               // a7 (today's 6th card) is pinned to always look selected, independent of which alert is actually open — a deliberate always-highlighted default, not a real selection.
-              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id || al.id === 'a7'} status={alertStatusMap[al.id] ?? 'needs_attention'} unread={!readAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
+              <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id || al.id === 'a7'} status={alertStatusMap[al.id] ?? 'needs_attention'} actioned={actionedCounts[al.id] ?? 0} unread={!readAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
             ))}
           </>
         )}
@@ -194,7 +196,7 @@ export function AlertListPanel({ selectedAlertId, alertStatusMap, readAlertIds, 
             <div className={`${motion.accordionRow} ${!yesterdayCollapsed ? motion.accordionRowOpen : ''}`}>
               <div>
                 {yesterdayAlerts.map((al) => (
-                  <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id || al.id === 'a7'} status={alertStatusMap[al.id] ?? 'needs_attention'} unread={!readAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
+                  <AlertRow key={al.id} al={al} selected={selectedAlertId === al.id || al.id === 'a7'} status={alertStatusMap[al.id] ?? 'needs_attention'} actioned={actionedCounts[al.id] ?? 0} unread={!readAlertIds.has(al.id)} onSelect={() => onSelectAlert(al.id)} onOpenItems={() => onOpenItemsForAlert(al.id)} menuFor={menuFor} setMenuFor={setMenuFor} menuMode={menuMode} setMenuMode={setMenuMode} requestAssign={requestAssign} assignedTo={assignedTo[al.id]} onAssign={assignAlert} />
                 ))}
               </div>
             </div>
@@ -230,8 +232,8 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
 }
 
 
-function AlertRow({ al, selected, status, unread, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign, assignedTo, onAssign }: {
-  al: PrototypeAlert; selected: boolean; status: AlertStatus; unread: boolean; onSelect: () => void; onOpenItems: () => void;
+function AlertRow({ al, selected, status, actioned = 0, unread, onSelect, onOpenItems, menuFor, setMenuFor, menuMode, setMenuMode, requestAssign, assignedTo, onAssign }: {
+  al: PrototypeAlert; selected: boolean; status: AlertStatus; actioned?: number; unread: boolean; onSelect: () => void; onOpenItems: () => void;
   menuFor: string | null; setMenuFor: (id: string | null) => void;
   menuMode: 'main' | 'share' | 'assign'; setMenuMode: (m: 'main' | 'share' | 'assign') => void;
   requestAssign: (al: PrototypeAlert) => void;
@@ -319,6 +321,9 @@ function AlertRow({ al, selected, status, unread, onSelect, onOpenItems, menuFor
               >
                 {al.itemsBreakdown}
               </span>
+              {actioned > 0 && actioned < al.itemsCount && status !== 'resolved' && (
+                <span style={{ color: '#3f7d6a', fontWeight: 600 }}>{' · '}{actioned} of {al.itemsCount} actioned</span>
+              )}
             </>
           )}
         </div>

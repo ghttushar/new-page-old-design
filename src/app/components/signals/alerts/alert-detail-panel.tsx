@@ -9,6 +9,7 @@ import { ComposeMail } from './compose-mail';
 import { ImageGenStudio } from './image-gen-studio';
 import { formatAlertValue, explainAlertValue } from './format-money';
 import { getDisplayItems } from './items-util';
+import { itemKey, pendingItems, statusLabel, type ItemBatch } from './item-batches';
 import { ValueInfoIcon } from './value-info-icon';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD } from './assign-menu';
 import { AlertBadgeRow } from './alert-badge-row';
@@ -22,11 +23,18 @@ interface Props {
   alert: PrototypeAlert | null;
   phase: 'view' | 'executing' | 'report' | 'genReview';
   execProgress: number;
-  onExecute: () => void;
+  /** Runs the picked action on the chosen items (by ASIN). The page decides between a partial batch and the full flow. */
+  onExecuteItems: (keys: string[], label: string) => void;
+  /** Batches already applied to this alert's items, oldest first. */
+  batches?: ItemBatch[];
+  /** A batch on some of the items, still running on this screen. */
+  inlineRun?: { batch: ItemBatch; progress: number } | null;
+  onUndoBatch?: (batchId: string) => void;
   onViewReport: () => void;
   onBackToAlerts: () => void;
   onGenReview: () => void;
-  onApproveGenReview: () => void;
+  /** Unused: Approve now runs the chosen items through onExecuteItems. Kept optional for old call sites. */
+  onApproveGenReview?: () => void;
   onOpenItems: () => void;
   itemsModalOpen: boolean;
   onCloseItems: () => void;
@@ -71,7 +79,7 @@ const CATEGORY_METRICS: { category: string; count: number; topAlertId: string }[
     .sort((a, b) => b.count - a.count);
 })();
 
-export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, onViewReport, onBackToAlerts, onGenReview, onApproveGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onFilterCategory, onBack }: Props) {
+export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecuteItems, batches = [], inlineRun = null, onUndoBatch, onViewReport, onBackToAlerts, onGenReview, onOpenItems, itemsModalOpen, onCloseItems, onLogAction, onDismiss, onUndoExecute, onOpenAskJiva, onFilterCategory, onBack }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [detailMenu, setDetailMenu] = useState<'assign' | 'share' | null>(null);
   const [thumb, setThumb] = useState<'up' | 'down' | null>(null);
@@ -82,6 +90,12 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
   const [imageStudioOpen, setImageStudioOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [lastLogged, setLastLogged] = useState<{ label: string; sent: boolean } | null>(null);
+  // Execute first asks which items to act on; a generative action keeps that choice until its draft is approved.
+  const [picker, setPicker] = useState<AlertOption | null>(null);
+  const [scope, setScope] = useState<string[] | null>(null);
+  const [viewBatch, setViewBatch] = useState<ItemBatch | null>(null);
+  // After a batch lands, the action list goes back to the recommended option for the items left.
+  useEffect(() => { setSelectedOptionId(null); }, [batches.length]);
 
   useEffect(() => {
     setActionPickerOpen(false);
@@ -89,6 +103,9 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
     setEmailFor(null);
     setImageStudioOpen(false);
     setDismissed(false);
+    setPicker(null);
+    setScope(null);
+    setViewBatch(null);
   }, [sel?.id]);
 
   if (!sel) {
@@ -118,16 +135,33 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
 
   const executeLabel = 'Execute';
 
+  const pending = pendingItems(sel, batches);
+  const pendingKeys = pending.map(itemKey);
+  const statusFor = statusLabel(batches);
+  const applied = batches.filter((b) => !b.dismissed);
+  const latest = applied[applied.length - 1];
+  const actionLabel = pickedOption?.label ?? 'Execute';
+
+  // Ask Jiva and the approval gate don't act on items, so they skip the item picker.
   const handleExecute = () => {
-    if (pickedOption?.kind === 'GENERATIVE') {
-      if (pickedOption.generates === 'image') { setImageStudioOpen(true); return; }
+    if (pickedOption?.isOther) { onOpenAskJiva?.(); return; }
+    if (pickedOption?.isMeetingAsk) { setActionPickerOpen(true); return; }
+    if (!pickedOption || pending.length === 0) return;
+    setPicker(pickedOption);
+  };
+  const confirmItems = (keys: string[]) => {
+    const option = picker;
+    setPicker(null);
+    if (!option) return;
+    if (option.kind === 'GENERATIVE') {
+      setScope(keys);
+      if (option.generates === 'image') { setImageStudioOpen(true); return; }
       onGenReview();
       return;
     }
-    if (pickedOption?.isOther) { onOpenAskJiva?.(); return; }
-    if (pickedOption?.isMeetingAsk) { setActionPickerOpen(true); return; }
-    onExecute();
+    onExecuteItems(keys, option.label);
   };
+  const runScoped = () => { onExecuteItems(scope ?? pendingKeys, actionLabel); setScope(null); };
 
   // These local action flows fully replace the panel content — no popups, everything stays in this column.
   if (imageStudioOpen) {
@@ -148,7 +182,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             createdAt: Date.now(),
           });
           setImageStudioOpen(false);
-          onExecute();
+          runScoped();
         }}
       />
     );
@@ -298,7 +332,8 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 16 }}>
-            <span onClick={onApproveGenReview} className={motion.btnPrimary} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Approve and publish</span>
+            <span onClick={runScoped} className={motion.btnPrimary} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer' }}>Approve and publish</span>
+            <span style={{ font: '400 12px/1 Inter,sans-serif', color: '#6b7178' }}>Applies to {(scope ?? pendingKeys).length} of {sel.itemsCount} items</span>
             <span onClick={onBackToAlerts} className={motion.btnSecondary} style={{ padding: '10px 16px', borderRadius: 7, border: '1px solid #dfe3ea', font: '600 12px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer' }}>Cancel</span>
           </div>
         </div>
@@ -355,7 +390,30 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
           <div style={{ border: '1.5px solid #77469b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 0 0 3px rgba(119,70,155,0.07)' }}>
             <div style={{ padding: '12px 14px', borderBottom: '1px solid #eee3f6', background: '#fbfafd', display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
               <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Suggested actions</span>
+              {applied.length > 0 && pending.length > 0 && (
+                <span style={{ marginLeft: 'auto', font: '500 11px/1 Inter,sans-serif', color: '#6b7178' }}>For the {pending.length} items still affected</span>
+              )}
             </div>
+            {/* A batch on some of the items runs right here, then says what was done, so the rest can take a different action. */}
+            {inlineRun ? (
+              <div className={motion.contentFadeIn} style={{ padding: '11px 14px', borderBottom: '1px solid #eee3f6', background: '#fff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#a8763f', flex: 'none' }} />
+                  <span style={{ font: '500 12px/1.4 Inter,sans-serif', color: '#464646' }}>Applying <b style={{ fontWeight: 600, color: '#23272d' }}>{inlineRun.batch.label}</b> to {inlineRun.batch.keys.length} item{inlineRun.batch.keys.length === 1 ? '' : 's'}…</span>
+                  <span style={{ marginLeft: 'auto', font: '600 12px/1 Inter,sans-serif', color: '#464646' }}>{inlineRun.progress}%</span>
+                  {onUndoBatch && <span onClick={() => onUndoBatch(inlineRun.batch.id)} className={motion.btnSecondary} style={{ padding: '6px 11px', border: '1px solid #dfe3ea', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#3d434b', cursor: 'pointer', background: '#fff' }}>Undo</span>}
+                </div>
+                <div style={{ height: 4, borderRadius: 2, background: '#f1f2f4', marginTop: 9, overflow: 'hidden' }}>
+                  <div style={{ width: inlineRun.progress + '%', height: '100%', background: '#77469b', transition: 'width .5s ease' }} />
+                </div>
+              </div>
+            ) : latest && pending.length > 0 && (
+              <div className={motion.contentFadeIn} style={{ padding: '11px 14px', borderBottom: '1px solid #e3efe9', background: '#f4faf7', display: 'flex', alignItems: 'center', gap: 9 }}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ flex: 'none' }}><path d="M3 8l3.5 3.5L13 4.5" stroke="#3f7d6a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span style={{ font: '500 12px/1.4 Inter,sans-serif', color: '#2d4a3c' }}><b style={{ fontWeight: 600 }}>{latest.label}</b> applied to {latest.keys.length} item{latest.keys.length === 1 ? '' : 's'}. Pick an action for the {pending.length} left.</span>
+                {onUndoBatch && <span onClick={() => onUndoBatch(latest.id)} className={motion.btnSecondary} style={{ marginLeft: 'auto', padding: '6px 11px', border: '1px solid #cfe3d8', borderRadius: 6, font: '600 11px/1 Inter,sans-serif', color: '#2d4a3c', cursor: 'pointer', background: '#fff', flex: 'none' }}>Undo</span>}
+              </div>
+            )}
             {sel.options.map((o) => (
               <div key={o.id} onClick={() => setSelectedOptionId(o.id)} className={motion.rowHover} style={{ padding: '13px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: optId === o.id ? '#fbfafd' : '#fff' }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', border: optId === o.id ? '4px solid #77469b' : '1px solid #dfe3ea', flex: 'none', marginTop: 2, transition: 'border 140ms ease-out' }} />
@@ -382,7 +440,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
               </div>
             ))}
             <div key="action" className={motion.contentFadeIn} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 9, background: '#fafbfd' }}>
-              <span onClick={handleExecute} className={motion.btnPrimary} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span onClick={() => { if (!inlineRun) handleExecute(); }} className={inlineRun ? undefined : motion.btnPrimary} aria-disabled={Boolean(inlineRun)} style={{ padding: '10px 16px', borderRadius: 7, background: '#77469b', color: '#fff', font: '600 12px/1 Inter,sans-serif', cursor: inlineRun ? 'wait' : 'pointer', opacity: inlineRun ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 7 }}>
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 {executeLabel}
               </span>
@@ -391,7 +449,7 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
                 className={dismissed ? undefined : motion.btnSecondary}
                 style={{ padding: '9px 14px', border: '1px solid #dfe3ea', borderRadius: 7, font: '500 12px/1 Inter,sans-serif', color: dismissed ? '#9aa0a8' : '#3d434b', cursor: dismissed ? 'default' : 'pointer', transition: 'color 150ms ease-out' }}
               >
-                {dismissed ? 'Dismissed' : 'Dismiss'}
+                {dismissed ? 'Dismissed' : applied.length > 0 && pending.length > 0 ? 'Dismiss remaining ' + pending.length : 'Dismiss'}
               </span>
             </div>
           </div>
@@ -401,9 +459,21 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
             <div style={{ border: '1px solid #e6e8ec', borderRadius: 8, overflow: 'hidden' }}>
               <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f2f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ font: '600 12px/1 Inter,sans-serif', color: '#23272d' }}>Affected items</span>
-                <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>{sel.itemsCount} total</span>
+                <span style={{ font: '400 11px/1 Inter,sans-serif', color: '#6b7178' }}>
+                  {pending.length === 0 && batches.length > 0 ? <b style={{ color: '#3f7d6a', fontWeight: 600 }}>All {sel.itemsCount} handled</b> : pending.length < sel.itemsCount ? <><b style={{ color: '#a8763f', fontWeight: 600 }}>{pending.length} still affected</b> · {sel.itemsCount} total</> : sel.itemsCount + ' total'}
+                </span>
               </div>
-              {getDisplayItems(sel).slice(0, 4).map((it, i) => (
+              {/* What's been done, one quiet row per batch, so actioned items leave the list but not the record. */}
+              {batches.map((b) => (
+                <div key={b.id} style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 9, borderBottom: '1px solid #f1f2f4', background: '#fafbfd' }}>
+                  {b.dismissed
+                    ? <span style={{ width: 13, height: 13, display: 'grid', placeItems: 'center', color: '#9aa0a8', font: '600 12px/1 Inter,sans-serif', flex: 'none' }}>–</span>
+                    : <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ flex: 'none' }}><path d="M3 8l3.5 3.5L13 4.5" stroke="#3f7d6a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                  <span style={{ flex: 1, minWidth: 0, font: '500 12px/1.4 Inter,sans-serif', color: b.dismissed ? '#6b7178' : '#2d4a3c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{b.label} · {b.keys.length} item{b.keys.length === 1 ? '' : 's'}</span>
+                  <span onClick={() => setViewBatch(b)} className={motion.pressable} style={{ font: '600 11px/1 Inter,sans-serif', color: '#77469b', cursor: 'pointer', flex: 'none' }}>View</span>
+                </div>
+              ))}
+              {pending.slice(0, 4).map((it, i) => (
                 <div key={i} style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 11, borderBottom: '1px solid #f1f2f4' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ font: '400 12px/1.4 Inter,sans-serif', color: '#464646', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{it.name}</div>
@@ -468,7 +538,21 @@ export function AlertDetailPanel({ alert: sel, phase, execProgress, onExecute, o
         </span>
       </DetailFooterBar>
 
-      {itemsModalOpen && <ItemsModal items={getDisplayItems(sel)} itemCount={sel.itemsCount} breakdown={sel.itemsBreakdown} onClose={onCloseItems} />}
+      {itemsModalOpen && <ItemsModal items={getDisplayItems(sel)} itemCount={sel.itemsCount} breakdown={sel.itemsBreakdown} statusFor={batches.length > 0 ? statusFor : undefined} onClose={onCloseItems} />}
+      {picker && (
+        <ItemsModal
+          mode="select" items={pending} itemCount={pending.length} actionLabel={picker.label}
+          breakdown={pending.length < sel.itemsCount ? pending.length + ' of ' + sel.itemsCount + ' still affected' : sel.itemsBreakdown}
+          onConfirm={confirmItems} onClose={() => setPicker(null)}
+        />
+      )}
+      {viewBatch && (
+        <ItemsModal
+          items={getDisplayItems(sel).filter((it) => viewBatch.keys.includes(itemKey(it)))} itemCount={viewBatch.keys.length}
+          title={viewBatch.dismissed ? 'Dismissed items' : viewBatch.label} breakdown={viewBatch.keys.length + (viewBatch.keys.length === 1 ? ' item' : ' items')}
+          statusFor={statusFor} onClose={() => setViewBatch(null)}
+        />
+      )}
 
       {lastLogged && (
         <div className={motion.toastIn} style={{ position: 'absolute', right: 20, bottom: 20, padding: '12px 16px', borderRadius: 9, background: '#23272d', color: '#fff', font: '500 12px/1.4 Inter,sans-serif', boxShadow: '0 12px 28px rgba(20,24,33,.28)', zIndex: 250, display: 'flex', alignItems: 'center', gap: 9 }}>
