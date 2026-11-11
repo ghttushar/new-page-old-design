@@ -3,7 +3,8 @@ import type { TaskPriority } from '@/constants/signals/prototype-data';
 import { DEFAULT_ASSIGNEES, Avatar } from '../alerts/assign-menu';
 import { CloseIcon, ChevronDownIcon } from '../alerts/icons';
 import { DueDatePopover } from '../common/due-date-popover';
-import { StatusCircleIcon, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR } from './work-station-icons';
+import { PRIORITY_COLOR } from './work-station-icons';
+import { StatusTag } from '../common/status-tag';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
 
@@ -89,10 +90,7 @@ export function WorkStationNewTaskPanel({
 
           <div>
             <div style={LABEL}>Status</div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px 4px 7px', borderRadius: 999, background: STATUS_COLOR.open + '14' }}>
-              <StatusCircleIcon status="open" />
-              <span style={{ font: '600 12.5px/1 Inter,sans-serif', color: STATUS_COLOR.open }}>{STATUS_LABEL.open}</span>
-            </span>
+            <StatusTag status="open" size="md" />
           </div>
 
           <div>

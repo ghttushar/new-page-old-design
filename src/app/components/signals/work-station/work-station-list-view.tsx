@@ -4,7 +4,8 @@ import { Avatar } from '../alerts/assign-menu';
 import { ChevronDownIcon, BellIcon, MoreVertIcon, ShareIcon, EnvelopeSmallIcon, WorkspaceSmallIcon } from '../alerts/icons';
 import { formatAlertValue } from '../alerts/format-money';
 import { HoverTip } from '../alerts/hover-tip';
-import { StatusCircleIcon, OriginGlyph, ContextSourceStack, STATUS_COLOR, STATUS_LABEL } from './work-station-icons';
+import { OriginGlyph, ContextSourceStack } from './work-station-icons';
+import { StatusTag } from '../common/status-tag';
 import motion from '../alerts/motion.module.scss';
 
 /** A task the current user delegated to a named person — the only tasks the "Remind" ping applies to. */
@@ -51,9 +52,8 @@ function TaskRow({ task, selected, unread, onSelect, onCycleStatus, onRemind, in
         {/* Top line — status, assignee, context inline on the left (dividers matching the Alerts badge row), due date pinned right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <HoverTip label="Click to advance status">
-            <span onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px 4px 6px', borderRadius: 999, background: STATUS_COLOR[task.status] + '14', cursor: 'pointer', flex: 'none' }}>
-              <StatusCircleIcon status={task.status} size={12} />
-              <span style={{ font: '600 11px/1 Inter,sans-serif', color: STATUS_COLOR[task.status], whiteSpace: 'nowrap' as const }}>{STATUS_LABEL[task.status]}</span>
+            <span style={{ display: 'inline-flex', flex: 'none' }}>
+              <StatusTag status={task.status} onClick={(e) => { e.stopPropagation(); onCycleStatus(); }} />
             </span>
           </HoverTip>
           <span style={{ width: 1, height: 14, background: '#e6e8ec', flex: 'none' }} />

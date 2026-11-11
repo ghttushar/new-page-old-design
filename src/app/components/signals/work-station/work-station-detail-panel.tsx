@@ -12,7 +12,8 @@ import { ValueInfoIcon } from '../alerts/value-info-icon';
 import { ItemsModal } from '../alerts/items-modal';
 import { DueDatePopover } from '../common/due-date-popover';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import { StatusCircleIcon, STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR, OriginGlyph } from './work-station-icons';
+import { StatusCircleIcon, STATUS_LABEL, PRIORITY_COLOR, OriginGlyph } from './work-station-icons';
+import { StatusTag } from '../common/status-tag';
 import { isDelegated } from './work-station-list-view';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
 import motion from '../alerts/motion.module.scss';
@@ -213,10 +214,8 @@ export function WorkStationDetailPanel({
 
           <div>
             <div style={{ font: '600 9.5px/1 Inter,sans-serif', letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: '#9aa0a8', marginBottom: 8 }}>Status</div>
-            <span onClick={() => setStatusMenuOpen((v) => !v)} className={motion.pressable} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px 4px 7px', borderRadius: 999, background: STATUS_COLOR[task.status] + '14', cursor: 'pointer', position: 'relative' }}>
-              <StatusCircleIcon status={task.status} />
-              <span style={{ font: '600 12.5px/1 Inter,sans-serif', color: STATUS_COLOR[task.status] }}>{STATUS_LABEL[task.status]}</span>
-              <ChevronDownIcon size={8} color={STATUS_COLOR[task.status]} />
+            <span style={{ display: 'inline-flex', position: 'relative' }}>
+              <StatusTag status={task.status} size="md" chevron onClick={() => setStatusMenuOpen((v) => !v)} />
               {statusMenuOpen && (
                 <div className={motion.popIn} style={{ position: 'absolute', left: 0, top: 30, width: 160, background: '#fff', border: '1px solid #e6e8ec', borderRadius: 9, boxShadow: '0 12px 28px rgba(20,24,33,.18)', padding: 6, zIndex: 50 }} onClick={(e) => e.stopPropagation()}>
                   {STATUS_ORDER.map((s) => (

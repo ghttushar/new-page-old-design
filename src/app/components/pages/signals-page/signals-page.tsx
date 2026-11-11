@@ -16,8 +16,7 @@ import { AskJivaMeetingPanel } from '../../signals/meetings/ask-jiva-meeting-pan
 import { WorkStation } from '../../signals/work-station/work-station';
 import { CalendarPopover } from '../../signals/common/calendar-popover';
 import { AccountFilterDropdown } from '../../signals/common/account-filter-dropdown';
-import { AlertsCollapsedSliver } from '../../signals/alerts/alerts-collapsed-rail';
-import { MeetingsCollapsedRail } from '../../signals/meetings/meetings-collapsed-rail';
+import { CollapsedPeek, PEEK_SLIVER_WIDTH } from '../../signals/common/collapsed-peek';
 import { ResizeHandle, useResizableColumn } from '../../signals/common/resizable-column';
 import { PROTOTYPE_ALERTS, COMPLETED_MEETINGS, MEETING_LIST, type LoggedActionItem, type MpBrand, type AlertStatus } from '@/constants/signals/prototype-data';
 import DiamondMascot from '../../common/diamond-mascot/diamond-mascot';
@@ -62,9 +61,6 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
   const [globalJivaOpen, setGlobalJivaOpen] = useState(preview?.globalJivaOpen ?? false);
   const [applyCategoryFilter, setApplyCategoryFilter] = useState<{ category: string; nonce: number } | null>(null);
   const [applyMeetingFilter, setApplyMeetingFilter] = useState<{ kind: 'day' | 'status' | 'clear'; value?: string; nonce: number } | null>(null);
-  // Alerts' collapsed column is a thin sliver behind the detail panel that reveals the real list as
-  // a floating overlay on hover, instead of a fixed small rail like Meetings/Work-station.
-  const [alertsHovering, setAlertsHovering] = useState(false);
 
   const selectedAlert = PROTOTYPE_ALERTS.find((a) => a.id === selectedAlertId) ?? null;
   // The Ask Jiva variation is a one-alert concept demo, anchored to whichever alert leads today's list.
@@ -79,15 +75,10 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
   // of clamping at an unreadable width.
   // minWidth is 260, not a round 220 — alert cards' badge row and detail lines genuinely need that
   // much room; narrower and content clips/overlaps instead of wrapping cleanly (confirmed live).
-  const alertsListCol = useResizableColumn({ defaultWidth: 320, minWidth: 260, maxWidth: 480, collapseBelow: 160, collapsedWidth: 14 });
+  const alertsListCol = useResizableColumn({ defaultWidth: 320, minWidth: 260, maxWidth: 480, collapseBelow: 160, collapsedWidth: PEEK_SLIVER_WIDTH });
   const alertsJivaCol = useResizableColumn({ defaultWidth: 340, minWidth: 260, maxWidth: 480, edge: 'left' });
-  const meetingsListCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160, collapsedWidth: 52 });
+  const meetingsListCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160, collapsedWidth: PEEK_SLIVER_WIDTH });
   const meetingsJivaCol = useResizableColumn({ defaultWidth: 340, minWidth: 260, maxWidth: 480, edge: 'left' });
-
-  // Once a drag commits Alerts' column to a real permanent width, start fresh (not mid-peek) the next time it collapses.
-  useEffect(() => {
-    if (!alertsListCol.collapsed) setAlertsHovering(false);
-  }, [alertsListCol.collapsed]);
 
   const logAction = useCallback((item: LoggedActionItem) => {
     setLoggedActions((prev) => [item, ...prev]);
@@ -311,45 +302,19 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
           ) : (
             <>
               {alertsListCol.collapsed ? (
-                <div
-                  onMouseEnter={() => setAlertsHovering(true)}
-                  onMouseLeave={() => setAlertsHovering(false)}
-                  style={{ flex: '0 0 14px', position: 'relative' as const, height: '100%' }}
-                >
-                  <div
-                    style={{
-                      position: 'absolute' as const, left: 0, top: 0, bottom: 0,
-                      width: alertsHovering ? alertsListCol.width : 14,
-                      display: 'flex',
-                      zIndex: alertsHovering ? 40 : 1,
-                      transition: alertsListCol.dragging ? 'none' : 'width 150ms ease-out',
-                      boxShadow: alertsHovering ? '14px 0 32px rgba(20,24,33,.22)' : 'none',
-                    }}
-                  >
-                    {/* overflow:hidden lives on this inner box so it clips the panel/sliver content without also clipping the resize handle, which deliberately overhangs the outer box's edge. */}
-                    <div style={{ flex: 1, minWidth: 0, display: 'flex', borderRadius: 10, overflow: 'hidden' }}>
-                      {alertsHovering ? (
-                        <AlertListPanel
-                          selectedAlertId={selectedAlertId}
-                          alertStatusMap={alertStatusMap}
-                          actionedCounts={actionedCounts}
-                          readAlertIds={readAlertIds}
-                          onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); markAlertRead(id); }}
-                          onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); markAlertRead(id); }}
-                          onFilteredChange={setFilteredAlertIds}
-                          applyCategoryFilter={applyCategoryFilter}
-                          width={alertsListCol.width}
-                        />
-                      ) : (
-                        <AlertsCollapsedSliver />
-                      )}
-                    </div>
-                    {/* Grabbing this while peeking commits the column to a real, permanent width instead of just previewing — dragging past collapseBelow un-collapses it live, same as any other handle. */}
-                    {alertsHovering && (
-                      <ResizeHandle dragHandleProps={alertsListCol.dragHandlePropsFrom(alertsListCol.width)} active={alertsListCol.dragging} />
-                    )}
-                  </div>
-                </div>
+                <CollapsedPeek col={alertsListCol}>
+                  <AlertListPanel
+                    selectedAlertId={selectedAlertId}
+                    alertStatusMap={alertStatusMap}
+                    actionedCounts={actionedCounts}
+                    readAlertIds={readAlertIds}
+                    onSelectAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setAskJivaOpen(false); markAlertRead(id); }}
+                    onOpenItemsForAlert={(id) => { setSelectedAlertId(id); setAlertPhase('view'); setItemsModalOpen(true); markAlertRead(id); }}
+                    onFilteredChange={setFilteredAlertIds}
+                    applyCategoryFilter={applyCategoryFilter}
+                    width={alertsListCol.width}
+                  />
+                </CollapsedPeek>
               ) : (
                 <AlertListPanel
                   selectedAlertId={selectedAlertId}
@@ -399,7 +364,9 @@ export function SignalsPage({ initialTab = 'alerts', preview }: { initialTab?: S
         ) : (
           <>
             {meetingsListCol.collapsed ? (
-              <MeetingsCollapsedRail count={MEETING_LIST.length} onExpand={meetingsListCol.expand} />
+              <CollapsedPeek col={meetingsListCol}>
+                <MeetingListPanel selectedMeetingId={selectedMeetingId} onSelectMeeting={openMeeting} applyFilter={applyMeetingFilter} width={meetingsListCol.width} />
+              </CollapsedPeek>
             ) : (
               <MeetingListPanel selectedMeetingId={selectedMeetingId} onSelectMeeting={openMeeting} applyFilter={applyMeetingFilter} width={meetingsListCol.width} />
             )}

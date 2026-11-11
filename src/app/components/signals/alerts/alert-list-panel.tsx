@@ -4,7 +4,8 @@ import { PROTOTYPE_ALERTS, type PrototypeAlert, type AssigneeOption, type AlertS
 import { formatAlertValue } from './format-money';
 import { AlertBadgeRow } from './alert-badge-row';
 import { AssignDropdownList, AssignPopupModal, DEFAULT_ASSIGNEES, ASSIGN_POPUP_THRESHOLD, Avatar } from './assign-menu';
-import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, MoreVertIcon, CheckIcon, ChevronDownIcon } from './icons';
+import { AssignIcon, ShareIcon, DismissIcon, EnvelopeSmallIcon, WorkspaceSmallIcon, MoreVertIcon, ChevronDownIcon } from './icons';
+import { StatusTag, alertTaskStatus } from '../common/status-tag';
 import scrollStyles from './alerts-scroll.module.scss';
 import motion from './motion.module.scss';
 import rowStyles from './alert-row.module.scss';
@@ -256,23 +257,11 @@ function AlertRow({ al, selected, status, actioned = 0, unread, onSelect, onOpen
     requestAssign(al);
   };
   return (
-    <div className={`${rowStyles.alertCard} ${motion.cardHover}`} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', opacity: resolved ? 0.62 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
-      {status === 'resolved' && (
-        <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#eef6f3', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#3f7d6a' }}>
-          <CheckIcon size={8} color="#3f7d6a" /> Resolved
-        </span>
-      )}
-      {status === 'in_progress' && (
-        <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#f3ecfa', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#77469b' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#77469b' }} /> In progress
-        </span>
-      )}
-      {/* Only a6 (today's 5th card) shows the "Needs attention" badge — every other default-state card stays badge-less, same as before. */}
-      {status === 'needs_attention' && al.id === 'a6' && (
-        <span className={motion.contentFadeIn} style={{ position: 'absolute', left: 12, top: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: '#fdf3e0', font: '700 9px/1.5 Inter,sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: '#a8763f' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a8763f' }} /> Needs attention
-        </span>
-      )}
+    <div className={`${rowStyles.alertCard} ${motion.cardHover}`} style={{ margin: '10px 12px', padding: '14px 16px', border: '1px solid #eceef1', borderLeft: selected ? '3px solid #77469b' : '1px solid #eceef1', borderRadius: 10, background: selected ? '#f9f7fc' : 'transparent', boxShadow: '0 1px 2px rgba(20,24,33,.03)', cursor: 'pointer', position: 'relative', opacity: resolved ? 0.7 : 1, transition: 'opacity 220ms ease-out, background 150ms ease-out, border-color 150ms ease-out' }}>
+      {/* Status in the same quiet words and glyph as Work-station: Open, In progress, Done. */}
+      <span key={status} className={motion.contentFadeIn} style={{ position: 'absolute', left: 16, top: 16, display: 'flex' }}>
+        <StatusTag status={alertTaskStatus(status)} />
+      </span>
       <div style={{ position: 'absolute', right: 12, top: 12, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         {assignedTo ? (
           <span
@@ -303,7 +292,7 @@ function AlertRow({ al, selected, status, actioned = 0, unread, onSelect, onOpen
           <MoreVertIcon size={13} />
         </span>
       </div>
-      <div onClick={onSelect} style={{ marginTop: status !== 'needs_attention' || al.id === 'a6' ? 20 : 0 }}>
+      <div onClick={onSelect} style={{ marginTop: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {!al.hideValue && (
             <span style={{ font: '700 20px/1 Inter,sans-serif', color: al.valueNum < 0 ? '#b3453f' : '#3f7d6a' }}>{formatAlertValue(al.valueNum)}</span>

@@ -1,47 +1,17 @@
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
-import type { TaskStatus, TaskOrigin } from '@/constants/signals/prototype-data';
+import type { TaskOrigin } from '@/constants/signals/prototype-data';
 import { GoogleMeetMark, SourceBadge, rowSourceLabel, type RowSource } from '../alerts/source-icon';
 import { HoverTip } from '../alerts/hover-tip';
+import { STATUS_COLOR, STATUS_LABEL, StatusCircleIcon } from '../common/status-tag';
 
-export const STATUS_COLOR: Record<TaskStatus, string> = {
-  open: '#9aa0a8',
-  in_progress: '#a8763f',
-  done: '#3f7d6a',
-};
-
-export const STATUS_LABEL: Record<TaskStatus, string> = {
-  open: 'Open',
-  in_progress: 'In progress',
-  done: 'Done',
-};
+// Status colours, labels and glyph are shared with Alerts (common/status-tag), re-exported here for existing imports.
+export { STATUS_COLOR, STATUS_LABEL, StatusCircleIcon };
 
 export const PRIORITY_COLOR: Record<'High' | 'Medium' | 'Low', string> = {
   High: '#b3453f',
   Medium: '#a8763f',
   Low: '#9aa0a8',
 };
-
-/** Plane/Linear-style status glyph — an empty ring, a half-filled pie, or a filled check — instead of just a colored word. */
-export function StatusCircleIcon({ status, size = 14 }: { status: TaskStatus; size?: number }) {
-  const color = STATUS_COLOR[status];
-  if (status === 'done') {
-    return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" fill={color} />
-        <path d="M4.8 8.2l2.1 2.1 4.3-4.3" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (status === 'in_progress') {
-    return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6.3" stroke={color} strokeWidth="1.6" fill="none" />
-        <path d="M8 8V1.7A6.3 6.3 0 0 1 14.3 8z" fill={color} />
-      </svg>
-    );
-  }
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke={color} strokeWidth="1.6" fill="none" /></svg>;
-}
 
 export function ListViewIcon({ size = 14, color = '#6b7178' }: { size?: number; color?: string }) {
   return (

@@ -9,8 +9,8 @@ import { WorkStationListView, type GroupKey } from './work-station-list-view';
 import { WorkStationDetailPanel } from './work-station-detail-panel';
 import { WorkStationAskJivaPanel } from './work-station-ask-jiva-panel';
 import { WorkStationNewTaskPanel } from './work-station-new-task-panel';
-import { WorkStationCollapsedRail } from './work-station-collapsed-rail';
-import { PRIORITY_COLOR } from './work-station-icons';
+import { CollapsedPeek, PEEK_SLIVER_WIDTH } from '../common/collapsed-peek';
+import { PRIORITY_COLOR, STATUS_COLOR } from './work-station-icons';
 import { ConnectedEmptyHero } from '../common/connected-empty-hero';
 import { ResizeHandle, useResizableColumn } from '../common/resizable-column';
 import scrollStyles from '../alerts/alerts-scroll.module.scss';
@@ -113,7 +113,7 @@ export function WorkStation({
     // Reacts only to the global button's own toggles, not to every local task/selection change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceJivaOpen]);
-  const listCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160, initialCollapsed: preview?.listCollapsed });
+  const listCol = useResizableColumn({ defaultWidth: 320, minWidth: 220, maxWidth: 480, collapseBelow: 160, collapsedWidth: PEEK_SLIVER_WIDTH, initialCollapsed: preview?.listCollapsed });
   const jivaCol = useResizableColumn({ defaultWidth: 340, minWidth: 260, maxWidth: 480, edge: 'left' });
   const [search, setSearch] = useState(preview?.search ?? '');
   const [personFilter, setPersonFilter] = useState(preview?.personFilter ?? '');
@@ -215,11 +215,8 @@ export function WorkStation({
 
   const selectedTask = tasks.find((t) => t.id === selectedId) ?? null;
 
-  return (
-    <div style={{ height: '100%', display: 'flex', gap: 16, position: 'relative' }}>
-      {listCol.collapsed ? (
-        <WorkStationCollapsedRail onExpand={listCol.expand} />
-      ) : (
+  // The list column, shown docked or, while collapsed, in the hover peek.
+  const listPanel = (
       <div style={{ flex: `0 0 ${listCol.width}px`, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e6e8ec', borderRadius: 10, overflow: 'visible', position: 'relative' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e6e8ec', display: 'flex', flexDirection: 'column', gap: 9, flex: 'none', position: 'relative' }}>
               <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
@@ -313,7 +310,11 @@ export function WorkStation({
               <WorkStationListView assignedToMe={assignedToMe} unassigned={unassignedTasks} assignedByMe={assignedByMe} selectedId={selectedId} readTaskIds={readTaskIds} onSelect={selectTask} onCycleStatus={cycleStatus} onRemind={remindAssignee} initialActiveGroup={initialActiveGroup} initialRowMenu={preview?.rowMenu} />
             </div>
           </div>
-      )}
+  );
+
+  return (
+    <div style={{ height: '100%', display: 'flex', gap: 16, position: 'relative' }}>
+      {listCol.collapsed ? <CollapsedPeek col={listCol}>{listPanel}</CollapsedPeek> : listPanel}
 
           <div style={{ position: 'relative' as const, display: 'flex', flex: 1, minWidth: 0, height: '100%' }}>
           {createOpen ? (
@@ -361,8 +362,8 @@ export function WorkStation({
                   { key: 'by-me', label: 'Assigned by me', count: totalByMe, unit: 'tasks', color: '#5c7f9e', onClick: () => setCategoryQuickFilter('by-me') },
                   { key: 'unassigned', label: 'Unassigned', count: totalUnassigned, unit: 'tasks', color: '#a8763f', onClick: () => setCategoryQuickFilter('unassigned') },
                   { key: 'overdue', label: 'Overdue', count: overdueTasks.length, unit: 'tasks', color: '#b3453f', onClick: () => setCategoryQuickFilter('overdue') },
-                  { key: 'in-progress', label: 'In progress', count: inProgressTasks.length, unit: 'tasks', color: '#0071ce', onClick: () => setCategoryQuickFilter('in_progress') },
-                  { key: 'done', label: 'Done', count: doneTasks.length, unit: 'tasks', color: '#3f7d6a', onClick: () => setCategoryQuickFilter('done') },
+                  { key: 'in-progress', label: 'In progress', count: inProgressTasks.length, unit: 'tasks', color: STATUS_COLOR.in_progress, onClick: () => setCategoryQuickFilter('in_progress') },
+                  { key: 'done', label: 'Done', count: doneTasks.length, unit: 'tasks', color: STATUS_COLOR.done, onClick: () => setCategoryQuickFilter('done') },
                 ]}
               />
             </div>
