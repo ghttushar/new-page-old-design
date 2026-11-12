@@ -14,35 +14,52 @@ const BANNER_STORAGE_KEY = 'anarix_mcp_banner_dismissed';
 const AUTO_ADVANCE_MS = 7000;
 const SLIDE_COUNT = 2;
 
-/** The Slack slide's graphic: JIVA posting into a Slack channel — typing, then the message, then an Approve chip. */
+/**
+ * The Slack slide's illustration: a tiny Slack thread. A teammate asks @JIVA why profit fell, JIVA types, then replies
+ * with a mini chart and an "Approve fix" chip that flips to Approved. JIVA's avatar wears a Slack badge, the way an app
+ * shows up in a workspace, over a soft brand glow.
+ */
 function SlackMessageVisual() {
   return (
-    <div className={styles.slackCluster} aria-hidden="true">
-      <span className={styles.slackTile}>
-        <SlackLogo size={20} />
-      </span>
-      <span className={styles.visualLink}>
-        <span className={styles.signalDot} />
-      </span>
-      <div className={styles.msgCard}>
-        <span className={styles.msgAvatar}>
-          <DiamondMascot size={14} />
+    <div className={styles.slackScene} aria-hidden="true">
+      <span className={styles.sceneGlow} />
+
+      <span className={styles.botAvatar}>
+        <DiamondMascot size={26} />
+        <span className={styles.botBadge}>
+          <SlackLogo size={11} />
         </span>
-        <div className={styles.msgBody}>
-          <div className={styles.msgMeta}>
-            <b>JIVA</b>
-            <span className={styles.msgApp}>APP</span>
-            <span className={styles.msgChannel}>#alerts</span>
-          </div>
-          <div className={styles.msgStage}>
-            <span className={styles.msgTyping}>
-              <i />
-              <i />
-              <i />
+      </span>
+
+      <div className={styles.thread}>
+        <div className={styles.askBubble}>
+          <span className={styles.askAvatar}>RS</span>
+          <span>
+            <b className={styles.mention}>@JIVA</b> why is profit down?
+          </span>
+        </div>
+
+        <div className={styles.replyStage}>
+          <span className={styles.replyTyping}>
+            <i />
+            <i />
+            <i />
+          </span>
+          <div className={styles.replyCard}>
+            <span className={styles.bars}>
+              <i style={{ height: '62%' }} />
+              <i style={{ height: '78%' }} />
+              <i style={{ height: '70%' }} />
+              <i style={{ height: '88%' }} />
+              <i className={styles.barDrop} style={{ height: '38%' }} />
             </span>
-            <span className={styles.msgText}>
-              Profit down 12% · 14 ASINs
-              <span className={styles.msgApprove}>Approve</span>
+            <span className={styles.replyText}>
+              <span><b>−12%</b> net profit</span>
+              <small>Bullet copy overwritten · 14 ASINs</small>
+            </span>
+            <span className={styles.chipStage}>
+              <span className={styles.chipApprove}>Approve fix</span>
+              <span className={styles.chipDone}>✓ Approved</span>
             </span>
           </div>
         </div>

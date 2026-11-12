@@ -370,43 +370,52 @@
   }
 }
 
-// ---------- Slack slide graphic ----------
+// ---------- Slack slide illustration: a tiny Slack thread ----------
 
-.slackCluster {
+// One 8s loop: question pops in → JIVA types → reply rises → bars grow → chip → Approved → fade, repeat.
+$loop: 8s;
+
+.slackScene {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1rem;
   flex-shrink: 0;
+  height: 5rem;
+  padding-left: 0.2rem;
 }
 
-.slackTile {
+.sceneGlow {
+  position: absolute;
+  left: -1.2rem;
+  top: 50%;
+  width: 22rem;
+  height: 9rem;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(closest-side at 18% 50%, rgba(244, 109, 118, 0.22), transparent 70%),
+    radial-gradient(closest-side at 62% 48%, rgba($primary-color, 0.16), transparent 75%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+// JIVA as a Slack app: the mascot with a Slack badge on its corner.
+.botAvatar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.2rem;
-  height: 3.2rem;
-  border-radius: 0.9rem;
+  width: 4.2rem;
+  height: 4.2rem;
+  border-radius: 1.2rem;
   background: #fff;
   border: 1px solid rgba($primary-color, 0.12);
-  box-shadow: 0 2px 6px rgba(119, 70, 155, 0.1);
+  box-shadow: 0 6px 16px -8px rgba(119, 70, 155, 0.45);
   flex-shrink: 0;
+  animation: botBob 4s ease-in-out infinite;
 }
 
-// A tiny Slack message from JIVA.
-.msgCard {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  width: 24.4rem;
-  padding: 0.7rem 0.9rem;
-  border-radius: 0.9rem;
-  background: #fff;
-  border: 1px solid rgba($primary-color, 0.12);
-  box-shadow: 0 4px 14px -6px rgba(119, 70, 155, 0.28);
-  animation: msgFloat 4s ease-in-out infinite;
-}
-
-@keyframes msgFloat {
+@keyframes botBob {
   0%,
   100% {
     transform: translateY(0);
@@ -416,70 +425,95 @@
   }
 }
 
-.msgAvatar {
+.botBadge {
+  position: absolute;
+  right: -0.5rem;
+  bottom: -0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 0.6rem;
-  background: #fff1f2;
-  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #eceef1;
+  box-shadow: 0 2px 5px rgba(20, 24, 33, 0.14);
 }
 
-.msgBody {
-  min-width: 0;
-  flex: 1;
-}
-
-.msgMeta {
+.thread {
+  position: relative;
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  // Sized by its content (chart + finding + chip), so the headline always starts after it instead of underneath.
+  width: max-content;
+}
+
+// The teammate's question.
+.askBubble {
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  padding: 0.15rem 0.8rem 0.15rem 0.2rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #eceef1;
   font-family: $font-family;
   font-size: 1rem;
-  line-height: 1.2rem;
+  line-height: 1.4rem;
   color: $sub-text-2;
-
-  b {
-    font-weight: 700;
-    color: $main-text;
-  }
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(20, 24, 33, 0.05);
+  transform-origin: left center;
+  animation: askIn $loop cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
 }
 
-.msgApp {
-  padding: 0 0.3rem;
-  border-radius: 0.3rem;
-  background: #eef0f3;
-  color: #6b7178;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.3rem;
-}
-
-.msgChannel {
-  margin-left: auto;
-  color: #9aa0a8;
-}
-
-// Typing dots, then the message: both live in the same spot and take turns.
-.msgStage {
-  display: grid;
-  margin-top: 0.3rem;
-  min-height: 1.6rem;
-}
-
-.msgTyping,
-.msgText {
-  grid-area: 1 / 1;
+.askAvatar {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: #5c7f9e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-.msgTyping {
+.mention {
+  padding: 0 0.25rem;
+  border-radius: 0.3rem;
+  background: rgba(29, 155, 209, 0.12);
+  color: #1264a3;
+  font-weight: 600;
+}
+
+// Typing dots and the reply share one spot and take turns.
+.replyStage {
+  display: grid;
+  width: 100%;
+}
+
+.replyTyping,
+.replyCard {
+  grid-area: 1 / 1;
+}
+
+.replyTyping {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
   gap: 0.3rem;
-  animation: msgTypingCycle 6s ease-in-out infinite;
+  width: max-content;
+  margin-left: 0.4rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #eceef1;
+  animation: typingShow $loop ease-in-out infinite;
 
   i {
     width: 0.45rem;
@@ -498,26 +532,204 @@
   }
 }
 
-.msgText {
-  gap: 0.5rem;
-  font-family: $font-family;
-  font-size: 1.05rem;
-  font-weight: 500;
-  line-height: 1.4rem;
-  color: $main-text;
-  white-space: nowrap;
-  animation: msgTextCycle 6s ease-in-out infinite;
+// JIVA's answer: a mini chart, the finding, and the action.
+.replyCard {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.9rem;
+  background: #fff;
+  border: 1px solid rgba($primary-color, 0.14);
+  box-shadow: 0 8px 18px -10px rgba(119, 70, 155, 0.5);
+  animation: replyIn $loop cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
-.msgApprove {
-  padding: 0.1rem 0.6rem;
-  border-radius: 0.4rem;
-  border: 1px solid #2eb67d;
-  color: #1f8a5c;
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  width: 2.8rem;
+  height: 1.9rem;
+  flex-shrink: 0;
+
+  i {
+    flex: 1;
+    border-radius: 0.15rem 0.15rem 0 0;
+    background: #d9c8ea;
+    transform-origin: bottom;
+    animation: barGrow $loop cubic-bezier(0.34, 1.3, 0.64, 1) infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.06s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.12s;
+    }
+
+    &:nth-child(4) {
+      animation-delay: 0.18s;
+    }
+  }
+
+  .barDrop {
+    background: #e0565f;
+    animation-delay: 0.26s;
+  }
+}
+
+.replyText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  font-family: $font-family;
+  font-size: 1.05rem;
+  line-height: 1.25rem;
+  color: $main-text;
+  white-space: nowrap;
+
+  b {
+    color: #c43d48;
+    font-weight: 700;
+  }
+
+  small {
+    font-size: 0.9rem;
+    color: #9aa0a8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.chipStage {
+  display: grid;
+  flex-shrink: 0;
+}
+
+.chipApprove,
+.chipDone {
+  grid-area: 1 / 1;
+  justify-self: end;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  font-family: $font-family;
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.3rem;
-  animation: msgApproveCycle 6s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+  white-space: nowrap;
+}
+
+.chipApprove {
+  border: 1px solid #2eb67d;
+  color: #1f8a5c;
+  background: #fff;
+  animation: chipApprove $loop cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+}
+
+.chipDone {
+  border: 1px solid #2eb67d;
+  color: #fff;
+  background: #2eb67d;
+  animation: chipDone $loop cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+}
+
+@keyframes askIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  6%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes typingShow {
+  0%,
+  10% {
+    opacity: 0;
+  }
+  13%,
+  24% {
+    opacity: 1;
+  }
+  27%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes replyIn {
+  0%,
+  25% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  31%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes barGrow {
+  0%,
+  29% {
+    transform: scaleY(0);
+  }
+  38%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes chipApprove {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  46%,
+  64% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  68%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes chipDone {
+  0%,
+  65% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
 }
 
 @keyframes typingBounce {
@@ -532,56 +744,6 @@
   }
 }
 
-@keyframes msgTypingCycle {
-  0%,
-  22% {
-    opacity: 1;
-  }
-  27%,
-  95% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes msgTextCycle {
-  0%,
-  24% {
-    opacity: 0;
-    transform: translateY(3px);
-  }
-  30%,
-  92% {
-    opacity: 1;
-    transform: none;
-  }
-  98%,
-  100% {
-    opacity: 0;
-    transform: none;
-  }
-}
-
-@keyframes msgApproveCycle {
-  0%,
-  42% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  50%,
-  92% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  98%,
-  100% {
-    opacity: 0;
-    transform: scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .slide,
   .slideActive {
@@ -589,13 +751,17 @@
     transform: none;
   }
 
-  .msgCard,
-  .msgApprove,
-  .msgText {
+  // A still frame: the question, the reply, and the action waiting.
+  .botAvatar,
+  .askBubble,
+  .replyCard,
+  .bars i,
+  .chipApprove {
     animation: none;
   }
 
-  .msgTyping {
+  .replyTyping,
+  .chipDone {
     display: none;
   }
 }
