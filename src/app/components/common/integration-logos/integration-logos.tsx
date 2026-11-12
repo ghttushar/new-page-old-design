@@ -1,6 +1,6 @@
 ﻿import ImgComponent from '@/app/components/common/img-component/img-component';
 import { imageUrls } from '@/constants/assets/images.constants';
-import { WhatsappLogoIcon } from '@phosphor-icons/react';
+import { DiscordLogoIcon, MicrosoftTeamsLogoIcon, VideoCameraIcon, WhatsappLogoIcon } from '@phosphor-icons/react';
 import styles from './integration-logos.module.scss';
 
 export function GptLogo({ size = 48, className }: { size?: number; className?: string }) {
@@ -73,5 +73,52 @@ export function WhatsappLogo({
       color="#25D366"
       className={className}
     />
+  );
+}
+
+// ── Workspace apps (Workspace AI) ───────────────────────────────────────────────────────────
+
+/** Slack's mark, full colour. */
+export function SlackLogo({ size = 48, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 122.8 122.8" className={className} role="img" aria-label="Slack">
+      <path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9z" fill="#E01E5A" />
+      <path d="M32.3 77.6c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V77.6z" fill="#E01E5A" />
+      <path d="M45.2 25.8c-7.1 0-12.9-5.8-12.9-12.9S38.1 0 45.2 0s12.9 5.8 12.9 12.9v12.9H45.2z" fill="#36C5F0" />
+      <path d="M45.2 32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H12.9C5.8 58.1 0 52.3 0 45.2s5.8-12.9 12.9-12.9h32.3z" fill="#36C5F0" />
+      <path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2z" fill="#2EB67D" />
+      <path d="M90.5 45.2c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V12.9C64.7 5.8 70.5 0 77.6 0s12.9 5.8 12.9 12.9v32.3z" fill="#2EB67D" />
+      <path d="M77.6 97c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9-12.9-5.8-12.9-12.9V97h12.9z" fill="#ECB22E" />
+      <path d="M77.6 90.5c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H77.6z" fill="#ECB22E" />
+    </svg>
+  );
+}
+
+/** Google's "G", full colour (Google Workspace / Google Chat). */
+export function GoogleLogo({ size = 48, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" className={className} role="img" aria-label="Google">
+      <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z" />
+      <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z" />
+      <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z" />
+      <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z" />
+    </svg>
+  );
+}
+
+export function TeamsLogo({ size = 48, className }: { size?: number; className?: string }) {
+  return <MicrosoftTeamsLogoIcon size={size} weight="fill" color="#5b5fc7" className={className} />;
+}
+
+export function DiscordLogo({ size = 48, className }: { size?: number; className?: string }) {
+  return <DiscordLogoIcon size={size} weight="fill" color="#5865f2" className={className} />;
+}
+
+/** Zoom Team Chat: a white camera on Zoom blue. */
+export function ZoomLogo({ size = 48, className }: { size?: number; className?: string }) {
+  return (
+    <span className={className} style={{ width: size, height: size, borderRadius: size * 0.28, background: '#0b5cff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <VideoCameraIcon size={size * 0.62} weight="fill" color="#fff" />
+    </span>
   );
 }

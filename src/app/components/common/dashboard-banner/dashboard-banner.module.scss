@@ -295,3 +295,307 @@
     opacity: 0.7;
   }
 }
+// ---------- Carousel ----------
+
+// Room under the slides for the dots.
+.banner {
+  padding-bottom: 1.8rem;
+}
+
+// Every slide sits in the same grid cell, so the banner keeps one height whichever is showing.
+.track {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  position: relative;
+  z-index: 1;
+}
+
+.slide {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(1rem);
+  transition: opacity 0.32s ease-out, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.32s;
+}
+
+.slideActive {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.32s ease-out, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
+}
+
+.dots {
+  position: absolute;
+  left: 50%;
+  bottom: 0.6rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba($primary-color, 0.22);
+  cursor: pointer;
+  transition: width 0.25s ease, background 0.2s ease;
+
+  &:hover {
+    background: rgba($primary-color, 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.dotActive {
+  width: 1.8rem;
+  background: $primary-color;
+
+  &:hover {
+    background: $primary-color;
+  }
+}
+
+// ---------- Slack slide graphic ----------
+
+.slackCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-shrink: 0;
+}
+
+.slackTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.9rem;
+  background: #fff;
+  border: 1px solid rgba($primary-color, 0.12);
+  box-shadow: 0 2px 6px rgba(119, 70, 155, 0.1);
+  flex-shrink: 0;
+}
+
+// A tiny Slack message from JIVA.
+.msgCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  width: 24.4rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.9rem;
+  background: #fff;
+  border: 1px solid rgba($primary-color, 0.12);
+  box-shadow: 0 4px 14px -6px rgba(119, 70, 155, 0.28);
+  animation: msgFloat 4s ease-in-out infinite;
+}
+
+@keyframes msgFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.msgAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.6rem;
+  background: #fff1f2;
+  flex-shrink: 0;
+}
+
+.msgBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.msgMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: $font-family;
+  font-size: 1rem;
+  line-height: 1.2rem;
+  color: $sub-text-2;
+
+  b {
+    font-weight: 700;
+    color: $main-text;
+  }
+}
+
+.msgApp {
+  padding: 0 0.3rem;
+  border-radius: 0.3rem;
+  background: #eef0f3;
+  color: #6b7178;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.3rem;
+}
+
+.msgChannel {
+  margin-left: auto;
+  color: #9aa0a8;
+}
+
+// Typing dots, then the message: both live in the same spot and take turns.
+.msgStage {
+  display: grid;
+  margin-top: 0.3rem;
+  min-height: 1.6rem;
+}
+
+.msgTyping,
+.msgText {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+}
+
+.msgTyping {
+  gap: 0.3rem;
+  animation: msgTypingCycle 6s ease-in-out infinite;
+
+  i {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: #b4b9c1;
+    animation: typingBounce 0.9s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+  }
+}
+
+.msgText {
+  gap: 0.5rem;
+  font-family: $font-family;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.4rem;
+  color: $main-text;
+  white-space: nowrap;
+  animation: msgTextCycle 6s ease-in-out infinite;
+}
+
+.msgApprove {
+  padding: 0.1rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid #2eb67d;
+  color: #1f8a5c;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3rem;
+  animation: msgApproveCycle 6s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+}
+
+@keyframes typingBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+}
+
+@keyframes msgTypingCycle {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  27%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes msgTextCycle {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  30%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes msgApproveCycle {
+  0%,
+  42% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50%,
+  92% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .slideActive {
+    transition: none;
+    transform: none;
+  }
+
+  .msgCard,
+  .msgApprove,
+  .msgText {
+    animation: none;
+  }
+
+  .msgTyping {
+    display: none;
+  }
+}

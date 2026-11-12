@@ -173,3 +173,31 @@
     transform: rotate(360deg);
   }
 }
+
+.tileWorkspace {
+  background: #f6f7f9;
+}
+
+// Arriving from the dashboard banner's Slack slide.
+.cardFlash {
+  animation: cardFlash 1.6s ease-out both;
+}
+
+@keyframes cardFlash {
+  0%,
+  45% {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4px rgba($primary-color, 0.18);
+  }
+  100% {
+    border-color: $border-color-4;
+    box-shadow: 0 0 0 4px rgba($primary-color, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardFlash {
+    animation: none;
+    border-color: $primary-color;
+  }
+}

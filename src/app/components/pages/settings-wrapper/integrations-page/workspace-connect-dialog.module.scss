@@ -1,0 +1,284 @@
+@import 'src/assets/styles/variables/variables.scss';
+
+// ---------- Shell (matches the WhatsApp and MCP dialogs) ----------
+
+.dialogPaper {
+  width: 100%;
+  border-radius: 0.8rem;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  background: $foreground-color;
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.6rem 2rem;
+  border-bottom: 1px solid $border-color-4;
+}
+
+.dialogHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  min-width: 0;
+}
+
+.dialogIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  background: #f6f7f9;
+  flex-shrink: 0;
+}
+
+.dialogTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 2rem;
+  color: $main-text;
+  font-family: $font-family;
+  margin: 0;
+}
+
+.dialogCaption {
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: $sub-text-2;
+  font-family: $font-family;
+  margin: 0.2rem 0 0;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  min-width: 3.2rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.8rem;
+  color: $sub-text-4;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background: $primary-color-dropzone;
+    color: $primary-color;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.dialogContent {
+  padding: 0.8rem 2rem 2rem !important;
+  overflow: visible !important;
+}
+
+// ---------- Workspace list ----------
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid #f1f2f4;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rowLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.9rem;
+  background: #fff;
+  border: 1px solid $border-color-4;
+  flex-shrink: 0;
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rowName {
+  font-family: $font-family;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.8rem;
+  color: $main-text;
+}
+
+.rowDesc {
+  font-family: $font-family;
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+  color: $sub-text-2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowConnected {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-family;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.6rem;
+  color: #3f7d6a;
+
+  i {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: #3f9a74;
+  }
+}
+
+.rowAction {
+  position: relative;
+  flex-shrink: 0;
+}
+
+// Connect / Manage: always white, never the primary colour.
+.whiteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 8.6rem;
+  height: 3.2rem;
+  padding: 0 1.4rem;
+  background: #fff;
+  color: $main-text;
+  border: 1px solid #dfe3ea;
+  border-radius: 0.8rem;
+  font-family: $font-family;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+
+  &:hover:not(:disabled) {
+    background: #f7f8fa;
+    border-color: #cfd4dc;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    cursor: wait;
+    color: $sub-text-2;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+  min-width: 14rem;
+  padding: 0.4rem;
+  background: #fff;
+  border: 1px solid $border-color-4;
+  border-radius: 0.8rem;
+  box-shadow: 0 12px 28px rgba(20, 24, 33, 0.16);
+  z-index: 5;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: transparent;
+  text-align: left;
+  font-family: $font-family;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #b3453f;
+  cursor: pointer;
+
+  &:hover {
+    background: #fdf1f0;
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ---------- Stacked logos ----------
+
+.stack {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stackItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--stack-size);
+  height: var(--stack-size);
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid $border-color-4;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+
+  & + & {
+    margin-left: calc(var(--stack-size) * -0.38);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whiteBtn {
+    transition: none;
+  }
+
+  .spin {
+    animation: none;
+  }
+}

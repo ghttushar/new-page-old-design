@@ -2,7 +2,8 @@ import { PageTitleEnum } from '@/enums/index.enums';
 import { PAGE_TITLE_TOOLTIPS } from '@/enums/tooltip-texts.enums';
 import useSubHeader from '@/hooks/use-sub-header.hook';
 import { CheckCircleIcon, SpinnerGapIcon } from '@phosphor-icons/react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import DiamondMascot from '@/app/components/common/diamond-mascot/diamond-mascot';
 import {
   ChatGptFlowerLogo,
@@ -11,11 +12,12 @@ import {
 } from '@/app/components/common/integration-logos/integration-logos';
 import McpConnectDialog from './mcp-connect-dialog';
 import WhatsAppConnectDialog from './whatsapp-connect-dialog';
+import WorkspaceConnectDialog, { WORKSPACE_APPS, WorkspaceStack } from './workspace-connect-dialog';
 import styles from './integrations-page.module.scss';
 
 const CONNECT_DELAY_MS = 450;
 
-type ConnectKind = '' | 'whatsapp' | 'mcp';
+type ConnectKind = '' | 'whatsapp' | 'mcp' | 'workspace';
 
 export default function IntegrationsPage() {
   useSubHeader(PageTitleEnum.INTEGRATIONS, PAGE_TITLE_TOOLTIPS.INTEGRATIONS);
@@ -25,6 +27,23 @@ export default function IntegrationsPage() {
   const [connecting, setConnecting] = useState<ConnectKind>('');
   const [mcpConnected, setMcpConnected] = useState(false);
   const [whatsappConnected, setWhatsappConnected] = useState(false);
+  const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
+  const [workspaces, setWorkspaces] = useState<Set<string>>(() => new Set());
+  const connectedApps = WORKSPACE_APPS.filter((a) => workspaces.has(a.id));
+
+  // Arriving from the dashboard banner's Slack slide: bring the Workspace AI card into view and flash it once.
+  const location = useLocation();
+  const workspaceCardRef = useRef<HTMLDivElement | null>(null);
+  const [flashWorkspace, setFlashWorkspace] = useState(false);
+  useEffect(() => {
+    if ((location.state as { highlight?: string } | null)?.highlight !== 'workspace') {
+      return undefined;
+    }
+    workspaceCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setFlashWorkspace(true);
+    const t = window.setTimeout(() => setFlashWorkspace(false), 1600);
+    return () => window.clearTimeout(t);
+  }, [location.key, location.state]);
 
   const handleConnect = (kind: Exclude<ConnectKind, ''>) => {
     if (connecting) {
@@ -35,6 +54,8 @@ export default function IntegrationsPage() {
       setConnecting('');
       if (kind === 'mcp') {
         setMcpDialogOpen(true);
+      } else if (kind === 'workspace') {
+        setWorkspaceDialogOpen(true);
       } else {
         setWhatsappDialogOpen(true);
       }
@@ -110,6 +131,42 @@ export default function IntegrationsPage() {
             )}
           </button>
         </div>
+
+        <div ref={workspaceCardRef} className={`${styles.card} ${flashWorkspace ? styles.cardFlash : ''}`}>
+          <div className={styles.cardHeader}>
+            <span className={`${styles.cardLogoTile} ${styles.tileWorkspace}`}>
+              <WorkspaceStack size={11} />
+            </span>
+            <div className={styles.cardHeading}>
+              <h2 className={styles.cardTitle}>Workspace AI</h2>
+              {connectedApps.length === 0 && <span className={styles.newPill}>New</span>}
+            </div>
+          </div>
+          <p className={styles.cardDesc}>
+            Chat with JIVA where your team works: alerts, answers and approvals
+            in Slack, Teams or Google Chat.
+          </p>
+          {connectedApps.length > 0 && (
+            <span className={styles.connectedPill}>
+              {connectedApps.map(({ id, Logo }) => <Logo key={id} size={12} />)}
+              Connected
+            </span>
+          )}
+          <button
+            type="button"
+            className={styles.cardBtn}
+            onClick={() => handleConnect('workspace')}
+            disabled={connecting === 'workspace'}
+          >
+            {connecting === 'workspace' ? (
+              <SpinnerGapIcon size={16} className={styles.spin} />
+            ) : connectedApps.length > 0 ? (
+              'Manage'
+            ) : (
+              'Connect'
+            )}
+          </button>
+        </div>
       </div>
 
       <McpConnectDialog
@@ -122,6 +179,13 @@ export default function IntegrationsPage() {
         open={whatsappDialogOpen}
         onClose={() => setWhatsappDialogOpen(false)}
         onConnected={() => setWhatsappConnected(true)}
+      />
+
+      <WorkspaceConnectDialog
+        open={workspaceDialogOpen}
+        onClose={() => setWorkspaceDialogOpen(false)}
+        connected={workspaces}
+        onChange={setWorkspaces}
       />
     </div>
   );
