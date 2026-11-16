@@ -2,8 +2,9 @@ import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { XIcon } from '@phosphor-icons/react';
-import React from 'react';
+import Tooltip from '@mui/material/Tooltip';
+import { SidebarSimpleIcon } from '@phosphor-icons/react';
+import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from 'src/redux/hooks';
 import {
   selectIsSidebarMenuOpen,
@@ -34,6 +35,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = fal
   const toggleSidebar = () => {
     dispatch(setIsSidebarMenuOpen(!isSidebarMenuOpenSetting));
   };
+  // Collapsed, the rail is too narrow for a separate button: hovering the logo swaps it for the sidebar icon instead.
+  const canToggle = !isHover && !forceCollapsed;
+  const [logoHover, setLogoHover] = useState(false);
+  const showOpenIcon = canToggle && !isSidebarMenuOpen && logoHover;
 
   return (
     <Drawer
@@ -59,7 +64,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = fal
             width: '98%',
             justifyContent: isHover ? 'center' : 'space-between',
           }}
-          onClick={!isHover && !forceCollapsed ? toggleSidebar : undefined}
+          onClick={canToggle ? toggleSidebar : undefined}
+          onMouseEnter={() => setLogoHover(true)}
+          onMouseLeave={() => setLogoHover(false)}
         >
           <div
             style={{
@@ -69,8 +76,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = fal
               marginBottom: '0.5rem',
               gap: '1rem',
               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
             }}
           >
+            {canToggle && !isSidebarMenuOpen && (
+              <Tooltip title="Show sidebar" placement="right" arrow>
+                <span
+                  role="button"
+                  aria-label="Show sidebar"
+                  style={{
+                    position: 'absolute', left: '0.2rem', bottom: '-0.4rem', width: '3rem', height: '3rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: '0.6rem', background: '#f3f4f6', color: '#464646', cursor: 'pointer',
+                    opacity: showOpenIcon ? 1 : 0, transition: 'opacity 150ms ease-out', zIndex: 1,
+                  }}
+                >
+                  <SidebarSimpleIcon size={'2rem'} />
+                </span>
+              </Tooltip>
+            )}
             <ImgComponent
               imageURL={imageUrls.anarixLogoLarge}
               alt="logo-large"
@@ -79,6 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = fal
                 transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 maxWidth: 'none',
                 marginLeft: isHover ? '4rem' : '0.6rem',
+                opacity: showOpenIcon ? 0 : 1,
               }}
             />
             <ImgComponent
@@ -92,6 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = fal
             />
           </div>
 
+          <Tooltip title={isSidebarMenuOpen ? 'Hide sidebar' : ''} placement="right" arrow>
           <IconButton
             disableRipple={isSidebarMenuOpen ? false : true}
             sx={{
@@ -100,11 +126,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isHover = false, forceCollapsed = fal
               opacity: isSidebarMenuOpen ? 1 : 0,
               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
-            aria-label="toggle sidebar"
+            aria-label={isSidebarMenuOpen ? 'Hide sidebar' : 'Show sidebar'}
             onClick={forceCollapsed ? undefined : toggleSidebar}
           >
-            <XIcon color="#464646" size={'2rem'} width={'2.4rem'} />
+            <SidebarSimpleIcon color="#464646" size={'2rem'} />
           </IconButton>
+          </Tooltip>
         </ListItemIcon>
         <SideBarComponent
           isSidebarMenuOpen={isSidebarMenuOpen}
